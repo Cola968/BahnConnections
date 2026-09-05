@@ -54,4 +54,3 @@ BAHNCONNECTIONS_BASE_URL=http://localhost:3000 pnpm audit:api
 - OpenStreetMap-Kartenmaterial über die in der App ausgewiesenen Kacheldienste
 
 Die jeweiligen Quelldaten und Marken bleiben Eigentum ihrer Anbieter. BahnConnections ist ein unabhängiges Projekt und kein offizielles Angebot der Deutschen Bahn AG.
-
