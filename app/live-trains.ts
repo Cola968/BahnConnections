@@ -1,7 +1,7 @@
 import type { Station } from "./network-data";
 
-export type LiveRailMode = "HIGHSPEED_RAIL" | "LONG_DISTANCE" | "NIGHT_RAIL" | "REGIONAL_FAST_RAIL" | "REGIONAL_RAIL" | "SUBURBAN" | "SUBWAY";
-export type LiveTrainCategory = "fern" | "regional" | "sbahn" | "ubahn";
+export type LiveRailMode = "HIGHSPEED_RAIL" | "LONG_DISTANCE" | "NIGHT_RAIL" | "REGIONAL_FAST_RAIL" | "REGIONAL_RAIL" | "SUBURBAN" | "SUBWAY" | "TRAM";
+export type LiveTrainCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 
 export type LiveTrip = {
   tripId: string;
@@ -34,11 +34,12 @@ type ApiTripSegment = {
   polyline?: string;
 };
 
-const RAIL_MODES = new Set<LiveRailMode>(["HIGHSPEED_RAIL", "LONG_DISTANCE", "NIGHT_RAIL", "REGIONAL_FAST_RAIL", "REGIONAL_RAIL", "SUBURBAN", "SUBWAY"]);
+const RAIL_MODES = new Set<LiveRailMode>(["HIGHSPEED_RAIL", "LONG_DISTANCE", "NIGHT_RAIL", "REGIONAL_FAST_RAIL", "REGIONAL_RAIL", "SUBURBAN", "SUBWAY", "TRAM"]);
 
 function category(mode: LiveRailMode): LiveTrainCategory {
   if (mode === "SUBURBAN") return "sbahn";
   if (mode === "SUBWAY") return "ubahn";
+  if (mode === "TRAM") return "tram";
   if (mode === "REGIONAL_RAIL" || mode === "REGIONAL_FAST_RAIL") return "regional";
   return "fern";
 }

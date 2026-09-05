@@ -2,7 +2,7 @@ import type { Station } from "./network-data";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
 
-export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn";
+export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
 export type JourneySource = "transitous" | "db-transport" | "transitous-completed" | "cross-checked";
 
@@ -138,9 +138,10 @@ type ApiItinerary = {
   legs?: ApiLeg[];
 };
 
-function categoryForMode(mode = ""): JourneyLegCategory {
+export function categoryForMode(mode = ""): JourneyLegCategory {
   if (mode === "SUBURBAN") return "sbahn";
   if (mode === "SUBWAY") return "ubahn";
+  if (mode === "TRAM") return "tram";
   if (mode === "REGIONAL_RAIL" || mode === "REGIONAL_FAST_RAIL") return "regional";
   if (["HIGHSPEED_RAIL", "LONG_DISTANCE", "NIGHT_RAIL"].includes(mode)) return "fern";
   return "walk";
@@ -191,7 +192,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
   return {
     mode: leg.mode ?? "WALK",
     category,
-    name: category === "walk" ? "Fußweg" : leg.displayName || leg.tripShortName || leg.routeShortName || (category === "sbahn" ? "S-Bahn" : category === "ubahn" ? "U-Bahn" : category === "regional" ? "Regionalzug" : "Fernzug"),
+    name: category === "walk" ? "Fußweg" : leg.displayName || leg.tripShortName || leg.routeShortName || (category === "sbahn" ? "S-Bahn" : category === "ubahn" ? "U-Bahn" : category === "tram" ? "Straßenbahn" : category === "regional" ? "Regionalzug" : "Fernzug"),
     operator: leg.agencyName,
     headsign: leg.headsign,
     routeColor:leg.routeColor,
@@ -346,11 +347,12 @@ async function dbLocation(station: Station, signal?: AbortSignal) {
   return request;
 }
 
-function dbCategory(product?: string): JourneyLegCategory {
+export function dbCategory(product?: string): JourneyLegCategory {
   if (["nationalExpress","national"].includes(product ?? "")) return "fern";
   if (["regionalExpress","regional"].includes(product ?? "")) return "regional";
   if (product === "suburban") return "sbahn";
   if (product === "subway") return "ubahn";
+  if (product === "tram") return "tram";
   return "walk";
 }
 
@@ -424,7 +426,7 @@ async function fetchDbJourneys(request: LiveJourneyRequest) {
   url.searchParams.set("suburban", String(enabled.has("sbahn")));
   url.searchParams.set("subway", String(enabled.has("ubahn")));
   url.searchParams.set("bus", "false");
-  url.searchParams.set("tram", "false");
+  url.searchParams.set("tram", String(enabled.has("tram")));
   url.searchParams.set("ferry", "false");
   url.searchParams.set("taxi", "false");
   const payload = await fetchJsonWithTimeout<{ journeys?: DbJourney[] }>(url, request.signal, 7_000);
@@ -597,6 +599,7 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
     regional: ["REGIONAL_FAST_RAIL", "REGIONAL_RAIL"],
     sbahn: ["SUBURBAN"],
     ubahn: ["SUBWAY"],
+    tram: ["TRAM"],
   };
   const makeUrl = (fromPlace: string, toPlace: string, timetableView: boolean) => {
     const url = new URL("https://api.transitous.org/api/v6/plan");

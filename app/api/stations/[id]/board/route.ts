@@ -74,7 +74,7 @@ async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival
     boardUrl.searchParams.set("suburban", "true");
     boardUrl.searchParams.set("subway", "true");
     boardUrl.searchParams.set("bus", "false");
-    boardUrl.searchParams.set("tram", "false");
+    boardUrl.searchParams.set("tram", "true");
     boardUrl.searchParams.set("ferry", "false");
     boardUrl.searchParams.set("taxi", "false");
     const dbPayload = await json<DbBoardRow[] | { departures?:DbBoardRow[]; arrivals?:DbBoardRow[] }>(boardUrl, controller.signal);

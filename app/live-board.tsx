@@ -10,7 +10,7 @@ import { trimRepeatedStationLoop } from "./trip-trimming";
 
 type BoardMode = "departures" | "arrivals";
 type BoardKind = "departure" | "arrival";
-type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn";
+type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 type DelayFilter = "all" | "ontime" | "delayed" | "canceled";
 type SortMode = "time" | "delay" | "platform" | "product";
 type BoardWindow = 60 | 120 | 180 | 240 | 500;
@@ -41,7 +41,7 @@ export type BoardSummary = {
   delayed15: number;
   delayed30: number;
   averageDelay: number;
-  products: { ice: number; ic: number; ec: number; sbahn: number; ubahn: number; regional: number };
+  products: { ice: number; ic: number; ec: number; sbahn: number; ubahn: number; tram: number; regional: number };
   updatedAt?: string;
   realtimeStatus?: "live" | "schedule" | "stale";
   warnings?: string[];
@@ -50,7 +50,7 @@ export type BoardSummary = {
 export type BoardMapTrip = {
   tripId: string;
   name: string;
-  category: "fern" | "regional" | "sbahn" | "ubahn";
+  category: "fern" | "regional" | "sbahn" | "ubahn" | "tram";
   realtime: boolean;
   color?: string;
   textColor?: string;
@@ -124,11 +124,13 @@ function product(mode?: string) {
   if (["LONG_DISTANCE", "NIGHT_RAIL"].includes(mode ?? "")) return "fern";
   if (mode === "SUBURBAN") return "sbahn";
   if (mode === "SUBWAY") return "ubahn";
+  if (mode === "TRAM") return "tram";
   return "regional";
 }
 
-function brandFor(entry: BoardEntry) {
+export function brandFor(entry: BoardEntry) {
   const name = (entry.line?.name ?? "Zug").trim();
+  if (entry.line?.product === "tram") return { label:name.replace(/\s+/g, ""), number:"", className:"tram" };
   const number = name.replace(/^(?:FlixTrain\s+)?(ICE|IC|EC|RJX?|TGV|NJ|EN|FLX|RE|RB|S|U)\s*/i, "").trim();
   if (/^ICE\b/i.test(name) || entry.line?.product === "fern-express") return { label:"ICE", number, className:"ice" };
   if (/^IC\b/i.test(name)) return { label:"IC", number, className:"ic" };
@@ -147,6 +149,7 @@ function summaryProduct(entry: BoardEntry): keyof BoardSummary["products"] {
   if (brand.className === "ec") return "ec";
   if (brand.className === "sbahn") return "sbahn";
   if (brand.className === "ubahn") return "ubahn";
+  if (brand.className === "tram") return "tram";
   if (brand.className === "ic") return "ic";
   return "regional";
 }
@@ -250,7 +253,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
   return {
     tripId:entry.tripId ?? entryKey(entry),
     name:entry.line?.name ?? "Fahrt",
-    category:entry.line?.product === "sbahn" ? "sbahn" : entry.line?.product === "ubahn" ? "ubahn" : ["fern","fern-express"].includes(entry.line?.product ?? "") ? "fern" : "regional",
+    category:entry.line?.product === "sbahn" ? "sbahn" : entry.line?.product === "ubahn" ? "ubahn" : entry.line?.product === "tram" ? "tram" : ["fern","fern-express"].includes(entry.line?.product ?? "") ? "fern" : "regional",
     realtime:Boolean(entry.realtime || detail.realtime),
     color:entry.line?.color ?? detail.color,
     textColor:entry.line?.textColor ?? detail.textColor,
@@ -341,6 +344,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     regional: entries.filter((entry) => entry.line?.product === "regional").length,
     sbahn: entries.filter((entry) => entry.line?.product === "sbahn").length,
     ubahn: entries.filter((entry) => entry.line?.product === "ubahn").length,
+    tram: entries.filter((entry) => entry.line?.product === "tram").length,
   }), [entries]);
 
   const visibleEntries = useMemo(() => {
@@ -351,6 +355,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if (productFilter === "regional" && productName !== "regional") return false;
       if (productFilter === "sbahn" && productName !== "sbahn") return false;
       if (productFilter === "ubahn" && productName !== "ubahn") return false;
+      if (productFilter === "tram" && productName !== "tram") return false;
       const delay = delayMinutes(entry);
       if (delayFilter === "ontime" && (entry.canceled || delay >= 6)) return false;
       if (delayFilter === "delayed" && (entry.canceled || delay < 6)) return false;
@@ -389,7 +394,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       return eventTime >= now - 5 * 60_000 && eventTime <= now + 500 * 60_000;
     });
     const validDelays = scoped.filter((entry) => !entry.canceled).map(delayMinutes);
-    const products = { ice:0, ic:0, ec:0, sbahn:0, ubahn:0, regional:0 };
+    const products = { ice:0, ic:0, ec:0, sbahn:0, ubahn:0, tram:0, regional:0 };
     for (const entry of scoped) products[summaryProduct(entry)] += 1;
     return {
       stationId:station.id, windowMinutes:500, total:scoped.length,
@@ -450,10 +455,10 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     const previewPerCategory = 6;
     const candidates: BoardEntry[] = [];
     const seenDirections = new Set<string>();
-    for (const category of ["fern","regional","sbahn","ubahn"] as const) {
+    for (const category of ["fern","regional","sbahn","ubahn","tram"] as const) {
       let categoryCount = 0;
       for (const entry of entries) {
-        const entryCategory = entry.line?.product === "sbahn" ? "sbahn" : entry.line?.product === "ubahn" ? "ubahn" : ["fern","fern-express"].includes(entry.line?.product ?? "") ? "fern" : "regional";
+        const entryCategory = entry.line?.product === "sbahn" ? "sbahn" : entry.line?.product === "ubahn" ? "ubahn" : entry.line?.product === "tram" ? "tram" : ["fern","fern-express"].includes(entry.line?.product ?? "") ? "fern" : "regional";
         const directionKey = `${entry.line?.routeId ?? entry.line?.name ?? entryCategory}|${entry.direction ?? entry.tripId}`;
         if (entryCategory !== category || !entry.tripId || seenDirections.has(directionKey)) continue;
         candidates.push(entry); seenDirections.add(directionKey); categoryCount += 1;
@@ -533,6 +538,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
         <button className={productFilter === "fern" ? "active" : ""} onClick={() => setProductFilter("fern")}>Fern <span>{productCounts.fern}</span></button>
         {productCounts.regional > 0 && <button className={productFilter === "regional" ? "active" : ""} onClick={() => setProductFilter("regional")}>Regio <span>{productCounts.regional}</span></button>}
         {productCounts.sbahn > 0 && <button className={productFilter === "sbahn" ? "active" : ""} onClick={() => setProductFilter("sbahn")}>S-Bahn <span>{productCounts.sbahn}</span></button>}
+        {productCounts.tram > 0 && <button className={productFilter === "tram" ? "active" : ""} onClick={() => setProductFilter("tram")}>Straßenbahn <span>{productCounts.tram}</span></button>}
         {productCounts.ubahn > 0 && <button className={productFilter === "ubahn" ? "active" : ""} onClick={() => setProductFilter("ubahn")}>U-Bahn <span>{productCounts.ubahn}</span></button>}
         <button className={productFilter === "all" ? "active" : ""} onClick={() => setProductFilter("all")}>Alle</button>
       </div>
@@ -573,7 +579,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                 <article className={`board-row ${severity}${rowOpen ? " open" : ""}`} key={`${key}-${index}`}>
                   <button className="board-row-summary" onClick={() => void toggleRow(entry)} aria-expanded={rowOpen}>
                     <i className="row-status" aria-hidden="true" />
-                    <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
+                    <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : brand.className === "tram" ? "tram" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
                     <span className="board-time"><b>{time(entry.when ?? entry.plannedWhen)}</b>{delay > 0 && !entry.canceled ? <small><s>{time(entry.plannedWhen)}</s> · +{delay}</small> : <small>{entry.realtime ? "aktuell" : "planmäßig"}</small>}</span>
                     <span className="board-via">{compact ? "" : "Zwischenhalte"}<small>{compact ? "" : "öffnen"}</small></span>
                     <span className="board-destination" title={entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt" : entry.direction ?? "Ziel wird ermittelt"}><b>{entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt …" : entry.direction ?? "Ziel wird ermittelt …"}</b><small>{statusText(entry)}</small></span>

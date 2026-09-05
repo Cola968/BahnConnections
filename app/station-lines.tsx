@@ -8,7 +8,7 @@ import { cleanDestination, serviceBadgeStyle } from "./transit-style";
 import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
 import { trimRepeatedStationLoop } from "./trip-trimming";
 
-export type StationLineCategory = "fern" | "regional" | "sbahn" | "ubahn";
+export type StationLineCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 
 export type StationLineSummary = {
   stationId: string;
@@ -17,6 +17,7 @@ export type StationLineSummary = {
   regional: number;
   sbahn: number;
   ubahn: number;
+  tram: number;
   operators: string[];
 };
 
@@ -90,6 +91,7 @@ const RAIL_MODES = new Map<string, StationLineCategory>([
   ["REGIONAL_RAIL", "regional"],
   ["SUBURBAN", "sbahn"],
   ["SUBWAY", "ubahn"],
+  ["TRAM", "tram"],
 ]);
 
 const CATEGORY_LABELS: Record<StationLineCategory, string> = {
@@ -97,10 +99,11 @@ const CATEGORY_LABELS: Record<StationLineCategory, string> = {
   regional:"Regionalverkehr",
   sbahn:"S-Bahn",
   ubahn:"U-Bahn",
+  tram:"Straßenbahn",
 };
 
 function lineBadge(line: StationLine) {
-  if (line.category === "sbahn" || line.category === "ubahn") return line.shortName.replace(/\s+/g, "");
+  if (line.category === "sbahn" || line.category === "ubahn" || line.category === "tram") return line.shortName.replace(/\s+/g, "");
   if (line.category === "regional") return line.shortName.match(/^(RE|RB|MEX|IRE)/i)?.[0]?.toUpperCase() ?? "R";
   return line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)/i)?.[0]?.toUpperCase() ?? (line.mode === "HIGHSPEED_RAIL" ? "ICE" : "FV");
 }
@@ -111,7 +114,7 @@ function routeKey(route: ApiRoute) {
   return category ? `${category}|${shortName.toLocaleLowerCase("de")}` : "";
 }
 
-function normaliseRoutes(routes: ApiRoute[], stopTimes: StopTime[]) {
+export function normaliseRoutes(routes: ApiRoute[], stopTimes: StopTime[]) {
   const unique = new Map<string, StationLine>();
   const ensure = (route: ApiRoute) => {
     const category = RAIL_MODES.get(route.mode ?? "");
@@ -160,7 +163,7 @@ function normaliseRoutes(routes: ApiRoute[], stopTimes: StopTime[]) {
     if (directionSamples.length < 3 && !line.samples.some((sample) => sample.tripId === entry.tripId)) line.samples.push({ tripId:entry.tripId, origin, destination, time, realtime:Boolean(entry.realTime) });
   }
 
-  const order: Record<StationLineCategory, number> = { fern:0, regional:1, sbahn:2, ubahn:3 };
+  const order: Record<StationLineCategory, number> = { fern:0, regional:1, sbahn:2, ubahn:3, tram:4 };
   return [...unique.values()]
     .sort((left, right) => order[left.category] - order[right.category] || left.shortName.localeCompare(right.shortName, "de", { numeric:true }) || left.operator.localeCompare(right.operator, "de"));
 }
@@ -261,6 +264,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     regional:lines.filter((line) => line.category === "regional").length,
     sbahn:lines.filter((line) => line.category === "sbahn").length,
     ubahn:lines.filter((line) => line.category === "ubahn").length,
+    tram:lines.filter((line) => line.category === "tram").length,
     operators:[...new Set(lines.map((line) => line.operator))].sort((a,b) => a.localeCompare(b,"de")),
   }), [lines, station.id]);
 
@@ -333,7 +337,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
       {status === "ready" && <div className="station-lines-mapbar"><button className={bulk.state === "loading" ? "active" : ""} onClick={() => void showAllOnMap()} disabled={!visibleLines.some((line) => line.samples.length)}>{bulk.state === "loading" ? "Laden abbrechen" : "Alle gefilterten Linien auf Karte"}</button><span>{bulk.state === "idle" ? `${visibleLines.length} Linien auswählbar` : `${bulk.completed}/${bulk.total} Verläufe${bulk.failed ? ` · ${bulk.failed} nicht verfügbar` : ""}`}</span></div>}
       <div className="station-line-filters" aria-label="Linienarten">
         <button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}>Alle <span>{summary.total}</span></button>
-        {(["fern","regional","sbahn","ubahn"] as StationLineCategory[]).map((item) => <button className={`${category === item ? "active " : ""}${item}`} onClick={() => setCategory(item)} key={item}>{CATEGORY_LABELS[item]} <span>{summary[item]}</span></button>)}
+        {(["fern","regional","sbahn","ubahn","tram"] as StationLineCategory[]).map((item) => <button className={`${category === item ? "active " : ""}${item}`} onClick={() => setCategory(item)} key={item}>{CATEGORY_LABELS[item]} <span>{summary[item]}</span></button>)}
       </div>
       <label className="station-line-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Linie, Ziel oder Betreiber suchen" aria-label="Linien am Bahnhof durchsuchen" />{query && <button onClick={() => setQuery("")} aria-label="Liniensuche leeren">×</button>}</label>
       {status === "loading" && <div className="station-line-state"><i />Linien und Fahrtziele werden live geprüft …</div>}
@@ -346,7 +350,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
             <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded}>
               <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${line.operator}`)}>{lineBadge(line)}</span>
-              <span><b>{line.category === "sbahn" || line.category === "ubahn" ? CATEGORY_LABELS[line.category] : line.shortName}</b><small>{line.destinations.length ? `Richtung ${line.destinations.join(" · ")}` : line.longName || "Heute keine weitere Fahrt gemeldet"}</small><em>{line.operator}{line.reportedTrips ? ` · ${line.reportedTrips} gemeldete Fahrten` : ""}</em></span>
+              <span><b>{line.category === "sbahn" || line.category === "ubahn" || line.category === "tram" ? CATEGORY_LABELS[line.category] : line.shortName}</b><small>{line.destinations.length ? `Richtung ${line.destinations.join(" · ")}` : line.longName || "Heute keine weitere Fahrt gemeldet"}</small><em>{line.operator}{line.reportedTrips ? ` · ${line.reportedTrips} gemeldete Fahrten` : ""}</em></span>
               <span>{expanded ? "Schließen" : line.nextTime ? `${lineTime(line.nextTime)} · ${line.realtimeTrips ? "Live" : "Plan"}` : "keine weitere"}</span>
             </button>
             {expanded && <div className="station-line-routes">

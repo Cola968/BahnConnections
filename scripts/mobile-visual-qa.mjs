@@ -261,16 +261,26 @@ try {
   if (await evaluate(`getComputedStyle(document.querySelector(".mobile-sheet-panel")).display !== "none"`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
   await tap(".mobile-sheet-restore");
   await setViewport(1440, 900);
-  if (await evaluate(`getComputedStyle(document.querySelector(".mobile-sheet-actions")).display !== "none"`)) throw new Error("Mobile Buttons werden am PC angezeigt");
-  await tap(".desktop-panel-actions button:last-child", true);
+  if (await evaluate(`getComputedStyle(document.querySelector(".journey-card .mobile-sheet-actions")).display !== "none"`)) throw new Error("Mobile Buttons werden am PC angezeigt");
+  await tap(".journey-card .desktop-panel-actions button:last-child", true);
   if (await evaluate(`Boolean(document.querySelector(".journey-card"))`)) throw new Error("Desktop-X schließt die Verbindung nicht");
   snapshots.push(await layoutSnapshot("1440 desktop closed"));
   // Regression: a hidden via cell used to auto-place the destination in a zero-width column.
   const boardDestinations = await evaluate(`Array.from(document.querySelectorAll('.board-destination')).map(el => ({text:el.textContent.trim(),width:el.getBoundingClientRect().width}))`);
   if (boardDestinations.some(row => !row.text || row.width < 40)) throw new Error('Fahrplanziel fehlt oder ist unsichtbar');
   await screenshot('1440-board-destinations');
-  await tap('.desktop-panel-actions button:last-child', true);
-  if (await evaluate(`Boolean(document.querySelector('.mobile-sheet-panel'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
+  await tap('.station-card .desktop-panel-actions button:last-child', true);
+  if (await evaluate(`Boolean(document.querySelector('.station-card'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
+  for (const width of [1100,1280,1440,1920]) {
+    await setViewport(width,900);
+    const columns = await evaluate(`(() => { const a=document.querySelector('.explore-card').getBoundingClientRect(), b=document.querySelector('.map-canvas').getBoundingClientRect(), c=document.querySelector('.desktop-welcome').getBoundingClientRect(); return {ok:a.right<=b.left&&b.right<=c.left,width:document.documentElement.scrollWidth<=innerWidth+1}; })()`);
+    if(!columns.ok || !columns.width) throw new Error('PC-Spalten überlappen bei '+width);
+    snapshots.push(await layoutSnapshot(width+' desktop workspace'));
+  }
+  await screenshot('1920-desktop-workspace');
+  await tap('.desktop-navigation button:nth-child(2)',true);
+  if(await evaluate(`getComputedStyle(document.querySelector('.explore-card') || document.createElement('div')).display !== 'none' && Boolean(document.querySelector('.explore-card'))`)) throw new Error('Kartenansicht zeigt Planer');
+  await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
   await tap('.mobile-map-view-button');
   await tap('.map-display-toggles button:nth-child(3)');

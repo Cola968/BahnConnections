@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const payload = await response.json() as GeocodeStop[];
     const stations = payload.filter((item) => item.type === "STOP" && item.id && item.name && Number.isFinite(item.lat) && Number.isFinite(item.lon)).map((item) => ({
       id:`motis:${item.id}`, transitousId:item.id, name:item.name, lat:item.lat, lon:item.lon, country:item.country ?? "DE", source:"db",
-      kind:`Live-Haltestelle${item.modes?.includes("SUBWAY") ? " · U-Bahn" : item.modes?.includes("SUBURBAN") ? " · S-Bahn" : ""}`,
+      kind:`Live-Haltestelle${item.modes?.includes("TRAM") ? " · Straßenbahn" : item.modes?.includes("SUBWAY") ? " · U-Bahn" : item.modes?.includes("SUBURBAN") ? " · S-Bahn" : ""}`,
       state:item.areas?.find((area) => area.default)?.name ?? item.areas?.find((area) => area.adminLevel === 4)?.name,
       modes:item.modes ?? [],
     }));

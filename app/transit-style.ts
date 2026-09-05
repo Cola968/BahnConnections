@@ -1,12 +1,13 @@
 import type { CSSProperties } from "react";
 
-export type RailCategory = "fern" | "regional" | "sbahn" | "ubahn";
+export type RailCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 
 const FALLBACK_COLORS: Record<RailCategory, string> = {
   fern: "#ec0016",
   regional: "#1455a0",
   sbahn: "#2f8f57",
   ubahn: "#596b75",
+  tram: "#b45309",
 };
 
 const BERLIN_LINE_COLORS: Record<string, string> = {

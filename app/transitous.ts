@@ -12,9 +12,9 @@ type GeocodeStop = {
 
 const stopIdCache = new Map<string, Promise<string | null>>();
 
-export const RAIL_MODES = "HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,REGIONAL_FAST_RAIL,REGIONAL_RAIL,SUBURBAN,SUBWAY";
+export const RAIL_MODES = "HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,REGIONAL_FAST_RAIL,REGIONAL_RAIL,SUBURBAN,SUBWAY,TRAM";
 
-export function transitousRequestHeaders() {
+export function transitousRequestHeaders(): Record<string, string> {
   return typeof window === "undefined" ? { Accept:"application/json", "User-Agent":"BahnConnections/16" } : { Accept:"application/json" };
 }
 

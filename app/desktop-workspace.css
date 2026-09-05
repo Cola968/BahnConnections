@@ -1,0 +1,79 @@
+/* V30 · Asteria. Desktop owns three independent, bounded columns. */
+.desktop-navigation,.desktop-welcome { display:none; }
+.service-logo.tram,.service-pill.tram { background:#b45309; color:white; border-radius:6px; }
+.planner-types .tram.active { background:#b45309; color:white; }
+.station-line-kpis { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.planner-departure { margin:14px 0; }
+.planner-departure label { display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--muted); }
+.planner-departure input { width:100%; min-height:44px; padding:10px; border:1px solid var(--line); border-radius:8px; color:var(--ink); background:var(--soft); font:inherit; }
+@media (min-width:1100px) {
+  .desktop-workspace { --workspace-left:310px; --workspace-right:390px; --app-header:80px; --ink:#172444; --muted:#64738a; --paper:#fff; --soft:#f3f6fb; --line:#e1e7f0; --red:#355cf3; --card:#fff; background:#f3f6fb; }
+  .desktop-workspace .topbar { height:80px; padding:0 20px; gap:18px; grid-template-columns:240px minmax(380px,1fr) minmax(180px,280px) auto; background:var(--paper); border-bottom:1px solid var(--line); box-shadow:none; }
+  .desktop-workspace .brand { position:relative; font-size:20px; padding-bottom:16px; gap:10px; }
+  .desktop-workspace .brand-mark { background:#355cf3; border-color:#355cf3; box-shadow:none; }
+  .desktop-workspace .beta { display:block; position:absolute; left:44px; bottom:0; border:0; padding:0; font-size:11px; color:var(--muted); letter-spacing:.3px; }
+  .desktop-navigation { display:flex; align-items:center; justify-content:center; gap:3px; }
+  .desktop-navigation button { min-height:44px; padding:0 12px; border:0; border-radius:8px; background:transparent; color:var(--ink); font-size:14px; cursor:pointer; }
+  .desktop-navigation button.active { color:#355cf3; background:#edf2ff; box-shadow:inset 0 -2px #355cf3; font-weight:700; }
+  .desktop-workspace .topbar>.station-search { height:42px; width:100%; background:var(--soft); border-color:var(--line); border-radius:8px; }
+  .desktop-workspace .topbar>.station-search input { font-size:14px; }
+  .desktop-workspace .topbar>.station-search>button:last-child { padding:8px; }
+  .desktop-workspace .header-actions { gap:8px; }
+  .desktop-workspace .install-app-link { display:none; }
+  .desktop-workspace .map-stage { padding-top:90px; padding-bottom:10px; padding-left:10px; padding-right:10px; transition:none; }
+  .desktop-workspace.has-primary-panel .map-stage { padding-right:calc(var(--workspace-right) + 20px); }
+  .desktop-workspace.desktop-connections .map-stage { padding-left:calc(var(--workspace-left) + 20px); padding-right:calc(var(--workspace-right) + 20px); }
+  .desktop-workspace .map-canvas { border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+  .desktop-workspace .map-canvas::after { box-shadow:none; }
+  .desktop-workspace[data-desktop-view="map"] .floating-panel,.desktop-workspace[data-desktop-view="map"] .desktop-welcome { display:none!important; }
+  .desktop-workspace[data-desktop-view="map"] .map-stage { padding-right:10px; }
+  .desktop-workspace[data-desktop-view="map"] .map-legend { right:24px; }
+  .desktop-workspace .station-line-kpis { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .desktop-workspace .floating-panel { top:90px!important; bottom:10px!important; right:10px!important; left:auto!important; width:var(--workspace-right)!important; max-width:none; max-height:none!important; min-width:0; border:1px solid var(--line); border-radius:12px; box-shadow:0 3px 12px #1e355008; resize:none; background:var(--paper); }
+  .desktop-workspace.desktop-connections .explore-card { left:10px!important; right:auto!important; width:var(--workspace-left)!important; padding:18px; overflow-y:auto; overflow-x:hidden; }
+  .desktop-workspace.desktop-connections .explore-card .panel-tools,.desktop-workspace .route-discovery-head>p,.desktop-workspace .route-discovery-head .eyebrow,.desktop-workspace .planner-live-proof { display:none; }
+  .desktop-workspace .route-discovery-head h1 { margin:2px 0 24px; font-size:22px; letter-spacing:-.5px; }
+  .desktop-workspace .route-search-pair { gap:12px; }
+  .desktop-workspace .route-search-pair>div>span { font-size:12px; letter-spacing:0; color:var(--muted); }
+  .desktop-workspace .route-station-search { min-height:46px; background:var(--soft); border:1px solid var(--line); border-radius:8px; }
+  .desktop-workspace .route-station-search input { font-size:14px; font-weight:500; }
+  .desktop-workspace .swap-button { width:30px; height:30px; min-height:30px; right:6px; border-color:var(--line); background:var(--paper); }
+  .desktop-workspace .planner-types { display:flex; flex-wrap:wrap; gap:6px; margin:20px 0; }
+  .desktop-workspace .planner-types button { flex:1 0 42%; min-height:36px; border:1px solid var(--line); border-radius:7px; font-size:12px; padding:6px; }
+  .desktop-workspace .planner-types button.active { background:#edf2ff; color:#284ccb; border-color:#b9c9ff; }
+  .desktop-workspace .filter-drawer { display:block; margin:12px 0; border-color:var(--line); }
+  .desktop-workspace .filter-drawer summary { font-size:14px; padding:14px 0; }
+  .desktop-workspace .filter-drawer summary>span { display:none; }
+  .desktop-workspace .filter-grid { gap:12px; grid-template-columns:1fr; }
+  .desktop-workspace .filter-grid label { font-size:12px; text-transform:none; letter-spacing:0; gap:7px; }
+  .desktop-workspace .filter-grid select,.desktop-workspace .filter-grid input[type="datetime-local"] { min-height:42px; width:100%; font-size:13px; padding:8px; border:1px solid var(--line); border-radius:7px; background:var(--soft); }
+  .desktop-workspace .planner-time-mode button { min-height:36px; font-size:13px; }
+  .desktop-workspace .planner-check b { font-size:13px; }.desktop-workspace .planner-check small { font-size:12px; }
+  .desktop-workspace .plan-button { min-height:46px; margin-top:14px; border-radius:8px; background:#355cf3; font-size:14px; }
+  .desktop-workspace .explore-actions { margin-top:14px; gap:8px; }.desktop-workspace .explore-actions button { font-size:12px; min-height:38px; background:var(--soft); color:var(--ink); border:1px solid var(--line); }
+  .desktop-workspace .compact-toolbar { top:102px; left:calc(var(--workspace-left) + 34px); transform:none; box-shadow:0 2px 8px #17244412; border:1px solid var(--line); }
+  .desktop-workspace:not(.desktop-connections) .compact-toolbar { left:24px; }
+  .desktop-workspace .leaflet-control-zoom { margin-right:12px!important; margin-bottom:14px!important; }
+  .desktop-workspace .map-legend { right:calc(var(--workspace-right) + 34px); bottom:26px; }
+  .desktop-workspace .quick-map-actions { left:calc(var(--workspace-left) + 34px); bottom:26px; }
+  .desktop-workspace:not(.desktop-connections) .quick-map-actions { left:24px; }
+  .desktop-welcome { display:block; position:fixed; right:10px; top:90px; bottom:10px; width:var(--workspace-right); padding:28px; border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:auto; }
+  .workspace-version { color:#355cf3; font-size:12px; font-weight:700; letter-spacing:1px; }
+  .desktop-welcome h2 { font-size:25px; margin:26px 0 16px; }.desktop-welcome h3 { font-size:17px; }.desktop-welcome p { font-size:15px; line-height:1.65; color:var(--muted); }.desktop-welcome hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
+  .workspace-modes { display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }.workspace-modes span { padding:8px 12px; border-radius:6px; background:var(--soft); font-size:13px; }
+  .desktop-workspace .journey-card { display:flex; flex-direction:column; padding:18px; overflow:auto; }
+  .desktop-workspace .journey-head { font-size:16px; }.desktop-workspace .journey-head strong { font-size:16px; white-space:normal; }
+  .desktop-workspace .journey-alternatives { order:-1; padding:14px 0; }
+  .desktop-workspace .journey-alternatives>span { font-size:16px; }.desktop-workspace .journey-alternatives button { min-height:66px; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--soft); }
+  .desktop-workspace .journey-alternatives button b { font-size:16px; }.desktop-workspace .journey-alternatives button small { font-size:12px; }
+  .desktop-workspace .station-card { border-top:1px solid var(--line); }
+  .desktop-workspace .station-card h2 { font-size:24px; }.desktop-workspace .station-section-tabs button { font-size:14px; }
+  .desktop-workspace .board-destination b { font-size:13px; }.desktop-workspace .board-destination small { font-size:11px; }
+  .desktop-workspace .board-row-summary,.desktop-workspace .live-board.compact .board-row-summary { grid-template-columns:3px 48px 52px 0 minmax(0,1fr) 35px; gap:5px; padding:10px 6px; }
+  .desktop-workspace .board-destination { grid-column:5!important; }.desktop-workspace .board-platform { grid-column:6!important; }
+  .desktop-workspace .board-destination b { white-space:normal; overflow-wrap:anywhere; }
+  .desktop-workspace .board-table-head { font-size:10px; }
+  [data-theme="dark"] .desktop-workspace { --ink:#e5ecff; --muted:#a2b1cd; --paper:#142036; --soft:#1d2b45; --line:#30415e; --card:#142036; background:#101a2c; }
+}
+@media (min-width:1500px) { .desktop-workspace { --workspace-left:350px; --workspace-right:440px; }.desktop-workspace .topbar { grid-template-columns:280px minmax(420px,1fr) 310px auto; }.desktop-navigation button { padding:0 18px; } }
+@media (prefers-reduced-motion:reduce) { .desktop-workspace * { scroll-behavior:auto!important; transition:none!important; } }
