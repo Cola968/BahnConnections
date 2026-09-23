@@ -56,7 +56,7 @@ export type BoardMapTrip = {
   textColor?: string;
   points: [number, number][];
   segments: [number, number][][];
-  stops: { name: string; lat?: number; lon?: number; arrival?: string; departure?: string; track?: string; cancelled?: boolean }[];
+  stops: { name: string; lat?: number; lon?: number; arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; cancelled?: boolean }[];
 };
 
 type TransitousEntry = {
@@ -259,7 +259,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
     textColor:entry.line?.textColor ?? detail.textColor,
     points:detail.points,
     segments:detail.segments,
-    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, track:stop.track, cancelled:stop.cancelled })),
+    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, cancelled:stop.cancelled })),
   };
 }
 

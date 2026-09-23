@@ -25,10 +25,12 @@ import {
   type TrainType,
 } from "./network-data";
 import { TrackRouter, type RailNetwork } from "./track-routing";
+import { distanceMeters, type WalkingRoute } from "./walking-route";
 
 type ExtraStationsPayload = { source: string; retrievedAt: string; totalOfficialPoints: number; curatedStates?: Record<string, string>; curatedAliases?: Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>; stations: Station[] };
 type LiveStatusFilter = "all" | "delayed" | "ontime";
 type LiveView = "stress" | "trains";
+type GeoPosition = { lat: number; lon: number; accuracy: number; updatedAt: number };
 
 const MAJOR_HUB_IDS = new Set(["berlin", "muenchen", "frankfurt", "hamburg", "koeln"]);
 
@@ -55,7 +57,8 @@ function routeBadgeElement(route: Route) {
   glyph.textContent = "▭";
   const title = document.createElement("b");
   title.textContent = route.id;
-  node.append(glyph, title);
+  node.appendChild(glyph);
+  node.appendChild(title);
   return node;
 }
 
@@ -197,6 +200,13 @@ export default function Home() {
   const [journeyOptionLimit, setJourneyOptionLimit] = useState(8);
   const [mobileSheetState, setMobileSheetState] = useState<MobileSheetState>("expanded");
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
+  const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
+  const [geoMessage, setGeoMessage] = useState("");
+  const [walkRoute, setWalkRoute] = useState<WalkingRoute | null>(null);
+  const [walkTargetId, setWalkTargetId] = useState<string | null>(null);
+  const [walkStatus, setWalkStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [walkMessage, setWalkMessage] = useState("");
 
   const exploreControls = usePanelControls("explore-v3");
   const stationControls = usePanelControls("station-v2");
@@ -210,10 +220,16 @@ export default function Home() {
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const overlayRef = useRef<import("leaflet").LayerGroup | null>(null);
   const liveLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const locationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const walkingLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileRef = useRef<import("leaflet").TileLayer | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const trackRouterRef = useRef<TrackRouter | null>(null);
   const plannerRequestRef = useRef<AbortController | null>(null);
+  const walkRequestRef = useRef<AbortController | null>(null);
+  const geoWatchRef = useRef<number | null>(null);
+  const firstGeoFixRef = useRef(true);
+  const pendingWalkTargetRef = useRef<Station | null>(null);
   const liveToolbarRef = useRef<HTMLDivElement>(null);
   const mapMenuRef = useRef<HTMLDivElement>(null);
   const mobileViewTriggerRef = useRef<HTMLButtonElement>(null);
@@ -225,6 +241,15 @@ export default function Home() {
   }, [curatedAliases, curatedStates, extraStations, liveSearchStations]);
   const stationById = useMemo(() => new Map(allStations.map((station) => [station.id, station])), [allStations]);
   const plannerStations = useMemo(() => allStations.filter((station) => station.source !== "db" || Boolean(station.passengerBand) || station.id.startsWith("motis:")), [allStations]);
+  const nearestStation = useMemo(() => {
+    if (!geoPosition) return null;
+    let nearest: { station: Station; distance: number } | null = null;
+    for (const station of plannerStations) {
+      const distance = distanceMeters(geoPosition, station);
+      if (!nearest || distance < nearest.distance) nearest = { station, distance };
+    }
+    return nearest && nearest.distance <= 5_000 ? nearest : null;
+  }, [geoPosition, plannerStations]);
   const stationImportance = useMemo(() => buildStationImportance(allStations), [allStations]);
 
   const filteredRoutes = useMemo(() => ROUTES.filter((route) => {
@@ -383,6 +408,8 @@ export default function Home() {
       }).addTo(map);
       overlayRef.current = L.layerGroup().addTo(map);
       liveLayerRef.current = L.layerGroup().addTo(map);
+      walkingLayerRef.current = L.layerGroup().addTo(map);
+      locationLayerRef.current = L.layerGroup().addTo(map);
       const syncViewport = () => {
         setMapZoom(map.getZoom());
         setMapViewportToken((value) => value + 1);
@@ -407,6 +434,35 @@ export default function Home() {
     ).addTo(map);
     tileRef.current.bringToBack();
   }, [mapReady, theme]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const layer = locationLayerRef.current;
+    if (!mapReady || !L || !layer) return;
+    layer.clearLayers();
+    if (!geoPosition) return;
+    L.circle([geoPosition.lat, geoPosition.lon], { radius:geoPosition.accuracy, color:"#1769bb", weight:1, fillColor:"#1769bb", fillOpacity:.08, interactive:false }).addTo(layer);
+    L.circleMarker([geoPosition.lat, geoPosition.lon], { radius:7, color:"#fff", weight:3, fillColor:"#1769bb", fillOpacity:1, className:"my-location-point" })
+      .bindTooltip(`Dein Standort · Genauigkeit etwa ${Math.round(geoPosition.accuracy)} m`)
+      .addTo(layer);
+  }, [geoPosition, mapReady]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const layer = walkingLayerRef.current;
+    if (!mapReady || !L || !layer) return;
+    layer.clearLayers();
+    if (!walkRoute) return;
+    L.polyline(walkRoute.points, { color:"#fff", weight:8, opacity:.95, lineCap:"round", lineJoin:"round", interactive:false }).addTo(layer);
+    L.polyline(walkRoute.points, { color:"#1769bb", weight:4.5, opacity:.98, lineCap:"round", lineJoin:"round" })
+      .bindTooltip(`Fußweg · ${Math.ceil(walkRoute.durationSeconds / 60)} Min. · ${(walkRoute.distanceMeters / 1000).toLocaleString("de-DE", { maximumFractionDigits:1 })} km`)
+      .addTo(layer);
+  }, [mapReady, walkRoute]);
+
+  useEffect(() => () => {
+    if (geoWatchRef.current !== null) navigator.geolocation?.clearWatch(geoWatchRef.current);
+    walkRequestRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -484,7 +540,7 @@ export default function Home() {
         exactLine.bindTooltip(routeElement(stationTrip.name, `${stationTrip.realtime ? "Echtzeitfahrt" : "Fahrplanfahrt"} · gelieferte Fahrtgeometrie · ${stationTrip.stops.length} Halte`), { sticky:true });
       }
       stationTrip.stops.forEach((stop, index) => {
-        if (!Number.isFinite(stop.lat) || !Number.isFinite(stop.lon)) return;
+        if (typeof stop.lat !== "number" || typeof stop.lon !== "number" || !Number.isFinite(stop.lat) || !Number.isFinite(stop.lon)) return;
         const isEnd = index === 0 || index === stationTrip.stops.length - 1;
         const point = L.circleMarker([stop.lat, stop.lon], { radius:isEnd ? 6.8 : 4.2, color:"#fff", weight:isEnd ? 3 : 2, fillColor:color, fillOpacity:1, className:"live-journey-stop" }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
@@ -552,7 +608,7 @@ export default function Home() {
       marker.on("click", () => {
         setSelectedId(station.id); setSearch(station.name); setJourney(null); setJourneyMessage(""); setRouteInfo(null); setStationPanel("live");
         setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
-        setMobileSheetState("expanded");
+        setMobileSheetState("half");
       });
       const element = marker.getElement();
       if (element) {
@@ -638,9 +694,105 @@ export default function Home() {
     if (match.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((station) => station.id === match.id) ? current : [...current, match]);
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
-    setMobileSheetState("expanded");
+    setMobileSheetState("half");
     mapRef.current?.flyTo([match.lat, match.lon], match.source === "db" ? 10 : match.country === "DE" ? 8 : 6, { duration:.7 });
   }
+
+  function startLocation() {
+    if (!navigator.geolocation) {
+      setGeoStatus("error");
+      setGeoMessage("Standort ist in diesem Browser nicht verfügbar.");
+      return;
+    }
+    if (geoWatchRef.current !== null) {
+      if (geoPosition) mapRef.current?.flyTo([geoPosition.lat, geoPosition.lon], Math.max(mapRef.current.getZoom(), 14), { duration:.45 });
+      return;
+    }
+    firstGeoFixRef.current = true;
+    setGeoStatus("locating");
+    setGeoMessage("Standort wird ermittelt …");
+    try { geoWatchRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        if (!Number.isFinite(position.coords.latitude) || !Number.isFinite(position.coords.longitude)) return;
+        const next = { lat:position.coords.latitude, lon:position.coords.longitude, accuracy:Math.max(5, Math.min(2_000, Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : 50)), updatedAt:position.timestamp };
+        setGeoPosition((current) => current && distanceMeters(current, next) < 8 && next.updatedAt - current.updatedAt < 12_000 ? current : next);
+        setGeoStatus("active");
+        setGeoMessage("");
+        if (firstGeoFixRef.current) {
+          firstGeoFixRef.current = false;
+          mapRef.current?.flyTo([next.lat, next.lon], Math.max(mapRef.current.getZoom(), 14), { duration:.55 });
+        }
+        const pendingTarget = pendingWalkTargetRef.current;
+        if (pendingTarget) { pendingWalkTargetRef.current = null; void requestWalk(pendingTarget, next); }
+      },
+      (error) => {
+        pendingWalkTargetRef.current = null;
+        setGeoStatus("error");
+        setGeoMessage(error.code === 1 ? "Standortfreigabe abgelehnt. Du kannst sie in den Browser-Einstellungen erlauben." : error.code === 2 ? "Standort derzeit nicht bestimmbar." : "Standortabfrage hat zu lange gedauert. Erneut versuchen.");
+        setWalkStatus((current) => current === "loading" ? "error" : current);
+        setWalkMessage(error.code === 1 ? "Standortfreigabe erforderlich." : "Standort derzeit nicht verfügbar.");
+        if (geoWatchRef.current !== null) navigator.geolocation.clearWatch(geoWatchRef.current);
+        geoWatchRef.current = null;
+      },
+      { enableHighAccuracy:true, maximumAge:10_000, timeout:15_000 },
+    ); } catch {
+      pendingWalkTargetRef.current = null;
+      setGeoStatus("error");
+      setGeoMessage("Standort ist hier nicht verfügbar. Öffne die App über HTTPS oder localhost.");
+      setWalkStatus("error");
+      setWalkMessage("Standortfreigabe nicht verfügbar.");
+    }
+  }
+
+  function stopLocation() {
+    if (geoWatchRef.current !== null) navigator.geolocation?.clearWatch(geoWatchRef.current);
+    geoWatchRef.current = null;
+    pendingWalkTargetRef.current = null;
+    walkRequestRef.current?.abort();
+    setGeoPosition(null);
+    setGeoStatus("idle");
+    setGeoMessage("");
+    setWalkRoute(null);
+    setWalkTargetId(null);
+    setWalkStatus("idle");
+  }
+
+  async function requestWalk(station: Station, origin = geoPosition) {
+    if (!origin) { pendingWalkTargetRef.current = station; setWalkStatus("loading"); setWalkTargetId(station.id); setWalkMessage("Standortfreigabe abwarten …"); startLocation(); return; }
+    walkRequestRef.current?.abort();
+    const controller = new AbortController();
+    walkRequestRef.current = controller;
+    setWalkTargetId(station.id);
+    setWalkRoute(null);
+    setWalkStatus("loading");
+    setWalkMessage("Fußweg auf Wegen und Straßen wird berechnet …");
+    try {
+      const response = await fetch("/api/walk", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ from:{ lat:origin.lat, lon:origin.lon }, to:{ lat:station.lat, lon:station.lon } }), signal:controller.signal, cache:"no-store" });
+      const payload = await response.json() as { route?: WalkingRoute; error?: string };
+      if (!response.ok || !payload.route) throw new Error(payload.error ?? "Fußweg nicht verfügbar.");
+      setWalkRoute(payload.route);
+      setWalkStatus("ready");
+      setWalkMessage("");
+      const map = mapRef.current;
+      const L = leafletRef.current;
+      if (map && L) {
+        const mobile = window.matchMedia("(max-width: 780px), (max-width: 900px) and (orientation: landscape) and (max-height: 520px)").matches;
+        map.fitBounds(L.latLngBounds(payload.route.points), { paddingTopLeft:[30,90], paddingBottomRight:mobile ? [30,Math.min(map.getSize().y * .55, 210)] : [40,40], maxZoom:16, animate:true });
+      }
+      if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed");
+    } catch (error) {
+      if ((error as Error).name === "AbortError") return;
+      setWalkStatus("error");
+      setWalkMessage((error as Error).message || "Fußweg nicht verfügbar.");
+    }
+  }
+
+  useEffect(() => {
+    if (!walkTargetId || walkTargetId === selectedId) return;
+    walkRequestRef.current?.abort();
+    const timer = window.setTimeout(() => { setWalkRoute(null); setWalkTargetId(null); setWalkStatus("idle"); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [selectedId, walkTargetId]);
 
   function showBoardTripOnMap(trip: BoardMapTrip) {
     setStationTrip(trip);
@@ -859,7 +1011,7 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V30 · Asteria</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V31 · Polaris</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={(view) => { setDesktopView(view); setExploreOpen(false); setStatsOpen(view === "stats"); setLabOpen(view === "network"); setLiveFiltersOpen(false); if(view === "departures") { setJourney(null); setSelectedLiveTrip(null); setStationPanel("live"); if(!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]); } }} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
@@ -876,6 +1028,17 @@ export default function Home() {
 
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
         <div ref={mapElementRef} className="map-canvas" />
+        {!boardOnly && <div className="location-tools" aria-label="Standort und Fußweg">
+          <button type="button" className={`location-trigger ${geoStatus}`} onClick={startLocation} aria-label={geoPosition ? "Eigenen Standort auf Karte zentrieren" : "Live-Standort aktivieren"} title={geoPosition ? "Zu meinem Standort" : "Standort freigeben"}><span aria-hidden="true">◎</span><b>{geoStatus === "locating" ? "Suche Standort" : geoPosition ? "Mein Standort" : "Standort"}</b></button>
+          {geoPosition && <button type="button" className="location-stop" onClick={stopLocation} aria-label="Standortverfolgung beenden" title="Standort ausschalten">×</button>}
+          {geoPosition && selected && <button type="button" className="location-walk" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>{walkStatus === "loading" ? "Fußweg lädt …" : "Fußweg hierher"}</button>}
+          {geoPosition && !selected && nearestStation && <button type="button" className="location-nearest" onClick={() => selectStation(nearestStation.station)} title={`${Math.round(nearestStation.distance)} m Luftlinie`}>Nächster Bahnhof: {nearestStation.station.name}</button>}
+          {geoMessage && <span className="location-message" role="status">{geoMessage}</span>}
+        </div>}
+        {!boardOnly && (walkStatus === "ready" || walkStatus === "error" || (walkStatus === "loading" && walkTargetId)) && <div className="walking-card" role="status">
+          <div className="walking-card-head"><span aria-hidden="true">↗</span><div><strong>Fußweg {stationById.get(walkTargetId ?? "")?.name ? `nach ${stationById.get(walkTargetId ?? "")!.name}` : "zum Bahnhof"}</strong><small>{walkRoute ? `${Math.ceil(walkRoute.durationSeconds / 60)} Min. · ${(walkRoute.distanceMeters / 1000).toLocaleString("de-DE", { maximumFractionDigits:1 })} km · Wegekarte` : walkMessage}</small></div><button type="button" onClick={() => { walkRequestRef.current?.abort(); setWalkRoute(null); setWalkTargetId(null); setWalkStatus("idle"); setWalkMessage(""); }} aria-label="Fußweg schließen">×</button></div>
+          {walkRoute && <><details className="walking-steps"><summary>Wegbeschreibung {walkRoute.steps.length ? `· ${walkRoute.steps.length} Schritte` : ""}</summary>{walkRoute.steps.length ? <ol>{walkRoute.steps.map((step, index) => <li key={`${step.instruction}-${index}`}><span>{step.instruction}</span><small>{step.distanceMeters} m</small></li>)}</ol> : <p>Für diesen Weg liegen keine einzelnen Abbiegehinweise vor. Folge der blauen Route auf der Karte.</p>}</details><small className="walking-source">{walkRoute.source} · Standort und Fußweg nicht als Live-Verkehrslage geprüft</small><button type="button" className="walking-refresh" onClick={() => { const station = stationById.get(walkTargetId ?? ""); if (station) void requestWalk(station); }}>Ab aktuellem Standort neu berechnen</button></>}
+        </div>}
 
         {!focusMode && <>
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
@@ -934,6 +1097,7 @@ export default function Home() {
             <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={selected.name} />
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div className="station-card-head"><div><span className="eyebrow plain">AUSGEWÄHLTER BAHNHOF</span><h2>{selected.name}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
+            <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
             <details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
             <div className="stat-row station-line-kpis"><div><strong>{stationLineSummary?.fern ?? "–"}</strong><span>Fern</span></div><div><strong>{stationLineSummary?.regional ?? "–"}</strong><span>Regio</span></div><div><strong>{stationLineSummary?.sbahn ?? "–"}</strong><span>S-Bahn</span></div><div><strong>{stationLineSummary?.ubahn ?? "–"}</strong><span>U-Bahn</span></div><div><strong>{stationLineSummary?.tram ?? "–"}</strong><span>Tram</span></div></div>
             <div className="station-section-tabs" role="tablist" aria-label="Bahnhofsinformationen">
@@ -956,7 +1120,7 @@ export default function Home() {
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style}>
             <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg ? `${primaryJourneyLeg.name} · ${selectedJourneyStart.name} → ${selectedJourneyTarget.name}` : `${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} mobileSummary={`${clock(journey.startTime)}–${clock(journey.endTime)} · ${formatDuration(Math.round(journey.durationSeconds / 60))} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`} />
             <div className="journey-mobile-overview">
-              {primaryJourneyLeg && <span className={`service-logo ${serviceClass(primaryJourneyLeg.category)}`} style={serviceBadgeStyle(primaryJourneyLeg.category, primaryJourneyLeg.routeColor, primaryJourneyLeg.routeTextColor, primaryJourneyLeg.name, `${primaryJourneyLeg.operator ?? ""} ${primaryJourneyLeg.from.name} ${primaryJourneyLeg.to.name}`)}>{serviceBadgeLabel(primaryJourneyLeg.category, primaryJourneyLeg.name)}</span>}
+              {primaryJourneyLeg && <span className={`service-logo ${serviceClass(primaryJourneyLeg.category)}`} style={serviceBadgeStyle(primaryJourneyLeg.category as PlannerCategory, primaryJourneyLeg.routeColor, primaryJourneyLeg.routeTextColor, primaryJourneyLeg.name, `${primaryJourneyLeg.operator ?? ""} ${primaryJourneyLeg.from.name} ${primaryJourneyLeg.to.name}`)}>{serviceBadgeLabel(primaryJourneyLeg.category, primaryJourneyLeg.name)}</span>}
               <span className="journey-mobile-route"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><strong>{selectedJourneyStart.name} <i aria-hidden="true">→</i> {selectedJourneyTarget.name}</strong><small>{clock(journey.startTime)}–{clock(journey.endTime)} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"} · {journey.cancelled ? "Ausfall" : journey.realtime ? primaryJourneyDelay ? `${primaryJourneyDelay > 0 ? "+" : ""}${primaryJourneyDelay} Min.` : "pünktlich" : "Fahrplan"}</small></span>
               <button type="button" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }} aria-label="Suche und Reiseoptionen ändern">Ändern</button>
             </div>
@@ -977,7 +1141,7 @@ export default function Home() {
                 const departureDelay=delayMinutes(leg.startTime, leg.scheduledStartTime);
                 const wait=transferWaitMinutes(journey,index);
                 return <article className={`live-journey-leg ${serviceClass(leg.category)}`} key={`${leg.tripId ?? leg.name}-${index}`}>
-                  <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b><small>{leg.operator ?? "Betreiber nicht gemeldet"}{leg.headsign ? ` · Richtung ${leg.headsign}` : ""}</small></span><span className={leg.cancelled ? "leg-live-state cancel" : leg.realtime ? "leg-live-state live" : "leg-live-state"}>{leg.cancelled ? "Fällt aus" : leg.realtime ? departureDelay ? `${departureDelay > 0 ? "+" : ""}${departureDelay} Min.` : "pünktlich" : "Fahrplan"}</span></header>
+                  <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b><small>{leg.operator ?? "Betreiber nicht gemeldet"}{leg.headsign ? ` · Richtung ${leg.headsign}` : ""}</small></span><span className={leg.cancelled ? "leg-live-state cancel" : leg.realtime ? "leg-live-state live" : "leg-live-state"}>{leg.cancelled ? "Fällt aus" : leg.realtime ? departureDelay ? `${departureDelay > 0 ? "+" : ""}${departureDelay} Min.` : "pünktlich" : "Fahrplan"}</span></header>
                   <div className="leg-route-line"><span><b>{leg.from.name}</b><small>{clock(leg.startTime)}{leg.from.track ? ` · Gleis ${leg.from.track}` : ""}</small></span><i>→</i><span><b>{leg.to.name}</b><small>{clock(leg.endTime)}{leg.to.track ? ` · Gleis ${leg.to.track}` : ""}</small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span><span>{leg.bikesAllowed ? "Fahrrad möglich" : "Fahrrad nicht bestätigt"}</span><span>{leg.wheelchairAccessible === "ACCESSIBLE" ? "Rollstuhl geeignet" : "Barrierefreiheit nicht bestätigt"}</span></div>
                   <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Auslastung voraussichtlich {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span><small>Prognose, keine Live-Belegungsmessung</small></div>

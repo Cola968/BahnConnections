@@ -529,7 +529,7 @@ async function completeMissingDirectTrips(request: LiveJourneyRequest, base: Liv
     const likely = candidates.filter((item) => normaliseStopName(item.headsign ?? item.tripTo?.name).includes(targetName));
     const fallback = candidates.filter((item) => !likely.includes(item)).slice(0, 6);
     const selected = [...likely, ...fallback].filter((item, index, items) => items.findIndex((candidate) => candidate.tripId === item.tripId) === index);
-    const results = await Promise.allSettled(selected.map(async (candidate) => {
+    const results = await Promise.allSettled<LiveJourney | null>(selected.map(async (candidate): Promise<LiveJourney | null> => {
       const legs = await fetchTransitousTripLegs(candidate.tripId!, request.signal);
       for (const leg of legs) {
         const segment = sliceTripLeg(leg, context.stopId, context.stopName, request.to);

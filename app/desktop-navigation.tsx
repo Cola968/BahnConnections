@@ -12,7 +12,7 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
 
 export function DesktopWelcome() {
   return <aside className="desktop-welcome">
-    <span className="workspace-version">VERSION 30 · ASTERIA</span>
+    <span className="workspace-version">VERSION 31 · POLARIS</span>
     <h2>Deine nächste Verbindung</h2>
     <p>Wähle Start, Ziel und Reisezeit. Hier erscheinen die verfügbaren Fahrten mit Umstiegen, Halten und Echtzeitstatus.</p>
     <div className="workspace-modes">{["ICE / IC / EC", "RE / RB", "S-Bahn", "U-Bahn", "Straßenbahn"].map(mode => <span key={mode}>{mode}</span>)}</div>
