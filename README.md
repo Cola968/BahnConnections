@@ -16,6 +16,14 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 - installierbare Progressive Web App mit responsivem Bottom-Sheet auf Mobilgeräten
 - sichtbare Kennzeichnung von Echtzeit-, Teil- und reinen Fahrplandaten
 
+## Produktaufteilung: Atlas, Pulse und Passport
+
+- **Atlas (`/`)** ist die Website für Planung, Karte, Verbindungsvergleich, Bahnhofsdaten, Netzwerkanalyse und optionale KI-Reiseanalyse.
+- **Pulse (`/pulse`)** ist die installierbare Reiseoberfläche. Eine in Atlas gewählte Verbindung kann lokal an Pulse übergeben und während der Fahrt begleitet werden.
+- **Passport (`/passport`)** speichert lokal abgeschlossene Pulse-Fahrten und erstellt daraus persönliche Reisehistorie und Basisstatistiken.
+- Die PWA startet bewusst in Pulse statt in der Atlas-Kartenansicht.
+- Die KI-Route `/api/ai/route` benötigt serverseitig `OPENAI_API_KEY` und `OPENAI_MODEL`. Der Schlüssel wird nicht an den Browser ausgeliefert.
+
 ## Datenqualität
 
 Die App erfindet keine Ziele, Zeiten oder Strecken. Kann eine Station nicht eindeutig einer Haltestellen-ID zugeordnet werden, wird die Abfrage abgebrochen und als unvollständig gekennzeichnet. Fehlende Geometrien bleiben sichtbar als Datenlücke, werden aber nicht durch gerade Linien ersetzt.
