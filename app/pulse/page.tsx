@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { LiveRideMode } from "../live-ride-mode";
 import { completeActiveJourney, readActiveJourney, type StoredJourney } from "../travel-store";
@@ -13,8 +14,11 @@ export default function PulsePage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setRecord(readActiveJourney());
-    setReady(true);
+    const timer = window.setTimeout(() => {
+      setRecord(readActiveJourney());
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const primary = record?.journey.transitLegs[0] ?? null;
@@ -32,15 +36,15 @@ export default function PulsePage() {
   return (
     <main className="pulse-shell">
       <header className="pulse-topbar">
-        <a className="pulse-brand" href="/pulse"><span>B</span><b>BahnConnections</b><em>Pulse</em></a>
-        <nav><a href="/">Atlas</a><a href="/passport">Passport</a></nav>
+        <Link className="pulse-brand" href="/pulse"><span>B</span><b>BahnConnections</b><em>Pulse</em></Link>
+        <nav><Link href="/">Atlas</Link><Link href="/passport">Passport</Link></nav>
       </header>
       {!ready ? <section className="pulse-empty"><p>Fahrt wird geladen …</p></section> : !record ? (
         <section className="pulse-empty">
           <span className="pulse-kicker">PULSE</span>
           <h1>Bereit für deine nächste Fahrt.</h1>
           <p>Plane deine Verbindung in Atlas und öffne sie anschließend in Pulse. Hier bleibt während der Fahrt nur das sichtbar, was gerade wichtig ist.</p>
-          <div className="pulse-empty-actions"><a className="pulse-primary" href="/">Reise in Atlas planen</a><a href="/passport">Passport öffnen</a></div>
+          <div className="pulse-empty-actions"><Link className="pulse-primary" href="/">Reise in Atlas planen</Link><Link href="/passport">Passport öffnen</Link></div>
           <div className="pulse-feature-grid">
             <article><b>Live-Fahrt</b><span>Geschwindigkeit, nächster Halt und Ankunft.</span></article>
             <article><b>Anschlusswächter</b><span>Knapp werdende Umstiege sofort erkennen.</span></article>
@@ -58,7 +62,7 @@ export default function PulsePage() {
           <LiveRideMode journey={record.journey} appMode />
           <div className="pulse-bottom-actions">
             <button type="button" onClick={finishJourney}>Fahrt beenden & im Passport speichern</button>
-            <a href="/">In Atlas öffnen</a>
+            <Link href="/">In Atlas öffnen</Link>
           </div>
         </section>
       )}
