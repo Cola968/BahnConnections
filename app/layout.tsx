@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./styles/tokens.css";
+import "./styles/controls.css";
+import "./styles/workspace.css";
+import "./styles/transport.css";
 import "./desktop-workspace.css";
 import { PwaRegister } from "./pwa-register";
 

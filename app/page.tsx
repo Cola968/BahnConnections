@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { DesktopNavigation, DesktopWelcome, type DesktopView } from "./desktop-navigation";
+import { DesktopNavigation, DesktopWelcome, MobileNavigation, type DesktopView } from "./desktop-navigation";
+import { UiIcon } from "./ui-icon";
+import { JourneySearch } from "./journey-search";
+import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { delayMinutes, fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
 import { fetchLiveTrips, liveTripProgress, pointOnTrip, trailForTrip, type LiveTrainCategory, type LiveTrip } from "./live-trains";
@@ -127,8 +130,9 @@ function exactTripSegments(trip: BoardMapTrip) {
 export default function Home() {
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
   const [desktopView, setDesktopView] = useState<DesktopView>("connections");
+  const [mobileView, setMobileView] = useState<DesktopView>("map");
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 1100px)");
+    const query = window.matchMedia("(min-width: 1024px)");
     const update = () => setDesktopWorkspace(query.matches);
     update(); query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
@@ -306,10 +310,17 @@ export default function Home() {
 
   useEffect(() => {
     if (!liveFiltersOpen) return;
-    const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") setLiveFiltersOpen(false); };
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setLiveFiltersOpen(false); mobileViewTriggerRef.current?.focus(); }
+      if (event.key === "Tab") {
+        const controls = Array.from(mapMenuRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input,select') ?? []).filter((element) => element.getClientRects().length);
+        const first = controls[0], last = controls.at(-1);
+        if (first && last && (event.shiftKey ? document.activeElement === first : document.activeElement === last)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      }
+    };
     const pointerdown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (!liveToolbarRef.current?.contains(target) && !mapMenuRef.current?.contains(target) && !mobileViewTriggerRef.current?.contains(target)) setLiveFiltersOpen(false);
+      if (!liveToolbarRef.current?.contains(target) && !mapMenuRef.current?.contains(target) && !mobileViewTriggerRef.current?.contains(target) && !(target instanceof Element && target.closest('[aria-controls="map-view-menu"]'))) setLiveFiltersOpen(false);
     };
     document.addEventListener("keydown", keydown);
     document.addEventListener("pointerdown", pointerdown);
@@ -337,10 +348,12 @@ export default function Home() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.contrast = highContrast ? "high" : "normal";
     document.documentElement.dataset.font = fontScale;
-    localStorage.setItem("bahnconnections-theme", theme);
-    localStorage.setItem("bahnconnections-contrast", highContrast ? "high" : "normal");
-    localStorage.setItem("bahnconnections-font", fontScale);
-    localStorage.setItem("bahnconnections-minimal", minimalMode ? "1" : "0");
+    try {
+      localStorage.setItem("bahnconnections-theme", theme);
+      localStorage.setItem("bahnconnections-contrast", highContrast ? "high" : "normal");
+      localStorage.setItem("bahnconnections-font", fontScale);
+      localStorage.setItem("bahnconnections-minimal", minimalMode ? "1" : "0");
+    } catch { /* Preferences still work when private browsing denies storage. */ }
   }, [fontScale, highContrast, minimalMode, preferencesReady, theme]);
 
   useEffect(() => {
@@ -608,7 +621,7 @@ export default function Home() {
       marker.on("click", () => {
         setSelectedId(station.id); setSearch(station.name); setJourney(null); setJourneyMessage(""); setRouteInfo(null); setStationPanel("live");
         setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
-        setMobileSheetState("half");
+        setMobileView("departures"); setLabOpen(false); setSidebarCollapsed(false); setMobileSheetState("half");
       });
       const element = marker.getElement();
       if (element) {
@@ -695,6 +708,7 @@ export default function Home() {
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
     setMobileSheetState("half");
+    setMobileView("departures"); setLabOpen(false);
     mapRef.current?.flyTo([match.lat, match.lon], match.source === "db" ? 10 : match.country === "DE" ? 8 : 6, { duration:.7 });
   }
 
@@ -776,10 +790,10 @@ export default function Home() {
       const map = mapRef.current;
       const L = leafletRef.current;
       if (map && L) {
-        const mobile = window.matchMedia("(max-width: 780px), (max-width: 900px) and (orientation: landscape) and (max-height: 520px)").matches;
+        const mobile = window.matchMedia("(max-width: 1023px)").matches;
         map.fitBounds(L.latLngBounds(payload.route.points), { paddingTopLeft:[30,90], paddingBottomRight:mobile ? [30,Math.min(map.getSize().y * .55, 210)] : [40,40], maxZoom:16, animate:true });
       }
-      if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed");
+      if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed");
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
       setWalkStatus("error");
@@ -816,7 +830,7 @@ export default function Home() {
   function toggleFavorite(station: Station) {
     setFavoriteIds((current) => {
       const next = current.includes(station.id) ? current.filter((id) => id !== station.id) : [station.id, ...current].slice(0, 30);
-      localStorage.setItem("bahnconnections-favorite-stations", JSON.stringify(next));
+      try { localStorage.setItem("bahnconnections-favorite-stations", JSON.stringify(next)); } catch { /* Favourites still work for this session. */ }
       return next;
     });
   }
@@ -882,7 +896,7 @@ export default function Home() {
       setExploreOpen(!result);
       setPlannerState(result ? "ready" : "error");
       setJourneyMessage(result ? "" : "Für diese Uhrzeit und die gewählten Verkehrsmittel wurde keine Verbindung gefunden. Aktiviere ggf. Regio, S- oder U-Bahn oder erhöhe die Zahl der Umstiege.");
-      if (result) { setMobileSheetHeight(null); setMobileSheetState("half"); }
+      if (result) { setMobileView("connections"); setMobileSheetState(current => current === "expanded" ? "half" : current); }
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
       setPlannerState("error");
@@ -913,11 +927,11 @@ export default function Home() {
     if (!mapRef.current || !leafletRef.current) return;
     const points = journeyPoints(option);
     if (!points.length) return;
-    const mobile = window.matchMedia("(max-width: 780px), (max-width: 900px) and (orientation: landscape) and (max-height: 520px)").matches;
+    const mobile = window.matchMedia("(max-width: 1023px)").matches;
     const mapHeight = mapElementRef.current?.clientHeight ?? window.innerHeight;
     const sheet = document.querySelector<HTMLElement>('.mobile-sheet-panel');
     const measuredHeight = sheet?.getBoundingClientRect().height ?? 0;
-    const bottomPadding = !mobile ? 80 : Math.min(Math.max(0, mapHeight - 100), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
+    const bottomPadding = !mobile ? 64 : Math.min(Math.max(0, mapHeight - 140), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
     mapRef.current.fitBounds(leafletRef.current.latLngBounds(points), mobile ? {
       paddingTopLeft:[28,28],
       animate:false,
@@ -943,7 +957,7 @@ export default function Home() {
   function resetMap() {
     setSelectedId(null); setSearch(""); setJourney(null); setJourneyOptions([]); setJourneyMessage(""); setRouteInfo(null); setReachabilityVisible(false);
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
-    setMobileSheetState("closed");
+    setMobileSheetState("closed"); setLabOpen(false);
     mapRef.current?.setView([51.15, 10.35], 6, { animate:true });
   }
 
@@ -968,7 +982,8 @@ export default function Home() {
   const selectedTripProgress = selectedLiveTrip ? liveTripProgress(selectedLiveTrip, liveTick) : 0;
   const selectedTripDurationHours = selectedLiveTrip ? Math.max(1 / 60, (new Date(selectedLiveTrip.arrival).getTime() - new Date(selectedLiveTrip.departure).getTime()) / 3_600_000) : 1;
   const selectedTripSpeed = selectedLiveTrip ? Math.round(selectedLiveTrip.distance / 1000 / selectedTripDurationHours) : 0;
-  const activePrimaryPanel = exploreOpen ? "planner" : statsOpen ? "stats" : labOpen ? "lab" : journey ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
+  const departuresView = desktopWorkspace ? desktopView === "departures" : mobileView === "departures";
+  const activePrimaryPanel = exploreOpen ? "planner" : statsOpen ? "stats" : labOpen ? "lab" : journey && !departuresView ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
   const primaryPanelOpen = Boolean(activePrimaryPanel);
   const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? selected?.name ?? "Bahnhof" : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Netzlabor";
   const mobileSheetSummary = journey && activePrimaryPanel === "journey"
@@ -977,6 +992,19 @@ export default function Home() {
     : activePrimaryPanel === "station" ? "Live-Tafel, Linien und Statistik"
     : activePrimaryPanel === "trip" ? `${selectedLiveTrip?.from.name ?? ""} → ${selectedLiveTrip?.to.name ?? ""}`
     : activePrimaryPanel === "stats" ? "Netz und Qualität" : "Live-Lage und Simulation";
+
+  function navigate(view: DesktopView) {
+    setDesktopView(view); setMobileView(view); setViewMenuOpen(false); setLiveFiltersOpen(false);
+    setStatsOpen(view === "stats"); setLabOpen(view === "network");
+    setExploreOpen(!desktopWorkspace && view === "connections" && !journey);
+    if (view === "map" && !desktopWorkspace) { setMobileSheetState("collapsed"); return; }
+    setMobileSheetHeight(null);
+    setMobileSheetState(view === "connections" && !journey ? "expanded" : "half");
+    if (view === "departures") {
+      setSelectedLiveTrip(null); setStationPanel("live"); setSidebarCollapsed(false);
+      if (!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]);
+    }
+  }
 
   useEffect(() => {
     const rememberHeight = (event: Event) => {
@@ -989,7 +1017,10 @@ export default function Home() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
+    const shell = document.querySelector<HTMLElement>(".app-shell");
     const update = () => {
+      shell?.style.setProperty("--viewport-height", `${window.visualViewport?.height ?? window.innerHeight}px`);
+      shell?.style.setProperty("--keyboard-inset", `${Math.max(0,window.innerHeight - (window.visualViewport?.height ?? window.innerHeight) - (window.visualViewport?.offsetTop ?? 0))}px`);
       clearTimeout(timer);
       timer = setTimeout(() => {
         mapRef.current?.invalidateSize({ animate:false });
@@ -1011,16 +1042,16 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V31 · Polaris</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V32 · Lyra</span>
         </button>
-        <DesktopNavigation value={desktopView} onChange={(view) => { setDesktopView(view); setExploreOpen(false); setStatsOpen(view === "stats"); setLabOpen(view === "network"); setLiveFiltersOpen(false); if(view === "departures") { setJourney(null); setSelectedLiveTrip(null); setStationPanel("live"); if(!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]); } }} />
+        <DesktopNavigation value={desktopView} onChange={navigate} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
         <div className="header-actions">
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
-          <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><span className="view-button-icon" aria-hidden="true">☷</span><span className="view-button-label">Ansicht</span></button>
-          <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}>{theme === "light" ? "☾" : "☀"}</button>
+          <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
+          <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
           <div className="view-options">
-            <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe">•••</button>
+            <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe"><UiIcon name="more" /></button>
             {viewMenuOpen && <div className="view-menu-popover"><span>Darstellung</span><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>◐ Hoher Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>A Globale Schrift</button><button onClick={() => { setHelpOpen(true); setViewMenuOpen(false); }}>? Daten & Methodik</button></div>}
           </div>
         </div>
@@ -1029,7 +1060,7 @@ export default function Home() {
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
         <div ref={mapElementRef} className="map-canvas" />
         {!boardOnly && <div className="location-tools" aria-label="Standort und Fußweg">
-          <button type="button" className={`location-trigger ${geoStatus}`} onClick={startLocation} aria-label={geoPosition ? "Eigenen Standort auf Karte zentrieren" : "Live-Standort aktivieren"} title={geoPosition ? "Zu meinem Standort" : "Standort freigeben"}><span aria-hidden="true">◎</span><b>{geoStatus === "locating" ? "Suche Standort" : geoPosition ? "Mein Standort" : "Standort"}</b></button>
+          <button type="button" className={`location-trigger ${geoStatus}`} onClick={startLocation} aria-label={geoPosition ? "Eigenen Standort auf Karte zentrieren" : "Live-Standort aktivieren"} title={geoPosition ? "Zu meinem Standort" : "Standort freigeben"}><span><UiIcon name="location" /></span><b>{geoStatus === "locating" ? "Suche Standort" : geoPosition ? "Mein Standort" : "Standort"}</b></button>
           {geoPosition && <button type="button" className="location-stop" onClick={stopLocation} aria-label="Standortverfolgung beenden" title="Standort ausschalten">×</button>}
           {geoPosition && selected && <button type="button" className="location-walk" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>{walkStatus === "loading" ? "Fußweg lädt …" : "Fußweg hierher"}</button>}
           {geoPosition && !selected && nearestStation && <button type="button" className="location-nearest" onClick={() => selectStation(nearestStation.station)} title={`${Math.round(nearestStation.distance)} m Luftlinie`}>Nächster Bahnhof: {nearestStation.station.name}</button>}
@@ -1042,57 +1073,41 @@ export default function Home() {
 
         {!focusMode && <>
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
-            <button type="button" className={liveFiltersOpen ? "map-menu-trigger active" : "map-menu-trigger"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu">☰ Ansicht</button>
+            <button type="button" className={liveFiltersOpen ? "map-menu-trigger active" : "map-menu-trigger"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu"><UiIcon name="layers" />Ansicht</button>
             {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}<span className={`map-live-state ${liveState}`}>{liveVisible ? `${visibleLiveTrips.length} live` : "Live aus"}</span>
           </div>
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
-            <div className="map-menu-actions"><button onClick={() => { setExploreOpen(true); setJourney(null); setSelectedLiveTrip(null); setStatsOpen(false); setLabOpen(false); setLiveFiltersOpen(false); setMobileSheetState("expanded"); }}>⌕ Verbindung entdecken</button><button onClick={() => { setStatsOpen(true); setJourney(null); setSelectedLiveTrip(null); setExploreOpen(false); setLabOpen(false); setLiveFiltersOpen(false); setMobileSheetState("expanded"); }}>▥ Netzreport 2025</button><button onClick={() => { setLabOpen(true); setJourney(null); setSelectedLiveTrip(null); setStatsOpen(false); setExploreOpen(false); setLiveFiltersOpen(false); setMobileSheetState("expanded"); }}>◉ Netzlabor</button></div>
+            <div className="map-menu-dismiss"><strong>Ansicht & mehr</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
+            <div className="map-menu-actions"><button onClick={() => { setExploreOpen(true); setMobileView("connections"); setSelectedLiveTrip(null); setStatsOpen(false); setLabOpen(false); setLiveFiltersOpen(false); setMobileSheetState("expanded"); }}>Verbindung suchen</button><button onClick={() => navigate("stats")}>Netzreport 2025</button><button onClick={() => navigate("network")}>Netzlabor · Simulation</button></div>
             <span>Oberfläche</span><div className="popover-buttons surface-buttons"><button onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}>{theme === "light" ? "Dunkel" : "Hell"}</button><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>Schrift</button><button onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Hilfe</button></div>
             <span>Kartenlage</span><div className="popover-buttons"><button className={liveVisible && liveView === "stress" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("stress"); }}>Kompakte Live-Lage</button><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>Züge ab Zoom 10</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
             <span>Zugarten</span><div className="popover-buttons"><button className={liveCategories.includes("fern") ? "active fern" : ""} onClick={() => toggleLiveCategory("fern")}>ICE/IC</button><button className={liveCategories.includes("regional") ? "active regional" : ""} onClick={() => toggleLiveCategory("regional")}>RE/RB</button><button className={liveCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => toggleLiveCategory("sbahn")}>S-Bahn</button><button className={liveCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => toggleLiveCategory("ubahn")}>U-Bahn</button><button className={liveCategories.includes("tram") ? "active tram" : ""} onClick={() => toggleLiveCategory("tram")}>Tram</button></div>
             <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle Status</option><option value="delayed">Nur verspätet</option><option value="ontime">Nur pünktlich</option></select></label>
             <span>Netzebenen</span><button className={overviewRoutesVisible ? "overview-route-toggle active" : "overview-route-toggle"} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}><b>Kuratiertes Fernnetz</b><small>{overviewRoutesVisible ? "sichtbar · nicht vollständig" : `aus · ${ROUTES.length} Referenzlinien`}</small></button>
             <div className="map-display-toggles"><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={minimalMode ? "active" : ""} onClick={() => setMinimalMode((value) => !value)}>Minimalmodus</button><button className={focusMode ? "active" : ""} onClick={() => setFocusMode((value) => !value)}>Fokusmodus</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugschweif</button></div>
+            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>V32 · Lyra</small></div>
           </div>}
         </>}
 
         {(exploreOpen || (desktopWorkspace && desktopView === "connections")) && <aside className={`explore-card floating-panel mobile-sheet-panel${selected ? " condensed" : ""}`} style={exploreControls.style}>
           <PanelTools controls={exploreControls} label="Verbindung planen" onClose={() => setExploreOpen(false)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${startSearch || "Start"} → ${targetSearch || "Ziel"}`} />
           {journey && !desktopWorkspace && <button type="button" className="planner-return" onClick={() => setExploreOpen(false)}>← Zur ausgewählten Verbindung <span>{clock(journey.startTime)}–{clock(journey.endTime)}</span></button>}
-          <div className="route-discovery-head"><div className="eyebrow"><span /> LIVE-VERBINDUNG</div><h1>Verbindung suchen</h1><p>Aktueller Fahrplan mit Fernverkehr, Regionalzug, S-Bahn, U-Bahn und Straßenbahn – einschließlich Echtzeit, Gleisen und allen Halten.</p></div>
-          <div className="planner-live-proof"><i /><span><b>Live statt Modell</b><small>Route, Halte und Zeiten stammen aus derselben aktuellen Fahrt.</small></span></div>
-          <div className="route-search-pair">
-            <div><span>STARTBAHNHOF</span><SmartSearch stations={plannerStations} value={startSearch} onChange={(value) => { setStartSearch(value); setStartId(""); setJourneyMessage(""); setPlannerState("idle"); }} onSelect={(station) => { if (station.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((item) => item.id === station.id) ? current : [...current, station]); setStartId(station.id); setStartSearch(station.name); setJourneyMessage(""); setPlannerState("idle"); }} favoriteIds={favoriteIds} variant="route" placeholder="Start suchen …" submitLabel="Wählen" ariaLabel="Startbahnhof suchen" liveTransit /></div>
-            <button className="swap-button" onClick={() => { const currentId=startId; const currentSearch=startSearch; setStartId(targetId); setStartSearch(targetSearch); setTargetId(currentId); setTargetSearch(currentSearch); setJourneyMessage(""); setPlannerState("idle"); }} aria-label="Start und Ziel tauschen">⇅</button>
-            <div><span>ZIELBAHNHOF</span><SmartSearch stations={plannerStations} value={targetSearch} onChange={(value) => { setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }} onSelect={(station) => { if (station.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((item) => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(station.name); setJourneyMessage(""); setPlannerState("idle"); }} favoriteIds={favoriteIds} variant="route" placeholder="Ziel suchen …" submitLabel="Wählen" ariaLabel="Zielbahnhof suchen" liveTransit /></div>
-          </div>
-          <div className="planner-departure"><label className="wide">{arriveBy ? "Ankommen bis" : "Abfahren ab"}<input type="datetime-local" step="300" value={journeyDeparture} onInput={(event) => { setJourneyDeparture(event.currentTarget.value); setJourney(null); setPlannerState("idle"); }} /></label></div>
-          <button className="plan-button" onClick={() => void runPlanner()} disabled={plannerState === "loading" || !startId || !targetId || startId === targetId || !journeyDeparture}>{plannerState === "loading" ? "Live-Fahrplan wird geprüft …" : "Aktuelle Verbindungen anzeigen"} <span>{plannerState === "loading" ? "●" : "→"}</span></button>
-          <div className="type-filters planner-types" aria-label="Verkehrsmittel filtern">
-            <button className={plannerCategories.includes("fern") ? "active fern" : ""} onClick={() => togglePlannerCategory("fern")} aria-pressed={plannerCategories.includes("fern")}><i />ICE / IC / EC</button>
-            <button className={plannerCategories.includes("regional") ? "active regional" : ""} onClick={() => togglePlannerCategory("regional")} aria-pressed={plannerCategories.includes("regional")}><i />RE / RB</button>
-            <button className={plannerCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => togglePlannerCategory("sbahn")} aria-pressed={plannerCategories.includes("sbahn")}><i />S-Bahn</button>
-            <button className={plannerCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => togglePlannerCategory("ubahn")} aria-pressed={plannerCategories.includes("ubahn")}><i />U-Bahn</button>
-            <button className={plannerCategories.includes("tram") ? "active tram" : ""} onClick={() => togglePlannerCategory("tram")} aria-pressed={plannerCategories.includes("tram")}><i />Straßenbahn</button>
-          </div>
-          <details className="filter-drawer route-options" open>
-            <summary>Reiseoptionen <span>Echtzeit aktiv</span></summary>
-            <div className="filter-grid">
-              <div className="wide planner-time-mode" role="group" aria-label="Abfahrts- oder Ankunftszeit"><button className={!arriveBy ? "active" : ""} onClick={() => setArriveBy(false)}>Abfahrt</button><button className={arriveBy ? "active" : ""} onClick={() => setArriveBy(true)}>Ankunft</button></div>
-
-              <label>Max. Umstiege<select value={maxChanges} onChange={(event) => setMaxChanges(Number(event.target.value) as 0 | 1 | 2 | 3 | 4 | 5)}><option value="0">Nur direkt</option><option value="1">Bis 1 Umstieg</option><option value="2">Bis 2 Umstiege</option><option value="3">Bis 3 Umstiege</option><option value="4">Bis 4 Umstiege</option><option value="5">Automatisch bis 5</option></select></label>
-              <label>Zusätzlicher Umstiegspuffer<select value={transferMinutes} onChange={(event) => setTransferMinutes(Number(event.target.value))}><option value="0">Kein Extra-Puffer (schnellste)</option><option value="3">3 Minuten</option><option value="5">5 Minuten</option><option value="8">8 Minuten</option><option value="12">12 Minuten</option></select></label>
-              <label className="planner-check wide"><input type="checkbox" checked={wheelchairRouting} onChange={(event) => setWheelchairRouting(event.target.checked)} /><span><b>Barrierearme Wege</b><small>Aufzüge und stufenarme Umstiege bevorzugen</small></span></label>
-              <label className="planner-check wide"><input type="checkbox" checked={bikeRequired} onChange={(event) => setBikeRequired(event.target.checked)} /><span><b>Fahrradmitnahme erforderlich</b><small>Nur Fahrten mit entsprechender Freigabe</small></span></label>
-            </div>
-          </details>
-
-          <div className="explore-actions"><button className="surprise-button" onClick={surpriseMe}>✦ Versteckte Perle</button><button className="reset-button" onClick={resetMap}>↺ Karte leeren</button></div>
+          <JourneySearch
+            stations={plannerStations} favoriteIds={favoriteIds}
+            start={{ value:startSearch, onChange:(value) => { setStartSearch(value); setStartId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setStartId(station.id); setStartSearch(station.name); setJourneyMessage(""); setPlannerState("idle"); } }}
+            target={{ value:targetSearch, onChange:(value) => { setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(station.name); setJourneyMessage(""); setPlannerState("idle"); } }}
+            departure={journeyDeparture} onDeparture={(value) => { setJourneyDeparture(value); setPlannerState("idle"); }}
+            onSwap={() => { setStartId(targetId); setStartSearch(targetSearch); setTargetId(startId); setTargetSearch(startSearch); setJourneyMessage(""); setPlannerState("idle"); }}
+            categories={plannerCategories} onCategory={togglePlannerCategory}
+            options={{ arriveBy, maxChanges, transferMinutes, wheelchair:wheelchairRouting, bike:bikeRequired }}
+            onOptions={(options) => { if (options.arriveBy !== undefined) setArriveBy(options.arriveBy); if (options.maxChanges !== undefined) setMaxChanges(options.maxChanges); if (options.transferMinutes !== undefined) setTransferMinutes(options.transferMinutes); if (options.wheelchair !== undefined) setWheelchairRouting(options.wheelchair); if (options.bike !== undefined) setBikeRequired(options.bike); }}
+            loading={plannerState === "loading"} canSearch={Boolean(startId && targetId && startId !== targetId && journeyDeparture)} onSearch={() => void runPlanner()} onDiscover={surpriseMe} onReset={resetMap}
+          />
           {journeyMessage && <p className={`planner-message ${plannerState}`} role="status">{journeyMessage}</p>}
         </aside>}
 
-        {!statsOpen && (!exploreOpen || desktopWorkspace) && !labOpen && !journey && !selectedLiveTrip && selected && !sidebarCollapsed ? (
+        {!statsOpen && (!exploreOpen || desktopWorkspace) && !labOpen && (!journey || departuresView) && !selectedLiveTrip && selected && !sidebarCollapsed ? (
           <aside className={`station-card floating-panel mobile-sheet-panel station-right${stationPanel !== "live" ? " detail-width" : ""}`} style={stationControls.style}>
             <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={selected.name} />
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
@@ -1116,7 +1131,7 @@ export default function Home() {
         <NetworkStats open={statsOpen} onClose={() => setStatsOpen(false)} stations={allStations} liveTrips={liveTrips} selectedStation={selected} liveUpdatedAt={liveUpdatedAt} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
         <NetworkLab open={labOpen} onClose={() => setLabOpen(false)} selected={selected} routes={ROUTES} stations={allStations} liveTrips={liveTrips} boardSummary={boardSummary} blockedRouteIds={blockedRouteIds} blockedStationIds={blockedStationIds} onToggleRoute={toggleBlockedRoute} onToggleStation={toggleBlockedStation} onResetBlocks={() => { setBlockedRouteIds(new Set()); setBlockedStationIds(new Set()); setJourney(null); }} reachabilityMinutes={reachabilityMinutes} onReachabilityMinutes={setReachabilityMinutes} onShowReachability={showReachability} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
 
-        {journey && !statsOpen && (!exploreOpen || desktopWorkspace) && !labOpen && selectedJourneyStart && selectedJourneyTarget && (
+        {journey && !departuresView && !statsOpen && (!exploreOpen || desktopWorkspace) && !labOpen && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style}>
             <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg ? `${primaryJourneyLeg.name} · ${selectedJourneyStart.name} → ${selectedJourneyTarget.name}` : `${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} mobileSummary={`${clock(journey.startTime)}–${clock(journey.endTime)} · ${formatDuration(Math.round(journey.durationSeconds / 60))} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`} />
             <div className="journey-mobile-overview">
@@ -1129,8 +1144,9 @@ export default function Home() {
               <span><small>Auslastung</small><b>{journeyForecast ? `${journeyForecast.label} · vsl.` : "Keine Prognose"}</b></span>
               <span><small>Barrierefreiheit</small><b>{journeyAccessibilityConfirmed ? "Bestätigt" : "Bitte prüfen"}</b></span>
             </div>
-            <details className="journey-mobile-data"><summary><i />{journey.cancelled ? "Ausfall enthalten" : journey.realtime ? "Live-Daten aktiv" : "Nur Fahrplandaten"}<span>Datenstatus</span></summary><p>{journey.sourceLabel} · geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</p></details>
+            <details className="journey-mobile-data"><summary><i />{journey.cancelled ? "Ausfall enthalten" : journey.realtimeStatus === "live" ? "Live-Daten aktiv" : journey.realtimeStatus === "partial" ? "Live-Daten unvollständig" : "Nur Fahrplandaten"}<span>Datenstatus</span></summary><p>{journey.sourceLabel} · geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</p>{journey.warnings.map((warning,index)=><p key={index}>{warning}</p>)}</details>
             <button type="button" className="journey-edit-search" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }}>← Suche und Optionen ändern</button>
+            <JourneyAlternatives journeys={journeyOptions} selected={journey} limit={journeyOptionLimit} label={journeyOptionLabel} onSelect={chooseJourney} onMore={() => setJourneyOptionLimit(value => value + 8)} />
             <div className={`journey-status ${journey.realtimeStatus === "live" ? "live" : journey.realtimeStatus === "partial" ? "partial" : "schedule"}`} aria-live="polite"><i /> {journeyOptionLabel(journey, journeyOptions[0])} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"} · {journey.realtime ? "Echtzeit berücksichtigt" : "aktuelle Fahrplanlage"}</div>
             <div className="journey-source-row"><span><i />{journey.sourceLabel}</span><time>geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</time></div>
             <div className="journey-head"><strong>{selectedJourneyStart.name}</strong><span>→</span><strong>{selectedJourneyTarget.name}</strong><b>{formatDuration(Math.round(journey.durationSeconds / 60))}</b></div>
@@ -1147,14 +1163,13 @@ export default function Home() {
                   <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Auslastung voraussichtlich {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span><small>Prognose, keine Live-Belegungsmessung</small></div>
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
                   <ol className="model-stop-list live-stop-list">{leg.stops.map((stop,stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; const stopDelay=delayMinutes(actual,planned); const platformChanged=Boolean(stop.track && stop.scheduledTrack && stop.track !== stop.scheduledTrack); return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.id ?? stop.name}-${stopIndex}`}><i /><span><b>{stop.name}</b><small>{stop.cancelled ? "Halt entfällt" : platformChanged ? `Gleis ${stop.track} statt ${stop.scheduledTrack}` : stop.track ? `Gleis ${stop.track}` : stopIndex === 0 ? "Einstieg" : stopIndex === leg.stops.length - 1 ? "Ausstieg" : "Zwischenhalt"}</small></span><time>{actual ? clock(actual) : "–"}{stopDelay !== 0 && <small>{stopDelay > 0 ? "+" : ""}{stopDelay} Min.</small>}</time>{planned && stopDelay !== 0 && <small className="planned-time">Soll {clock(planned)}</small>}</li>; })}</ol>
-                  {wait !== null && <div className={`transfer-step ${wait < 7 ? "risk" : wait < 12 ? "medium" : "good"}`}><i /><span><b>Umstieg in {leg.to.name}</b><small>{wait} Minuten bis {journey.transitLegs[index + 1]?.name}</small></span></div>}
+                  {wait !== null && <TransferNotice journey={journey} index={index} minutes={wait} />}
                 </article>;
               })}
             </div>
             {journey.legs.some((leg) => leg.category === "walk") && <p className="journey-walk-note">Fußwege am Start, Ziel oder beim Umstieg sind in der Gesamtdauer enthalten.</p>}
-            {journeyQuality && <div className={`transfer-quality ${journeyQuality.tone}`}><strong>{journeyQuality.score}</strong><span><b>Umsteige-Qualität: {journeyQuality.label}</b><small>{journeyQuality.explanation}</small></span></div>}
+            {journeyQuality && <div className={`transfer-quality ${journeyQuality.tone}`}><span><b>{journey.transfers ? `Umstieg: ${journeyQuality.label}` : "Ohne Umstieg"}</b><small>{journeyQuality.explanation}</small></span></div>}
             {journey.warnings.length > 0 && <div className="journey-source-warnings">{journey.warnings.map((warning, index) => <p key={`${warning}-${index}`}>{warning}</p>)}</div>}
-            {journeyOptions.length > 1 && <div className="journey-alternatives"><span>Weitere aktuelle Verbindungen</span>{journeyOptions.filter((option) => option.id !== journey.id).slice(0,journeyOptionLimit).map((option) => <button key={option.id} onClick={() => chooseJourney(option)}><em>{journeyOptionLabel(option, journeyOptions[0])}</em><b>{clock(option.startTime)} → {clock(option.endTime)}</b><small>{formatDuration(Math.round(option.durationSeconds / 60))} · {option.transfers ? `${option.transfers} Umstieg${option.transfers > 1 ? "e" : ""}` : "direkt"} · {option.transitLegs.map((item) => item.name).join(" + ")}</small><small>{option.sourceLabel}</small></button>)}{journeyOptions.filter((option) => option.id !== journey.id).length > journeyOptionLimit && <button className="journey-more" onClick={() => setJourneyOptionLimit((value) => value + 8)}>Weitere Verbindungen anzeigen</button>}</div>}
             <div className="journey-data-note"><i /> Route, Halte, Soll-/Ist-Zeiten, Gleise und Ausfälle stammen aus der jeweils ausgewiesenen Fahrplanquelle. Die Linie folgt der Geometrie dieser Fahrt; Auslastung bleibt eine gekennzeichnete Prognose.</div>
           </section>
         )}
@@ -1175,6 +1190,8 @@ export default function Home() {
         {primaryPanelOpen && mobileSheetState === "closed" && <button type="button" className="mobile-sheet-restore" onClick={() => setMobileSheetState("expanded")}><span><b>{mobileSheetTitle}</b><small>{mobileSheetSummary}</small></span><strong>Öffnen ↑</strong></button>}
 
       </section>
+
+      {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} moreOpen={liveFiltersOpen} />}
 
       {helpOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setHelpOpen(false)}>

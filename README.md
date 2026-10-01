@@ -4,6 +4,18 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
+## V32 · Lyra
+
+Mobile: kompakter Header, feste Hauptnavigation und ein stufenlos ziehbares Bottom-Sheet. Minimieren oder Schließen verändert nur die Darstellung, nicht die Suche oder ausgewählte Fahrt. Die Ziehfläche umfasst auch den Griff. Safe-Areas und die virtuelle Tastatur werden berücksichtigt.
+
+PC: getrennte Bereiche für Planer, Karte und Details. Gemeinsame Design-Tokens, Systemschrift, skalierbare Typografie, zurückhaltende Linien-Badges und sichtbare Fahrplanziele ersetzen historische CSS-Überlagerungen. Fahrplan- und Routing-Schnittstellen bleiben unverändert.
+
+Validierung: Lint, TypeScript, Build, UI- und Board-Audit sowie automatisierte responsive Abläufe von 320 bis 1920 Pixeln. Der responsive Test verwendet ausdrücklich Testverbindungen (keine Fahrplanvalidierung), Klickaktivierung und echte emulierte Touch-Ziehgesten. Öffnen, Suchen, Minimieren während der Suche, Wiederherstellen, Schließen, Alternativwahl, lange Namen und Querformat werden geprüft. Ein echter Android-/iOS-Gerätetest bleibt erforderlich; Edge-Emulation ist kein Ersatz dafür.
+
+```bash
+pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
+```
+
 ## Funktionen
 
 - bundesweite Bahnhofssuche mit eindeutigen Haltestellen-IDs
