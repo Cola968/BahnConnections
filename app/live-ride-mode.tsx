@@ -46,26 +46,30 @@ export function LiveRideMode({ journey, appMode = false }: { journey: LiveJourne
   const [geoState, setGeoState] = useState<"idle" | "requesting" | "active" | "denied" | "unavailable">("idle");
   const [location, setLocation] = useState<RideLocation | null>(null);
   const [message, setMessage] = useState("");
+  const [now, setNow] = useState(() => new Date(journey.updatedAt).getTime());
   const speedHistoryRef = useRef<number[]>([]);
   const lastFixRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
 
   const allStops = useMemo(() => journey.transitLegs.flatMap((leg) => leg.stops), [journey]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const currentLeg = useMemo(() => {
-    const now = Date.now();
     return journey.transitLegs.find((leg) =>
       now >= new Date(leg.startTime).getTime() - 20 * 60_000 &&
       now <= new Date(leg.endTime).getTime() + 20 * 60_000
     ) ?? journey.transitLegs[0] ?? null;
-  }, [journey]);
+  }, [journey, now]);
 
   const nextStop = useMemo(() => {
-    const now = Date.now();
     return allStops.find((stop) => {
       const value = stopTime(stop);
       return value ? new Date(value).getTime() >= now - 90_000 : false;
     }) ?? allStops.at(-1) ?? null;
-  }, [allStops]);
+  }, [allStops, now]);
 
   const nearestStop = useMemo(() => {
     if (!location) return null;
@@ -91,15 +95,21 @@ export function LiveRideMode({ journey, appMode = false }: { journey: LiveJourne
     return smallest;
   }, [journey]);
 
-  useEffect(() => {
-    if (!active) return;
+  function startRide() {
+    saveActiveJourney(journey);
     if (!("geolocation" in navigator)) {
       setGeoState("unavailable");
       setMessage("Dein Browser stellt keine Standortdaten bereit.");
+      setActive(true);
       return;
     }
-
     setGeoState("requesting");
+    setMessage("");
+    setActive(true);
+  }
+
+  useEffect(() => {
+    if (!active || !("geolocation" in navigator)) return;
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const now = position.timestamp || Date.now();
@@ -153,7 +163,7 @@ export function LiveRideMode({ journey, appMode = false }: { journey: LiveJourne
           <h3>{currentLeg?.name ?? "Deine Verbindung"} <span>→ {currentLeg?.headsign ?? journey.transitLegs.at(-1)?.to.name}</span></h3>
         </div>
         {!active ? (
-          <button type="button" className="ride-start" onClick={() => { saveActiveJourney(journey); setActive(true); }}>Fahrtmodus starten</button>
+          <button type="button" className="ride-start" onClick={startRide}>Fahrtmodus starten</button>
         ) : (
           <button type="button" className="ride-stop" onClick={() => setActive(false)}>Beenden</button>
         )}
