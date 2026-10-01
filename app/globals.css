@@ -1871,3 +1871,54 @@ body { background:#eef0f2; }
   .app-shell.has-primary-panel[data-mobile-sheet="expanded"] .location-tools,.app-shell.has-primary-panel[data-mobile-sheet="expanded"] .walking-card { visibility:hidden; pointer-events:none; }
 }
 @media (prefers-reduced-motion:reduce) { .location-trigger.locating>span { animation:none; } }
+
+
+/* Live ride mode */
+.ride-mode{margin:12px 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+.ride-mode-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 15px;border-bottom:1px solid var(--line)}
+.ride-mode-head h3{margin:3px 0 0;font-family:inherit;font-size:14px;line-height:1.3}
+.ride-mode-head h3 span{color:var(--muted);font-weight:650}
+.ride-eyebrow{color:var(--muted);font-size:8px;font-weight:900;letter-spacing:.65px;text-transform:uppercase}
+.ride-start,.ride-stop{flex:0 0 auto;min-height:36px;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:9px;font-weight:900}
+.ride-start{color:white;background:var(--ink)}
+.ride-stop{color:var(--ink);border:1px solid var(--line);background:var(--soft)}
+.ride-kpis{display:grid;grid-template-columns:1.05fr 1.5fr 1fr;gap:1px;background:var(--line)}
+.ride-kpis>div{min-width:0;padding:13px 14px;background:var(--paper)}
+.ride-kpis small,.ride-position>span,.ride-alerts>span,.ride-transfer small{display:block;margin-bottom:5px;color:var(--muted);font-size:7px;font-weight:900;letter-spacing:.35px;text-transform:uppercase}
+.ride-kpis strong{display:block;overflow:hidden;font-size:14px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.ride-speed strong{font-size:22px;letter-spacing:-.6px}
+.ride-kpis span{display:block;margin-top:4px;color:var(--muted);font-size:8px;font-weight:750}
+.ride-kpis .ride-delay{color:var(--red)}
+.ride-note{margin:0;padding:9px 14px;border-top:1px solid var(--line);color:var(--muted);background:var(--soft);font-size:8px;line-height:1.45}
+.ride-note.warning{color:#9a5e18}
+.ride-position{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:11px 14px;border-top:1px solid var(--line)}
+.ride-position>span{grid-column:1/-1;margin:0}
+.ride-position b{font-size:9px}
+.ride-position time{color:var(--muted);font-size:8px}
+.ride-transfer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px;border:1px solid var(--line);border-radius:9px;padding:10px 11px;background:var(--soft)}
+.ride-transfer small{margin:0 0 3px}
+.ride-transfer b{display:block;font-size:9px}
+.ride-transfer>span{border-radius:999px;padding:4px 7px;color:var(--muted);background:var(--paper);font-size:7px;font-weight:900}
+.ride-transfer.risk{border-color:rgba(229,57,69,.35);background:rgba(229,57,69,.06)}
+.ride-transfer.risk>span{color:var(--red)}
+.ride-transfer.watch{border-color:rgba(202,145,49,.35);background:rgba(202,145,49,.07)}
+.ride-alerts{display:grid;gap:0;border-top:1px solid var(--line);padding-top:10px}
+.ride-alerts>span{padding:0 14px 5px}
+.ride-alerts article{display:grid;grid-template-columns:72px 1fr;gap:2px 9px;padding:9px 14px;border-top:1px solid var(--line)}
+.ride-alerts article b{font-size:8px}
+.ride-alerts article p{margin:0;font-size:8px;font-weight:800}
+.ride-alerts article small{grid-column:2;color:var(--muted);font-size:7px;line-height:1.4}
+.ride-actions{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line)}
+.ride-actions a{flex:0 0 auto;border-radius:8px;padding:8px 11px;color:white;background:#e20015;font-size:9px;font-weight:900;text-decoration:none}
+.ride-actions span{color:var(--muted);font-size:7px;line-height:1.35}
+[data-theme="dark"] .ride-start{color:#092731;background:#f2f6f4}
+@media (max-width:780px){
+  .ride-mode{margin:10px 0 12px;border-radius:11px}
+  .ride-mode-head{align-items:flex-start;padding:13px 12px}
+  .ride-mode-head h3{font-size:13px}
+  .ride-kpis{grid-template-columns:1fr 1fr}
+  .ride-kpis .ride-speed{grid-column:1/-1}
+  .ride-speed strong{font-size:28px}
+  .ride-start,.ride-stop{min-height:40px}
+  .ride-alerts article{grid-template-columns:58px 1fr}
+}
