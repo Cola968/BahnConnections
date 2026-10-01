@@ -1013,7 +1013,7 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">ATLAS · V32</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">ATLAS · V33</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={(view) => { setDesktopView(view); setExploreOpen(false); setStatsOpen(view === "stats"); setLabOpen(view === "network"); setLiveFiltersOpen(false); if(view === "departures") { setJourney(null); setSelectedLiveTrip(null); setStationPanel("live"); if(!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]); } }} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
