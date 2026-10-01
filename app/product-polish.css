@@ -443,3 +443,270 @@
   .pulse-loader,.journey-ai-spinner{animation:none}
   .passport-trip-v33,.route-options button,.planner-submit,.journey-card button{transition:none!important}
 }
+
+
+/* BahnConnections V34 — mockup-inspired product surface + customizable desktop */
+
+:root{
+  --v34-blue:#1677ff;
+  --v34-blue-soft:#eaf3ff;
+  --v34-violet:#6b5cff;
+  --v34-red:#e20015;
+  --v34-shell:#0d1117;
+  --v34-shell-2:#141a22;
+  --v34-shell-3:#1a222c;
+  --v34-shell-line:#29323d;
+  --v34-shell-text:#f5f7fa;
+  --v34-shell-muted:#98a4b2;
+}
+
+.v34-atlas[data-accent="blue"]{--v34-accent:var(--v34-blue);--v34-accent-soft:var(--v34-blue-soft)}
+.v34-atlas[data-accent="red"]{--v34-accent:var(--v34-red);--v34-accent-soft:#fff0f1}
+.v34-atlas[data-accent="violet"]{--v34-accent:var(--v34-violet);--v34-accent-soft:#f0efff}
+
+/* Atlas: closer to the preview — bright workspace, blue actions, crisp rails */
+.v34-atlas .topbar{
+  min-height:64px;
+  background:rgba(255,255,255,.985)!important;
+  border-bottom:1px solid #e7ebef!important;
+  box-shadow:0 1px 0 rgba(24,39,52,.02)!important;
+}
+.v34-atlas .brand-mark{background:linear-gradient(145deg,#1987ff,#0d5de7)!important;color:#fff!important}
+.v34-atlas .beta{color:#5e6a74!important;background:#f4f6f8!important;border-color:#e4e8ec!important}
+.v34-atlas .desktop-navigation{
+  border-color:#e7ebef!important;background:#f5f7f9!important;
+}
+.v34-atlas .desktop-navigation button.active{
+  color:#0f58d8!important;background:#fff!important;box-shadow:0 1px 4px rgba(31,74,113,.08)!important;
+}
+.v34-atlas .station-search{border-color:#e5e9ee!important;background:#fff!important}
+.v34-atlas .station-search button[type="submit"],
+.v34-atlas .plan-button,
+.v34-atlas .journey-ai-compose>button,
+.v34-atlas .ride-pulse{
+  background:var(--v34-accent)!important;color:white!important;
+}
+.v34-atlas .topbar .round-button.active,
+.v34-atlas .customize-trigger.active{border-color:var(--v34-accent)!important;color:var(--v34-accent)!important;background:var(--v34-accent-soft)!important}
+.v34-atlas .map-canvas{filter:saturate(.9) contrast(.98)}
+.v34-atlas .floating-panel,
+.v34-atlas .journey-card,
+.v34-atlas .station-card,
+.v34-atlas .stats-panel,
+.v34-atlas .network-lab,
+.v34-atlas .live-trip-card{
+  border-color:#e2e7eb!important;
+  box-shadow:0 14px 38px rgba(36,52,64,.11)!important;
+}
+.v34-atlas[data-glass="1"] .floating-panel,
+.v34-atlas[data-glass="1"] .journey-card,
+.v34-atlas[data-glass="1"] .station-card,
+.v34-atlas[data-glass="1"] .stats-panel,
+.v34-atlas[data-glass="1"] .network-lab,
+.v34-atlas[data-glass="1"] .live-trip-card{
+  background:rgba(255,255,255,.91)!important;
+  backdrop-filter:blur(22px) saturate(1.16)!important;
+}
+.v34-atlas[data-glass="0"] .floating-panel,
+.v34-atlas[data-glass="0"] .journey-card,
+.v34-atlas[data-glass="0"] .station-card,
+.v34-atlas[data-glass="0"] .stats-panel,
+.v34-atlas[data-glass="0"] .network-lab,
+.v34-atlas[data-glass="0"] .live-trip-card{
+  background:#fff!important;backdrop-filter:none!important;
+}
+
+@media(min-width:1100px){
+  .v34-atlas[data-show-planner="0"] .explore-card{display:none!important}
+  .v34-atlas[data-show-context="0"] .station-card,
+  .v34-atlas[data-show-context="0"] .journey-card,
+  .v34-atlas[data-show-context="0"] .live-trip-card,
+  .v34-atlas[data-show-context="0"] .stats-panel,
+  .v34-atlas[data-show-context="0"] .network-lab{display:none!important}
+  .v34-atlas[data-show-context="0"] .map-stage{padding-right:0!important}
+  .v34-atlas[data-show-map-tools="0"] .location-tools,
+  .v34-atlas[data-show-map-tools="0"] .quick-map-actions,
+  .v34-atlas[data-show-map-tools="0"] .map-legend{display:none!important}
+
+  .v34-atlas[data-panel-width="narrow"]{--detail-rail:360px}
+  .v34-atlas[data-panel-width="standard"]{--detail-rail:460px}
+  .v34-atlas[data-panel-width="wide"]{--detail-rail:540px}
+  .v34-atlas .journey-card,
+  .v34-atlas .station-card,
+  .v34-atlas .stats-panel,
+  .v34-atlas .network-lab,
+  .v34-atlas .live-trip-card{width:var(--v34-panel-width)!important;max-width:calc(100vw - 390px)!important}
+
+  .v34-atlas[data-panel-width="narrow"] .explore-card{width:320px!important}
+  .v34-atlas[data-panel-width="standard"] .explore-card{width:360px!important}
+  .v34-atlas[data-panel-width="wide"] .explore-card{width:410px!important}
+}
+
+.v34-atlas[data-density="compact"] .floating-panel,
+.v34-atlas[data-density="compact"] .journey-card,
+.v34-atlas[data-density="compact"] .station-card{font-size:.95em}
+.v34-atlas[data-density="compact"] .route-discovery-head{margin-bottom:10px}
+.v34-atlas[data-density="compact"] .route-search-pair,
+.v34-atlas[data-density="compact"] .planner-departure{gap:6px}
+.v34-atlas[data-density="compact"] .journey-card{padding:13px!important}
+.v34-atlas[data-density="compact"] .live-journey-leg{padding:9px!important}
+.v34-atlas[data-density="compact"] .journey-ai-v33{padding:11px!important}
+
+/* Customizer */
+.workspace-customizer{
+  position:fixed;z-index:3200;top:76px;right:18px;width:min(360px,calc(100vw - 24px));
+  max-height:calc(100dvh - 92px);overflow:auto;
+  border:1px solid #dfe5e9;border-radius:16px;padding:14px;
+  color:#152229;background:rgba(255,255,255,.97);
+  box-shadow:0 24px 70px rgba(20,36,49,.2);backdrop-filter:blur(22px) saturate(1.14);
+}
+.workspace-customizer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 2px 12px;border-bottom:1px solid #edf0f2}
+.workspace-customizer-head>div{display:grid;gap:3px}
+.workspace-customizer-head span{font-size:7px;font-weight:850;letter-spacing:.9px;color:#73808a}
+.workspace-customizer-head b{font-size:15px;letter-spacing:-.25px}
+.workspace-customizer-head>button{
+  width:30px;height:30px;border:0;border-radius:8px;background:#f3f5f7;color:#59656e;cursor:pointer;font-size:17px
+}
+.workspace-customizer section{padding:13px 2px;border-bottom:1px solid #edf0f2}
+.workspace-customizer section>label{display:block;margin-bottom:8px;font-size:8px;font-weight:850;color:#73808a;text-transform:uppercase;letter-spacing:.65px}
+.customizer-switches{display:grid;gap:5px}
+.customizer-switches>button{
+  display:grid;grid-template-columns:26px 1fr;align-items:center;gap:9px;
+  border:1px solid #e5e9ed;border-radius:10px;padding:9px;background:#fff;text-align:left;cursor:pointer
+}
+.customizer-switches>button:hover{background:#f8fafb}
+.customizer-switches>button>i{
+  display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#f0f3f5;
+  color:#fff;font-style:normal;font-size:11px;font-weight:900
+}
+.customizer-switches>button.active>i{background:var(--v34-accent,#1677ff)}
+.customizer-switches>button span{display:grid;gap:2px}
+.customizer-switches>button b{font-size:10px}
+.customizer-switches>button small{font-size:8px;color:#75808a}
+.customizer-segmented{
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;border:1px solid #e3e8ec;border-radius:10px;padding:3px;background:#f4f6f8
+}
+.customizer-segmented button{
+  min-height:34px;border:0;border-radius:7px;background:transparent;color:#67737d;font-size:8.5px;font-weight:750;cursor:pointer
+}
+.customizer-segmented button.active{background:#fff;color:#152229;box-shadow:0 1px 4px rgba(33,50,62,.09)}
+.customizer-accents{display:flex;gap:9px}
+.customizer-accents button{
+  width:36px;height:36px;border:2px solid transparent;border-radius:50%;padding:4px;background:transparent;cursor:pointer
+}
+.customizer-accents button.active{border-color:#27333a}
+.customizer-accents i{display:block;width:100%;height:100%;border-radius:50%}
+.customizer-accents .blue i{background:#1677ff}.customizer-accents .red i{background:#e20015}.customizer-accents .violet i{background:#6b5cff}
+.customizer-row{display:flex!important;align-items:center;justify-content:space-between;gap:12px}
+.customizer-row>div{display:grid;gap:3px}.customizer-row b{font-size:10px}.customizer-row small{font-size:8px;color:#75808a}
+.customizer-toggle{width:42px;height:24px;border:0;border-radius:99px;padding:3px;background:#dce2e6;cursor:pointer}
+.customizer-toggle i{display:block;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.16);transition:transform .16s ease}
+.customizer-toggle.active{background:var(--v34-accent,#1677ff)}.customizer-toggle.active i{transform:translateX(18px)}
+.workspace-customizer-foot{display:grid;gap:6px;padding:13px 2px 1px}
+.workspace-customizer-foot button{justify-self:start;border:0;background:transparent;color:#52606a;font-size:8px;font-weight:750;cursor:pointer;padding:0}
+.workspace-customizer-foot small{font-size:7.5px;color:#89939b}
+
+/* Dark app surfaces from the visual preview */
+.pulse-shell.v33-surface,
+.passport-shell.v33-surface{
+  --v33-paper:var(--v34-shell-2);
+  --v33-soft:var(--v34-shell-3);
+  --v33-ink:var(--v34-shell-text);
+  --v33-muted:var(--v34-shell-muted);
+  --v33-line:var(--v34-shell-line);
+  min-height:100vh!important;color:var(--v34-shell-text)!important;
+  background:
+    radial-gradient(circle at 72% -10%,rgba(26,119,255,.17),transparent 34rem),
+    linear-gradient(180deg,#090d12 0%,#0d1218 55%,#10161d 100%)!important;
+}
+.pulse-shell .product-topbar,
+.passport-shell .product-topbar{
+  background:rgba(11,16,22,.9)!important;border-color:#242d37!important;
+  backdrop-filter:blur(22px)!important;
+}
+.pulse-shell .product-brand,
+.passport-shell .product-brand{color:#f5f7fa!important}
+.pulse-shell .product-brand>span,
+.passport-shell .product-brand>span{
+  background:linear-gradient(145deg,#238cff,#105edc)!important
+}
+.pulse-shell .product-brand em,
+.passport-shell .product-brand em{
+  color:#9da9b6!important;background:#141b23!important;border-color:#2a3440!important
+}
+.pulse-shell .product-topbar nav a,
+.passport-shell .product-topbar nav a{color:#a7b1bc!important}
+.pulse-shell .product-topbar nav a:hover,
+.passport-shell .product-topbar nav a:hover{color:#fff!important;background:#18212b!important}
+.pulse-shell .pulse-home h1,
+.passport-shell .passport-title-row h1{color:#fff!important}
+.pulse-shell .pulse-home-copy>p,
+.passport-shell .passport-title-row p{color:#99a5b2!important}
+.pulse-shell .pulse-primary,
+.pulse-shell .pulse-bottom-actions button,
+.passport-shell .passport-list-head-v33>a{
+  background:#1677ff!important;border-color:#1677ff!important;color:white!important
+}
+.pulse-shell .pulse-demo-card,
+.pulse-shell .pulse-hero-v33,
+.pulse-shell .ride-mode-v33,
+.passport-shell .passport-stats-v33 article,
+.passport-shell .passport-insights article,
+.passport-shell .passport-trip-v33,
+.passport-shell .passport-search,
+.passport-shell .passport-controls select,
+.passport-shell .passport-filters{
+  color:#f4f7fa!important;background:#141b23!important;border-color:#28323d!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.22)!important
+}
+.pulse-shell .pulse-feature-grid{border-color:#28323d}
+.pulse-shell .pulse-feature-grid article{border-color:#28323d!important}
+.pulse-shell .pulse-feature-grid article>b,
+.pulse-shell .pulse-demo-line>b,
+.passport-shell .passport-insights b,
+.passport-shell .passport-trip-route strong{color:#f5f7fa!important}
+.pulse-shell .pulse-demo-card>p,
+.pulse-shell .pulse-feature-grid article>p,
+.passport-shell .passport-insights small{color:#98a4b2!important}
+.pulse-shell .pulse-demo-card>strong{color:#fff}
+.pulse-shell .pulse-demo-progress,
+.pulse-shell .ride-progress-track,
+.pulse-shell .pulse-route-track{background:#2a3440!important}
+.pulse-shell .pulse-demo-progress i,
+.pulse-shell .ride-progress-track i,
+.pulse-shell .pulse-route-track>i,
+.pulse-shell .pulse-route-track>span{background:#16d98e!important}
+.pulse-shell .pulse-route-track>span{border-color:#111821!important;box-shadow:0 0 0 1px #16d98e!important}
+.pulse-shell .ride-kpis-v33{background:#28323d!important;border-color:#28323d!important}
+.pulse-shell .ride-kpis-v33 article{background:#141b23!important}
+.pulse-shell .ride-upcoming-row{border-color:#242d37!important}
+.pulse-shell .ride-upcoming-row>i{background:#141b23!important;border-color:#758291!important}
+.pulse-shell .ride-upcoming-row.next>i{background:#16d98e!important;border-color:#16d98e!important}
+.pulse-shell .ride-position-v33{background:#18212b!important;border-color:#2b3641!important}
+.pulse-shell .ride-alerts-v33,
+.pulse-shell .ride-actions-v33{border-color:#28323d!important}
+.passport-shell .passport-controls input{color:#f4f7fa!important}
+.passport-shell .passport-controls input::placeholder{color:#72808d}
+.passport-shell .passport-filters button{color:#98a4b2!important}
+.passport-shell .passport-filters button.active{background:#1677ff!important;color:#fff!important}
+.passport-shell .passport-controls select{color:#eef3f8!important}
+.passport-shell .passport-trip-v33:hover{border-color:#3c4a59!important;background:#18212b!important}
+.passport-shell .passport-empty-v33{background:#121920!important;border-color:#33404d!important}
+.passport-shell .passport-export{background:#151d26!important;color:#edf2f7!important;border-color:#2e3945!important}
+
+[data-theme="dark"] .workspace-customizer{
+  color:#f4f7fa;background:rgba(15,21,28,.97);border-color:#303a45
+}
+[data-theme="dark"] .workspace-customizer-head{border-color:#29333d}
+[data-theme="dark"] .workspace-customizer-head>button,
+[data-theme="dark"] .customizer-switches>button,
+[data-theme="dark"] .customizer-segmented{background:#18212a;border-color:#2c3742;color:#f4f7fa}
+[data-theme="dark"] .customizer-switches>button:hover{background:#1d2731}
+[data-theme="dark"] .customizer-switches>button>i{background:#26313c}
+[data-theme="dark"] .customizer-segmented button.active{background:#26313c;color:#fff}
+[data-theme="dark"] .customizer-segmented button{color:#9ca8b4}
+
+@media(max-width:780px){
+  .workspace-customizer{top:calc(var(--app-header) + 8px);right:8px;width:calc(100vw - 16px);max-height:calc(100dvh - var(--app-header) - 16px)}
+  .customize-trigger{display:none!important}
+}
