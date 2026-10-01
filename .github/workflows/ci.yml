@@ -16,8 +16,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22.13.0"
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Install pnpm
+        run: npm install --global pnpm@10
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint
