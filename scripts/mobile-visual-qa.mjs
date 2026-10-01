@@ -14,7 +14,7 @@ const useJourneyFixture = process.env.BAHNCONNECTIONS_MOBILE_QA_LIVE !== "1";
 const fixtureStops = [
   ["Berlin Hbf", 52.5251, 13.3694, "2026-09-07T12:43:00+02:00", "7"],
   ["Berlin Südkreuz", 52.4750, 13.3653, "2026-09-07T12:51:00+02:00", "3"],
-  ["Halle (Saale) Hbf", 51.4770, 11.9868, "2026-09-07T14:01:00+02:00", "8"],
+  ["Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz", 51.4770, 11.9868, "2026-09-07T14:01:00+02:00", "8"],
   ["Erfurt Hbf", 50.9727, 11.0384, "2026-09-07T14:34:00+02:00", "1"],
   ["Nürnberg Hbf", 49.4456, 11.0820, "2026-09-07T15:48:00+02:00", "9"],
   ["München Hbf", 48.1402, 11.5586, "2026-09-07T16:45:00+02:00", "18"],
@@ -34,16 +34,13 @@ const fixtureJourney = {
   scheduledStartTime:fixtureLeg.startTime, scheduledEndTime:fixtureLeg.endTime, realtime:true, cancelled:false,
   legs:[fixtureLeg], transitLegs:[fixtureLeg], source:"cross-checked", sourceLabel:"Transitous · DB-geprüft", updatedAt:"2026-09-07T12:40:00+02:00", realtimeStatus:"live", warnings:[],
 };
+const laterTime = time => time ? new Date(new Date(time).getTime() + 30 * 60_000).toISOString() : undefined;
+const alternativeLeg = { ...fixtureLeg,name:'ICE 1207',tripId:'qa-ice-1207',startTime:laterTime(fixtureLeg.startTime),endTime:laterTime(fixtureLeg.endTime),stops:fixtureStops.map(stop => ({...stop,arrival:laterTime(stop.arrival),departure:laterTime(stop.departure)})) };
+const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alternativeLeg.startTime,endTime:alternativeLeg.endTime,legs:[alternativeLeg],transitLegs:[alternativeLeg] };
 
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
-  "--headless=old",
-  "--disable-gpu",
-  "--disable-gpu-compositing",
-  "--disable-gpu-sandbox",
-  "--disable-software-rasterizer",
-  "--disable-features=VizDisplayCompositor",
-  "--no-sandbox",
+  "--headless=new",
   "--no-first-run",
   "--disable-default-apps",
   `--remote-debugging-port=${debugPort}`,
@@ -80,8 +77,8 @@ try {
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
-      const body = Buffer.from(JSON.stringify({ journeys:[fixtureJourney], source:"Mobile-QA-Fixture", updatedAt:fixtureJourney.updatedAt, realtimeStatus:"live", warnings:[] })).toString("base64");
-      void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" }], body });
+      const body = Buffer.from(JSON.stringify({ journeys:[fixtureJourney,alternativeJourney], source:"Mobile-QA-Fixture", updatedAt:fixtureJourney.updatedAt, realtimeStatus:"live", warnings:[] })).toString("base64");
+      setTimeout(() => { void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" }], body }); },800);
       return;
     }
     if (!message.id || !pending.has(message.id)) return;
@@ -94,7 +91,8 @@ try {
   function command(method, params = {}) {
     const id = ++commandId;
     return new Promise((resolveCommand, rejectCommand) => {
-      pending.set(id, { resolveCommand, rejectCommand });
+      const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },20000);
+      pending.set(id, { resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
       socket.send(JSON.stringify({ id, method, params }));
     });
   }
@@ -117,21 +115,22 @@ try {
   }
 
   async function dragSheet(deltaY) {
+    await evaluate(`(() => {
+      window.qaDrag = {start:null,last:null};
+      document.querySelector('.mobile-sheet-summary').addEventListener('pointerdown', event => { window.qaDrag.start=event.clientY; },{once:true});
+      document.querySelector('.mobile-sheet-summary').addEventListener('pointermove', event => { window.qaDrag.last=event.clientY; });
+    })()`);
     const point = await evaluate(`(() => {
       const rect = document.querySelector(".mobile-sheet-summary")?.getBoundingClientRect();
       return rect ? { x:Math.round(rect.left + Math.min(rect.width / 2, 120)), y:Math.round(rect.top + 20) } : null;
     })()`);
     if (!point) throw new Error("Mobile Ziehfläche nicht gefunden");
-    await command("Input.dispatchTouchEvent", { type:"touchStart", touchPoints:[{ x:point.x, y:point.y }] });
-    for (let step = 1; step <= 5; step += 1) {
-      await command("Input.dispatchTouchEvent", { type:"touchMove", touchPoints:[{ x:point.x, y:point.y + deltaY * step / 5 }] });
-      await pause(35);
-    }
-    await command("Input.dispatchTouchEvent", { type:"touchEnd", touchPoints:[] });
+    await command("Input.synthesizeScrollGesture", { ...point,yDistance:deltaY,gestureSourceType:"touch",preventFling:true,speed:500 });
     await pause(280);
+    return evaluate(`window.qaDrag.last - window.qaDrag.start`);
   }
 
-  async function tap(selector, mouse = false) {
+  async function tap(selector) {
     const point = await evaluate(`(() => {
       const element = document.querySelector(${JSON.stringify(selector)});
       if (!element) throw new Error("Fehlender Button: " + ${JSON.stringify(selector)});
@@ -139,16 +138,13 @@ try {
       const rect = element.getBoundingClientRect();
       const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
       const hit = document.elementFromPoint(x, y);
-      if (!hit || !(element === hit || element.contains(hit))) throw new Error("Verdeckter Button: " + ${JSON.stringify(selector)});
+      if (!hit || !(element === hit || element.contains(hit))) throw new Error("Verdeckter Button: " + ${JSON.stringify(selector)} + ' '+JSON.stringify({x,y,hit:hit?.outerHTML?.slice(0,220)}));
       return {x,y};
     })()`);
-    if (mouse) {
-      await command("Input.dispatchMouseEvent", {type:"mousePressed", ...point, button:"left", clickCount:1});
-      await command("Input.dispatchMouseEvent", {type:"mouseReleased", ...point, button:"left", clickCount:1});
-    } else {
-      await command("Input.dispatchTouchEvent", {type:"touchStart", touchPoints:[point]});
-      await command("Input.dispatchTouchEvent", {type:"touchEnd", touchPoints:[]});
-    }
+    // Edge's headless touch gesture emits pointer/touch events but no compatibility click.
+    // Verify click activation separately; free sheet movement is tested with genuine touch gestures.
+    await command("Input.dispatchMouseEvent", {type:"mousePressed", ...point, button:"left", clickCount:1});
+    await command("Input.dispatchMouseEvent", {type:"mouseReleased", ...point, button:"left", clickCount:1});
     await pause(280);
   }
 
@@ -170,19 +166,25 @@ try {
 
   await command("Page.enable");
   await command("Runtime.enable");
+  await command("Page.bringToFront");
   if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" }] });
   await setViewport(390, 844);
   await command("Page.navigate", { url });
   await pause(6500);
   const snapshots = [await layoutSnapshot("390x844 initial")];
   await screenshot("390-initial");
+  console.log('Responsive QA: initial layout loaded');
 
   await tap(".mobile-map-view-button");
+  if (await evaluate(`document.querySelector('.mobile-map-view-button').getAttribute('aria-expanded')`) !== 'true') throw new Error('Ansicht-Knopf öffnet das Menü nicht');
+  await screenshot('390-menu');
   await pause(250);
   await tap(".map-menu-actions button:first-child");
   await pause(700);
   snapshots.push(await layoutSnapshot("390x844 planner"));
   await screenshot("390-planner");
+  console.log('Responsive QA: planner opened');
+  await tap('.route-options summary');
   await tap('.planner-types button:nth-child(3)');
   await tap('.planner-types button:nth-child(3)');
   const originalStart = await evaluate(`document.querySelector('.route-search-pair input').value`);
@@ -196,6 +198,7 @@ try {
   const plannerReady = await evaluate(`!document.querySelector(".plan-button")?.disabled`);
   if (plannerReady) {
     await tap(".plan-button");
+    await tap('.mobile-sheet-actions button:first-child');
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const finished = await evaluate(`Boolean(document.querySelector(".journey-card") || document.querySelector(".planner-message.error"))`);
       if (finished) break;
@@ -204,9 +207,19 @@ try {
   }
   const journeyLoaded = await evaluate(`Boolean(document.querySelector(".journey-card"))`);
   if (!journeyLoaded) throw new Error('Testverbindung wurde nicht geladen');
+  if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'collapsed') throw new Error('Suchabschluss überschreibt minimierten Zustand');
+  await tap('.mobile-sheet-summary');
   await pause(900);
   snapshots.push(await layoutSnapshot(journeyLoaded ? "390x844 journey" : "390x844 planner result"));
   await screenshot(journeyLoaded ? "390-journey" : "390-planner-result");
+  if (useJourneyFixture) {
+    await tap('.journey-alternatives summary');
+    await tap('.journey-alternatives>div>button:first-child');
+    if (!await evaluate(`document.querySelector('.journey-mobile-route').textContent.includes('ICE 1207')`)) throw new Error('Alternative wird nicht gemeinsam ausgewählt');
+    await tap('.journey-alternatives summary');
+    await tap('.journey-alternatives>div>button:first-child');
+    if (await evaluate(`Array.from(document.querySelectorAll('.live-journey-leg')).some(el=>el.scrollWidth>el.clientWidth+1)`)) throw new Error('Fahrtdetails werden horizontal abgeschnitten');
+  }
 
   if (journeyLoaded) {
     const beforeFreeDrag = await layoutSnapshot("390x844 before free drag");
@@ -216,9 +229,9 @@ try {
       throw new Error("Bottom-Sheet behält die frei gezogene Höhe nicht bei");
     }
     snapshots.push(afterFreeDrag);
-    await dragSheet(55);
+    const actualDragDelta = await dragSheet(55);
     const lowered = await layoutSnapshot('390x844 freely lowered');
-    if (Math.abs(lowered.elements['.mobile-sheet-panel'].height - (afterFreeDrag.elements['.mobile-sheet-panel'].height - 55)) > 3) throw new Error('Sheet rastet beim Absenken ein');
+    if (actualDragDelta < 30 || Math.abs(lowered.elements['.mobile-sheet-panel'].height - (afterFreeDrag.elements['.mobile-sheet-panel'].height - actualDragDelta)) > 3) throw new Error('Sheet rastet beim Absenken ein: '+JSON.stringify({actualDragDelta,before:afterFreeDrag.elements['.mobile-sheet-panel'],after:lowered.elements['.mobile-sheet-panel']}));
     snapshots.push(lowered);
     await screenshot("390-free-height");
   }
@@ -246,7 +259,7 @@ try {
   await setViewport(320, 700);
   snapshots.push(await layoutSnapshot("320x700 expanded"));
   await screenshot("320-expanded");
-  for (const width of [375,430,768]) {
+  for (const width of [360,375,430,768]) {
     await setViewport(width,844);
     await tap('.mobile-sheet-actions button:last-child');
     if (await evaluate(`getComputedStyle(document.querySelector('.mobile-sheet-panel')).display !== 'none'`)) throw new Error(`X bei ${width}px reagiert nicht`);
@@ -261,6 +274,7 @@ try {
   if (await evaluate(`getComputedStyle(document.querySelector(".mobile-sheet-panel")).display !== "none"`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
   await tap(".mobile-sheet-restore");
   await setViewport(1440, 900);
+  await screenshot('1440-before-close');
   if (await evaluate(`getComputedStyle(document.querySelector(".journey-card .mobile-sheet-actions")).display !== "none"`)) throw new Error("Mobile Buttons werden am PC angezeigt");
   await tap(".journey-card .desktop-panel-actions button:last-child", true);
   if (await evaluate(`Boolean(document.querySelector(".journey-card"))`)) throw new Error("Desktop-X schließt die Verbindung nicht");
@@ -282,6 +296,9 @@ try {
   if(await evaluate(`getComputedStyle(document.querySelector('.explore-card') || document.createElement('div')).display !== 'none' && Boolean(document.querySelector('.explore-card'))`)) throw new Error('Kartenansicht zeigt Planer');
   await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
+  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-child');
+  if (await evaluate(`Boolean(document.querySelector('.map-menu-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
   await tap('.mobile-map-view-button');
   await tap('.map-display-toggles button:nth-child(3)');
   await tap('.quick-map-actions button:nth-child(2)');
@@ -295,7 +312,7 @@ try {
   }
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, journeyFixture:useJourneyFixture, snapshots };
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, snapshots };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {

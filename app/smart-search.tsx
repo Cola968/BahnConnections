@@ -2,6 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useId, useMemo, useState } from "react";
 import type { Station } from "./network-data";
+import { UiIcon } from "./ui-icon";
 
 function normalise(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de").replace(/[^a-z0-9]+/g, " ").trim();
@@ -106,7 +107,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   function select(station: Station) {
     const nextRecent = [station.id, ...recentIds.filter((id) => id !== station.id)].slice(0, 6);
     setRecentIds(nextRecent);
-    localStorage.setItem("bahnconnections-recent-stations", JSON.stringify(nextRecent));
+    try { localStorage.setItem("bahnconnections-recent-stations", JSON.stringify(nextRecent)); } catch { /* Search remains usable without storage. */ }
     onSelect(station);
     setOpen(false);
     setActiveIndex(0);
@@ -114,40 +115,44 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (suggestions[activeIndex]) select(suggestions[activeIndex]);
+    if (suggestions[activeIndex] ?? suggestions[0]) select(suggestions[activeIndex] ?? suggestions[0]);
   }
 
   function keydown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); setActiveIndex((index) => Math.min(suggestions.length - 1, index + 1)); }
+    if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); setActiveIndex((index) => Math.max(0, Math.min(suggestions.length - 1, index + 1))); }
     if (event.key === "ArrowUp") { event.preventDefault(); setActiveIndex((index) => Math.max(0, index - 1)); }
-    if (event.key === "Escape") setOpen(false);
+    if (event.key === "Escape") { event.stopPropagation(); setOpen(false); }
   }
 
   return (
     <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
-      <span aria-hidden="true">⌕</span>
+      <UiIcon name="search" />
       <input
         role="combobox"
         aria-label={ariaLabel}
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls={suggestionsId}
+        aria-activedescendant={open && suggestions[activeIndex] ? `${suggestionsId}-${activeIndex}` : undefined}
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         value={value}
         onFocus={() => setOpen(true)}
         onChange={(event) => { onChange(event.target.value); setOpen(true); setActiveIndex(0); }}
         onKeyDown={keydown}
-        placeholder={placeholder ?? "Bahnhof suchen – auch mit Tippfehler …"}
+        placeholder={placeholder ?? "Bahnhof suchen"}
       />
-      {value && <button className="search-clear" type="button" onClick={() => { onChange(""); setOpen(true); }} aria-label="Suche leeren">×</button>}
+      {value && <button className="search-clear" type="button" onClick={() => { onChange(""); setOpen(true); }} aria-label="Suche leeren"><UiIcon name="close" width="18" height="18" /></button>}
       <button type="submit">{submitLabel}</button>
       {open && (
         <div className="search-suggestions" id={suggestionsId} role="listbox">
           <div className="suggestion-heading"><span>{value ? "Passende Stationen" : favoriteIds.length ? "Favoriten & zuletzt gesucht" : "Beliebte Stationen"}</span><small>{liveSearching ? "Haltestellen werden geprüft …" : liveTransit ? "Deutschlandweit · Transitous" : `${stations.length.toLocaleString("de-DE")} verfügbar`}</small></div>
           {suggestions.map((station, index) => (
-            <button key={station.id} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onClick={() => select(station)}>
-              <span className={station.source === "db" ? "station-symbol local" : "station-symbol"}>{station.source === "db" ? "•" : "B"}</span>
-              <span><b>{station.name}</b><small>{station.source === "db" ? `${station.kind ?? "DB-Betriebsstelle"}${station.code ? ` · ${station.code}` : ""}${station.state ? ` · ${station.state}` : ""}` : `Kuratierter Fernverkehr${station.code ? ` · ${station.code}` : ""}${station.state ? ` · ${station.state}` : ""}`}</small></span>
-              {favoriteIds.includes(station.id) && <em aria-label="Favorit">★</em>}
+            <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
+              <span className="station-symbol"><UiIcon name="train" /></span>
+              <span><b>{station.name}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
+              {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}
           {!suggestions.length && <p>Kein exakter Treffer. Probiere einen Ortsnamen oder ein DB-Kürzel.</p>}
