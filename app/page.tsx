@@ -138,7 +138,7 @@ export default function Home() {
   }, []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [workspacePreferences, setWorkspacePreferences] = useState<WorkspacePreferences>(DEFAULT_WORKSPACE_PREFERENCES);
   const [startId, setStartId] = useState("berlin");
@@ -326,7 +326,7 @@ export default function Home() {
       try {
         setFavoriteIds(JSON.parse(localStorage.getItem("bahnconnections-favorite-stations") ?? "[]"));
         const savedTheme = localStorage.getItem("bahnconnections-theme");
-        setTheme(savedTheme === "light" ? "light" : "dark");
+        setTheme(savedTheme === "dark" ? "dark" : "light");
         const savedWorkspace = localStorage.getItem("bahnconnections-workspace-v34");
         if (savedWorkspace) setWorkspacePreferences({ ...DEFAULT_WORKSPACE_PREFERENCES, ...JSON.parse(savedWorkspace) as Partial<WorkspacePreferences> });
         setHighContrast(localStorage.getItem("bahnconnections-contrast") === "high");
@@ -1058,7 +1058,7 @@ export default function Home() {
         onClose={() => setCustomizeOpen(false)}
         onReset={() => {
           setWorkspacePreferences(DEFAULT_WORKSPACE_PREFERENCES);
-          setTheme("dark");
+          setTheme("light");
           setHighContrast(false);
           setFontScale("normal");
           setMinimalMode(false);
