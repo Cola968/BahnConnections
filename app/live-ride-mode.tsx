@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LiveJourney, LiveJourneyStop } from "./live-journey";
+import { saveActiveJourney } from "./travel-store";
 
 type RideLocation = {
   lat: number;
@@ -40,7 +41,7 @@ function minutesBetween(later?: string, earlier?: string) {
   return Math.round((new Date(later).getTime() - new Date(earlier).getTime()) / 60_000);
 }
 
-export function LiveRideMode({ journey }: { journey: LiveJourney }) {
+export function LiveRideMode({ journey, appMode = false }: { journey: LiveJourney; appMode?: boolean }) {
   const [active, setActive] = useState(false);
   const [geoState, setGeoState] = useState<"idle" | "requesting" | "active" | "denied" | "unavailable">("idle");
   const [location, setLocation] = useState<RideLocation | null>(null);
@@ -152,7 +153,7 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
           <h3>{currentLeg?.name ?? "Deine Verbindung"} <span>→ {currentLeg?.headsign ?? journey.transitLegs.at(-1)?.to.name}</span></h3>
         </div>
         {!active ? (
-          <button type="button" className="ride-start" onClick={() => setActive(true)}>Fahrtmodus starten</button>
+          <button type="button" className="ride-start" onClick={() => { saveActiveJourney(journey); setActive(true); }}>Fahrtmodus starten</button>
         ) : (
           <button type="button" className="ride-stop" onClick={() => setActive(false)}>Beenden</button>
         )}
@@ -213,8 +214,9 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
       )}
 
       <div className="ride-actions">
+        {!appMode && <button type="button" className="ride-pulse" onClick={() => { saveActiveJourney(journey); window.location.assign("/pulse"); }}>In Pulse öffnen</button>}
         <a href="https://www.bahn.de/buchung/start" target="_blank" rel="noreferrer">Bei DB buchen</a>
-        <span>Die Buchung wird bei der Deutschen Bahn abgeschlossen.</span>
+        <span>{appMode ? "Pulse begleitet deine aktive Fahrt; Buchungen werden bei der Deutschen Bahn abgeschlossen." : "In Pulse wird diese Fahrt für unterwegs gespeichert."}</span>
       </div>
     </section>
   );
