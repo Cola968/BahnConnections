@@ -28,6 +28,7 @@ import {
 } from "./network-data";
 import { TrackRouter, type RailNetwork } from "./track-routing";
 import { distanceMeters, type WalkingRoute } from "./walking-route";
+import { DEFAULT_WORKSPACE_PREFERENCES, WorkspaceCustomizer, type WorkspacePreferences } from "./workspace-customizer";
 
 type ExtraStationsPayload = { source: string; retrievedAt: string; totalOfficialPoints: number; curatedStates?: Record<string, string>; curatedAliases?: Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>; stations: Station[] };
 type LiveStatusFilter = "all" | "delayed" | "ontime";
@@ -137,7 +138,9 @@ export default function Home() {
   }, []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [workspacePreferences, setWorkspacePreferences] = useState<WorkspacePreferences>(DEFAULT_WORKSPACE_PREFERENCES);
   const [startId, setStartId] = useState("berlin");
   const [targetId, setTargetId] = useState("muenchen");
   const [startSearch, setStartSearch] = useState("Berlin Hbf");
@@ -322,7 +325,10 @@ export default function Home() {
     const timer = window.setTimeout(() => {
       try {
         setFavoriteIds(JSON.parse(localStorage.getItem("bahnconnections-favorite-stations") ?? "[]"));
-        setTheme(localStorage.getItem("bahnconnections-theme") === "dark" ? "dark" : "light");
+        const savedTheme = localStorage.getItem("bahnconnections-theme");
+        setTheme(savedTheme === "light" ? "light" : "dark");
+        const savedWorkspace = localStorage.getItem("bahnconnections-workspace-v34");
+        if (savedWorkspace) setWorkspacePreferences({ ...DEFAULT_WORKSPACE_PREFERENCES, ...JSON.parse(savedWorkspace) as Partial<WorkspacePreferences> });
         setHighContrast(localStorage.getItem("bahnconnections-contrast") === "high");
         setFontScale(localStorage.getItem("bahnconnections-font") === "large" ? "large" : "normal");
         setMinimalMode(localStorage.getItem("bahnconnections-minimal") === "1");
@@ -343,7 +349,8 @@ export default function Home() {
     localStorage.setItem("bahnconnections-contrast", highContrast ? "high" : "normal");
     localStorage.setItem("bahnconnections-font", fontScale);
     localStorage.setItem("bahnconnections-minimal", minimalMode ? "1" : "0");
-  }, [fontScale, highContrast, minimalMode, preferencesReady, theme]);
+    localStorage.setItem("bahnconnections-workspace-v34", JSON.stringify(workspacePreferences));
+  }, [fontScale, highContrast, minimalMode, preferencesReady, theme, workspacePreferences]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1010,10 +1017,26 @@ export default function Home() {
   }, [journey, exploreOpen, activePrimaryPanel, mobileSheetState]);
 
   return (
-    <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
+    <main
+      className={`app-shell v34-atlas${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`}
+      data-desktop-view={desktopView}
+      data-mobile-sheet={mobileSheetState}
+      data-primary-panel={activePrimaryPanel ?? "none"}
+      data-density={workspacePreferences.density}
+      data-panel-width={workspacePreferences.panelWidth}
+      data-show-planner={workspacePreferences.showPlanner ? "1" : "0"}
+      data-show-context={workspacePreferences.showContext ? "1" : "0"}
+      data-show-map-tools={workspacePreferences.showMapTools ? "1" : "0"}
+      data-glass={workspacePreferences.glass ? "1" : "0"}
+      data-accent={workspacePreferences.accent}
+      style={{
+        ...(mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } : {}),
+        "--v34-panel-width": workspacePreferences.panelWidth === "narrow" ? "360px" : workspacePreferences.panelWidth === "wide" ? "540px" : "460px",
+      } as CSSProperties}
+    >
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">ATLAS · V33</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">ATLAS · V34</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={(view) => { setDesktopView(view); setExploreOpen(false); setStatsOpen(view === "stats"); setLabOpen(view === "network"); setLiveFiltersOpen(false); if(view === "departures") { setJourney(null); setSelectedLiveTrip(null); setStationPanel("live"); if(!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]); } }} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
@@ -1021,12 +1044,26 @@ export default function Home() {
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
           <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><span className="view-button-icon" aria-hidden="true">☷</span><span className="view-button-label">Ansicht</span></button>
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}>{theme === "light" ? "☾" : "☀"}</button>
+          <button className={customizeOpen ? "round-button customize-trigger active" : "round-button customize-trigger"} onClick={() => { setCustomizeOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={customizeOpen} aria-label="Fenster und Oberfläche anpassen">⌘</button>
           <div className="view-options">
             <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe">•••</button>
             {viewMenuOpen && <div className="view-menu-popover"><span>Darstellung</span><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>◐ Hoher Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>A Globale Schrift</button><button onClick={() => { setHelpOpen(true); setViewMenuOpen(false); }}>? Daten & Methodik</button></div>}
           </div>
         </div>
       </header>
+      <WorkspaceCustomizer
+        open={customizeOpen}
+        value={workspacePreferences}
+        onChange={setWorkspacePreferences}
+        onClose={() => setCustomizeOpen(false)}
+        onReset={() => {
+          setWorkspacePreferences(DEFAULT_WORKSPACE_PREFERENCES);
+          setTheme("dark");
+          setHighContrast(false);
+          setFontScale("normal");
+          setMinimalMode(false);
+        }}
+      />
 
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
         <div ref={mapElementRef} className="map-canvas" />
