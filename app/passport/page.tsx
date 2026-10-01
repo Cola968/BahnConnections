@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { journeyDistanceKm, readJourneyHistory, removeJourneyFromHistory, type StoredJourney } from "../travel-store";
 
@@ -13,7 +14,10 @@ function clock(value: string) {
 
 export default function PassportPage() {
   const [journeys, setJourneys] = useState<StoredJourney[]>([]);
-  useEffect(() => setJourneys(readJourneyHistory()), []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setJourneys(readJourneyHistory()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const stats = useMemo(() => {
     const km = journeys.reduce((sum, item) => sum + journeyDistanceKm(item.journey), 0);
     const minutes = journeys.reduce((sum, item) => sum + Math.round(item.journey.durationSeconds / 60), 0);
@@ -30,8 +34,8 @@ export default function PassportPage() {
   return (
     <main className="passport-shell">
       <header className="passport-topbar">
-        <a href="/" className="passport-brand"><span>B</span><b>BahnConnections</b><em>Passport</em></a>
-        <nav><a href="/">Atlas</a><a href="/pulse">Pulse</a></nav>
+        <Link href="/" className="passport-brand"><span>B</span><b>BahnConnections</b><em>Passport</em></Link>
+        <nav><Link href="/">Atlas</Link><Link href="/pulse">Pulse</Link></nav>
       </header>
       <section className="passport-hero">
         <span className="passport-kicker">DEIN BAHNLEBEN</span>
@@ -50,7 +54,7 @@ export default function PassportPage() {
           <div><span>Meistgenutzter Zug</span><b>{stats.favoriteService}</b></div>
           <div><span>Letzte Reise</span><b>{journeys[0] ? date(journeys[0].completedAt) : "Noch keine Fahrt"}</b></div>
         </div>
-        <div className="passport-list-head"><div><span>REISEARCHIV</span><h2>Deine Fahrten</h2></div><a href="/">Neue Reise planen</a></div>
+        <div className="passport-list-head"><div><span>REISEARCHIV</span><h2>Deine Fahrten</h2></div><Link href="/">Neue Reise planen</Link></div>
         {journeys.length === 0 ? (
           <div className="passport-empty"><b>Noch kein Stempel im Passport.</b><p>Öffne eine Verbindung in Pulse und beende die Fahrt anschließend.</p></div>
         ) : (
