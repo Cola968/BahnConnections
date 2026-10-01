@@ -2,11 +2,11 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name:"BahnConnections – Live-Fahrplan und Bahnkarte",
+    name:"BahnConnections Pulse – deine Live-Bahnreise",
     short_name:"BahnConnections",
-    description:"Live-Abfahrten, vollständige Halte und exakte Fahrtverläufe für Fernverkehr, Regio, S- und U-Bahn.",
-    id:"/",
-    start_url:"/",
+    description:"Pulse begleitet deine aktive Bahnreise mit Live-Fahrt, Anschlusswächter und persönlichem Passport.",
+    id:"/pulse",
+    start_url:"/pulse?source=pwa",
     scope:"/",
     display:"standalone",
     background_color:"#f3f4f5",
@@ -15,8 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation:"any",
     categories:["travel","navigation","utilities"],
     shortcuts:[
-      { name:"Bahnkarte öffnen", short_name:"Karte", url:"/?source=pwa" },
-      { name:"App-Hilfe", short_name:"Hilfe", url:"/install?source=pwa" },
+      { name:"Meine Fahrt", short_name:"Pulse", url:"/pulse?source=pwa" },
+      { name:"Passport", short_name:"Passport", url:"/passport?source=pwa" },
+      { name:"Atlas öffnen", short_name:"Atlas", url:"/?source=pwa" },
     ],
     icons:[
       { src:"/app-icon-192.png", sizes:"192x192", type:"image/png", purpose:"any" },

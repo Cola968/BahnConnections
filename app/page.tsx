@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { DesktopNavigation, DesktopWelcome, type DesktopView } from "./desktop-navigation";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
+import { LiveRideMode } from "./live-ride-mode";
+import { JourneyAssistant } from "./journey-assistant";
 import { delayMinutes, fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
 import { fetchLiveTrips, liveTripProgress, pointOnTrip, trailForTrip, type LiveTrainCategory, type LiveTrip } from "./live-trains";
 import { NetworkLab } from "./network-lab";
@@ -1011,7 +1013,7 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V31 · Polaris</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">ATLAS · V32</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={(view) => { setDesktopView(view); setExploreOpen(false); setStatsOpen(view === "stats"); setLabOpen(view === "network"); setLiveFiltersOpen(false); if(view === "departures") { setJourney(null); setSelectedLiveTrip(null); setStationPanel("live"); if(!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]); } }} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
@@ -1124,6 +1126,8 @@ export default function Home() {
               <span className="journey-mobile-route"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><strong>{selectedJourneyStart.name} <i aria-hidden="true">→</i> {selectedJourneyTarget.name}</strong><small>{clock(journey.startTime)}–{clock(journey.endTime)} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"} · {journey.cancelled ? "Ausfall" : journey.realtime ? primaryJourneyDelay ? `${primaryJourneyDelay > 0 ? "+" : ""}${primaryJourneyDelay} Min.` : "pünktlich" : "Fahrplan"}</small></span>
               <button type="button" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }} aria-label="Suche und Reiseoptionen ändern">Ändern</button>
             </div>
+            <LiveRideMode journey={journey} />
+            <JourneyAssistant journey={journey} />
             <div className="journey-mobile-facts" aria-label="Verbindungsmerkmale">
               <span><small>Dauer</small><b>{formatDuration(Math.round(journey.durationSeconds / 60))}</b></span>
               <span><small>Auslastung</small><b>{journeyForecast ? `${journeyForecast.label} · vsl.` : "Keine Prognose"}</b></span>

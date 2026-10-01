@@ -19,12 +19,20 @@ const files = await Promise.all([
   readFile(new URL("../app/install/install-client.tsx", import.meta.url), "utf8"),
   readFile(new URL("../app/transitous.ts", import.meta.url), "utf8"),
   readFile(new URL("../app/panel-tools.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/pulse/page.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/passport/page.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/journey-assistant.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/api/ai/route.ts", import.meta.url), "utf8"),
 ]);
 const [css, page, board, stationLines, manifest, worker, tripTrimming, ...remainder] = files;
 const apiRoutes = remainder.slice(0, 5);
 const [trackRouting, liveJourney] = remainder.slice(5);
 const [installPage, installClient, transitous] = remainder.slice(7);
-const panelTools = files.at(-1);
+const panelTools = files[17];
+const pulsePage = files[18];
+const passportPage = files[19];
+const journeyAssistant = files[20];
+const aiRoute = files[21];
 const checks = [];
 
 function check(name, condition, detail) {
@@ -52,7 +60,7 @@ check("Getrennte Geometriesegmente werden getrennt gezeichnet", page.includes("f
 check("Liniennummern erscheinen nur einmal", board.includes("{brand.number ? <b>{brand.number}</b> : null}") && !board.includes("brand.number || entry.line?.name"));
 check("Nur exakte Haltestellen-IDs", transitous.includes("requireTransitousStopId") && !transitous.includes('searchParams.set("center"') && !transitous.includes('searchParams.set("radius"') && !board.includes("api.transitous.org/api/v6/stoptimes") && !stationLines.includes("api.transitous.org/api/v6/stoptimes"));
 check("Normalisierte interne Fahrplan-APIs", apiRoutes.length === 5 && apiRoutes.every((source) => ["source", "updatedAt", "realtimeStatus", "warnings"].every((field) => source.includes(field))));
-check("PWA startet auf der Karte", manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"'));
+check("Installierte PWA startet in Pulse", manifest.includes('start_url:"/pulse?source=pwa"') && manifest.includes('id:"/pulse"') && manifest.includes('display:"standalone"'));
 check("PWA nutzt installierbare PNG-Icons", manifest.includes("/app-icon-192.png") && manifest.includes("/app-icon-512.png") && manifest.includes("/app-icon-maskable-512.png"));
 check("Native Mobile-Navigation umgeht RSC-Linkfehler", !installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
 check("Mobiler Kopf trennt Suche und Aktionen", css.includes(".topbar>.station-search { grid-column:1/-1; grid-row:2") && css.includes(".topbar>.header-actions { position:static"));
@@ -70,7 +78,10 @@ check("Mobile Kopfaktionen sind kompakte Touchziele", page.includes("install-ico
 check("Mobile Hoch- und Querformatregeln", css.includes("(orientation:landscape) and (max-height:520px)") && css.includes("100dvh") && css.includes("env(safe-area-inset-bottom)"));
 check("Lange Namen bleiben im Sheet stabil", css.includes(".mobile-sheet-summary b,.mobile-sheet-summary small") && css.includes("text-overflow:ellipsis") && css.includes("-webkit-line-clamp:2"));
 check("Bahnhofstafel wird unabhängig gegengeprüft", apiRoutes[2].includes("DB transport.rest") && apiRoutes[2].includes("compareBoardRows") && board.includes("Transitous · DB-geprüft") && board.includes("Quellenabweichung"));
-check("Service Worker aktualisiert Navigation", worker.includes("navigationPreload") && worker.includes("cache.put(event.request") && worker.includes("bahnconnections-static-v28"));
+check("Service Worker aktualisiert Navigation", worker.includes("navigationPreload") && worker.includes("cache.put(event.request") && worker.includes("bahnconnections-static-v32"));
 check("Anmeldung wird nie als offline abgefangen", worker.includes('"/signin-with-chatgpt"') && worker.includes("isAuthenticationRequest(url)") && !worker.includes('redirect:"follow"'));
+check("Atlas übergibt Reisen an Pulse", page.includes("<LiveRideMode journey={journey} />") && page.includes("<JourneyAssistant journey={journey} />") && pulsePage.includes("readActiveJourney") && pulsePage.includes("LiveRideMode"));
+check("Passport archiviert beendete Reisen", passportPage.includes("readJourneyHistory") && passportPage.includes("journeyDistanceKm") && passportPage.includes("Deine Fahrten"));
+check("KI bleibt serverseitig und datenbegrenzt", journeyAssistant.includes("/api/ai/route") && aiRoute.includes("OPENAI_API_KEY") && aiRoute.includes("OPENAI_MODEL") && aiRoute.includes("Erfinde niemals"));
 
 console.log(JSON.stringify({ checkedAt:new Date().toISOString(), checks }, null, 2));
