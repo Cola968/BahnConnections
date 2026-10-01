@@ -7,6 +7,8 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
     {([["connections", "Verbindungen"], ["map", "Karte"], ["departures", "Abfahrten"], ["network", "Netzwerk"], ["stats", "Statistiken"]] as const).map(([view, label]) =>
       <button type="button" key={view} className={value === view ? "active" : ""} aria-current={value === view ? "page" : undefined} onClick={() => onChange(view)}>{label}</button>
     )}
+    <span className="desktop-nav-divider" aria-hidden="true" />
+    <a href="/passport">Passport</a><a href="/pulse">Pulse</a>
   </nav>;
 }
 
