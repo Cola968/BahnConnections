@@ -139,7 +139,7 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
   }, [active]);
 
   const speedLabel = location?.speedKmh !== null && location?.speedKmh !== undefined
-    ? \`\${Math.round(location.speedKmh)} km/h\`
+    ? `${Math.round(location.speedKmh)} km/h`
     : "– km/h";
   const arrivalDelay = minutesBetween(journey.endTime, journey.scheduledEndTime) ?? 0;
   const hasLiveData = journey.realtimeStatus === "live" || journey.realtimeStatus === "partial";
@@ -162,18 +162,18 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
         <div className="ride-speed">
           <small>Geschwindigkeit</small>
           <strong>{active ? speedLabel : "GPS starten"}</strong>
-          <span>{active && location ? \`± \${Math.round(location.accuracy)} m GPS\` : "vom Gerät gemessen"}</span>
+          <span>{active && location ? `± ${Math.round(location.accuracy)} m GPS` : "vom Gerät gemessen"}</span>
         </div>
         <div>
           <small>Nächster Halt</small>
           <strong>{nextStop?.name ?? "–"}</strong>
-          <span>{nextStop ? \`\${clock(stopTime(nextStop))}\${nextStop.track ? \` · Gl. \${nextStop.track}\` : ""}\` : "Keine Haltdaten"}</span>
+          <span>{nextStop ? `${clock(stopTime(nextStop))}${nextStop.track ? ` · Gl. ${nextStop.track}` : ""}` : "Keine Haltdaten"}</span>
         </div>
         <div>
           <small>Ankunft Ziel</small>
           <strong>{clock(journey.endTime)}</strong>
           <span className={arrivalDelay > 0 ? "ride-delay" : ""}>
-            {arrivalDelay > 0 ? \`+\${arrivalDelay} Min.\` : hasLiveData ? "aktuell pünktlich" : "Fahrplan"}
+            {arrivalDelay > 0 ? `+${arrivalDelay} Min.` : hasLiveData ? "aktuell pünktlich" : "Fahrplan"}
           </span>
         </div>
       </div>
@@ -184,7 +184,7 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
       {active && nearestStop && (
         <div className="ride-position">
           <span>Position</span>
-          <b>{nearestStop.distance < 1_000 ? \`\${Math.round(nearestStop.distance)} m\` : \`\${(nearestStop.distance / 1000).toFixed(1)} km\`} von {nearestStop.stop.name}</b>
+          <b>{nearestStop.distance < 1_000 ? `${Math.round(nearestStop.distance)} m` : `${(nearestStop.distance / 1000).toFixed(1)} km`} von {nearestStop.stop.name}</b>
           <time>{location ? new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(location.updatedAt)) : ""}</time>
         </div>
       )}
@@ -203,7 +203,7 @@ export function LiveRideMode({ journey }: { journey: LiveJourney }) {
         <div className="ride-alerts">
           <span>Live-Störungen</span>
           {alerts.map((alert, index) => (
-            <article key={\`\${alert.service}-\${index}\`}>
+            <article key={`${alert.service}-${index}`}>
               <b>{alert.service}</b>
               <p>{alert.header}</p>
               {alert.description && <small>{alert.description}</small>}
