@@ -8,10 +8,10 @@ export default function InstallPage() {
         <a href="/" className="install-back">← Zur Karte</a>
         <div className="install-brand"><span>B</span><b>BahnConnections</b></div>
         <p className="install-kicker">MOBILE APP</p>
-        <h1>Fahrplan und Karte direkt auf deinem Startbildschirm.</h1>
-        <p className="install-intro">Die Web-App wird ohne App-Store installiert und öffnet sich anschließend wie eine eigenständige App. Live-Daten benötigen weiterhin eine Internetverbindung.</p>
+        <h1>Pulse direkt auf deinem Startbildschirm.</h1>
+        <p className="install-intro">Die installierte App startet bewusst in Pulse: aktive Fahrt, Geschwindigkeit, nächster Halt und Anschlusswächter. Atlas bleibt die Website für Planung und Analyse. Live-Daten benötigen weiterhin eine Internetverbindung.</p>
         <InstallClient />
-        <div className="install-features"><article><b>Live-Tafel</b><span>Abfahrten, Ankünfte, Gleise, Verspätungen und Ausfälle.</span></article><article><b>Ganze Fahrt</b><span>Alle Halte mit Zeiten und exaktem Verlauf direkt in der Karte.</span></article><article><b>Alle Bahnarten</b><span>Fernverkehr, Regio, S-Bahn und U-Bahn in einer Oberfläche.</span></article></div>
+        <div className="install-features"><article><b>Pulse</b><span>Aktive Fahrt mit Geschwindigkeit, ETA, Gleisen und Anschlusswächter.</span></article><article><b>Passport</b><span>Abgeschlossene Fahrten werden zu deiner persönlichen Reisehistorie.</span></article><article><b>Atlas + Pulse</b><span>Planung und Analyse im Web, Reisebegleitung in der installierten App.</span></article></div>
         <p className="install-note">Hinweis: BahnConnections ist ein unabhängiges Informationsangebot und keine offizielle App der Deutschen Bahn.</p>
       </section>
     </main>
