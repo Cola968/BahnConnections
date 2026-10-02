@@ -46,6 +46,7 @@ const edge = spawn(edgePath, [
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
+  "--lang=de-DE",
   `--remote-debugging-port=${debugPort}`,
   `--user-data-dir=${profileDirectory}`,
   "about:blank",
@@ -222,6 +223,8 @@ try {
   await command("Page.bringToFront");
   if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);
+  await command("Emulation.setLocaleOverride", { locale:"de-DE" });
+  await command("Emulation.setTimezoneOverride", { timezoneId:"Europe/Berlin" });
   await command("Page.navigate", { url });
   await pause(6500);
   const snapshots = [await layoutSnapshot("390x844 initial")];
