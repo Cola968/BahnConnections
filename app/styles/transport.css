@@ -261,3 +261,5 @@
   .journey-mobile-overview { padding-top:0; }
   .journey-mobile-overview>button { display:flex; }
 }
+
+.station-line-kpis span { text-transform:none; letter-spacing:0; font-weight:500; }
