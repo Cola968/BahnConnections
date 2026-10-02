@@ -15,7 +15,7 @@ check("Liquid Glass is functional, restrained and accessible",css.includes("--gl
 check("Search mode: planner and map; journey mode: map and inspector",desktop.includes(".desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
 check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
 check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
-check("General station markers recede behind the selected journey",page.includes('radius: journey ? 2.6') && page.includes('fillOpacity: journey ? .18') && page.includes('routeLayer as import("leaflet").Path'));
+check("General station markers recede behind the selected journey",page.includes('radius: journey ? 2.2') && page.includes('fillOpacity: journey ? .12') && page.includes('routeLayer as import("leaflet").Path'));
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
