@@ -4,11 +4,13 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V33 · Klare Reiseinformation
+## V33.1 · Klare Reiseinformation
 
 Journey und Live-Tafel verwenden ein gemeinsames Zeit- und Gleissystem. Bei einer Abweichung steht die durchgestrichene Planzeit direkt vor der aktuellen Zeit und dem Text zur Änderung. Bestätigte Echtzeit bis +5 Minuten ist grün, +6–14 amber und ab +15 rot; frühere Abfahrten sind amber. Das sind BahnConnections-Schwellen, keine offiziellen Betreiberfarben. Fehlende Echtzeit bleibt neutral. Ausfälle zeigen keinen erfundenen Istzeitpunkt.
 
 Desktop: Planer + Karte vor der Auswahl, Karte + Journey-Inspector danach. „Ändern“ öffnet gezielt den Planer; die ausgewählte Verbindung bleibt erhalten. Mobile behält das frei ziehbare Sheet mit getrenntem Minimieren, Schließen und Wiederherstellen.
+
+V33.1 präzisiert den Echtzeitstatus von auf der Karte geöffneten Bahnhofsfahrtverläufen: vollständige und teilweise Echtzeitabdeckung werden getrennt benannt. Zeit- und Gleisinformationen liefern Screenreadern jetzt echten versteckten Beschreibungstext statt als Bildrolle aufzutreten; der PWA-Cache wurde für die Aktualisierung angehoben.
 
 Prüfungen und offene Cloud-Einschränkungen: [V33-QA](docs/V33-QA.md). Der GitHub-Workflow führt TypeScript, Lint, Audits, Build und responsive Browser-QA aus. Ein echtes Android-/iOS-Gerät muss zusätzlich geprüft werden.
 
