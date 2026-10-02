@@ -1,3 +1,15 @@
+# V38.0 · Native Minimal UI
+
+- Heller Mobile-Look näher an der bevorzugten Referenz: Karte übernimmt die Fläche, Suche/Navigation/Sheet bleiben die wenigen bewussten Glass-Schichten.
+- Sichtbare „Live-Ebene“-Status-Pille entfernt; Live-Funktionen bleiben im Ansicht-Menü und für Screenreader erhalten.
+- Kartenmarker komplett neu abgestimmt: keine grauen Standardkreise mehr, sondern ruhige blau/teal umrandete Stationsmarker mit klarer Hub-Hierarchie und dezenter Tiefe.
+- Dark Mode nicht mehr als generisches Card-/Shadcn-Theme behandelt: weniger Borders, weniger verschachtelte Kacheln, neutralere Statusfarben und flachere Inhaltsbereiche.
+- Journey-Sheet deutlich kompakter: kürzere Texte, weniger redundante Metadaten, reduzierte Sekundärinformationen und flachere Alternativen.
+- Bahnhof/Live-Tafel aufgeräumt: KPI-Zahlen als zusammenhängende Informationszeile statt fünf Cards; Tabs, Produktfilter und Suchzeile deutlich weniger „Pill“-lastig.
+- Mobile Header liegt map-first über der Karte; Suchfeld, Bottom-Bar und Sheet nutzen zusammenhängendes Liquid Glass statt Glassmorphism auf jeder Komponente.
+- Reduced Motion/Transparency, Forced Colors und 44px-Touchziele bleiben erhalten.
+- PWA-Version und Cache auf V38.0 angehoben.
+
 # V37.0 · Liquid Glass Minimal
 
 - Neues Materialsystem mit klarer Trennung zwischen Content-, Functional-Glass- und Status-Layer.
