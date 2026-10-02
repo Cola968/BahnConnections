@@ -414,7 +414,7 @@ try {
         const state = await evaluate(`(() => {
           const row=document.querySelector('.live-stop-list li'), time=row?.querySelector('.realtime-time'), actual=time?.querySelector('.realtime-time__actual'), planned=time?.querySelector('del'), platform=row?.querySelector('.realtime-platform');
           if (!time) throw new Error('Kein Zeitfeld');
-          const expectedColor=getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(scenario.tone === 'success' ? '--status-on-time' : scenario.tone === 'warning' ? '--status-delay' : scenario.tone === 'danger' ? '--status-disruption' : '--ink')});
+          const expectedColor=getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(theme === 'dark' && scenario.tone === 'success' ? '--ink' : scenario.tone === 'success' ? '--status-on-time' : scenario.tone === 'warning' ? '--status-delay' : scenario.tone === 'danger' ? '--status-disruption' : '--ink')});
           const probe=document.createElement('span'); probe.style.color=expectedColor; document.body.append(probe); const color=getComputedStyle(probe).color; probe.remove();
           return {tone:time.dataset.tone,kind:time.className,planned:Boolean(planned),actual:Boolean(actual),delta:time.querySelector('.realtime-time__delta')?.textContent ?? '',aria:time.getAttribute('aria-label'),color:actual ? getComputedStyle(actual).color===color : true,platform:platform?.dataset.changed==='true',overflow:Array.from(document.querySelectorAll('.live-journey-leg,.mobile-sheet-panel,.realtime-time')).some(el=>el.scrollWidth>el.clientWidth+1)};
         })()`);
