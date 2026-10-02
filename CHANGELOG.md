@@ -1,3 +1,14 @@
+# V35.0 · Premium UI polish
+
+- UI-Hierarchie aus einem visuellen UX-Review weiter verdichtet: Karte bleibt Hauptfläche, Journey und Bahnhof zeigen zuerst die entscheidenden Reiseinformationen.
+- Mobile Bottom-Navigation vereinfacht: kein Dashboard-artiger Aktiv-Hintergrund mehr, stattdessen ruhiger Farbzustand und dezentes Press-Feedback.
+- Bottom-Sheet erhält ein nativeres 240-ms-Bewegungsprofil, größere Griff-Fläche und reduzierte Trennlinien.
+- Desktop-Panels, Kartencontrols und Popover verwenden weniger sichtbare Rahmen und eine konsistentere Elevation.
+- Journey-Alternativen von verschachtelten Karten zu einer ruhigeren gruppierten Liste reduziert.
+- Bahnhof-KPIs, Board-Filter, Transfer- und Detailflächen visuell vereinheitlicht.
+- Fokus- und Accessibility-Verhalten sowie bestehende Reduced-Motion-Regeln bleiben erhalten.
+- PWA-Version und Cache auf V35.0 angehoben.
+
 # V34.0 · Interface overhaul
 
 - Visuelles System neu kalibriert: native Systemtypografie, ruhigere Flächen, weniger gleich starke Rahmen, größere Radien und eine klarere Hierarchie.
