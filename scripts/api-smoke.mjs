@@ -1,4 +1,4 @@
-import { trimRepeatedStationLoop } from "../app/trip-trimming.ts";
+import { stationOccurrenceIndexes, trimRepeatedStationLoop } from "../app/trip-trimming.ts";
 
 const base = process.env.BAHNCONNECTIONS_BASE_URL ?? "http://localhost:3101";
 const siteAuthorization = process.env.BAHNCONNECTIONS_AUTH;
@@ -22,7 +22,27 @@ function nextWeekdayAtTenUtc() {
   return value.toISOString();
 }
 
+function assertRingTrimmingRegression() {
+  const station = { name:"Berlin Gesundbrunnen", lat:52.5486, lon:13.3894 };
+  const stops = [
+    { name:"Berlin Gesundbrunnen", lat:52.5486, lon:13.3894, departure:"2026-10-02T10:00:00+02:00" },
+    { name:"Berlin Schönhauser Allee", lat:52.5492, lon:13.4141, departure:"2026-10-02T10:04:00+02:00" },
+    { name:"Berlin Ostkreuz", lat:52.5031, lon:13.4694, departure:"2026-10-02T10:15:00+02:00" },
+    { name:"Berlin Südkreuz", lat:52.4758, lon:13.3659, departure:"2026-10-02T10:31:00+02:00" },
+    { name:"Berlin Westkreuz", lat:52.5008, lon:13.2838, departure:"2026-10-02T10:43:00+02:00" },
+    { name:"Berlin Gesundbrunnen", lat:52.5486, lon:13.3894, departure:"2026-10-02T10:58:00+02:00" },
+    { name:"Berlin Schönhauser Allee", lat:52.5492, lon:13.4141, departure:"2026-10-02T11:02:00+02:00" },
+  ];
+  const result = trimRepeatedStationLoop(stops, [], station, stops[0].departure);
+  if (!result.trimmed || result.stops.length !== 6) {
+    throw new Error(`Ringlinien-Regressionsfall fehlgeschlagen (${result.stops.length}/${stops.length} Halte)`);
+  }
+  report.checks.push({ name:"Ringlinien-Regression", ok:true, rawStops:stops.length, displayedStops:result.stops.length });
+}
+
 try {
+  assertRingTrimmingRegression();
+
   const gesundbrunnenSearch = await json(`/api/stations/search?q=${encodeURIComponent("Berlin Gesundbrunnen")}`);
   const gesundbrunnen = gesundbrunnenSearch.stations?.find((station) => station.transitousId);
   if (!gesundbrunnen) throw new Error("Gesundbrunnen fehlt in der internen Haltestellensuche");
@@ -39,9 +59,25 @@ try {
   const ringTrip = await json(`/api/trips/transitous/${encodeURIComponent(ringSample.tripId)}`);
   const rawRingStops = (ringTrip.trip?.legs ?? []).flatMap((leg) => [leg.from, ...(leg.intermediateStops ?? []), leg.to]).filter((stop) => stop?.name);
   const ringStops = rawRingStops.filter((stop, index) => index === 0 || stop.name !== rawRingStops[index - 1]?.name || (stop.departure ?? stop.arrival) !== (rawRingStops[index - 1]?.departure ?? rawRingStops[index - 1]?.arrival));
+  const ringOccurrences = stationOccurrenceIndexes(ringStops, gesundbrunnen);
   const ringSection = trimRepeatedStationLoop(ringStops, ringStops.filter((stop) => Number.isFinite(stop.lat) && Number.isFinite(stop.lon)).map((stop) => [stop.lat, stop.lon]), gesundbrunnen, ringSample.place?.departure ?? ringSample.place?.scheduledDeparture);
-  if (!ringSection.trimmed || ringSection.stops.length < 10 || ringSection.stops.length > 60) throw new Error(`S42 wird nicht auf genau eine Ringrunde begrenzt (${ringSection.stops.length}/${ringStops.length} Halte)`);
-  report.checks.push({ name:"Ringlinienabschnitt", ok:true, line:"S42", rawStops:ringStops.length, displayedStops:ringSection.stops.length });
+  if (ringOccurrences.length >= 2) {
+    if (!ringSection.trimmed || ringSection.stops.length < 5 || ringSection.stops.length > 60) {
+      throw new Error(`S42-Ringrunde konnte trotz wiederholtem Referenzbahnhof nicht begrenzt werden (${ringSection.stops.length}/${ringStops.length} Halte)`);
+    }
+  } else {
+    if (ringSection.trimmed) throw new Error("S42-Abschnitt wurde ohne wiederholten Referenzbahnhof unerwartet gekürzt");
+    if (ringStops.length < 2 || ringStops.length > 60) throw new Error(`S42 liefert einen unplausiblen bereits begrenzten Abschnitt (${ringStops.length} Halte)`);
+  }
+  report.checks.push({
+    name:"Ringlinienabschnitt",
+    ok:true,
+    line:"S42",
+    rawStops:ringStops.length,
+    displayedStops:ringSection.stops.length,
+    referenceOccurrences:ringOccurrences.length,
+    sourceShape:ringOccurrences.length >= 2 ? "repeated-loop" : "already-bounded",
+  });
 
   const board = await json(`/api/stations/${stationId}/board?n=300&kind=departure`);
   const sample = board.stopTimes?.find((item) => item.tripId);

@@ -1,4 +1,4 @@
-export const APP_VERSION = "33.2";
+export const APP_VERSION = "33.3";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
 
 export function isNewerAppVersion(candidate: string, current = APP_VERSION) {
