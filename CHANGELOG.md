@@ -1,3 +1,10 @@
+# V33.3 · Ringlinien-Hardening
+
+- Ringlinien-Logik stellt die erkannten Wiederholungen des Referenzbahnhofs explizit für Diagnostik und Tests bereit.
+- Der API-Smoke-Test prüft das Kürzen einer wiederholten Ringfahrt jetzt mit einem deterministischen Regressionsfall.
+- Live-S42-Prüfungen unterscheiden zwischen einer mehrfach enthaltenen Ringrunde und einem von Transitous bereits begrenzten Fahrtabschnitt. Ein bereits begrenzter Abschnitt wird nicht künstlich verlängert oder als Fehler gewertet.
+- PWA-Version und Cache auf V33.3 angehoben.
+
 # V33.2 · In-App Updates
 
 - Installierte BahnConnections-PWAs prüfen regelmäßig, ob eine neuere veröffentlichte Version verfügbar ist.
