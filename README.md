@@ -4,15 +4,18 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V32 · Lyra
+## V33 · Klare Reiseinformation
 
-Mobile: kompakter Header, feste Hauptnavigation und ein stufenlos ziehbares Bottom-Sheet. Minimieren oder Schließen verändert nur die Darstellung, nicht die Suche oder ausgewählte Fahrt. Die Ziehfläche umfasst auch den Griff. Safe-Areas und die virtuelle Tastatur werden berücksichtigt.
+Journey und Live-Tafel verwenden ein gemeinsames Zeit- und Gleissystem. Bei einer Abweichung steht die durchgestrichene Planzeit direkt vor der aktuellen Zeit und dem Text zur Änderung. Bestätigte Echtzeit bis +5 Minuten ist grün, +6–14 amber und ab +15 rot; frühere Abfahrten sind amber. Das sind BahnConnections-Schwellen, keine offiziellen Betreiberfarben. Fehlende Echtzeit bleibt neutral. Ausfälle zeigen keinen erfundenen Istzeitpunkt.
 
-PC: getrennte Bereiche für Planer, Karte und Details. Gemeinsame Design-Tokens, Systemschrift, skalierbare Typografie, zurückhaltende Linien-Badges und sichtbare Fahrplanziele ersetzen historische CSS-Überlagerungen. Fahrplan- und Routing-Schnittstellen bleiben unverändert.
+Desktop: Planer + Karte vor der Auswahl, Karte + Journey-Inspector danach. „Ändern“ öffnet gezielt den Planer; die ausgewählte Verbindung bleibt erhalten. Mobile behält das frei ziehbare Sheet mit getrenntem Minimieren, Schließen und Wiederherstellen.
 
-Validierung: Lint, TypeScript, Build, UI- und Board-Audit sowie automatisierte responsive Abläufe von 320 bis 1920 Pixeln. Der responsive Test verwendet ausdrücklich Testverbindungen (keine Fahrplanvalidierung), Klickaktivierung und echte emulierte Touch-Ziehgesten. Öffnen, Suchen, Minimieren während der Suche, Wiederherstellen, Schließen, Alternativwahl, lange Namen und Querformat werden geprüft. Ein echter Android-/iOS-Gerätetest bleibt erforderlich; Edge-Emulation ist kein Ersatz dafür.
+Prüfungen und offene Cloud-Einschränkungen: [V33-QA](docs/V33-QA.md). Der GitHub-Workflow führt TypeScript, Lint, Audits, Build und responsive Browser-QA aus. Ein echtes Android-/iOS-Gerät muss zusätzlich geprüft werden.
 
 ```bash
+pnpm audit:realtime
+pnpm audit:ui
+pnpm audit:board
 pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
 ```
 
@@ -66,3 +69,4 @@ BAHNCONNECTIONS_BASE_URL=http://localhost:3000 pnpm audit:api
 - OpenStreetMap-Kartenmaterial über die in der App ausgewiesenen Kacheldienste
 
 Die jeweiligen Quelldaten und Marken bleiben Eigentum ihrer Anbieter. BahnConnections ist ein unabhängiges Projekt und kein offizielles Angebot der Deutschen Bahn AG.
+

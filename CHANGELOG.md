@@ -1,3 +1,7 @@
+# V33 · Realtime & Reiseinformation
+
+Gemeinsame Soll-/Ist-Zeiten und Gleisänderungen in Journey, Tafel, Alternativen und Tooltips. Konservative Echtzeitsemantik, verständliche Ausfälle, Desktop-Suche und Journey als getrennte Modi, zurückhaltende allgemeine Kartenmarker. Responsive Status-Fixtures und Qualitätsworkflow ergänzt. Siehe `docs/V33-QA.md` für tatsächlich ausgeführte und ausstehende Prüfungen.
+
 # Updates
 
 ## V31 · Polaris
@@ -42,3 +46,4 @@
 - Zielspalte der kompakten Tafel korrigiert.
 - Künstliche Gleis-Connectoren nicht mehr gezeichnet.
 - Doppelte Kartenanpassungen beim mobilen Ziehen reduziert.
+

@@ -11,6 +11,7 @@
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "audit:network": "node scripts/network-audit.mjs",
+    "audit:realtime": "node scripts/realtime-audit.mjs",
     "audit:board": "node scripts/board-verification-audit.mjs",
     "audit:ui": "node scripts/ui-audit.mjs",
     "audit:mobile": "node scripts/mobile-visual-qa.mjs",
@@ -44,3 +45,4 @@
   },
   "type": "module"
 }
+

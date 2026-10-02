@@ -2,11 +2,12 @@ import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { realtimeScenarios, journeyFixture, boardFixture } from "./realtime-fixtures.mjs";
 
 const argumentsWithoutSeparator = process.argv.slice(2).filter((value) => value !== "--");
 const url = argumentsWithoutSeparator[0] ?? "http://127.0.0.1:3102/?qa=mobile-visual";
 const outputDirectory = resolve(argumentsWithoutSeparator[1] ?? join(tmpdir(), "bahnconnections-mobile-qa"));
-const edgePath = process.env.EDGE_PATH ?? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const edgePath = process.env.EDGE_PATH ?? (process.platform === "linux" ? "/usr/bin/chromium" : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
 const debugPort = 9300 + Math.floor(Math.random() * 500);
 const profileDirectory = join(tmpdir(), `bahnconnections-edge-${process.pid}-${Date.now()}`);
 const useJourneyFixture = process.env.BAHNCONNECTIONS_MOBILE_QA_LIVE !== "1";
@@ -38,9 +39,11 @@ const laterTime = time => time ? new Date(new Date(time).getTime() + 30 * 60_000
 const alternativeLeg = { ...fixtureLeg,name:'ICE 1207',tripId:'qa-ice-1207',startTime:laterTime(fixtureLeg.startTime),endTime:laterTime(fixtureLeg.endTime),stops:fixtureStops.map(stop => ({...stop,arrival:laterTime(stop.arrival),departure:laterTime(stop.departure)})) };
 const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alternativeLeg.startTime,endTime:alternativeLeg.endTime,legs:[alternativeLeg],transitLegs:[alternativeLeg] };
 
+let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
+  ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
   `--remote-debugging-port=${debugPort}`,
@@ -77,7 +80,9 @@ try {
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
-      const body = Buffer.from(JSON.stringify({ journeys:[fixtureJourney,alternativeJourney], source:"Mobile-QA-Fixture", updatedAt:fixtureJourney.updatedAt, realtimeStatus:"live", warnings:[] })).toString("base64");
+      const requestUrl = new URL(message.params.request.url);
+      const payload = requestUrl.pathname.endsWith('/board') ? boardFixture() : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
+      const body = Buffer.from(JSON.stringify(payload)).toString("base64");
       setTimeout(() => { void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" }], body }); },800);
       return;
     }
@@ -167,7 +172,7 @@ try {
   await command("Page.enable");
   await command("Runtime.enable");
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" }] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" }] });
   await setViewport(390, 844);
   await command("Page.navigate", { url });
   await pause(6500);
@@ -274,6 +279,21 @@ try {
   if (await evaluate(`getComputedStyle(document.querySelector(".mobile-sheet-panel")).display !== "none"`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
   await tap(".mobile-sheet-restore");
   await setViewport(1440, 900);
+  for (const width of [1024,1280,1440,1920]) {
+    await setViewport(width,900);
+    const mode = await evaluate(`(() => {
+      const shell=document.querySelector('.app-shell'), map=document.querySelector('.map-canvas').getBoundingClientRect(), inspector=document.querySelector('.journey-card').getBoundingClientRect();
+      return {journey:shell.classList.contains('desktop-journey-mode'),planner:Boolean(document.querySelector('.explore-card')),ok:map.right<=inspector.left+1,mapWidth:map.width,overflow:document.documentElement.scrollWidth>innerWidth+1};
+    })()`);
+    if (!mode.journey || mode.planner || !mode.ok || mode.overflow || mode.mapWidth < width * .5) throw new Error('Desktop-Journey-Modus bei '+width+': '+JSON.stringify(mode));
+    snapshots.push(await layoutSnapshot(width+' desktop journey'));
+  }
+  await screenshot('1920-desktop-journey');
+  await tap('.journey-mobile-overview>button');
+  if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) throw new Error('Suche ändern lässt Inspector parallel stehen');
+  await tap('.planner-return');
+  if (!await evaluate(`Boolean(document.querySelector('.journey-card'))`)) throw new Error('Rückkehr verliert die Verbindung');
+  await setViewport(1440,900);
   await screenshot('1440-before-close');
   if (await evaluate(`getComputedStyle(document.querySelector(".journey-card .mobile-sheet-actions")).display !== "none"`)) throw new Error("Mobile Buttons werden am PC angezeigt");
   await tap(".journey-card .desktop-panel-actions button:last-child", true);
@@ -285,11 +305,11 @@ try {
   await screenshot('1440-board-destinations');
   await tap('.station-card .desktop-panel-actions button:last-child', true);
   if (await evaluate(`Boolean(document.querySelector('.station-card'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
-  for (const width of [1100,1280,1440,1920]) {
+  for (const width of [1024,1280,1440,1920]) {
     await setViewport(width,900);
-    const columns = await evaluate(`(() => { const a=document.querySelector('.explore-card').getBoundingClientRect(), b=document.querySelector('.map-canvas').getBoundingClientRect(), c=document.querySelector('.desktop-welcome').getBoundingClientRect(); return {ok:a.right<=b.left&&b.right<=c.left,width:document.documentElement.scrollWidth<=innerWidth+1}; })()`);
-    if(!columns.ok || !columns.width) throw new Error('PC-Spalten überlappen bei '+width);
-    snapshots.push(await layoutSnapshot(width+' desktop workspace'));
+    const columns = await evaluate(`(() => { const a=document.querySelector('.explore-card').getBoundingClientRect(), b=document.querySelector('.map-canvas').getBoundingClientRect(); return {ok:a.right<=b.left+1 && b.right>=innerWidth-13,search:document.querySelector('.app-shell').classList.contains('desktop-search-mode'),inspector:Boolean(document.querySelector('.journey-card')),width:document.documentElement.scrollWidth<=innerWidth+1}; })()`);
+    if(!columns.ok || !columns.search || columns.inspector || !columns.width) throw new Error('PC-Suchmodus bei '+width+': '+JSON.stringify(columns));
+    snapshots.push(await layoutSnapshot(width+' desktop search'));
   }
   await screenshot('1920-desktop-workspace');
   await tap('.desktop-navigation button:nth-child(2)',true);
@@ -310,9 +330,51 @@ try {
     if (await evaluate(`getComputedStyle(document.querySelector('.mobile-sheet-panel')).display !== 'none'`)) throw new Error('X eines weiteren Panels reagiert nicht');
     await tap('.mobile-sheet-restore');
   }
+  const realtimeChecks = [];
+  if (useJourneyFixture) {
+    await setViewport(320,700);
+    for (const theme of ['light','dark']) {
+      await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      for (const scenario of realtimeScenarios) {
+        activeJourneys = [journeyFixture(fixtureJourney,scenario),alternativeJourney];
+        await tap('.mobile-navigation button:nth-child(2)');
+        if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) await tap('.journey-mobile-overview>button');
+        await tap('.plan-button');
+        await pause(1600);
+        await tap('.mobile-sheet-summary');
+        const state = await evaluate(`(() => {
+          const row=document.querySelector('.live-stop-list li'), time=row?.querySelector('.realtime-time'), actual=time?.querySelector('.realtime-time__actual'), planned=time?.querySelector('del'), platform=row?.querySelector('.realtime-platform');
+          if (!time) throw new Error('Kein Zeitfeld');
+          const expectedColor=getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(scenario.tone === 'success' ? '--status-on-time' : scenario.tone === 'warning' ? '--status-delay' : scenario.tone === 'danger' ? '--status-disruption' : '--ink')});
+          const probe=document.createElement('span'); probe.style.color=expectedColor; document.body.append(probe); const color=getComputedStyle(probe).color; probe.remove();
+          return {tone:time.dataset.tone,kind:time.className,planned:Boolean(planned),actual:Boolean(actual),delta:time.querySelector('.realtime-time__delta')?.textContent ?? '',aria:time.getAttribute('aria-label'),color:actual ? getComputedStyle(actual).color===color : true,platform:platform?.dataset.changed==='true',overflow:Array.from(document.querySelectorAll('.live-journey-leg,.mobile-sheet-panel,.realtime-time')).some(el=>el.scrollWidth>el.clientWidth+1)};
+        })()`);
+        const changed=scenario.delay!==0 || scenario.cancelled;
+        if(state.tone!==scenario.tone || !state.kind.includes('realtime-time--'+scenario.kind) || state.planned!==Boolean(changed) || state.actual===Boolean(scenario.cancelled) || !state.color || state.overflow || (scenario.platform && !state.platform)) throw new Error(theme+' '+scenario.name+': '+JSON.stringify(state));
+        realtimeChecks.push({theme,scenario:scenario.name,...state});
+        await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+        await screenshot('320-'+theme+'-'+scenario.name);
+        await evaluate(`document.querySelector('.live-stop-list li').scrollIntoView({block:'center'})`);
+        await screenshot('320-'+theme+'-'+scenario.name+'-stops');
+        snapshots.push(await layoutSnapshot('320 '+theme+' '+scenario.name));
+      }
+    }
+    activeJourneys=[fixtureJourney,alternativeJourney];
+    await tap('.mobile-navigation button:nth-child(3)');
+    await pause(1600);
+    const boardTimes = await evaluate(`Array.from(document.querySelectorAll('.board-time .realtime-time')).map(time => ({tone:time.dataset.tone,kind:time.className,planned:Boolean(time.querySelector('del')),actual:Boolean(time.querySelector('.realtime-time__actual')),overflow:time.scrollWidth>time.clientWidth+1}))`);
+    if(boardTimes.length < realtimeScenarios.length || boardTimes.some(time=>time.overflow)) throw new Error('Board-Echtzeit-Fixtures fehlen/überlaufen: '+JSON.stringify(boardTimes));
+    for (const scenario of realtimeScenarios) if(!boardTimes.some(time=>time.kind.includes('realtime-time--'+scenario.kind)&&time.tone===scenario.tone)) throw new Error('Board-Zustand fehlt: '+scenario.name);
+    await screenshot('320-dark-board-realtime');
+    // Accessibility modes must preserve text and geometry as well as semantic colour.
+    await evaluate(`document.documentElement.dataset.contrast='high';document.documentElement.dataset.font='large'`);
+    await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    snapshots.push(await layoutSnapshot('320 high contrast large type reduced motion'));
+    await screenshot('320-accessibility-board');
+  }
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, snapshots };
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {

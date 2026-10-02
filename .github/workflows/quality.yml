@@ -1,0 +1,49 @@
+name: BahnConnections quality
+
+on:
+  pull_request:
+  push:
+    branches: [main, codex/v33-realtime-redesign]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm lint
+      - run: pnpm audit:realtime
+      - run: pnpm audit:ui
+      - run: pnpm audit:board
+      - run: pnpm build
+      - name: Responsive interaction and realtime screenshots
+        env:
+          EDGE_PATH: /usr/bin/google-chrome
+        run: |
+          pnpm dev --host 127.0.0.1 > /tmp/bahnconnections-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          pnpm audit:mobile -- http://127.0.0.1:3000 work/mobile-qa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: responsive-qa
+          path: |
+            work/mobile-qa/
+            /tmp/bahnconnections-dev.log

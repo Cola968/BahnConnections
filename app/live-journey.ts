@@ -388,6 +388,8 @@ function parseDbJourney(item: DbJourney, index: number): LiveJourney | null {
       from, to, stops:uniqueStops(stops.length ? stops : [from, to]), points:points.length > 1 ? points : [],
       startTime:leg.departure, endTime:leg.arrival, scheduledStartTime:leg.plannedDeparture ?? leg.departure, scheduledEndTime:leg.plannedArrival ?? leg.arrival,
       durationSeconds:Math.max(0, (new Date(leg.arrival).getTime() - new Date(leg.departure).getTime()) / 1000),
+      // DB has no explicit per-leg realtime flag in this response. Equal times remain schedule-only.
+      // A changed endpoint is evidence of an update; a source-wide timestamp is not.
       realtime:Boolean(leg.plannedDeparture && leg.departure !== leg.plannedDeparture || leg.plannedArrival && leg.arrival !== leg.plannedArrival),
       cancelled:Boolean(leg.cancelled), alerts:(leg.remarks ?? []).map((remark) => ({ header:remark.summary ?? remark.text ?? "Betriebshinweis", description:remark.text })).filter((alert) => Boolean(alert.header)),
     };
@@ -672,3 +674,4 @@ export async function fetchLiveJourneys(request: LiveJourneyRequest): Promise<Li
   if (!response.ok) throw new Error(payload.warnings?.[0] ?? `Verbindungssuche ${response.status}`);
   return payload.journeys ?? [];
 }
+

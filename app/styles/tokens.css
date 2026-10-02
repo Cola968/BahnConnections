@@ -1,8 +1,10 @@
-/* V32 · Lyra. Shared by every viewport; transport colours remain source-driven. */
+/* V33. Shared by every viewport; transport colours remain source-driven. */
 :root {
   --ink:#20242b; --muted:#626a75; --paper:#fff; --soft:#f4f5f7; --line:#e3e5e9;
   --red:#d80720; --teal:#27606d; --card:var(--paper); --accent:#2459ad;
   --success:#23714d; --warning:#97620a; --danger:#bf2335;
+  --status-on-time:var(--success); --status-delay:var(--warning); --status-disruption:var(--danger); --status-schedule:var(--muted);
+  --route-focus:var(--accent); --route-transfer:var(--teal);
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
   --radius-control:8px; --radius-panel:12px;
   --shadow-menu:0 8px 28px #17202b1a; --shadow-sheet:0 -4px 24px #17202b14;
@@ -36,3 +38,4 @@ button,input,select { transition:background-color var(--motion-fast),border-colo
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
+
