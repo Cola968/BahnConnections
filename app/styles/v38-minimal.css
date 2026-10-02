@@ -1,0 +1,83 @@
+/* V38 — minimal premium transit UI. Loaded last on purpose. */
+:root {
+  --v38-panel-shadow:0 18px 50px rgba(23,32,43,.10);
+  --v38-float-shadow:0 10px 30px rgba(23,32,43,.10);
+  --v38-hairline:color-mix(in srgb,var(--line-subtle) 78%,transparent);
+}
+
+/* One visual hierarchy: map first, controls second, data first inside panels. */
+.floating-panel { border:0; box-shadow:var(--v38-panel-shadow); }
+.live-map-toolbar,.walking-card,.map-legend,.map-menu-popover.detached { border-color:color-mix(in srgb,var(--glass-stroke) 60%,transparent); box-shadow:var(--v38-float-shadow); }
+.map-legend summary { font-weight:600; }
+
+/* Planner: remove form-dashboard feeling. */
+.route-discovery-head { margin-bottom:22px; }
+.route-discovery-head h1 { font-size:calc(1.7rem * var(--panel-scale,1)); font-weight:760; letter-spacing:-.045em; }
+.route-search-pair { gap:12px; }
+.route-search-pair>div>span { margin-left:1px; font-size:calc(.72rem * var(--panel-scale,1)); font-weight:600; }
+.route-station-search { min-height:52px; border:0; border-radius:14px; background:var(--soft); box-shadow:none; }
+.route-station-search:focus-within { box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent); }
+.swap-button { width:36px; height:36px; border:0; background:var(--paper); box-shadow:0 5px 18px rgba(23,32,43,.12); }
+.planner-time-row { gap:12px; margin-top:22px; }
+.planner-time-mode { background:var(--soft); border-radius:11px; }
+.planner-time-mode button { border-radius:8px; }
+.planner-departure input,.filter-grid select,.filter-grid input[type="datetime-local"] { border:0; border-radius:11px; background:var(--soft); box-shadow:none; }
+.plan-button { min-height:52px; border-radius:13px; background:var(--action); box-shadow:none; font-weight:680; }
+.plan-button:hover:not(:disabled) { filter:brightness(.96); }
+.filter-drawer { border:0; background:transparent; }
+.filter-drawer>summary { border-top:1px solid var(--v38-hairline); }
+.planner-types button,.planner-check { border:0; background:var(--soft); box-shadow:none; }
+.planner-types button.active { color:var(--accent); background:color-mix(in srgb,var(--accent) 8%,var(--soft)); box-shadow:none; }
+.explore-actions { border-top:1px solid var(--v38-hairline); padding-top:8px; }
+
+/* Journey: route/time/status dominate, metadata recedes. */
+.journey-card h1,.station-card h1 { letter-spacing:-.045em; }
+.journey-mobile-overview { border-bottom-color:var(--v38-hairline); }
+.journey-secondary-facts { color:var(--muted); }
+.journey-alternatives>div>button { min-height:74px; border-bottom-color:var(--v38-hairline); }
+.live-journey-leg { border:0; border-radius:17px; background:var(--soft); box-shadow:none; }
+.transfer-step,.transfer-quality,.journey-mobile-data { border:0; background:var(--soft); }
+.journey-alerts { border-width:0 0 0 3px; box-shadow:none; }
+
+/* Station/board: transport data, not cards inside cards. */
+.station-line-kpis>div { border:0; border-radius:12px; background:var(--soft); box-shadow:none; }
+.station-section-tabs { border:0; background:var(--soft); }
+.board-search,.board-filter-panel,.board-row-detail,.board-full-trip { border:0; background:var(--soft); box-shadow:none; }
+
+/* Desktop: calm rails around a dominant map. */
+@media (min-width:1024px) {
+  .desktop-workspace .topbar { border-bottom-color:var(--v38-hairline); }
+  .desktop-navigation { border:0; background:var(--soft); box-shadow:none; }
+  .desktop-navigation>button { border-radius:9px; }
+  .desktop-navigation>button.active { background:var(--paper); box-shadow:0 1px 4px rgba(23,32,43,.10); }
+  .desktop-workspace .map-canvas { border:0; box-shadow:none; }
+  .desktop-workspace .floating-panel { border:0; border-radius:22px; box-shadow:var(--v38-panel-shadow); }
+  .desktop-workspace.desktop-search-mode .explore-card { border-radius:22px; }
+}
+
+/* Mobile: native hierarchy, restrained glass only for floating navigation/search. */
+@media (max-width:1023px) {
+  .topbar { border-bottom-color:transparent; box-shadow:0 1px 0 var(--v38-hairline); }
+  .topbar>.station-search { border-color:color-mix(in srgb,var(--glass-stroke) 55%,transparent); border-radius:16px; box-shadow:0 8px 26px rgba(23,32,43,.10); }
+  .mobile-sheet-panel { border-radius:30px 30px 0 0; box-shadow:0 -18px 54px rgba(23,32,43,.16); }
+  .mobile-sheet-panel>.panel-tools { min-height:66px; margin-bottom:4px; border-bottom:0; box-shadow:none; }
+  .mobile-sheet-panel>.panel-tools::before { width:38px; height:4px; opacity:.72; }
+  .mobile-sheet-summary b { font-size:calc(1rem * var(--panel-scale,1)); font-weight:690; letter-spacing:-.025em; }
+  .mobile-sheet-summary small { color:var(--muted); }
+  .mobile-sheet-actions button { border:0; background:transparent; box-shadow:none; }
+  .mobile-navigation { width:min(500px,calc(100% - 24px)); border-color:color-mix(in srgb,var(--glass-stroke) 55%,transparent); border-radius:22px; box-shadow:0 14px 38px rgba(23,32,43,.16); }
+  .mobile-navigation button { gap:2px; border-radius:16px; font-weight:570; }
+  .mobile-navigation button.active { background:transparent; box-shadow:none; color:var(--action); }
+  .mobile-navigation button.active svg { transform:translateY(-1px); }
+  .live-map-toolbar { padding:2px 7px; border-radius:12px; }
+  .location-trigger { border-radius:13px!important; }
+  .map-menu-popover.detached { border-radius:24px; }
+}
+
+/* Dark mode stays quiet: no bright glass edges. */
+html[data-theme="dark"] .floating-panel { box-shadow:0 20px 54px rgba(0,0,0,.30); }
+html[data-theme="dark"] .mobile-navigation { border-color:rgba(255,255,255,.08); box-shadow:0 16px 42px rgba(0,0,0,.34); }
+
+@media (prefers-reduced-motion:reduce) {
+  .mobile-navigation button.active svg { transform:none; }
+}
