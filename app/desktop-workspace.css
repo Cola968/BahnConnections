@@ -73,3 +73,7 @@
   .desktop-workspace .topbar { grid-template-columns:230px minmax(340px,1fr) 430px auto; }
 }
 @media (min-width:1800px) { .desktop-workspace { --workspace-left:370px; --workspace-right:440px; } }
+
+@media (min-width:1024px) {
+  .desktop-workspace .beta { display:none; }
+}
