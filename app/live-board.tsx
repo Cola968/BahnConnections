@@ -27,6 +27,7 @@ type BoardEntry = {
   platform?: string | null;
   plannedPlatform?: string | null;
   canceled?: boolean;
+  cancellationScope?: "stop" | "leg";
   realtime?: boolean;
   direction?: string;
   provenance?: string;
@@ -98,6 +99,7 @@ type TripLeg = {
   mode?: string;
   displayName?: string;
   realTime?: boolean;
+  cancelled?: boolean;
   routeColor?: string;
   routeTextColor?: string;
   from?: TripPlace;
@@ -190,6 +192,7 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal)
     platform: entry.place.track,
     plannedPlatform: entry.place.scheduledTrack,
     canceled: entry.cancelled || entry.tripCancelled || entry.place.cancelled,
+    cancellationScope:entry.tripCancelled || entry.cancelled ? "leg" : entry.place.cancelled ? "stop" : undefined,
     realtime: entry.realTime,
     direction: cleanDestination(entry.headsign) ?? cleanDestination(entry.tripTo?.name) ?? cleanDestination(entry.routeLongName),
     provenance: cleanDestination(entry.tripFrom?.name),
@@ -216,7 +219,7 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
       if (!stop?.name) continue;
       const previous = stops.at(-1);
       if (previous?.name === stop.name && (previous.departure ?? previous.arrival) === (stop.departure ?? stop.arrival)) continue;
-      stops.push(stop);
+      stops.push({ ...stop, cancelled:Boolean(stop.cancelled || leg.cancelled) });
     }
   }
   const points = segments.flat();
@@ -236,7 +239,7 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
 }
 
 function statusText(entry: BoardEntry) {
-  if (entry.canceled) return "Fahrt entfällt";
+  if (entry.canceled) return entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt";
   if (entry.alerts?.length) return "Betriebshinweis vorhanden";
   return "Fahrtverlauf öffnen";
 }
@@ -571,7 +574,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                   <button className="board-row-summary" onClick={() => void toggleRow(entry)} aria-expanded={rowOpen}>
                     <i className="row-status" aria-hidden="true" />
                     <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : brand.className === "tram" ? "tram" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
-                    <span className="board-time"><RealtimeTime scheduled={entry.plannedWhen} actual={entry.when} realtime={entry.realtime} cancelled={entry.canceled} cancellationLabel="Fahrt entfällt" showStatus compact /></span>
+                    <span className="board-time"><RealtimeTime scheduled={entry.plannedWhen} actual={entry.when} realtime={entry.realtime} cancelled={entry.canceled} cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} showStatus compact /></span>
                     <span className="board-via">{compact ? "" : "Zwischenhalte"}<small>{compact ? "" : "öffnen"}</small></span>
                     <span className="board-destination" title={entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt" : entry.direction ?? "Ziel wird ermittelt"}><b>{entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt …" : entry.direction ?? "Ziel wird ermittelt …"}</b><small>{statusText(entry)}</small></span>
                     <span className="board-platform"><RealtimePlatform scheduled={entry.plannedPlatform} actual={entry.platform} compact /></span>

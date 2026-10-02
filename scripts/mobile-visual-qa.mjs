@@ -81,9 +81,16 @@ try {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
       const requestUrl = new URL(message.params.request.url);
-      const payload = requestUrl.pathname.endsWith('/board') ? boardFixture() : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
+      const tripIndex=Number(requestUrl.pathname.match(/qa-board-(\d+)/)?.[1] ?? 0);
+      const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
+      const payload = requestUrl.pathname.endsWith('/board') ? boardFixture()
+        : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
+        : requestUrl.pathname.endsWith('/map/trips') ? []
+        : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
+        : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
+        : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
       const body = Buffer.from(JSON.stringify(payload)).toString("base64");
-      setTimeout(() => { void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" }], body }); },800);
+      setTimeout(() => { void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" },{name:"Access-Control-Allow-Origin",value:"*"}], body }); },800);
       return;
     }
     if (!message.id || !pending.has(message.id)) return;
@@ -172,7 +179,7 @@ try {
   await command("Page.enable");
   await command("Runtime.enable");
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" }] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);
   await command("Page.navigate", { url });
   await pause(6500);
@@ -299,12 +306,16 @@ try {
   await tap(".journey-card .desktop-panel-actions button:last-child", true);
   if (await evaluate(`Boolean(document.querySelector(".journey-card"))`)) throw new Error("Desktop-X schließt die Verbindung nicht");
   snapshots.push(await layoutSnapshot("1440 desktop closed"));
+  await tap('.desktop-navigation button:nth-child(3)');
+  await pause(1600);
   // Regression: a hidden via cell used to auto-place the destination in a zero-width column.
   const boardDestinations = await evaluate(`Array.from(document.querySelectorAll('.board-destination')).map(el => ({text:el.textContent.trim(),width:el.getBoundingClientRect().width}))`);
+  if (useJourneyFixture && !boardDestinations.length) throw new Error('Board-Fixture wurde nicht geladen');
   if (boardDestinations.some(row => !row.text || row.width < 40)) throw new Error('Fahrplanziel fehlt oder ist unsichtbar');
   await screenshot('1440-board-destinations');
   await tap('.station-card .desktop-panel-actions button:last-child', true);
   if (await evaluate(`Boolean(document.querySelector('.station-card'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
+  await tap('.desktop-navigation button:first-child');
   for (const width of [1024,1280,1440,1920]) {
     await setViewport(width,900);
     const columns = await evaluate(`(() => { const a=document.querySelector('.explore-card').getBoundingClientRect(), b=document.querySelector('.map-canvas').getBoundingClientRect(); return {ok:a.right<=b.left+1 && b.right>=innerWidth-13,search:document.querySelector('.app-shell').classList.contains('desktop-search-mode'),inspector:Boolean(document.querySelector('.journey-card')),width:document.documentElement.scrollWidth<=innerWidth+1}; })()`);
