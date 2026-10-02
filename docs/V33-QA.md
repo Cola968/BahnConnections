@@ -30,11 +30,18 @@ The fixture runner disables service-worker registration so deterministic respons
 
 Actual screenshots of the 320px expanded journey, 1920px map + inspector, desktop search, 844px landscape, +10 light, +24 dark, cancelled stop, early departure, platform change and incomplete realtime were reviewed. A second polish pass removed the duplicate single-leg occupancy block, simplified nested information groups, corrected the landscape map fit to the side sheet's measured width, made missing realtime text visible, and reserved a second row for board times. Endpoint and transfer cancellations preserve the difference between a cancelled stop and a cancelled leg. Live train markers and trails share the central realtime status tones.
 
-## Recorded browser evidence
+## Recorded CI evidence
 
-[Run 37014282689](https://github.com/Cola968/BahnConnections/actions/runs/37014282689) produced `report.json`: 22 realtime checks across both themes and 45 layout snapshots, with no horizontal overflow. TypeScript, ESLint, the three audits and build passed. The browser assertions completed and wrote the report, but the process subsequently failed on a delayed fixture response after browser shutdown. The runner now clears delayed replies and CDP timeout timers during teardown; the full workflow is being rerun. Do not interpret that earlier run as a passing workflow.
+[Final implementation run 37014969991](https://github.com/Cola968/BahnConnections/actions/runs/37014969991), commit `817a10c142a5d88ea7bd94d44319652d01befd42`, completed successfully. Its artifacts include screenshots, `report.json`, development-server logs and the separate live-source reports.
 
-Live network and API smoke outcomes are reported separately in the workflow artifacts. Those steps are allowed to fail when upstream sources are unavailable; an overall green workflow alone does not establish live-source success.
+- TypeScript, ESLint, realtime audit, UI audit (43 checks), board verification audit and production build passed.
+- Responsive browser QA passed with a clean process exit: 22 realtime checks across both themes and 45 layout snapshots, with no horizontal overflow. Desktop search/journey, landscape, dragging, collapse, close, restoration and accessibility presentation were exercised.
+- Live network audit passed: nine stations, four route/connection checks and no reported warnings.
+- The optional live API smoke did **not** pass. Station search and station services passed, then the existing S42 ring-loop assertion failed: `S42 wird nicht auf genau eine Ringrunde begrenzt (13/13 Halte)`. The remaining board, trip and planner checks in that script were not reached. The ring-trimming implementation and this assertion were not changed by V33. The report establishes this failed sample; it does not establish whether the cause is source data or an existing trimming limitation.
+
+Live-source steps use `continue-on-error`; the workflow's overall success must not be read as a successful API smoke. Use the actual `api-smoke.json` and `network-audit.json` reports in the artifacts.
+
+The earlier [run 37014282689](https://github.com/Cola968/BahnConnections/actions/runs/37014282689) completed browser assertions and wrote its report, then failed on a delayed fixture response after browser shutdown. The final runner clears delayed replies and CDP timeout timers during teardown, and the successful follow-up above verifies that fix.
 
 ## Remaining limits
 
