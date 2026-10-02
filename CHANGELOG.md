@@ -1,3 +1,14 @@
+# V36.0 · Minimal Map-first UI
+
+- Mobile Kopfbereich auf eine kompakte Zeile reduziert; die Bahnhofssuche schwebt nun direkt über der Karte statt eine zweite Header-Zeile zu belegen.
+- Dadurch gewinnt die Karte sichtbar an Höhe, ohne Suche oder Live-Zugriff zu verstecken.
+- Im mobilen Verbindungssheet entfällt die doppelte Planer-Überschrift; Start/Ziel beginnen sofort nach dem Sheet-Kopf.
+- Bottom-Navigation, Sheet-Griff und Panel-Abstände weiter beruhigt; aktive Navigation nutzt nur noch Farbe statt zusätzlicher Flächen.
+- Journey-Abschnitte, Umstiege und Qualitätsblöcke verwenden weniger verschachtelte Karten und sichtbare Rahmen.
+- Desktop-Seitenleisten wurden schmaler, sodass die Karte stärker das visuelle Zentrum bleibt.
+- Karten-, Status- und Aktionsfarben bleiben semantisch getrennt; Reduced Motion, Touch-Ziele und Echtzeitdarstellung bleiben erhalten.
+- PWA-Version und Cache auf V36.0 angehoben.
+
 # V35.0 · Premium UI polish
 
 - UI-Hierarchie aus einem visuellen UX-Review weiter verdichtet: Karte bleibt Hauptfläche, Journey und Bahnhof zeigen zuerst die entscheidenden Reiseinformationen.
