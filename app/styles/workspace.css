@@ -142,3 +142,50 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:brightness(.65) 
   .mobile-sheet-panel { width:50%; left:auto; right:0; border-radius:12px 0 0 0; }
   .mobile-navigation button { min-height:44px; flex-direction:row; gap:8px; }
 }
+
+
+/* V34 · app shell, map and mobile hierarchy */
+.app-shell { background:var(--soft); }
+.topbar { border-bottom-color:var(--line-subtle); background:var(--paper); box-shadow:0 1px 0 #17202b08; }
+.map-stage { background:var(--soft); }
+.floating-panel { border-color:var(--line-subtle); border-radius:var(--radius-panel); background:var(--elevated); box-shadow:var(--shadow-panel); }
+.explore-card,.journey-card { padding:24px; }
+.panel-tools { min-height:46px; margin-bottom:18px; border-bottom-color:var(--line-subtle); }
+.panel-drag-label { color:var(--muted); font-weight:600; }
+.desktop-panel-actions { gap:2px; }
+.desktop-panel-actions button { min-width:38px; border-radius:9px; }
+.live-map-toolbar { gap:4px; padding:4px 6px; border-color:var(--line-subtle); border-radius:13px; background:var(--elevated); box-shadow:0 8px 24px #17202b12; }
+.live-map-toolbar button { min-height:38px; border-radius:9px; padding:7px 10px; }
+.map-live-state { padding:0 9px 0 5px; }
+.map-menu-backdrop { background:#1017242b; }
+.map-menu-popover.detached { width:356px; gap:14px; padding:18px; border-color:var(--line-subtle); border-radius:18px; background:var(--elevated); }
+.map-menu-popover button { border-color:var(--line-subtle); border-radius:11px; background:var(--elevated-soft); }
+.map-menu-popover button.active { border-color:color-mix(in srgb,var(--accent) 38%,var(--line)); background:color-mix(in srgb,var(--accent) 8%,var(--paper)); }
+.map-menu-dismiss strong { font-weight:700; letter-spacing:-.02em; }
+.map-menu-links { border-top-color:var(--line-subtle); }
+.location-tools button { border-radius:11px; }
+.walking-card { border-color:var(--line-subtle); border-radius:16px; box-shadow:var(--shadow-menu); }
+.map-legend { border-color:var(--line-subtle); border-radius:11px; background:var(--elevated); box-shadow:0 8px 22px #17202b0d; }
+.leaflet-control-zoom { border:1px solid var(--line-subtle)!important; border-radius:12px!important; overflow:hidden; box-shadow:0 8px 22px #17202b12!important; }
+.leaflet-control-zoom a { border-color:var(--line-subtle)!important; background:var(--elevated)!important; }
+.source-modal { border-color:var(--line-subtle); border-radius:18px; box-shadow:0 28px 80px #0f162038; }
+
+@media (max-width:1023px) {
+  .topbar { border-bottom:0; box-shadow:0 1px 0 #17202b08; }
+  .brand { min-height:40px; }
+  .brand-mark { width:30px; height:30px; border-radius:8px; }
+  .mobile-navigation { padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px)); border-top-color:var(--line-subtle); background:var(--paper); box-shadow:0 -8px 28px #17202b0d; }
+  .mobile-navigation button { position:relative; border-radius:12px; font-weight:600; }
+  .mobile-navigation button.active { color:var(--action); background:color-mix(in srgb,var(--action) 7%,var(--paper)); }
+  .mobile-navigation button.active::before { position:absolute; top:4px; left:50%; width:22px; height:3px; border-radius:999px; background:var(--action); content:""; transform:translateX(-50%); }
+  .live-map-toolbar { border:0; background:var(--elevated); box-shadow:0 6px 20px #17202b10; }
+  .location-trigger { border:1px solid var(--line-subtle)!important; background:var(--elevated)!important; box-shadow:0 7px 20px #17202b12!important; }
+  .mobile-sheet-panel { border-top:1px solid var(--line-subtle); border-radius:24px 24px 0 0; background:var(--elevated); box-shadow:0 -16px 42px #17202b18; padding:0 18px 22px; }
+  .mobile-sheet-panel>.panel-tools { min-height:74px; margin:0 -18px 18px; padding:18px 14px 8px 18px; border-bottom-color:var(--line-subtle); background:var(--elevated); }
+  .mobile-sheet-panel>.panel-tools::before { width:38px; height:5px; border-radius:999px; background:#b5b5ba; }
+  .mobile-sheet-summary b { font-size:calc(1rem * var(--panel-scale,1)); font-weight:700; letter-spacing:-.015em; }
+  .mobile-sheet-actions button { border-radius:11px; }
+  .app-shell[data-mobile-sheet="closed"] .mobile-sheet-restore { border-color:var(--line-subtle); border-radius:16px; background:var(--elevated); box-shadow:var(--shadow-menu); }
+  .map-menu-popover.detached { left:10px; right:10px; bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 10px); border-radius:20px; }
+  .station-card { padding:0 18px 18px; }
+}

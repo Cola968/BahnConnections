@@ -34,3 +34,51 @@
 @media (min-width:1800px) { .desktop-workspace { --workspace-left:360px; --workspace-right:390px; } }
 @media (min-width:1024px) and (max-width:1199px) { .desktop-navigation svg { display:none; }.brand-name { font-size:calc(1rem * var(--panel-scale,1)); }.topbar { grid-template-columns:180px minmax(280px,1fr) 180px auto; }.header-actions>.round-button { display:none; } }
 
+
+
+/* V34 · desktop workspace */
+@media (min-width:1024px) {
+  .desktop-workspace { --workspace-left:326px; --workspace-right:398px; --app-header:72px; }
+  .desktop-workspace .topbar { grid-template-columns:210px minmax(300px,1fr) minmax(300px,430px) auto; gap:16px; padding:0 18px; }
+  .desktop-workspace .brand { padding-bottom:0; }
+  .desktop-workspace .beta { position:static; margin-left:2px; }
+  .desktop-navigation { justify-content:flex-start; gap:3px; padding:3px; border:1px solid var(--line-subtle); border-radius:13px; background:var(--soft); }
+  .desktop-navigation>button,.navigation-more>summary { position:relative; min-height:38px; padding:7px 11px; border-radius:9px; font-weight:600; }
+  .desktop-navigation>button.active { color:var(--ink); background:var(--paper); box-shadow:0 1px 4px #17202b12; }
+  .desktop-navigation>button.active::after { position:absolute; right:10px; bottom:4px; left:10px; height:2px; border-radius:999px; background:var(--action); content:""; }
+  .navigation-more>div { top:45px; width:252px; border-color:var(--line-subtle); border-radius:14px; background:var(--elevated); box-shadow:var(--shadow-menu); }
+  .navigation-more button { border-radius:9px; }
+  .navigation-more button:hover { background:var(--soft); }
+  .topbar>.station-search { height:44px; border-radius:12px; background:var(--soft); }
+  .desktop-workspace .map-stage { padding:calc(var(--app-header) + 16px) 16px 16px; }
+  .desktop-workspace.has-primary-panel .map-stage { padding-right:calc(var(--workspace-right) + 32px); }
+  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px; }
+  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 32px); padding-right:12px; }
+  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px; padding-right:calc(var(--workspace-right) + 24px); }
+  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:16px; padding-right:calc(var(--workspace-right) + 32px); }
+  .desktop-workspace .map-canvas { border:1px solid var(--line-subtle); border-radius:18px; box-shadow:0 8px 30px #17202b0c; }
+  .desktop-workspace .floating-panel { top:calc(var(--app-header) + 16px); right:16px; bottom:16px; width:var(--workspace-right); border-radius:18px; }
+  .desktop-workspace.desktop-search-mode .explore-card { left:16px; right:auto; width:var(--workspace-left); }
+  .desktop-workspace .compact-toolbar,.desktop-workspace .location-tools { top:calc(var(--app-header) + 28px); left:28px; }
+  .desktop-workspace .location-tools { top:calc(var(--app-header) + 82px); }
+  .desktop-workspace.desktop-search-mode .compact-toolbar,.desktop-workspace.desktop-search-mode .location-tools { left:calc(var(--workspace-left) + 44px); }
+  .desktop-workspace .walking-card { top:calc(var(--app-header) + 136px); left:28px; }
+  .desktop-workspace.desktop-search-mode .walking-card { left:calc(var(--workspace-left) + 44px); }
+  .desktop-workspace .map-legend { right:28px; bottom:32px; }
+  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-legend { right:calc(var(--workspace-right) + 44px); }
+  .desktop-workspace .journey-alternatives { margin-top:18px; }
+}
+@media (min-width:1440px) {
+  .desktop-workspace { --workspace-left:350px; --workspace-right:420px; }
+  .desktop-workspace .topbar { grid-template-columns:230px minmax(340px,1fr) 430px auto; }
+}
+@media (min-width:1800px) { .desktop-workspace { --workspace-left:370px; --workspace-right:440px; } }
+
+@media (min-width:1024px) {
+  .desktop-workspace .beta { display:none; }
+}
+
+@media (min-width:1440px) {
+  .desktop-workspace .topbar { grid-template-columns:230px max-content minmax(320px,1fr) auto; }
+  .desktop-navigation { justify-self:start; }
+}
