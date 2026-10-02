@@ -40,7 +40,7 @@ check("Sheet restoration preserves selected journey and endpoints",page.includes
 check("Navigation preserves journey data",page.includes("!journey || departuresView") && page.includes('journey && !departuresView'));
 check("Resize observer accounts for the measured sheet",page.includes("new ResizeObserver") && page.includes("measuredHeight") && page.includes("invalidateSize"));
 check("44px mobile actions and scalable 16px input prevent iOS zoom",css.includes("width:44px; height:44px") && css.includes(".station-search input { font-size:calc(1rem * var(--panel-scale,1))"));
-check("Reduced motion is supported",css.includes("@media (prefers-reduced-motion:reduce)"));
+check("Reduced motion is supported",css.includes("@media (prefers-reduced-motion:reduce)") && css.includes("--motion-native:cubic-bezier(.22,1,.36,1)"));
 check("Planner is a controlled extracted view",page.includes("<JourneySearch") && planner.includes("type StationField") && planner.includes("onOptions"));
 check("Travel options collapsed by default",planner.includes('<details className="filter-drawer route-options">') && !planner.includes('route-options" open') && planner.includes('className="planner-time-row"'));
 check("All five modes and five transfers retained",["fern","regional","sbahn","ubahn","tram"].every(mode=>planner.includes("'"+mode+"'")) && planner.includes("[0,1,2,3,4,5]"));
@@ -58,8 +58,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "34.0"') && versionMetadata.includes('"version": "34.0"') && versionMetadata.includes('/install?update=V34.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "35.0"') && versionMetadata.includes('"version": "35.0"') && versionMetadata.includes('/install?update=V35.0'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V34.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v34-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V35.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v35-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
