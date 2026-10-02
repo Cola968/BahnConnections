@@ -18,21 +18,23 @@ export type JourneySearchProps = {
 export function JourneySearch(props:JourneySearchProps) {
   const { options } = props;
   return <>
-    <div className="route-discovery-head"><h1>Verbindung suchen</h1></div>
+    <div className="route-discovery-head"><h1>Verbindung planen</h1><p>Deutschlandweit mit Live-Fahrplandaten</p></div>
     <div className="route-search-pair">
       <div><span>Von</span><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.start} variant="route" placeholder="Startbahnhof" ariaLabel="Startbahnhof suchen" liveTransit /></div>
       <button type="button" className="swap-button" onClick={props.onSwap} aria-label="Start und Ziel tauschen"><UiIcon name="swap" width="18" height="18" /></button>
       <div><span>Nach</span><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.target} variant="route" placeholder="Zielbahnhof" ariaLabel="Zielbahnhof suchen" liveTransit /></div>
     </div>
-    <div className="planner-departure"><label>{options.arriveBy ? "Ankunft · Datum & Zeit" : "Abfahrt · Datum & Zeit"}<input type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} /></label></div>
-    <button type="button" className="plan-button" onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Verbindungen werden gesucht …" : "Verbindungen suchen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>
+    <div className="planner-time-row">
+      <div className="planner-time-mode" role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
+      <div className="planner-departure"><label>{options.arriveBy ? "Ankommen am" : "Losfahren am"}<input type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} /></label></div>
+    </div>
+    <button type="button" className="plan-button" onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Suche läuft …" : "Verbindungen anzeigen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>
     <details className="filter-drawer route-options">
-      <summary>Reiseoptionen</summary>
+      <summary>Optionen</summary>
       <div className="planner-types" aria-label="Verkehrsmittel filtern">
         {([['fern','ICE / IC / EC'],['regional','RE / RB'],['sbahn','S-Bahn'],['ubahn','U-Bahn'],['tram','Straßenbahn']] as const).map(([category,label]) => <button type="button" key={category} className={props.categories.includes(category) ? "active" : ""} aria-pressed={props.categories.includes(category)} onClick={() => props.onCategory(category)}>{label}</button>)}
       </div>
       <div className="filter-grid">
-        <div className="planner-time-mode" role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
         <label>Umstiege<select value={options.maxChanges} onChange={event => props.onOptions({maxChanges:Number(event.target.value) as SearchOptions['maxChanges']})}>{[0,1,2,3,4,5].map(count => <option key={count} value={count}>{count === 0 ? "Nur Direktverbindungen" : count === 5 ? "Automatisch · bis 5" : `Bis ${count} Umstieg${count > 1 ? 'e' : ''}`}</option>)}</select></label>
         <label>Zusätzlicher Umstiegspuffer<select value={options.transferMinutes} onChange={event => props.onOptions({transferMinutes:Number(event.target.value)})}>{[0,3,5,8,12].map(minutes => <option key={minutes} value={minutes}>{minutes ? `${minutes} Minuten` : "Ohne zusätzlichen Puffer"}</option>)}</select></label>
         <label className="planner-check"><input type="checkbox" checked={options.wheelchair} onChange={event => props.onOptions({wheelchair:event.target.checked})} /><span><b>Barrierearme Wege</b><small>Stufenarme Umstiege bevorzugen</small></span></label>
