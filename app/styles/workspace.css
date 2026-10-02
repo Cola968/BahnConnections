@@ -486,10 +486,10 @@ html[data-theme="dark"] .station-point.selected { filter:drop-shadow(0 2px 5px r
     margin-bottom:2px;
     padding-top:15px;
     border:0;
-    background:transparent;
+    background:color-mix(in srgb,var(--paper) 94%,transparent);
     box-shadow:none;
-    -webkit-backdrop-filter:none;
-    backdrop-filter:none;
+    -webkit-backdrop-filter:blur(22px) saturate(108%);
+    backdrop-filter:blur(22px) saturate(108%);
   }
   .mobile-sheet-panel>.panel-tools::before {
     width:34px;
