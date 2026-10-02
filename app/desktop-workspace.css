@@ -77,3 +77,8 @@
 @media (min-width:1024px) {
   .desktop-workspace .beta { display:none; }
 }
+
+@media (min-width:1440px) {
+  .desktop-workspace .topbar { grid-template-columns:230px max-content minmax(320px,1fr) auto; }
+  .desktop-navigation { justify-self:start; }
+}
