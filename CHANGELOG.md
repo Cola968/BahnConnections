@@ -1,3 +1,14 @@
+# V34.0 · Interface overhaul
+
+- Visuelles System neu kalibriert: native Systemtypografie, ruhigere Flächen, weniger gleich starke Rahmen, größere Radien und eine klarere Hierarchie.
+- Desktop-Workspace überarbeitet: Karte bleibt Hauptfläche, Suche sitzt als eigenständige linke Sidebar, Journey/Bahnhof als fokussierter rechter Inspector.
+- Hauptnavigation als kompakte Segment-Navigation mit eindeutigem aktiven Zustand gestaltet.
+- Reiseplaner vereinfacht: Abfahrt/Ankunft und Datum/Zeit stehen direkt im Hauptfluss; Detailfilter bleiben eingeklappt.
+- Primäre Aktion nutzt BahnConnections-Rot, Auswahl- und Informationszustände bleiben blau; Echtzeitstatusfarben bleiben davon getrennt.
+- Bahnhof, Live-Tafel, Journey, Alternativen und Umstiege verwenden neue ruhige Karten- und Gruppierungsflächen.
+- Mobile Bottom-Navigation und das frei ziehbare Sheet wurden stärker wie eine native App strukturiert, inklusive klarer aktiver Zustände und größerer Touch-Ziele.
+- PWA-Version und Cache auf V34.0 angehoben.
+
 # V33.3 · Ringlinien-Hardening
 
 - Ringlinien-Logik stellt die erkannten Wiederholungen des Referenzbahnhofs explizit für Diagnostik und Tests bereit.
