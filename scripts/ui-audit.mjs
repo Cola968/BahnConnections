@@ -16,11 +16,13 @@ check("Search mode: planner and map; journey mode: map and inspector",desktop.in
 check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
 check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
 check("General station markers recede behind the selected journey",page.includes('radius: journey ? 2.6') && page.includes('fillOpacity: journey ? .18') && page.includes('routeLayer as import("leaflet").Path'));
+check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
+const realtimePlatform = await read("app/realtime-platform.tsx");
 check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 15') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
-check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('aria-label={realtimeAccessibleLabel'));
+check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
 check("Brand, route and disruption colours stay separate",css.includes('--route-focus:var(--accent)') && css.includes('--status-disruption:var(--danger)'));
 check("Live layer toggle and unavailable realtime are distinct",page.includes('Live-Ebene aus') && page.includes('Keine Echtzeitdaten'));
@@ -54,6 +56,6 @@ check("API provenance fields preserved",apis.every(source=>["source","updatedAt"
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V33 worker bypasses authentication and refreshes navigation",worker.includes("bahnconnections-static-v33") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)"));
+check("V33.1 worker bypasses authentication and refreshes navigation",worker.includes("bahnconnections-static-v33-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
