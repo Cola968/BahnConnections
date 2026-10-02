@@ -159,3 +159,13 @@ button:active:not(:disabled) { transform:scale(.985); }
 .explore-actions { gap:4px; }
 .explore-actions button { color:var(--muted); }
 .explore-actions button:hover { color:var(--ink); }
+
+/* V36 · remove repeated planner chrome */
+@media (max-width:1023px) {
+  .route-discovery-head { display:none; }
+  .route-search-pair { margin-top:2px; }
+  .planner-time-row { margin-top:16px; }
+  .filter-drawer.route-options { margin-top:10px; }
+  .plan-button { min-height:50px; box-shadow:none; }
+  .explore-actions { margin-top:8px; }
+}
