@@ -6,7 +6,7 @@ export function realtimeTooltip(label: string, input: RealtimeInput, platform?: 
   const node = document.createElement("div");
   const title = document.createElement("strong");
   title.textContent = label;
-  node.append(title);
+  node.appendChild(title);
   const row = document.createElement("span");
   row.className = `realtime-time realtime-time--${state.kind}`;
   row.dataset.tone = state.tone;
@@ -19,27 +19,28 @@ export function realtimeTooltip(label: string, input: RealtimeInput, platform?: 
     const planned = document.createElement("del");
     planned.className = "realtime-time__planned";
     planned.textContent = formatRealtimeTime(state.scheduled);
-    pair.append(planned);
+    pair.appendChild(planned);
   }
   const current = document.createElement(state.kind === "cancelled" ? "strong" : "time");
   current.className = state.kind === "cancelled" ? "realtime-time__status" : "realtime-time__actual";
   current.textContent = state.kind === "cancelled" ? "Entfällt" : formatRealtimeTime(state.kind === "schedule" ? state.scheduled ?? state.actual : state.actual ?? state.scheduled);
-  pair.append(current);
-  row.append(pair);
+  pair.appendChild(current);
+  row.appendChild(pair);
   if (state.kind !== "cancelled") {
     const delta = document.createElement("small");
     delta.className = "realtime-time__delta";
     delta.setAttribute("aria-hidden", "true");
     delta.textContent = realtimeStatusLabel(state);
-    row.append(delta);
+    row.appendChild(delta);
   }
-  node.append(document.createElement("br"), row);
+  node.appendChild(document.createElement("br"));
+  node.appendChild(row);
   if (platform) {
     const track = derivePlatformPresentation(platform.scheduled, platform.actual);
     if (track.actual) {
       const text = document.createElement("div");
       text.textContent = track.label;
-      node.append(text);
+      node.appendChild(text);
     }
   }
   return node;
