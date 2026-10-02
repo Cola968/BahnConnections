@@ -108,3 +108,17 @@
 @media (min-width:1800px) {
   .desktop-workspace { --workspace-left:330px; --workspace-right:400px; }
 }
+
+/* V36 · narrow planner keeps date/time fully readable */
+@media (min-width:1024px) {
+  .desktop-workspace.desktop-search-mode .planner-time-row {
+    grid-template-columns:1fr;
+    align-items:stretch;
+    gap:8px;
+  }
+  .desktop-workspace.desktop-search-mode .planner-time-row .planner-time-mode {
+    min-width:0;
+    width:100%;
+  }
+  .desktop-workspace.desktop-search-mode .planner-departure input { width:100%; }
+}
