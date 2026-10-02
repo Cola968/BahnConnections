@@ -1,3 +1,12 @@
+# V33.2 · In-App Updates
+
+- Installierte BahnConnections-PWAs prüfen regelmäßig, ob eine neuere veröffentlichte Version verfügbar ist.
+- Bei einem Update erscheint eine kompakte In-App-Benachrichtigung mit „Jetzt aktualisieren“ und einem Link zu „Download / Installation“.
+- `/version.json` stellt die veröffentlichte Versionsnummer und den Installationspfad bereit.
+- Service-Worker-Updates warten auf die Entscheidung des Nutzers statt sofort ungefragt per `skipWaiting()` zu übernehmen.
+- Die Installationsseite kann gezielt über `/install?update=V…` geöffnet werden und versucht, einen wartenden Service Worker zu laden und zu aktivieren.
+- PWA-Cache auf V33.2 angehoben.
+
 # V33.1 · Polish & Accessibility
 
 - Bahnhofsfahrtverläufe unterscheiden jetzt „Echtzeit an allen Halten“, „Echtzeit teilweise verfügbar“ und reine Fahrplandaten.

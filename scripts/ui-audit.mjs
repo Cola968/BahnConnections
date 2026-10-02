@@ -20,6 +20,9 @@ check("Station-trip realtime summary stays conservative",page.includes('function
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
 const realtimePlatform = await read("app/realtime-platform.tsx");
+const pwaRegister = await read("app/pwa-register.tsx");
+const appVersion = await read("app/app-version.ts");
+const versionMetadata = await read("public/version.json");
 check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 15') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
@@ -55,7 +58,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "33.2"') && versionMetadata.includes('"version": "33.2"') && versionMetadata.includes('/install?update=V33.2'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V33.1 worker bypasses authentication and refreshes navigation",worker.includes("bahnconnections-static-v33-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)"));
+check("V33.2 worker waits for explicit update activation",worker.includes("bahnconnections-static-v33-2") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;

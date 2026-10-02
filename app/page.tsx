@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
 import { JourneySearch } from "./journey-search";
@@ -1061,7 +1062,7 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${desktopSearchMode ? " desktop-search-mode" : ""}${desktopJourneyMode ? " desktop-journey-mode" : ""}${journey ? " has-journey" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V33.1</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">{APP_VERSION_LABEL}</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={navigate} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
@@ -1105,7 +1106,7 @@ export default function Home() {
             <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle Status</option><option value="delayed">Nur verspätet</option><option value="ontime">Nur pünktlich</option></select></label>
             <span>Netzebenen</span><button className={overviewRoutesVisible ? "overview-route-toggle active" : "overview-route-toggle"} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}><b>Kuratiertes Fernnetz</b><small>{overviewRoutesVisible ? "sichtbar · nicht vollständig" : `aus · ${ROUTES.length} Referenzlinien`}</small></button>
             <div className="map-display-toggles"><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={minimalMode ? "active" : ""} onClick={() => setMinimalMode((value) => !value)}>Minimalmodus</button><button className={focusMode ? "active" : ""} onClick={() => setFocusMode((value) => !value)}>Fokusmodus</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugschweif</button></div>
-            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>V33.1</small></div>
+            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>{APP_VERSION_LABEL}</small></div>
           </div>}
         </>}
 

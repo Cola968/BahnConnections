@@ -598,3 +598,10 @@
   .station-walk-action small { font-size:12px; }
 }
 @media (prefers-reduced-motion:reduce) { .location-trigger.locating>span { animation:none; } }
+
+
+.install-update-panel { display:flex; flex-direction:column; gap:8px; margin:14px 0; padding:14px; border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--paper); }
+.install-update-panel>b { font-size:13px; }
+.install-update-panel>span,.install-update-panel>small { color:var(--muted); font-size:12px; line-height:1.5; }
+.install-update-panel .install-primary { align-self:flex-start; margin-top:4px; }
+.install-update-panel .install-primary:disabled { cursor:wait; opacity:.65; }
