@@ -97,3 +97,43 @@ html[data-contrast="high"] {
     --glass-filter-strong:none;
   }
 }
+
+
+/* V38 · native minimal surfaces: one glass shell, flat content */
+:root {
+  --accent:#0b7084;
+  --action:#e51526;
+  --success:#3f775c;
+  --warning:#9c6e2e;
+  --danger:#b8424d;
+  --status-on-time:var(--success);
+  --status-delay:var(--warning);
+  --status-disruption:var(--danger);
+  --glass-clear:color-mix(in srgb,var(--paper) 76%,transparent);
+  --glass-regular:color-mix(in srgb,var(--paper) 88%,transparent);
+  --glass-strong:color-mix(in srgb,var(--paper) 95%,transparent);
+  --glass-stroke:color-mix(in srgb,#fff 58%,var(--line-subtle));
+  --glass-shadow:0 12px 34px #17202b15,inset 0 1px 0 rgba(255,255,255,.52);
+  --glass-shadow-soft:0 7px 22px #17202b10,inset 0 1px 0 rgba(255,255,255,.42);
+}
+html[data-theme="dark"] {
+  --ink:#f2f3f4;
+  --muted:#a7abb1;
+  --paper:#17191c;
+  --soft:#202328;
+  --line:#353940;
+  --line-subtle:#2a2e34;
+  --elevated:#191c20;
+  --elevated-soft:#1e2126;
+  --accent:#80a8c6;
+  --action:#ef4450;
+  --success:#8eaf9a;
+  --warning:#c4a06a;
+  --danger:#d77d86;
+  --glass-clear:color-mix(in srgb,#17191c 82%,transparent);
+  --glass-regular:color-mix(in srgb,#17191c 90%,transparent);
+  --glass-strong:color-mix(in srgb,#17191c 96%,transparent);
+  --glass-stroke:rgba(255,255,255,.10);
+  --glass-shadow:0 16px 38px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10);
+  --glass-shadow-soft:0 9px 26px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08);
+}

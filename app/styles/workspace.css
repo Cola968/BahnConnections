@@ -417,3 +417,122 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:brightness(.65) 
     transform:translateX(-50%);
   }
 }
+
+
+/* V38 · map-first native shell. Glass is continuous chrome, not nested tiles. */
+.station-point {
+  filter:drop-shadow(0 1px 1.5px rgba(18,48,57,.18));
+  transition:stroke-width var(--motion-fast),fill-opacity var(--motion-fast),opacity var(--motion-fast);
+}
+.station-point.major-hub { filter:drop-shadow(0 2px 4px rgba(18,60,72,.22)); }
+.station-point.selected { filter:drop-shadow(0 2px 5px rgba(27,83,128,.28)); }
+html[data-theme="dark"] .station-point { filter:drop-shadow(0 1px 2px rgba(0,0,0,.38)); }
+html[data-theme="dark"] .station-point.major-hub,
+html[data-theme="dark"] .station-point.selected { filter:drop-shadow(0 2px 5px rgba(0,0,0,.45)); }
+
+@media (max-width:1023px) and (min-height:521px) {
+  .map-stage { padding-top:0; }
+  .topbar {
+    background:transparent;
+    border:0;
+    box-shadow:none;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+  .brand { text-shadow:0 1px 10px color-mix(in srgb,var(--paper) 72%,transparent); }
+  html[data-theme="dark"] .brand { text-shadow:0 1px 12px rgba(0,0,0,.52); }
+  .topbar>.station-search {
+    background:var(--glass-strong);
+    -webkit-backdrop-filter:blur(24px) saturate(118%);
+    backdrop-filter:blur(24px) saturate(118%);
+  }
+  .live-map-toolbar { display:none; }
+  .location-tools { top:calc(var(--app-header) + 72px); }
+  .location-trigger {
+    width:44px;
+    height:44px;
+    border:0!important;
+    border-radius:14px!important;
+    background:var(--glass-strong)!important;
+    box-shadow:var(--glass-shadow-soft)!important;
+  }
+  .leaflet-control-zoom {
+    border:0!important;
+    border-radius:16px!important;
+    background:var(--glass-strong)!important;
+    box-shadow:var(--glass-shadow-soft)!important;
+  }
+  .leaflet-control-zoom a {
+    width:42px!important;
+    height:42px!important;
+    line-height:42px!important;
+    border-color:color-mix(in srgb,var(--line-subtle) 65%,transparent)!important;
+  }
+
+  .mobile-sheet-panel {
+    border:0;
+    border-radius:26px 26px 0 0;
+    background:var(--glass-strong);
+    box-shadow:0 -15px 38px #17202b16;
+    -webkit-backdrop-filter:blur(28px) saturate(112%);
+    backdrop-filter:blur(28px) saturate(112%);
+  }
+  html[data-theme="dark"] .mobile-sheet-panel {
+    background:color-mix(in srgb,#14171b 94%,transparent);
+    box-shadow:0 -18px 44px rgba(0,0,0,.32);
+  }
+  .mobile-sheet-panel>.panel-tools {
+    min-height:62px;
+    margin-bottom:2px;
+    padding-top:15px;
+    border:0;
+    background:color-mix(in srgb,var(--paper) 94%,transparent);
+    box-shadow:none;
+    -webkit-backdrop-filter:blur(22px) saturate(108%);
+    backdrop-filter:blur(22px) saturate(108%);
+  }
+  .mobile-sheet-panel>.panel-tools::before {
+    width:34px;
+    height:4px;
+    background:color-mix(in srgb,var(--muted) 55%,transparent);
+  }
+  .mobile-sheet-actions { gap:2px; }
+  .mobile-sheet-actions button {
+    background:transparent;
+    box-shadow:none;
+    border-radius:12px;
+  }
+
+  .mobile-navigation {
+    width:min(520px,calc(100% - 24px));
+    height:calc(62px + env(safe-area-inset-bottom,0px));
+    padding:4px 7px calc(4px + env(safe-area-inset-bottom,0px));
+    border:0;
+    border-radius:23px;
+    background:var(--glass-strong);
+    box-shadow:0 10px 30px #17202b18,inset 0 1px 0 rgba(255,255,255,.42);
+    -webkit-backdrop-filter:blur(26px) saturate(118%);
+    backdrop-filter:blur(26px) saturate(118%);
+  }
+  html[data-theme="dark"] .mobile-navigation {
+    box-shadow:0 13px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .mobile-navigation button {
+    border-radius:16px;
+    font-size:calc(.7rem * var(--panel-scale,1));
+    font-weight:580;
+  }
+  .mobile-navigation button svg { width:20px; height:20px; stroke-width:1.65; }
+  .mobile-navigation button:hover { background:transparent; }
+  .mobile-navigation button.active {
+    color:var(--action);
+    background:color-mix(in srgb,var(--action) 6%,transparent);
+    box-shadow:none;
+  }
+  html[data-theme="dark"] .mobile-navigation button.active {
+    background:color-mix(in srgb,var(--action) 7%,transparent);
+  }
+}
+html[data-theme="dark"] .map-canvas .leaflet-tile-pane {
+  filter:brightness(.58) saturate(.7) contrast(1.04);
+}

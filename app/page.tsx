@@ -610,15 +610,26 @@ export default function Home() {
       const importanceRadius = isMajorHub ? 9.5 : station.hub ? 7.6 : Math.min(7, 3.8 + (profile?.domesticDirect ?? 0) / 15);
       const connected = overviewRoutesVisible ? connections.find((connection) => connection.station.id === station.id) : undefined;
       const reachability = reachableById.get(station.id);
-      const reachabilityColor = !reachability ? "#c9d2d1" : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#d2a24f" : "#c97765";
+      const reachabilityColor = !reachability ? (theme === "dark" ? "#61747a" : "#9fb6ba") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
+      const markerPalette = theme === "dark"
+        ? { edge:"#7fa9b3", fill:"#142b32", dbFill:"#1b343b", hub:"#d7e9ed", major:"#8eb8c1", active:"#4e86bd" }
+        : { edge:"#0f7486", fill:"#f7fcfd", dbFill:"#edf7f8", hub:"#dff1f3", major:"#178395", active:"#2d76b8" };
+      const baseRadius = station.source === "db" ? Math.max(2.8, extraRadius - .4) : isMajorHub ? 7.4 : station.hub ? 6.2 : Math.min(5.8, 3.4 + (profile?.domesticDirect ?? 0) / 18);
+      const markerClasses = [
+        "station-point",
+        isMajorHub ? "major-hub" : "",
+        station.hub ? "hub" : "",
+        station.source === "db" ? "db-station" : "",
+        isSelected ? "selected" : "",
+      ].filter(Boolean).join(" ");
       const marker = L.circleMarker([station.lat, station.lon], {
-        radius: journey ? 2.6 : isSelected || isDestination ? 10 : isTransfer ? 8.5 : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? 5.4 : station.source === "db" ? extraRadius : importanceRadius,
-        color: isSelected || isDestination ? "#fff" : isTransfer ? "#ffbd4a" : station.source === "db" ? "#59727a" : isMajorHub ? "#fff" : "#0b3442",
-        opacity: journey ? .28 : 1,
-        weight: journey ? 1 : isSelected || isDestination ? 3.5 : isTransfer ? 3 : isMajorHub ? 2.5 : station.hub ? 2 : 1.4,
-        fillColor: isSelected ? "#d45f5f" : isDestination ? "#7775a7" : isTransfer ? "#d7a653" : reachabilityVisible ? reachabilityColor : minimalMode ? "#75878b" : isConnected ? "#4f8f91" : isMajorHub || station.hub ? "#d45f5f" : station.source === "db" ? station.passengerBand === "> 1.000" ? "#f9fffd" : "#d5e1df" : "#fffdf8",
-        fillOpacity: journey ? .18 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .16 : station.source === "db" && !isSelected ? .76 : 1,
-        className: isMajorHub ? "station-point major-hub" : station.hub ? "station-point hub" : "station-point",
+        radius: journey ? 2.2 : isSelected || isDestination ? 8.6 : isTransfer ? 7.2 : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? 5.1 : baseRadius,
+        color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#c8a86b" : "#a77d38") : isMajorHub ? "#fff" : markerPalette.edge,
+        opacity: journey ? .2 : .98,
+        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : isMajorHub ? 2.6 : station.hub ? 2.1 : 1.7,
+        fillColor: isSelected ? markerPalette.active : isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#806d49" : "#e7d6b3") : reachabilityVisible ? reachabilityColor : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#315e68" : "#cde5e8") : isMajorHub ? markerPalette.major : station.hub ? markerPalette.hub : station.source === "db" ? markerPalette.dbFill : markerPalette.fill,
+        fillOpacity: journey ? .12 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .16 : .96,
+        className: markerClasses,
       }).addTo(layer);
       const reachabilityDetail = reachabilityVisible && reachability ? ` · ${formatDuration(reachability.minutes)} · ${reachability.changes ? `${reachability.changes} Umstieg${reachability.changes > 1 ? "e" : ""}` : "direkt"}` : "";
       const curatedDetail = connected ? `${profile?.domesticDirect ?? 0} direkte Inlandsziele · ab ${selected?.name}: ca. ${formatDuration(estimateMinutes(connected.best, selected!.id, station.id))}${reachabilityDetail}` : `${profile?.domesticDirect ?? 0} direkte Inlandsziele · etwa ${profile?.dailyStops ?? 0} Fernzughalte/Tag${reachabilityDetail}`;
@@ -1094,7 +1105,8 @@ export default function Home() {
         {!focusMode && <>
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
             <button type="button" className={liveFiltersOpen ? "map-menu-trigger active" : "map-menu-trigger"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu"><UiIcon name="layers" />Ansicht</button>
-            {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}<span className={`map-live-state ${liveState}`}>{!liveVisible ? "Live-Ebene aus" : liveState === "loading" ? "Live-Ebene lädt …" : liveState === "error" ? "Live-Daten nicht erreichbar" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live · ${visibleLiveTrips.length} Züge`}</span>
+            {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}
+            <span className="sr-only" aria-live="polite">{!liveVisible ? "Live-Daten nicht aktiv" : liveState === "loading" ? "Live-Daten werden geladen" : liveState === "error" ? "Live-Daten nicht erreichbar" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live-Daten · ${visibleLiveTrips.length} Züge`}</span>
           </div>
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
@@ -1158,13 +1170,13 @@ export default function Home() {
                 <b>{primaryJourneyLeg?.name ?? "Verbindung"}</b>
                 <strong>{selectedJourneyStart.name} <i aria-hidden="true">→</i> {selectedJourneyTarget.name}</strong>
                 <JourneyTimeRange journey={journey} />
-                <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direktverbindung"}</small>
+                <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
                 {journey.cancelled && <small className="journey-disruption" role="status">Ausfall enthalten · betroffene Fahrtabschnitte prüfen</small>}
               </div>
               <button type="button" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }} aria-label="Suche und Reiseoptionen ändern">Ändern</button>
             </div>
-            <p className="journey-secondary-facts">{journeyForecast ? `Auslastung voraussichtlich ${journeyForecast.label.toLocaleLowerCase("de")}` : "Keine Auslastungsprognose"} · {journeyAccessibilityConfirmed ? "Barrierefreiheit bestätigt" : "Barrierefreiheit bitte prüfen"}</p>
-            <details className="journey-mobile-data"><summary><i />{journey.cancelled ? "Ausfall enthalten" : journey.realtimeStatus === "live" ? "Live-Daten aktiv" : journey.realtimeStatus === "partial" ? "Live-Daten unvollständig" : "Nur Fahrplandaten"}<span>Datenstatus</span></summary><p>{journey.sourceLabel} · geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</p>{journey.warnings.map((warning,index)=><p key={index}>{warning}</p>)}</details>
+            {(journeyForecast || journeyAccessibilityConfirmed) && <div className="journey-quick-facts">{journeyForecast && <span>Auslastung {journeyForecast.label.toLocaleLowerCase("de")}</span>}{journeyAccessibilityConfirmed && <span>Barrierefrei</span>}</div>}
+            <details className="journey-mobile-data"><summary><i />{journey.cancelled ? "Ausfall" : journey.realtimeStatus === "live" ? "Live-Daten" : journey.realtimeStatus === "partial" ? "Live teilweise" : "Fahrplan"}<span>Details</span></summary><p>{journey.sourceLabel} · geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</p>{journey.warnings.map((warning,index)=><p key={index}>{warning}</p>)}</details>
             <JourneyAlternatives journeys={journeyOptions} selected={journey} limit={journeyOptionLimit} label={journeyOptionLabel} onSelect={chooseJourney} onMore={() => setJourneyOptionLimit(value => value + 8)} />
             <div className="journey-legs live-legs">
               {journey.transitLegs.map((leg, index) => {
