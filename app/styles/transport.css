@@ -318,3 +318,48 @@
   .journey-mobile-overview { align-items:center; }
   .journey-mobile-route { gap:3px; }
 }
+
+/* V37 · reduce card-on-card noise in transit content */
+@media (max-width:1023px) {
+  .journey-secondary-facts {
+    padding:2px 0 10px;
+    color:var(--muted);
+    background:transparent;
+  }
+  .journey-mobile-data {
+    margin:0 0 12px;
+    padding:0;
+    border:0;
+    border-top:1px solid var(--line-subtle);
+    border-bottom:1px solid var(--line-subtle);
+    border-radius:0;
+    background:transparent;
+  }
+  .journey-mobile-data>summary {
+    min-height:48px;
+    padding:0 2px;
+    background:transparent;
+  }
+  .journey-mobile-data>p {
+    margin:0 2px 10px;
+  }
+  .journey-alternatives {
+    margin-top:2px;
+    padding-top:8px;
+  }
+  .journey-alternatives>div>button {
+    min-height:74px;
+  }
+  .station-line-kpis {
+    gap:6px;
+  }
+  .station-line-kpis>div {
+    border-radius:11px;
+    background:transparent;
+  }
+}
+@media (min-width:1024px) {
+  .journey-mobile-data {
+    background:color-mix(in srgb,var(--paper) 68%,transparent);
+  }
+}
