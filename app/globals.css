@@ -242,6 +242,10 @@
 .live-train-marker.glyph.sbahn { background:#4b8b69; }
 .live-train-marker.glyph.delayed { background:#c99b45; animation:none; box-shadow:0 0 0 3px rgba(201,155,69,.17),0 3px 9px rgba(10,39,47,.2); }
 .live-train-marker.glyph.severe { background:#c8675e; box-shadow:0 0 0 4px rgba(200,103,94,.18),0 3px 9px rgba(10,39,47,.2); }
+.live-train-marker.glyph.status-neutral { background:var(--status-schedule); }
+.live-train-marker.glyph.status-success { background:var(--status-on-time); }
+.live-train-marker.glyph.status-warning { background:var(--status-delay); }
+.live-train-marker.glyph.status-danger { background:var(--status-disruption); }
 .live-cluster { width:40px; height:40px; border-width:2px; color:white; border-color:rgba(255,255,255,.9); background:#4f8f91; box-shadow:0 5px 16px rgba(9,36,44,.19); }
 .live-cluster.calm { background:#438c7c; }
 .live-cluster.late { background:#c99b45; }

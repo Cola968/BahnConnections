@@ -8,6 +8,7 @@ import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
 import { realtimeTooltip } from "./realtime-tooltip";
+import { deriveRealtimePresentation } from "./realtime-presentation";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
@@ -690,14 +691,16 @@ export default function Home() {
       for (const trip of trips) {
         const progress = liveTripProgress(trip, liveTick);
         const position = pointOnTrip(trip, progress);
-        if (showTrails) L.polyline(trailForTrip(trip, progress), { color:trip.delay >= 15 ? "#c8675e" : trip.delay >= 6 ? "#c99b45" : trip.category === "sbahn" ? "#4b8b69" : "#4f8f91", weight:1.6, opacity:.24, dashArray:"2 7", lineCap:"round" }).addTo(layer);
-        const className = `live-train-marker glyph ${trip.category}${trip.delay >= 15 ? " severe" : trip.delay >= 6 ? " delayed" : ""}${trackedTripId === trip.tripId ? " tracked" : ""}`;
+        const presentation = deriveRealtimePresentation({ scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime });
+        const statusToken = { neutral:"--status-schedule", success:"--status-on-time", warning:"--status-delay", danger:"--status-disruption" }[presentation.tone];
+        if (showTrails) L.polyline(trailForTrip(trip, progress), { color:getComputedStyle(document.documentElement).getPropertyValue(statusToken).trim(), weight:1.6, opacity:.24, dashArray:"2 7", lineCap:"round" }).addTo(layer);
+        const className = `live-train-marker glyph ${trip.category} status-${presentation.tone}${trackedTripId === trip.tripId ? " tracked" : ""}`;
         const marker = L.marker(position, { zIndexOffset:900, icon:L.divIcon({ className:"live-train-wrap", html:`<div class="${className}"><i></i></div>`, iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(layer);
         marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`, { scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime }), { direction:"top", offset:[0,-11] });
         marker.on("click", () => { setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded"); });
       }
     }
-  }, [liveState, liveTick, liveView, liveVisible, mapReady, mapZoom, showTrails, trackedTripId, visibleLiveTrips]);
+  }, [highContrast, liveState, liveTick, liveView, liveVisible, mapReady, mapZoom, showTrails, theme, trackedTripId, visibleLiveTrips]);
 
   useEffect(() => {
     if (!trackedTripId || !mapRef.current) return;
@@ -1228,4 +1231,3 @@ export default function Home() {
     </main>
   );
 }
-

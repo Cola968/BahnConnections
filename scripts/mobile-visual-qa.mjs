@@ -81,6 +81,7 @@ try {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
       const requestUrl = new URL(message.params.request.url);
+      if (requestUrl.pathname.endsWith('/board')) console.log('Intercepted board fixture: '+requestUrl.pathname);
       const tripIndex=Number(requestUrl.pathname.match(/qa-board-(\d+)/)?.[1] ?? 0);
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/board') ? boardFixture()
@@ -120,7 +121,9 @@ try {
       if (await evaluate(expression)) return;
       await pause(250);
     }
-    throw new Error(message);
+    await screenshot('failed-wait');
+    const diagnostic = await evaluate(`({boardRows:document.querySelectorAll('.board-time .realtime-time').length,panel:document.querySelector('.station-card')?.innerText})`);
+    throw new Error(message+': '+JSON.stringify(diagnostic));
   }
 
   async function setViewport(width, height) {
@@ -187,7 +190,12 @@ try {
   await command("Page.enable");
   await command("Runtime.enable");
   // Worker-forwarded requests belong to another CDP target and escape these fixtures.
-  if (useJourneyFixture) await command("Network.setBypassServiceWorker", { bypass:true });
+  if (useJourneyFixture) {
+    await command("Network.enable");
+    await command("Network.setBypassServiceWorker", { bypass:true });
+    // Fixture QA exercises the app, not offline caching or the worker's controller reload.
+    await command("Page.addScriptToEvaluateOnNewDocument", { source:`if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('Worker disabled for deterministic UI fixtures'));` });
+  }
   await command("Page.bringToFront");
   if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);

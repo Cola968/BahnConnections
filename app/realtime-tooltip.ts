@@ -38,8 +38,25 @@ export function realtimeTooltip(label: string, input: RealtimeInput, platform?: 
   if (platform) {
     const track = derivePlatformPresentation(platform.scheduled, platform.actual);
     if (track.actual) {
-      const text = document.createElement("div");
-      text.textContent = track.label;
+      const text = document.createElement("span");
+      text.className = "realtime-platform";
+      if (track.changed) text.dataset.changed = "true";
+      text.setAttribute("role", "img");
+      text.setAttribute("aria-label", track.label);
+      const visual = document.createElement("span");
+      visual.setAttribute("aria-hidden", "true");
+      visual.appendChild(document.createTextNode("Gleis "));
+      if (track.changed) {
+        const planned = document.createElement("del");
+        planned.textContent = track.scheduled;
+        visual.appendChild(planned);
+      }
+      const actual = document.createElement("span");
+      actual.className = "realtime-platform__actual";
+      actual.textContent = track.actual;
+      visual.appendChild(actual);
+      text.appendChild(visual);
+      node.appendChild(document.createElement("br"));
       node.appendChild(text);
     }
   }
