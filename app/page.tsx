@@ -933,12 +933,15 @@ export default function Home() {
     const mobile = window.matchMedia("(max-width: 1023px)").matches;
     const mapHeight = mapElementRef.current?.clientHeight ?? window.innerHeight;
     const sheet = document.querySelector<HTMLElement>('.mobile-sheet-panel');
-    const measuredHeight = sheet?.getBoundingClientRect().height ?? 0;
-    const bottomPadding = !mobile ? 64 : Math.min(Math.max(0, mapHeight - 140), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
+    const sheetRect = sheet?.getBoundingClientRect();
+    const measuredHeight = sheetRect?.height ?? 0;
+    const sideSheet = mobile && window.matchMedia("(max-height:520px)").matches && sheetState !== "closed";
+    const rightPadding = sideSheet ? (sheetRect?.width ?? window.innerWidth / 2) + 28 : 28;
+    const bottomPadding = !mobile ? 64 : sideSheet ? 28 : Math.min(Math.max(0, mapHeight - 140), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
     mapRef.current.fitBounds(leafletRef.current.latLngBounds(points), mobile ? {
       paddingTopLeft:[28,28],
       animate:false,
-      paddingBottomRight:[28,bottomPadding],
+      paddingBottomRight:[rightPadding,bottomPadding],
       maxZoom:12,
     } : { padding:[80,80], maxZoom:12, animate:false });
   }
@@ -1150,7 +1153,6 @@ export default function Home() {
             </div>
             <p className="journey-secondary-facts">{journeyForecast ? `Auslastung voraussichtlich ${journeyForecast.label.toLocaleLowerCase("de")}` : "Keine Auslastungsprognose"} · {journeyAccessibilityConfirmed ? "Barrierefreiheit bestätigt" : "Barrierefreiheit bitte prüfen"}</p>
             <details className="journey-mobile-data"><summary><i />{journey.cancelled ? "Ausfall enthalten" : journey.realtimeStatus === "live" ? "Live-Daten aktiv" : journey.realtimeStatus === "partial" ? "Live-Daten unvollständig" : "Nur Fahrplandaten"}<span>Datenstatus</span></summary><p>{journey.sourceLabel} · geprüft {new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" }).format(new Date(journey.updatedAt))}</p>{journey.warnings.map((warning,index)=><p key={index}>{warning}</p>)}</details>
-            <button type="button" className="journey-edit-search" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }}>← Suche und Optionen ändern</button>
             <JourneyAlternatives journeys={journeyOptions} selected={journey} limit={journeyOptionLimit} label={journeyOptionLabel} onSelect={chooseJourney} onMore={() => setJourneyOptionLimit(value => value + 8)} />
             <div className="journey-legs live-legs">
               {journey.transitLegs.map((leg, index) => {
@@ -1160,7 +1162,7 @@ export default function Home() {
                   <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b><small>{leg.operator ?? "Betreiber nicht gemeldet"}{leg.headsign ? ` · Richtung ${leg.headsign}` : ""}</small></span><span className={leg.cancelled ? "leg-live-state cancel" : "leg-live-state"}>{leg.cancelled ? "Fahrtabschnitt entfällt" : leg.realtime ? "Echtzeit" : "Fahrplan"}</span></header>
                   <div className="leg-route-line"><span><b>{leg.from.name}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel="Fahrtabschnitt entfällt" compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{leg.to.name}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel="Fahrtabschnitt entfällt" compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span><span>{leg.bikesAllowed ? "Fahrrad möglich" : "Fahrrad nicht bestätigt"}</span><span>{leg.wheelchairAccessible === "ACCESSIBLE" ? "Rollstuhl geeignet" : "Barrierefreiheit nicht bestätigt"}</span></div>
-                  <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Auslastung voraussichtlich {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span><small>Prognose, keine Live-Belegungsmessung</small></div>
+                  {journey.transitLegs.length > 1 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Auslastung voraussichtlich {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span><small>Prognose, keine Live-Belegungsmessung</small></div>}
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
                   <ol className="model-stop-list live-stop-list">{leg.stops.map((stop,stopIndex) => {
                     const actual=stop.departure ?? stop.arrival;

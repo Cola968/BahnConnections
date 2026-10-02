@@ -115,6 +115,14 @@ try {
     return response.result?.value;
   }
 
+  async function waitFor(expression, message) {
+    for (let attempt=0;attempt<60;attempt++) {
+      if (await evaluate(expression)) return;
+      await pause(250);
+    }
+    throw new Error(message);
+  }
+
   async function setViewport(width, height) {
     await command("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor:1, mobile:true, screenWidth:width, screenHeight:height });
     await command("Emulation.setTouchEmulationEnabled", { enabled:true, maxTouchPoints:5 });
@@ -280,6 +288,9 @@ try {
   }
   await setViewport(844, 390);
   snapshots.push(await layoutSnapshot("844x390 landscape"));
+  await pause(350);
+  const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:el.getBoundingClientRect().right,left}));})()`);
+  if (landscapeStops.some(stop=>stop.right>stop.left+2)) throw new Error('Journey-Halte liegen im Querformat unter dem seitlichen Sheet');
   await screenshot("844-landscape");
 
   await tap(".mobile-sheet-actions button:last-child");
@@ -307,7 +318,7 @@ try {
   if (await evaluate(`Boolean(document.querySelector(".journey-card"))`)) throw new Error("Desktop-X schließt die Verbindung nicht");
   snapshots.push(await layoutSnapshot("1440 desktop closed"));
   await tap('.desktop-navigation button:nth-child(3)');
-  await pause(1600);
+  if (useJourneyFixture) await waitFor(`document.querySelectorAll('.board-time .realtime-time').length >= ${realtimeScenarios.length}`, 'Board-Fixture wurde nicht geladen');
   // Regression: a hidden via cell used to auto-place the destination in a zero-width column.
   const boardDestinations = await evaluate(`Array.from(document.querySelectorAll('.board-destination')).map(el => ({text:el.textContent.trim(),width:el.getBoundingClientRect().width}))`);
   if (useJourneyFixture && !boardDestinations.length) throw new Error('Board-Fixture wurde nicht geladen');
@@ -372,7 +383,7 @@ try {
     }
     activeJourneys=[fixtureJourney,alternativeJourney];
     await tap('.mobile-navigation button:nth-child(3)');
-    await pause(1600);
+    await waitFor(`document.querySelectorAll('.board-time .realtime-time').length >= ${realtimeScenarios.length}`, 'Mobile Board-Fixture wurde nicht geladen');
     const boardTimes = await evaluate(`Array.from(document.querySelectorAll('.board-time .realtime-time')).map(time => ({tone:time.dataset.tone,kind:time.className,planned:Boolean(time.querySelector('del')),actual:Boolean(time.querySelector('.realtime-time__actual')),overflow:time.scrollWidth>time.clientWidth+1}))`);
     if(boardTimes.length < realtimeScenarios.length || boardTimes.some(time=>time.overflow)) throw new Error('Board-Echtzeit-Fixtures fehlen/überlaufen: '+JSON.stringify(boardTimes));
     for (const scenario of realtimeScenarios) if(!boardTimes.some(time=>time.kind.includes('realtime-time--'+scenario.kind)&&time.tone===scenario.tone)) throw new Error('Board-Zustand fehlt: '+scenario.name);

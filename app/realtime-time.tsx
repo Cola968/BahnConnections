@@ -21,6 +21,6 @@ export function RealtimeTime({ className = "", showStatus = false, compact = fal
         ? <strong className="realtime-time__status">Entfällt</strong>
         : <time className="realtime-time__actual" dateTime={current ?? undefined}>{formatRealtimeTime(current)}</time>}
     </span>
-    {state.kind !== "cancelled" && (state.changed || showStatus) && <small className="realtime-time__delta" aria-hidden="true">{realtimeStatusLabel(state)}</small>}
+    {state.kind !== "cancelled" && (state.changed || state.kind === "unknown" || showStatus) && <small className="realtime-time__delta" aria-hidden="true">{realtimeStatusLabel(state)}</small>}
   </span>;
 }
