@@ -136,3 +136,5 @@
 .app-update-notice { border-color:var(--line-subtle); border-radius:16px; box-shadow:var(--shadow-menu); }
 .app-update-actions button,.app-update-actions a { border-radius:10px; }
 .app-update-actions button:first-child { background:var(--action); color:#fff; }
+
+.route-discovery-head>p { display:block; margin:5px 0 0; color:var(--muted); font-size:calc(.78rem * var(--panel-scale,1)); line-height:1.45; }
