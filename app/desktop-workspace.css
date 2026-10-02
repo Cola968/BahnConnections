@@ -195,3 +195,17 @@
     background:var(--paper);
   }
 }
+
+/* V37 · performance/legibility: large data rails stay in the content layer */
+@media (min-width:1024px) {
+  .desktop-workspace .floating-panel {
+    background:var(--paper);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+  .desktop-workspace .floating-panel>.panel-tools {
+    background:var(--glass-regular);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+}
