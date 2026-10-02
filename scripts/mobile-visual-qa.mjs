@@ -379,7 +379,12 @@ try {
       for (const scenario of realtimeScenarios) {
         activeJourneys = [journeyFixture(fixtureJourney,scenario),alternativeJourney];
         await tap('.mobile-navigation button:nth-child(2)');
-        if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) await tap('.journey-mobile-overview>button');
+        if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) {
+          // The previous stop screenshot scrolled the header beneath the sticky sheet controls.
+          await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+          if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'collapsed') await tap('.mobile-sheet-summary');
+          await tap('.journey-mobile-overview>button');
+        }
         await tap('.plan-button');
         await pause(1600);
         await tap('.mobile-sheet-summary');
