@@ -5,6 +5,7 @@ import "./styles/controls.css";
 import "./styles/workspace.css";
 import "./styles/transport.css";
 import "./desktop-workspace.css";
+import "./styles/v38-minimal.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
