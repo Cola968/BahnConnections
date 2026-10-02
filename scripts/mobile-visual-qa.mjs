@@ -91,7 +91,12 @@ try {
         : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
         : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
       const body = Buffer.from(JSON.stringify(payload)).toString("base64");
-      setTimeout(() => { void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" },{name:"Access-Control-Allow-Origin",value:"*"}], body }); },800);
+      setTimeout(() => {
+        void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" },{name:"Access-Control-Allow-Origin",value:"*"}], body }).catch(error => {
+          // Search and panel changes deliberately abort stale requests before this delayed fixture replies.
+          if (!error.message.includes('Invalid InterceptionId')) throw error;
+        });
+      },800);
       return;
     }
     if (!message.id || !pending.has(message.id)) return;
