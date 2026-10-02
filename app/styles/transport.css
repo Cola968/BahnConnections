@@ -310,3 +310,11 @@
   .live-journey-leg { border-top:1px solid var(--line-subtle); }
   .live-journey-leg:first-child { border-top:0; }
 }
+
+/* V36 · mobile sheet header owns train and route identity */
+@media (max-width:1023px) {
+  .journey-mobile-route>b,
+  .journey-mobile-route>strong { display:none; }
+  .journey-mobile-overview { align-items:center; }
+  .journey-mobile-route { gap:3px; }
+}
