@@ -103,6 +103,12 @@ html[data-contrast="high"] {
 :root {
   --accent:#0b7084;
   --action:#e51526;
+  --success:#3f775c;
+  --warning:#9c6e2e;
+  --danger:#b8424d;
+  --status-on-time:var(--success);
+  --status-delay:var(--warning);
+  --status-disruption:var(--danger);
   --glass-clear:color-mix(in srgb,var(--paper) 76%,transparent);
   --glass-regular:color-mix(in srgb,var(--paper) 88%,transparent);
   --glass-strong:color-mix(in srgb,var(--paper) 95%,transparent);
