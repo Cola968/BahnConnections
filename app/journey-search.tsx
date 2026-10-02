@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { SmartSearch } from "./smart-search";
 import { UiIcon } from "./ui-icon";
 import type { Station } from "./network-data";
@@ -15,8 +16,23 @@ export type JourneySearchProps = {
   loading:boolean; canSearch:boolean; onSearch:() => void; onDiscover:() => void; onReset:() => void;
 };
 
+function readableLocalDateTime(value:string) {
+  const [date,time=""] = value.split("T");
+  const [year,month,day] = date.split("-");
+  if (!year || !month || !day) return "Datum und Zeit wählen";
+  return `${day}.${month}.${year} · ${time.slice(0,5) || "--:--"}`;
+}
+
 export function JourneySearch(props:JourneySearchProps) {
   const { options } = props;
+  const departurePicker = useRef<HTMLInputElement>(null);
+  const readableDeparture = readableLocalDateTime(props.departure);
+  const openDeparturePicker = () => {
+    const input = departurePicker.current;
+    if (!input) return;
+    try { input.showPicker(); }
+    catch { input.focus(); input.click(); }
+  };
   return <>
     <div className="route-discovery-head"><h1>Verbindung planen</h1><p>Deutschlandweit mit Live-Fahrplandaten</p></div>
     <div className="route-search-pair">
@@ -26,7 +42,7 @@ export function JourneySearch(props:JourneySearchProps) {
     </div>
     <div className="planner-time-row">
       <div className="planner-time-mode" role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
-      <div className="planner-departure"><label>{options.arriveBy ? "Ankommen am" : "Losfahren am"}<input type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} /></label></div>
+      <div className="planner-departure"><label>{options.arriveBy ? "Ankommen am" : "Losfahren am"}<span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>${readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} tabIndex={-1} aria-hidden="true" /></span></label></div>
     </div>
     <button type="button" className="plan-button" onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Suche läuft …" : "Verbindungen anzeigen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>
     <details className="filter-drawer route-options">
