@@ -17,6 +17,10 @@ function matches(stop: StopLike, station: StationLike) {
   return Number.isFinite(stop.lat) && Number.isFinite(stop.lon) && distance({ lat:stop.lat!, lon:stop.lon! }, station) <= 350;
 }
 
+export function stationOccurrenceIndexes<T extends StopLike>(stops: T[], station: StationLike) {
+  return stops.map((stop, index) => matches(stop, station) ? index : -1).filter((index) => index >= 0);
+}
+
 function nearestPoint(points: [number, number][], stop: StopLike, start: number) {
   if (!Number.isFinite(stop.lat) || !Number.isFinite(stop.lon)) return start;
   let best = start;
@@ -29,7 +33,7 @@ function nearestPoint(points: [number, number][], stop: StopLike, start: number)
 }
 
 export function trimRepeatedStationLoop<T extends StopLike>(stops: T[], points: [number, number][], station: StationLike, referenceTime?: string) {
-  const occurrences = stops.map((stop, index) => matches(stop, station) ? index : -1).filter((index) => index >= 0);
+  const occurrences = stationOccurrenceIndexes(stops, station);
   if (occurrences.length < 2) return { stops, points, trimmed:false };
   const reference = referenceTime ? new Date(referenceTime).getTime() : Number.NaN;
   const completeStarts = occurrences.filter((candidate) => occurrences.some((index) => index >= candidate + 4));
