@@ -60,7 +60,7 @@ export type BoardMapTrip = {
   textColor?: string;
   points: [number, number][];
   segments: [number, number][][];
-  stops: { name: string; lat?: number; lon?: number; arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; scheduledTrack?: string; cancelled?: boolean }[];
+  stops: { name: string; lat?: number; lon?: number; arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; scheduledTrack?: string; cancelled?: boolean; realtime?: boolean }[];
 };
 
 type TransitousEntry = {
@@ -83,6 +83,7 @@ type TransitousEntry = {
 };
 
 type TripPlace = {
+  realtime?: boolean;
   name?: string;
   lat?: number;
   lon?: number;
@@ -218,8 +219,13 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
     for (const stop of [leg.from, ...(leg.intermediateStops ?? []), leg.to]) {
       if (!stop?.name) continue;
       const previous = stops.at(-1);
-      if (previous?.name === stop.name && (previous.departure ?? previous.arrival) === (stop.departure ?? stop.arrival)) continue;
-      stops.push({ ...stop, cancelled:Boolean(stop.cancelled || leg.cancelled) });
+      if (previous?.name === stop.name && (previous.departure ?? previous.arrival) === (stop.departure ?? stop.arrival)) {
+        // A shared boundary is confirmed only when both adjoining legs confirm realtime.
+        previous.realtime = Boolean(previous.realtime && leg.realTime);
+        previous.cancelled = Boolean(previous.cancelled || stop.cancelled || leg.cancelled);
+        continue;
+      }
+      stops.push({ ...stop, realtime:Boolean(leg.realTime), cancelled:Boolean(stop.cancelled || leg.cancelled) });
     }
   }
   const points = segments.flat();
@@ -254,7 +260,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
     textColor:entry.line?.textColor ?? detail.textColor,
     points:detail.points,
     segments:detail.segments,
-    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled })),
+    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled, realtime:stop.realtime })),
   };
 }
 
@@ -581,7 +587,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                   </button>
                   {rowOpen && <div className="board-row-detail">
                     <div className="trip-detail-summary"><div><b>{statusText(entry)}</b><span>{entry.canceled ? "Bitte eine Alternative wählen." : entry.realtime ? "Echtzeit liegt vor." : "Derzeit nur Fahrplandaten."}</span>{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>Baustelle/Störung: {alert}</small>)}</div><div className={`occupancy-forecast level-${forecast.level}`}><b>Erwartete Auslastung: {forecast.label}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span><small>{forecast.explanation}</small></div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
-                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Vollständiger Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : "mit Soll-/Ist-Zeiten"}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={detail.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
+                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Vollständiger Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : "mit Soll-/Ist-Zeiten"}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
                   </div>}
                 </article>
               );
@@ -595,4 +601,3 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     </section>
   );
 }
-

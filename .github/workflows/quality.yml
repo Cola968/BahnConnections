@@ -3,7 +3,7 @@ name: BahnConnections quality
 on:
   pull_request:
   push:
-    branches: [main, codex/v33-realtime-redesign]
+    branches: [main]
 
 permissions:
   contents: read

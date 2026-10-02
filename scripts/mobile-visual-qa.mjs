@@ -49,19 +49,32 @@ const edge = spawn(edgePath, [
   `--remote-debugging-port=${debugPort}`,
   `--user-data-dir=${profileDirectory}`,
   "about:blank",
-], { stdio:"ignore", windowsHide:true });
+], { stdio:["ignore", "ignore", "pipe"], windowsHide:true });
+let browserStderr = "";
+let browserSpawnError;
+let browserExit;
+edge.stderr.on("data", (chunk) => { browserStderr = (browserStderr + chunk.toString()).slice(-8000); });
+edge.on("error", (error) => { browserSpawnError = error; });
+edge.on("exit", (code, signal) => { browserExit = { code, signal }; });
+
+function browserStartError(reason) {
+  return new Error(`${reason} (${edgePath}).${browserStderr ? `\nBrowser stderr:\n${browserStderr}` : " Kein Browser-stderr verfügbar."}`);
+}
 
 const pause = (milliseconds) => new Promise((resolvePause) => setTimeout(resolvePause, milliseconds));
 
-async function pollJson(pathname, attempts = 60) {
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
+async function pollJson(pathname) {
+  const deadline = Date.now() + 40_000;
+  while (Date.now() < deadline) {
+    if (browserSpawnError) throw browserStartError(`Browser konnte nicht gestartet werden: ${browserSpawnError.message}`);
+    if (browserExit) throw browserStartError(`Browser vor DevTools-Bereitschaft beendet: Exit ${browserExit.code}, Signal ${browserExit.signal ?? "keines"}`);
     try {
-      const response = await fetch(`http://127.0.0.1:${debugPort}${pathname}`);
+      const response = await fetch(`http://127.0.0.1:${debugPort}${pathname}`, { signal:AbortSignal.timeout(1000) });
       if (response.ok) return response.json();
     } catch { /* Edge is still starting. */ }
     await pause(200);
   }
-  throw new Error(`Edge DevTools antwortet nicht auf ${pathname}`);
+  throw browserStartError(`Chrome/Edge DevTools antwortet nach 40 Sekunden nicht auf ${pathname}`);
 }
 
 let socket;

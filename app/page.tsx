@@ -558,7 +558,7 @@ export default function Home() {
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
         const permanent = mapZoom >= 11;
-        point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stationTrip.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
+        point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
       });
     } else if (stationTrips.length) {
       for (const trip of stationTrips) {
