@@ -1,4 +1,4 @@
-const CACHE_NAME = "bahnconnections-static-v37-0";
+const CACHE_NAME = "bahnconnections-static-v38-0";
 const STATIC_ASSETS = ["/", "/install", "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
 const AUTH_PATHS = ["/signin-with-chatgpt", "/auth", "/api/auth", "/oauth", "/cdn-cgi/"];
 
@@ -24,8 +24,6 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
-  // Authentication redirects must be handled by the browser itself. Following
-  // them inside a service worker can fail CORS and incorrectly show "offline".
   if (event.request.mode === "navigate" && isAuthenticationRequest(url)) return;
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
