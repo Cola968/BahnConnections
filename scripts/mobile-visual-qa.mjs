@@ -186,6 +186,8 @@ try {
 
   await command("Page.enable");
   await command("Runtime.enable");
+  // Worker-forwarded requests belong to another CDP target and escape these fixtures.
+  if (useJourneyFixture) await command("Network.setBypassServiceWorker", { bypass:true });
   await command("Page.bringToFront");
   if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);
@@ -356,7 +358,11 @@ try {
   if (useJourneyFixture) {
     await setViewport(320,700);
     for (const theme of ['light','dark']) {
-      await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      await setViewport(1280,900);
+      if (await evaluate(`document.documentElement.dataset.theme`) !== theme) {
+        await tap(theme === 'dark' ? '[aria-label="Dunkles Kartenthema"]' : '[aria-label="Helles Kartenthema"]');
+      }
+      await setViewport(320,740);
       for (const scenario of realtimeScenarios) {
         activeJourneys = [journeyFixture(fixtureJourney,scenario),alternativeJourney];
         await tap('.mobile-navigation button:nth-child(2)');

@@ -38,6 +38,7 @@ export function boardFixture() {
   return { source:"UI-QA-Fixture",updatedAt:new Date().toISOString(),warnings:[],verification:{status:"unavailable"},
     stopTimes:realtimeScenarios.map((scenario,index) => ({
       tripId:`qa-board-${index}`,displayName:`ICE ${1200+index}`,mode:"HIGHSPEED_RAIL",realTime:!scenario.schedule,
+      tripCancelled:Boolean(scenario.legCancelled),
       headsign:"München Hauptbahnhof – Zugang über den Bahnhofsvorplatz",
       place:{ departure:shifted(scheduled,scenario.delay),scheduledDeparture:scenario.unknown ? undefined : scheduled,
         track:scenario.platform ? "7" : "4",scheduledTrack:"4",cancelled:scenario.cancelled },
