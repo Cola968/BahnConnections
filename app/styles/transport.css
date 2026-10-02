@@ -287,3 +287,26 @@
   .journey-card { padding-bottom:28px; }
   .live-journey-leg { padding-right:14px; padding-left:14px; }
 }
+
+/* V36 · information-first transport surfaces */
+.live-journey-leg {
+  padding-right:0;
+  padding-left:0;
+  border-radius:0;
+  background:transparent;
+}
+.live-journey-leg>header { padding-right:2px; padding-left:2px; }
+.transfer-step,.transfer-quality { padding-right:2px; padding-left:2px; background:transparent; }
+.station-line-kpis>div { background:transparent; box-shadow:inset 0 0 0 1px var(--line-subtle); }
+.board-filter-panel,.board-row-detail,.board-full-trip { background:var(--elevated-soft); }
+.journey-alerts { background:color-mix(in srgb,var(--warning) 7%,var(--paper)); }
+.journey-alternatives>div>button:hover { background:var(--elevated-soft); }
+@media (max-width:1023px) {
+  .journey-card { padding-right:18px; padding-left:18px; }
+  .journey-mobile-overview { margin-bottom:12px; padding-bottom:12px; }
+  .journey-secondary-facts { margin-bottom:8px; }
+  .journey-mobile-data { margin-bottom:12px; }
+  .journey-legs.live-legs { gap:8px; }
+  .live-journey-leg { border-top:1px solid var(--line-subtle); }
+  .live-journey-leg:first-child { border-top:0; }
+}
