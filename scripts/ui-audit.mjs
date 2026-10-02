@@ -31,7 +31,7 @@ check("Brand, route and disruption colours stay separate",css.includes('--route-
 check("Live layer toggle and unavailable realtime are distinct",page.includes('Live-Ebene aus') && page.includes('Keine Echtzeitdaten'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
-check("Header search has a dedicated row",css.includes(".topbar>.station-search { grid-column:1/-1; grid-row:2"));
+check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (max-width:1023px) and (max-height:520px)"));
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
 check("Drag limits exclude navigation and virtual keyboard",panelTools.includes("navigationHeight") && panelTools.includes("window.visualViewport?.height"));
@@ -58,8 +58,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "35.0"') && versionMetadata.includes('"version": "35.0"') && versionMetadata.includes('/install?update=V35.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "36.0"') && versionMetadata.includes('"version": "36.0"') && versionMetadata.includes('/install?update=V36.0'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V35.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v35-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V36.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v36-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
