@@ -92,3 +92,33 @@
   .desktop-workspace .floating-panel { box-shadow:0 20px 52px #17202b12; }
   .desktop-workspace.desktop-search-mode .explore-card { border-radius:20px; }
 }
+
+/* V36 · narrower rails, stronger map ownership */
+@media (min-width:1024px) {
+  .desktop-workspace { --workspace-left:310px; --workspace-right:382px; }
+  .desktop-workspace .topbar { height:68px; --app-header:68px; padding-right:16px; padding-left:16px; }
+  .desktop-workspace .map-stage { padding-top:calc(var(--app-header) + 14px); }
+  .desktop-workspace .floating-panel { top:calc(var(--app-header) + 14px); bottom:14px; }
+  .desktop-navigation { background:transparent; box-shadow:none; }
+  .desktop-navigation>button,.navigation-more>summary { min-height:36px; }
+}
+@media (min-width:1440px) {
+  .desktop-workspace { --workspace-left:320px; --workspace-right:390px; }
+}
+@media (min-width:1800px) {
+  .desktop-workspace { --workspace-left:330px; --workspace-right:400px; }
+}
+
+/* V36 · narrow planner keeps date/time fully readable */
+@media (min-width:1024px) {
+  .desktop-workspace.desktop-search-mode .planner-time-row {
+    grid-template-columns:1fr;
+    align-items:stretch;
+    gap:8px;
+  }
+  .desktop-workspace.desktop-search-mode .planner-time-row .planner-time-mode {
+    min-width:0;
+    width:100%;
+  }
+  .desktop-workspace.desktop-search-mode .planner-departure input { width:100%; }
+}
