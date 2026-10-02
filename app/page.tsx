@@ -128,6 +128,14 @@ function exactTripSegments(trip: BoardMapTrip) {
   return trip.segments.filter((segment) => segment.length > 1);
 }
 
+function tripRealtimeLabel(trip: BoardMapTrip) {
+  const knownStops = trip.stops.filter((stop) => typeof stop.realtime === "boolean");
+  const confirmedStops = knownStops.filter((stop) => stop.realtime);
+  if (knownStops.length && confirmedStops.length === knownStops.length) return "Echtzeit an allen Halten";
+  if (confirmedStops.length || trip.realtime) return "Echtzeit teilweise verfügbar";
+  return "Fahrplanfahrt";
+}
+
 export default function Home() {
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
   const [desktopView, setDesktopView] = useState<DesktopView>("connections");
@@ -549,7 +557,7 @@ export default function Home() {
       for (const segment of exactTripSegments(stationTrip)) {
         L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:8, opacity:.9, lineCap:"round", lineJoin:"round" }).addTo(layer);
         const exactLine = L.polyline(segment, { color, weight:4.8, opacity:.98, lineCap:"round", lineJoin:"round", className:"station-trip-exact" }).addTo(layer);
-        exactLine.bindTooltip(routeElement(stationTrip.name, `${stationTrip.realtime ? "Echtzeitfahrt" : "Fahrplanfahrt"} · gelieferte Fahrtgeometrie · ${stationTrip.stops.length} Halte`), { sticky:true });
+        exactLine.bindTooltip(routeElement(stationTrip.name, `${tripRealtimeLabel(stationTrip)} · gelieferte Fahrtgeometrie · ${stationTrip.stops.length} Halte`), { sticky:true });
       }
       stationTrip.stops.forEach((stop, index) => {
         if (typeof stop.lat !== "number" || typeof stop.lon !== "number" || !Number.isFinite(stop.lat) || !Number.isFinite(stop.lon)) return;
@@ -568,7 +576,7 @@ export default function Home() {
         for (const segment of tripSegments) {
           L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:4.6, opacity:.62, lineCap:"round", lineJoin:"round" }).addTo(layer);
           const previewLine = L.polyline(segment, { color, weight:2.4, opacity:.72, lineCap:"round", lineJoin:"round", className:"station-trip-preview" }).addTo(layer);
-          previewLine.bindTooltip(routeElement(trip.name, `${trip.realtime ? "aktuelle Fahrt" : "Fahrplanfahrt"} · klicken für ${trip.stops.length} Halte`), { sticky:true });
+          previewLine.bindTooltip(routeElement(trip.name, `${tripRealtimeLabel(trip)} · klicken für ${trip.stops.length} Halte`), { sticky:true });
           previewLine.on("click", () => setStationTrip(trip));
         }
       }
@@ -1053,7 +1061,7 @@ export default function Home() {
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${desktopSearchMode ? " desktop-search-mode" : ""}${desktopJourneyMode ? " desktop-journey-mode" : ""}${journey ? " has-journey" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
-          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V33</span>
+          <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">V33.1</span>
         </button>
         <DesktopNavigation value={desktopView} onChange={navigate} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
@@ -1097,7 +1105,7 @@ export default function Home() {
             <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle Status</option><option value="delayed">Nur verspätet</option><option value="ontime">Nur pünktlich</option></select></label>
             <span>Netzebenen</span><button className={overviewRoutesVisible ? "overview-route-toggle active" : "overview-route-toggle"} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}><b>Kuratiertes Fernnetz</b><small>{overviewRoutesVisible ? "sichtbar · nicht vollständig" : `aus · ${ROUTES.length} Referenzlinien`}</small></button>
             <div className="map-display-toggles"><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={minimalMode ? "active" : ""} onClick={() => setMinimalMode((value) => !value)}>Minimalmodus</button><button className={focusMode ? "active" : ""} onClick={() => setFocusMode((value) => !value)}>Fokusmodus</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugschweif</button></div>
-            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>V33</small></div>
+            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>V33.1</small></div>
           </div>}
         </>}
 
