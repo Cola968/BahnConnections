@@ -1111,7 +1111,7 @@ export default function Home() {
         </>}
 
         {plannerVisible && <aside className={`explore-card floating-panel mobile-sheet-panel${selected ? " condensed" : ""}`} style={exploreControls.style}>
-          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={() => setExploreOpen(false)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${startSearch || "Start"} → ${targetSearch || "Ziel"}`} />
+          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={() => setExploreOpen(false)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={startSearch || targetSearch ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}` : "Neue Verbindung"} mobileSummary="Verbindung planen" />
           {journey && <button type="button" className="planner-return" onClick={() => setExploreOpen(false)}>← Zur ausgewählten Verbindung <span>{clock(journey.startTime)}–{clock(journey.endTime)}</span></button>}
           <JourneySearch
             stations={plannerStations} favoriteIds={favoriteIds}
@@ -1152,7 +1152,7 @@ export default function Home() {
 
         {journey && !departuresView && !statsOpen && !plannerVisible && !labOpen && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style}>
-            <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg ? `${primaryJourneyLeg.name} · ${selectedJourneyStart.name} → ${selectedJourneyTarget.name}` : `${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} mobileSummary={`${clock(journey.startTime)}–${clock(journey.endTime)} · ${formatDuration(Math.round(journey.durationSeconds / 60))} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`} />
+            <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${selectedJourneyStart.name} → ${selectedJourneyTarget.name} · ${clock(journey.startTime)}–${clock(journey.endTime)}`} />
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
                 <b>{primaryJourneyLeg?.name ?? "Verbindung"}</b>
