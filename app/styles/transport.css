@@ -263,3 +263,27 @@
 }
 
 .station-line-kpis span { text-transform:none; letter-spacing:0; font-weight:500; }
+
+/* V35 · progressive disclosure for journey and station content */
+.station-walk-action { background:var(--soft); }
+.station-line-kpis>div { border-color:transparent; background:var(--soft); }
+.station-section-tabs { border-color:transparent; }
+.board-search { border-color:transparent; background:var(--soft); }
+.board-filter-panel { background:var(--soft); }
+.board-row-detail { background:var(--soft); }
+.journey-mobile-overview { border-bottom-color:var(--line-subtle); }
+.journey-secondary-facts { padding:4px 0 10px; background:none; }
+.journey-mobile-data { border-color:transparent; background:var(--soft); }
+.journey-alternatives { padding-top:14px; }
+.journey-alternatives>div>button { min-height:78px; margin:0; padding:13px 2px; border:0; border-bottom:1px solid var(--line-subtle); border-radius:0; background:transparent; }
+.journey-alternatives>div>button:hover { border-color:var(--line-subtle); background:var(--soft); }
+.live-journey-leg { border-color:transparent; border-radius:16px; background:var(--soft); }
+.live-journey-leg>header { border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent); }
+.transfer-step,.transfer-quality { border-color:transparent; background:var(--soft); }
+.journey-alerts { border-color:transparent; }
+.board-full-trip { border-color:transparent; background:var(--soft); }
+@media (max-width:1023px) {
+  .station-line-kpis>div { padding:9px 8px; }
+  .journey-card { padding-bottom:28px; }
+  .live-journey-leg { padding-right:14px; padding-left:14px; }
+}

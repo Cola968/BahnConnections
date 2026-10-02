@@ -82,3 +82,13 @@
   .desktop-workspace .topbar { grid-template-columns:230px max-content minmax(320px,1fr) auto; }
   .desktop-navigation { justify-self:start; }
 }
+
+/* V35 · desktop refinement */
+@media (min-width:1024px) {
+  .desktop-navigation { border-color:transparent; box-shadow:inset 0 0 0 1px var(--line-subtle); }
+  .desktop-navigation>button.active { box-shadow:0 1px 5px #17202b12; }
+  .desktop-navigation>button.active::after { display:none; }
+  .desktop-workspace .map-canvas { border-color:transparent; box-shadow:0 10px 34px #17202b0d; }
+  .desktop-workspace .floating-panel { box-shadow:0 20px 52px #17202b12; }
+  .desktop-workspace.desktop-search-mode .explore-card { border-radius:20px; }
+}

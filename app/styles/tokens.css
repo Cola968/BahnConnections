@@ -42,3 +42,12 @@ button,input,select { transition:background-color var(--motion-fast),border-colo
   *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
 
+
+/* V35 · premium interaction tokens */
+:root {
+  --radius-sheet:26px;
+  --shadow-panel:0 20px 52px #17202b12;
+  --shadow-floating:0 10px 30px #17202b10;
+  --motion-native:cubic-bezier(.22,1,.36,1);
+  --motion-press:cubic-bezier(.2,.8,.2,1);
+}
