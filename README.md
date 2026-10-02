@@ -4,13 +4,15 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V33.1 · Klare Reiseinformation
+## V33.2 · Updates direkt in der App
 
 Journey und Live-Tafel verwenden ein gemeinsames Zeit- und Gleissystem. Bei einer Abweichung steht die durchgestrichene Planzeit direkt vor der aktuellen Zeit und dem Text zur Änderung. Bestätigte Echtzeit bis +5 Minuten ist grün, +6–14 amber und ab +15 rot; frühere Abfahrten sind amber. Das sind BahnConnections-Schwellen, keine offiziellen Betreiberfarben. Fehlende Echtzeit bleibt neutral. Ausfälle zeigen keinen erfundenen Istzeitpunkt.
 
 Desktop: Planer + Karte vor der Auswahl, Karte + Journey-Inspector danach. „Ändern“ öffnet gezielt den Planer; die ausgewählte Verbindung bleibt erhalten. Mobile behält das frei ziehbare Sheet mit getrenntem Minimieren, Schließen und Wiederherstellen.
 
-V33.1 präzisiert den Echtzeitstatus von auf der Karte geöffneten Bahnhofsfahrtverläufen: vollständige und teilweise Echtzeitabdeckung werden getrennt benannt. Zeit- und Gleisinformationen liefern Screenreadern jetzt echten versteckten Beschreibungstext statt als Bildrolle aufzutreten; der PWA-Cache wurde für die Aktualisierung angehoben.
+V33.1 präzisiert den Echtzeitstatus von auf der Karte geöffneten Bahnhofsfahrtverläufen: vollständige und teilweise Echtzeitabdeckung werden getrennt benannt. Zeit- und Gleisinformationen liefern Screenreadern jetzt echten versteckten Beschreibungstext statt als Bildrolle aufzutreten.
+
+V33.2 ergänzt ein echtes Update-System für die installierte PWA. Die App prüft regelmäßig `/version.json` und den Service Worker. Wenn eine neuere Version bereitsteht, erscheint oben ein Hinweis mit „Jetzt aktualisieren“ sowie einem Link zu „Download / Installation“. Updates werden nicht mehr ungefragt per `skipWaiting()` aktiviert; der Nutzer entscheidet, wann die neue Version geladen und die App neu gestartet wird.
 
 Prüfungen und offene Cloud-Einschränkungen: [V33-QA](docs/V33-QA.md). Der GitHub-Workflow führt TypeScript, Lint, Audits, Build und responsive Browser-QA aus. Ein echtes Android-/iOS-Gerät muss zusätzlich geprüft werden.
 
