@@ -10,11 +10,12 @@ type RealtimeTimeProps = RealtimeInput & {
 export function RealtimeTime({ className = "", showStatus = false, compact = false, cancellationLabel, ...input }: RealtimeTimeProps) {
   const state = deriveRealtimePresentation(input);
   const current = state.kind === "schedule" ? state.scheduled ?? state.actual : state.actual ?? state.scheduled;
+  const accessibleLabel = realtimeAccessibleLabel(state, cancellationLabel);
   return <span
     className={["realtime-time", `realtime-time--${state.kind}`, compact ? "realtime-time--compact" : "", className].filter(Boolean).join(" ")}
     data-tone={state.tone} data-severe={state.severe || undefined}
-    role="img" aria-label={realtimeAccessibleLabel(state, cancellationLabel)}
   >
+    <span className="sr-only">{accessibleLabel}</span>
     <span className="realtime-time__pair" aria-hidden="true">
       {state.changed && state.scheduled && <del className="realtime-time__planned">{formatRealtimeTime(state.scheduled)}</del>}
       {state.kind === "cancelled"
