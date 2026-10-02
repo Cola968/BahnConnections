@@ -21,7 +21,7 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
 
 export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value: DesktopView; onChange: (view: DesktopView) => void; onMore: () => void; moreOpen: boolean }) {
   return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation">
-    {[destinations[1], destinations[0], destinations[2]].map(({ view, label, icon }) => <button key={view} type="button" className={value === view ? "active" : ""} aria-current={value === view ? "page" : undefined} onClick={() => onChange(view)}><UiIcon name={icon} /><span>{label}</span></button>)}
+    {[destinations[1], destinations[0], destinations[2]].map(({ view, label, icon }) => <button key={view} type="button" className={value === view ? "active" : ""} aria-current={value === view ? "page" : undefined} aria-label={label} onClick={() => onChange(view)}><UiIcon name={icon} /><span>{view === "connections" ? "Planen" : label}</span></button>)}
     <button type="button" onClick={onMore} className={moreOpen ? "active" : ""} aria-expanded={moreOpen} aria-controls="map-view-menu"><UiIcon name="more" /><span>Mehr</span></button>
   </nav>;
 }
