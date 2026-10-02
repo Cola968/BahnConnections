@@ -11,7 +11,7 @@ Base: `main` at `f92ce16ad75ef5a1d5bbc5f7387b54fe764f003f`.
 - General station markers stay interactive but become smaller and less opaque beneath journey layers. Route/source colours remain distinct from brand and cancellation colours.
 - No new dependency. Existing Transitous/DB requests, cache, abort and fallback handling retained. DB equal endpoint times remain conservatively schedule-only; no inference from a global source timestamp.
 
-## Local evidence (2026-10-01 cloud session)
+## Execution environment and local evidence (2026-10-02)
 
 Executed successfully:
 
@@ -20,8 +20,22 @@ Executed successfully:
 - `node scripts/board-verification-audit.mjs`: existing source comparison regressions.
 - Syntax checks for the expanded responsive runner and fixtures.
 
-Full project TypeScript, ESLint, build, baseline app launch, app screenshots, mobile interaction QA, live network and API smoke checks could not run locally: there is no installed project dependency tree; registry requests are blocked and the configured cloud Git proxy is unreachable. A GitHub-backed source snapshot was used for local source/audit work. Binary assets and large station/rail datasets remain intact in the GitHub base tree.
+The managed cloud workspace contains a GitHub-backed source snapshot, rather than a complete clone with installed dependencies. Registry access and the cloud Git proxy were unavailable locally. TypeScript, ESLint, build and browser QA therefore run in GitHub Actions on Ubuntu, Node 24 and pnpm 10, using the full branch checkout and frozen lockfile. Binary assets and the large station/rail datasets are retained from the GitHub base tree.
 
-The quality workflow runs TypeScript, ESLint, all three audits, build and the actual responsive browser script on GitHub. Results must be checked separately; creating a workflow does not establish a passing run. The browser runner covers 320, 360, 375, 390, 430, 768, 844 landscape, 1024, 1280, 1440 and 1920, both themes, all requested realtime cases, long names, platform changes, cancellation, search editing, restoration and free dragging. Screenshots are UI fixtures, not timetable validation.
+## Browser QA and polish
 
-The second source/layout polish pass simplified the header, removed hidden duplicate time blocks, separated brand/action/route/status colours, flattened occupancy and transfer groups, and made board times use a dedicated second row so the planned/current pair can stay together in the narrow inspector. Actual app screenshot review and real Android/iOS device validation remain pending until executable browser QA is available.
+The responsive runner covers 320 × 700, 360, 375, 390, 430, 768, 844 × 390 landscape, 1024, 1280, 1440 and 1920. It exercises free sheet dragging, collapse, close, restoration, alternative selection and desktop search editing. Realtime fixtures cover confirmed on-time, +3, +10, +24, +45, early departure, platform change, cancelled stop, cancelled leg, schedule-only and incomplete realtime, with long names and both themes. Theme switching uses the app's buttons. Colours, struck planned times, visible current times, status labels and overflow are checked on the actual React UI.
+
+The fixture runner disables service-worker registration so deterministic responses cannot escape into the worker's network target; this run does not validate offline caching. Live network/API checks are separate from the fixture screenshots. Screenshots are UI evidence, not live timetable validation.
+
+Actual screenshots of the 320px expanded journey, 1920px map + inspector, desktop search, 844px landscape, +10 light, +24 dark, cancelled stop, early departure, platform change and incomplete realtime were reviewed. A second polish pass removed the duplicate single-leg occupancy block, simplified nested information groups, corrected the landscape map fit to the side sheet's measured width, made missing realtime text visible, and reserved a second row for board times. Endpoint and transfer cancellations preserve the difference between a cancelled stop and a cancelled leg. Live train markers and trails share the central realtime status tones.
+
+## Recorded browser evidence
+
+[Run 37014282689](https://github.com/Cola968/BahnConnections/actions/runs/37014282689) produced `report.json`: 22 realtime checks across both themes and 45 layout snapshots, with no horizontal overflow. TypeScript, ESLint, the three audits and build passed. The browser assertions completed and wrote the report, but the process subsequently failed on a delayed fixture response after browser shutdown. The runner now clears delayed replies and CDP timeout timers during teardown; the full workflow is being rerun. Do not interpret that earlier run as a passing workflow.
+
+Live network and API smoke outcomes are reported separately in the workflow artifacts. Those steps are allowed to fail when upstream sources are unavailable; an overall green workflow alone does not establish live-source success.
+
+## Remaining limits
+
+No physical Android/iOS device, manual screen-reader session or offline PWA test was performed. Keyboard/focus and reduced-motion handling remain covered by source audits; browser QA exercises theme, large-font, high-contrast and reduced-motion presentation. The original V32 app could not be launched locally before implementation because dependencies were unavailable; the screenshot review compares successive V33 passes, not a claimed V32 browser baseline.

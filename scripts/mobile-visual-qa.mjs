@@ -65,6 +65,9 @@ async function pollJson(pathname, attempts = 60) {
 }
 
 let socket;
+const pending = new Map();
+const fixtureTimers = new Set();
+let shuttingDown = false;
 try {
   const targets = await pollJson("/json/list");
   const target = targets.find((item) => item.type === "page");
@@ -76,7 +79,6 @@ try {
   });
 
   let commandId = 0;
-  const pending = new Map();
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
@@ -91,12 +93,15 @@ try {
         : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
         : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
       const body = Buffer.from(JSON.stringify(payload)).toString("base64");
-      setTimeout(() => {
+      const fixtureTimer = setTimeout(() => {
+        fixtureTimers.delete(fixtureTimer);
+        if (shuttingDown) return;
         void command("Fetch.fulfillRequest", { requestId:message.params.requestId, responseCode:200, responseHeaders:[{ name:"Content-Type", value:"application/json" },{name:"Access-Control-Allow-Origin",value:"*"}], body }).catch(error => {
           // Search and panel changes deliberately abort stale requests before this delayed fixture replies.
-          if (!error.message.includes('Invalid InterceptionId')) throw error;
+          if (!shuttingDown && !error.message.includes('Invalid InterceptionId')) throw error;
         });
       },800);
+      fixtureTimers.add(fixtureTimer);
       return;
     }
     if (!message.id || !pending.has(message.id)) return;
@@ -110,7 +115,7 @@ try {
     const id = ++commandId;
     return new Promise((resolveCommand, rejectCommand) => {
       const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },20000);
-      pending.set(id, { resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
+      pending.set(id, { timer, resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
       socket.send(JSON.stringify({ id, method, params }));
     });
   }
@@ -339,6 +344,8 @@ try {
   if (useJourneyFixture && !boardDestinations.length) throw new Error('Board-Fixture wurde nicht geladen');
   if (boardDestinations.some(row => !row.text || row.width < 40)) throw new Error('Fahrplanziel fehlt oder ist unsichtbar');
   await screenshot('1440-board-destinations');
+  await evaluate(`document.querySelector('.board-row-summary')?.scrollIntoView({block:'center'})`);
+  await screenshot('1440-board-realtime');
   await tap('.station-card .desktop-panel-actions button:last-child', true);
   if (await evaluate(`Boolean(document.querySelector('.station-card'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
   await tap('.desktop-navigation button:first-child');
@@ -411,7 +418,11 @@ try {
     const boardTimes = await evaluate(`Array.from(document.querySelectorAll('.board-time .realtime-time')).map(time => ({tone:time.dataset.tone,kind:time.className,planned:Boolean(time.querySelector('del')),actual:Boolean(time.querySelector('.realtime-time__actual')),overflow:time.scrollWidth>time.clientWidth+1}))`);
     if(boardTimes.length < realtimeScenarios.length || boardTimes.some(time=>time.overflow)) throw new Error('Board-Echtzeit-Fixtures fehlen/überlaufen: '+JSON.stringify(boardTimes));
     for (const scenario of realtimeScenarios) if(!boardTimes.some(time=>time.kind.includes('realtime-time--'+scenario.kind)&&time.tone===scenario.tone)) throw new Error('Board-Zustand fehlt: '+scenario.name);
+    if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
+    await evaluate(`document.querySelector('.board-row-summary')?.scrollIntoView({block:'center'})`);
     await screenshot('320-dark-board-realtime');
+    await evaluate(`document.querySelector('.board-row.cancel')?.scrollIntoView({block:'center'})`);
+    await screenshot('320-dark-board-cancellation');
     // Accessibility modes must preserve text and geometry as well as semantic colour.
     await evaluate(`document.documentElement.dataset.contrast='high';document.documentElement.dataset.font='large'`);
     await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
@@ -424,6 +435,10 @@ try {
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {
+  shuttingDown = true;
+  for (const timer of fixtureTimers) clearTimeout(timer);
+  for (const request of pending.values()) clearTimeout(request.timer);
+  pending.clear();
   socket?.close();
   edge.kill();
 }
