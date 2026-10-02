@@ -12,7 +12,18 @@ function check(name,condition) { checks.push({name,ok:Boolean(condition)}); }
 
 check("Shared design tokens and native system font",css.includes("--space-4:16px") && css.includes("-apple-system") && css.includes('html[data-theme="dark"]'));
 check("No glass, decorative gradients or serif typography in the new UI",!/(?:Georgia|linear-gradient|backdrop-filter:blur)/.test(css+desktop));
-check("One desktop detail rail, planner separate",desktop.includes("--workspace-right:360px") && desktop.includes(".desktop-workspace.desktop-connections .explore-card"));
+check("Search mode: planner and map; journey mode: map and inspector",desktop.includes(".desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
+check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
+check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
+check("General station markers recede behind the selected journey",page.includes('radius: journey ? 2.6') && page.includes('fillOpacity: journey ? .18') && page.includes('routeLayer as import("leaflet").Path'));
+const realtime = await read("app/realtime-presentation.ts");
+const realtimeTime = await read("app/realtime-time.tsx");
+check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 15') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
+check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
+check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('aria-label={realtimeAccessibleLabel'));
+check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
+check("Brand, route and disruption colours stay separate",css.includes('--route-focus:var(--accent)') && css.includes('--status-disruption:var(--danger)'));
+check("Live layer toggle and unavailable realtime are distinct",page.includes('Live-Ebene aus') && page.includes('Keine Echtzeitdaten'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
 check("Header search has a dedicated row",css.includes(".topbar>.station-search { grid-column:1/-1; grid-row:2"));
@@ -32,7 +43,7 @@ check("Autocomplete has active descendant and Escape handling",(await read("app/
 check("Alternative selection and pagination retained",alternatives.includes("onSelect(journey)") && alternatives.includes("alternatives.slice(0,limit)") && alternatives.includes("onMore"));
 check("Transfer displays concrete times, platforms and walks",alternatives.includes("previous.to.track") && alternatives.includes("next.from.track") && alternatives.includes("Fußweg enthalten") && !page.includes("{journeyQuality.score}"));
 check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
-check("Destination has a visible dedicated grid column",css.includes(".board-destination { grid-column:4") && css.includes("minmax(0,1fr)"));
+check("Destination has a visible dedicated grid column",css.includes(".board-row-summary .board-destination { grid-column:3") && css.includes("minmax(0,1fr)"));
 check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("Alle gefilterten Linien auf Karte"));
 check("Ring lines retain the selected loop",tripTrimming.includes("trimRepeatedStationLoop") && board.includes("trimRepeatedStationLoop(stops, points, station, referenceTime)") && stationLines.includes("trimRepeatedStationLoop(stops, points, station, sample.time)"));
 check("No invented straight rail geometry",trackRouting.includes("points:[], segments:[], coverage:0") && !trackRouting.includes("[[from.lat, from.lon], [to.lat, to.lon]]") && !liveJourney.includes("[[from.lat, from.lon], [to.lat, to.lon]]"));
@@ -43,6 +54,6 @@ check("API provenance fields preserved",apis.every(source=>["source","updatedAt"
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V32 worker bypasses authentication and refreshes navigation",worker.includes("bahnconnections-static-v32") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)"));
+check("V33 worker bypasses authentication and refreshes navigation",worker.includes("bahnconnections-static-v33") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;

@@ -1,0 +1,68 @@
+name: BahnConnections quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm lint
+      - run: pnpm audit:realtime
+      - run: pnpm audit:ui
+      - run: pnpm audit:board
+      - run: pnpm build
+      - name: Responsive interaction and realtime screenshots
+        env:
+          EDGE_PATH: /usr/bin/google-chrome
+        run: |
+          mkdir -p work/mobile-qa
+          pnpm dev > work/bahnconnections-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://localhost:3000/ > /dev/null
+          pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
+      - name: Live network sources
+        continue-on-error: true
+        run: timeout 180 pnpm audit:network > work/network-audit.json 2>&1
+      - name: Live API smoke
+        continue-on-error: true
+        run: |
+          pnpm dev > work/api-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          BAHNCONNECTIONS_BASE_URL=http://localhost:3000 timeout 180 pnpm audit:api > work/api-smoke.json 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: responsive-qa
+          path: |
+            work/mobile-qa/
+            work/bahnconnections-dev.log
+            work/network-audit.json
+            work/api-smoke.json
+            work/api-dev.log

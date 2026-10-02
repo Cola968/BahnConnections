@@ -25,14 +25,3 @@ export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value:
     <button type="button" onClick={onMore} className={moreOpen ? "active" : ""} aria-expanded={moreOpen} aria-controls="map-view-menu"><UiIcon name="more" /><span>Mehr</span></button>
   </nav>;
 }
-
-export function DesktopWelcome() {
-  return <aside className="desktop-welcome">
-    <UiIcon name="route" width="32" height="32" />
-    <h2>Wohin geht’s?</h2>
-    <p>Suche eine Verbindung. Fahrten und Alternativen erscheinen hier – mit allen Halten und verfügbaren Live-Daten.</p>
-    <hr/><h3>Oder einen Bahnhof entdecken</h3>
-    <p>Wähle einen Punkt auf der Karte für Abfahrten, Linien und Fahrtverläufe.</p>
-    <span className="workspace-version">V32 · Lyra</span>
-  </aside>;
-}

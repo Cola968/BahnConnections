@@ -14,22 +14,18 @@
   .topbar>.station-search>button[type="submit"] { display:none; }
   .desktop-workspace .map-stage { padding:calc(var(--app-header) + 12px) 12px 12px; }
   .desktop-workspace.has-primary-panel .map-stage { padding-right:calc(var(--workspace-right) + 24px); }
-  .desktop-workspace.desktop-connections .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:calc(var(--workspace-right) + 24px); }
+  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px; }
+  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px; padding-right:calc(var(--workspace-right) + 24px); }
   .desktop-workspace .map-canvas { border-radius:10px; border:1px solid var(--line); }
   .desktop-workspace .floating-panel { top:calc(var(--app-header) + 12px); right:12px; bottom:12px; left:auto; width:var(--workspace-right); max-height:none; min-width:0; }
-  .desktop-workspace.desktop-connections .explore-card { left:12px; right:auto; width:var(--workspace-left); }
-  .desktop-workspace.desktop-connections .explore-card>.panel-tools { display:none; }
-  .desktop-workspace .desktop-welcome { position:fixed; z-index:600; display:flex; flex-direction:column; align-items:flex-start; top:calc(var(--app-header) + 12px); bottom:12px; right:12px; width:var(--workspace-right); padding:28px; border:1px solid var(--line); border-radius:12px; color:var(--ink); background:var(--paper); }
-  .desktop-welcome>svg { color:var(--muted); margin:12px 0 20px; }
-  .desktop-welcome h2 { font-size:calc(1.5rem * var(--panel-scale,1)); margin-bottom:12px; }.desktop-welcome h3 { font-size:calc(1rem * var(--panel-scale,1)); font-weight:600; }
-  .desktop-welcome p { color:var(--muted); font-size:calc(0.875rem * var(--panel-scale,1)); line-height:1.6; }.desktop-welcome hr { width:100%; margin:20px 0; border:0; border-top:1px solid var(--line); }
-  .workspace-version { margin-top:auto; padding-top:20px; color:var(--muted); font-size:calc(0.75rem * var(--panel-scale,1)); }
+  .desktop-workspace.desktop-search-mode .explore-card { left:12px; right:auto; width:var(--workspace-left); }
+  .desktop-workspace.desktop-search-mode .explore-card>.panel-tools { display:none; }
   .desktop-workspace .compact-toolbar,.desktop-workspace .location-tools { top:calc(var(--app-header) + 24px); left:24px; }
   .desktop-workspace .location-tools { top:calc(var(--app-header) + 84px); }
-  .desktop-workspace.desktop-connections .compact-toolbar,.desktop-workspace.desktop-connections .location-tools { left:calc(var(--workspace-left) + 36px); }
-  .desktop-workspace .walking-card { top:calc(var(--app-header) + 140px); left:24px; }.desktop-workspace.desktop-connections .walking-card { left:calc(var(--workspace-left) + 36px); }
+  .desktop-workspace.desktop-search-mode .compact-toolbar,.desktop-workspace.desktop-search-mode .location-tools { left:calc(var(--workspace-left) + 36px); }
+  .desktop-workspace .walking-card { top:calc(var(--app-header) + 140px); left:24px; }.desktop-workspace.desktop-search-mode .walking-card { left:calc(var(--workspace-left) + 36px); }
   .desktop-workspace .map-legend { right:24px; }
-  .desktop-workspace.has-primary-panel .map-legend,.desktop-workspace.desktop-connections .map-legend { right:calc(var(--workspace-right) + 36px); }
+  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-legend { right:calc(var(--workspace-right) + 36px); }
   .desktop-workspace .leaflet-control-zoom { margin-bottom:80px!important; }
   .desktop-workspace .journey-alternatives { margin-top:20px; }
   .focus-mode.desktop-workspace .map-stage { padding:0; }
@@ -37,3 +33,4 @@
 @media (min-width:1440px) { .desktop-workspace { --workspace-left:340px; --workspace-right:380px; }.topbar { grid-template-columns:230px minmax(360px,1fr) 280px auto; }.desktop-navigation>button { padding:8px 16px; } }
 @media (min-width:1800px) { .desktop-workspace { --workspace-left:360px; --workspace-right:390px; } }
 @media (min-width:1024px) and (max-width:1199px) { .desktop-navigation svg { display:none; }.brand-name { font-size:calc(1rem * var(--panel-scale,1)); }.topbar { grid-template-columns:180px minmax(280px,1fr) 180px auto; }.header-actions>.round-button { display:none; } }
+
