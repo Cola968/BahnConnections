@@ -4,9 +4,9 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V36.0 · Minimal Map-first UI
+## V37.0 · Liquid Glass Minimal
 
-V36.0 reduziert die sichtbare UI-Chrome weiter: kompakter Mobile-Header, schwebende Suche, ruhigere Journey-Flächen und schmalere Desktop-Rails geben Karte und Reiseinformation mehr Raum.
+V37.0 baut auf dem map-first Layout auf und ergänzt ein zurückhaltendes Liquid-Glass-Materialsystem. Glas liegt nur auf Navigation und schwebenden Controls; Karte, Live-Tafel und Journey-Daten bleiben bewusst klar und informationsorientiert. Mobile erhält eine kompakte schwebende Tab-Bar, Desktop subtil verglaste Navigation und Rails. Reduced Transparency, Forced Colors, High Contrast und Browser-Fallbacks sind Teil des Systems.
 
 Der Reiseplaner zeigt Abfahrt/Ankunft und Datum/Zeit direkt im Hauptfluss; seltenere Optionen bleiben eingeklappt. Primäre Aktionen verwenden das BahnConnections-Rot, Auswahl- und Informationszustände Blau. Echtzeitstatusfarben bleiben davon getrennt.
 
