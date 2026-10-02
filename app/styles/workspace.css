@@ -292,3 +292,10 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:brightness(.65) 
   }
   .live-map-toolbar,.location-tools { top:76px; }
 }
+
+/* V36 · expanded sheet respects floating search hit area */
+@media (max-width:1023px) and (min-height:521px) {
+  .app-shell {
+    --sheet-limit:calc(min(100dvh,var(--viewport-height,100dvh)) - var(--app-header) - 60px - var(--bottom-navigation) - 8px);
+  }
+}
