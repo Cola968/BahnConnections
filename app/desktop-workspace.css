@@ -122,3 +122,90 @@
   }
   .desktop-workspace.desktop-search-mode .planner-departure input { width:100%; }
 }
+
+/* V37 · desktop liquid glass chrome */
+@media (min-width:1024px) {
+  .desktop-workspace .topbar {
+    background:var(--glass-strong);
+    border-bottom:1px solid color-mix(in srgb,var(--glass-stroke) 75%,transparent);
+    -webkit-backdrop-filter:blur(18px) saturate(125%);
+    backdrop-filter:blur(18px) saturate(125%);
+  }
+  .desktop-navigation {
+    padding:3px;
+    border:1px solid var(--glass-stroke);
+    background:var(--glass-regular);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+  .desktop-navigation>button.active {
+    background:color-mix(in srgb,var(--paper) 66%,transparent);
+    box-shadow:0 2px 8px #17202b10,inset 0 1px 0 rgba(255,255,255,.55);
+  }
+  .desktop-workspace .topbar>.station-search {
+    background:var(--glass-regular);
+    border:1px solid var(--glass-stroke);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+    box-shadow:var(--glass-shadow-soft);
+  }
+  .desktop-workspace .floating-panel {
+    background:var(--glass-strong);
+    border:1px solid var(--glass-stroke);
+    box-shadow:var(--glass-shadow);
+    -webkit-backdrop-filter:var(--glass-filter-strong);
+    backdrop-filter:var(--glass-filter-strong);
+  }
+  .desktop-workspace .floating-panel>.panel-tools {
+    position:sticky;
+    top:0;
+    z-index:12;
+    margin-right:-24px;
+    margin-left:-24px;
+    padding-right:24px;
+    padding-left:24px;
+    background:var(--glass-regular);
+    -webkit-backdrop-filter:var(--glass-filter-strong);
+    backdrop-filter:var(--glass-filter-strong);
+  }
+  .desktop-workspace .station-card.floating-panel>.panel-tools {
+    margin-right:0;
+    margin-left:0;
+  }
+  .desktop-workspace .map-canvas {
+    border-radius:22px;
+    box-shadow:0 14px 42px #17202b10;
+  }
+  .navigation-more>div {
+    background:var(--glass-regular);
+    border:1px solid var(--glass-stroke);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+    box-shadow:var(--glass-shadow);
+  }
+}
+@media (prefers-reduced-transparency:reduce) {
+  .desktop-workspace .topbar,
+  .desktop-navigation,
+  .desktop-workspace .topbar>.station-search,
+  .desktop-workspace .floating-panel,
+  .desktop-workspace .floating-panel>.panel-tools,
+  .navigation-more>div {
+    background:var(--paper);
+  }
+}
+
+/* V37 · performance/legibility: large data rails stay in the content layer */
+@media (min-width:1024px) {
+  .desktop-workspace .floating-panel {
+    background:var(--paper);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+  .desktop-workspace .floating-panel>.panel-tools {
+    background:var(--glass-regular);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+}

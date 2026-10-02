@@ -11,7 +11,7 @@ const checks = [];
 function check(name,condition) { checks.push({name,ok:Boolean(condition)}); }
 
 check("Shared design tokens and native system font",css.includes("--space-4:16px") && css.includes("-apple-system") && css.includes('html[data-theme="dark"]'));
-check("No glass, decorative gradients or serif typography in the new UI",!/(?:Georgia|linear-gradient|backdrop-filter:blur)/.test(css+desktop));
+check("Liquid Glass is functional, restrained and accessible",css.includes("--glass-clear:") && css.includes("--glass-regular:") && css.includes("backdrop-filter:var(--glass-filter") && css.includes("@media (prefers-reduced-transparency:reduce)") && css.includes("@media (forced-colors:active)") && css.includes("@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px)))") && !/(?:Georgia|linear-gradient)/.test(css+desktop));
 check("Search mode: planner and map; journey mode: map and inspector",desktop.includes(".desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
 check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
 check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
@@ -58,8 +58,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "36.0"') && versionMetadata.includes('"version": "36.0"') && versionMetadata.includes('/install?update=V36.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "37.0"') && versionMetadata.includes('"version": "37.0"') && versionMetadata.includes('/install?update=V37.0'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V36.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v36-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V37.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v37-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;

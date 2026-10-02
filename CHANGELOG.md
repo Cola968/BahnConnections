@@ -1,3 +1,15 @@
+# V37.0 · Liquid Glass Minimal
+
+- Neues Materialsystem mit klarer Trennung zwischen Content-, Functional-Glass- und Status-Layer.
+- Liquid Glass wird gezielt für schwebende Suche, Kartencontrols, Popover, Mobile-Navigation, Sheet-Kopf und Desktop-Chrome eingesetzt; Fahrplan- und Journey-Inhalte bleiben lesbar und weitgehend opak.
+- Drei Glasstufen (`clear`, `regular`, `strong`) mit Dark-Mode-Anpassung, subtilen Innenlichtern und kontrollierter Elevation statt flächigem Glassmorphism.
+- Mobile Bottom-Navigation als kompakte schwebende Fläche neu komponiert und auf Tablets in der Breite begrenzt.
+- Journey-Datenstatus und Sekundärinformationen weiter entkartet; Hierarchie entsteht stärker durch Typografie und Abstand.
+- Desktop-Navigation, Suche und Sidebars erhalten eine zurückhaltende Materialtiefe, während die Karte visuell dominant bleibt.
+- Accessibility-Fallbacks für High Contrast, Forced Colors, Reduced Motion und Reduced Transparency ergänzt; Browser ohne `backdrop-filter` erhalten solide Oberflächen.
+- Keine Gradients, kein Neon und keine Glasflächen in langen Transit-Datenlisten.
+- PWA-Version und Cache auf V37.0 angehoben.
+
 # V36.0 · Minimal Map-first UI
 
 - Mobile Kopfbereich auf eine kompakte Zeile reduziert; die Bahnhofssuche schwebt nun direkt über der Karte statt eine zweite Header-Zeile zu belegen.
