@@ -314,8 +314,8 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:brightness(.65) 
 .leaflet-control-zoom a { background:transparent!important; }
 .station-point,.station-halo { filter:none!important; }
 .station-halo { pointer-events:none; }
-html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:invert(.92) hue-rotate(180deg) brightness(.95) saturate(.25) contrast(.9); opacity:1; }
-html[data-theme="dark"] .map-canvas { background:#18252e; }
+html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:invert(.90) hue-rotate(180deg) brightness(.70) saturate(.16) contrast(1.04); opacity:.97; }
+html[data-theme="dark"] .map-canvas { background:#0b0d0f; }
 @media (max-width:1023px) {
   .mobile-navigation {
     left:50%; right:auto; bottom:calc(8px + var(--keyboard-inset,0px)); transform:translateX(-50%);
@@ -364,6 +364,7 @@ html[data-theme="dark"] .map-canvas { background:#18252e; }
   .mobile-navigation { height:48px; border-radius:16px; padding:0 8px; }
   .mobile-navigation button { min-height:44px; flex-direction:row; }
   .app-shell { --bottom-navigation:60px; }
+  .header-actions { grid-column:3; grid-row:1; width:44px; min-width:44px; max-width:44px; height:44px; justify-self:end; }
   .mobile-sheet-panel,.app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,.app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel { width:50%; left:auto; right:0; }
 }
 /* The header must mask scrolled content for every accessibility fallback too. */
