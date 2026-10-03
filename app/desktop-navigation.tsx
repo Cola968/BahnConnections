@@ -15,7 +15,6 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
     {destinations.map(({ view, label, icon }) =>
       <button type="button" key={view} className={value === view ? "active" : ""} aria-current={value === view ? "page" : undefined} onClick={() => onChange(view)}><UiIcon name={icon} />{label}</button>
     )}
-    <details className="navigation-more"><summary><UiIcon name="more" />Mehr<UiIcon name="chevron" /></summary><div><button onClick={(event) => { onChange("stats"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Netzreport</button><button onClick={(event) => { onChange("network"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Netzlabor · Simulation</button></div></details>
   </nav>;
 }
 
