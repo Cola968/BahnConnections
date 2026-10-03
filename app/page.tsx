@@ -789,7 +789,7 @@ export default function Home() {
       (error) => {
         pendingWalkTargetRef.current = null;
         setGeoStatus("error");
-        setGeoMessage(error.code === 1 ? "Standortfreigabe abgelehnt. Du kannst sie in den Browser-Einstellungen erlauben." : error.code === 2 ? "Standort derzeit nicht bestimmbar." : "Standortabfrage hat zu lange gedauert. Erneut versuchen.");
+        setGeoMessage(error.code === 1 ? "Standort nicht verfügbar · im Browser erlauben" : error.code === 2 ? "Standort derzeit nicht bestimmbar" : "Standortabfrage fehlgeschlagen · erneut versuchen");
         setWalkStatus((current) => current === "loading" ? "error" : current);
         setWalkMessage(error.code === 1 ? "Standortfreigabe erforderlich." : "Standort derzeit nicht verfügbar.");
         if (geoWatchRef.current !== null) navigator.geolocation.clearWatch(geoWatchRef.current);
@@ -1100,7 +1100,12 @@ export default function Home() {
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
           <div className="view-options">
             <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe"><UiIcon name="more" /></button>
-            {viewMenuOpen && <div className="view-menu-popover"><span>Darstellung</span><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>◐ Hoher Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>A Globale Schrift</button><button onClick={() => { setHelpOpen(true); setViewMenuOpen(false); }}>? Daten & Methodik</button></div>}
+            {viewMenuOpen && <div className="view-menu-popover">
+              <button onClick={() => { navigate("stats"); setViewMenuOpen(false); }}><UiIcon name="chart" />Netzreport</button>
+              <button onClick={() => { navigate("network"); setViewMenuOpen(false); }}><UiIcon name="layers" />Netzlabor</button>
+              <button onClick={() => { setHelpOpen(true); setViewMenuOpen(false); }}><UiIcon name="info" />Hilfe & Daten</button>
+              <details className="accessibility-menu"><summary>Barrierefreiheit</summary><div><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>Hoher Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>Große Schrift</button></div></details>
+            </div>}
           </div>
         </div>
       </header>
@@ -1122,7 +1127,7 @@ export default function Home() {
         {!focusMode && <>
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
             <button type="button" className={liveFiltersOpen ? "map-menu-trigger active" : "map-menu-trigger"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu"><UiIcon name="layers" />Ansicht</button>
-            {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}
+            {desktopWorkspace && <button type="button" className="map-home-button" onClick={showGermany} aria-label="Karte auf Deutschland zentrieren">Deutschland</button>}
             <span className="sr-only" aria-live="polite">{!liveVisible ? "Live-Daten nicht aktiv" : liveState === "loading" ? "Live-Daten werden geladen" : liveState === "error" ? "Live-Daten nicht erreichbar" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live-Daten · ${visibleLiveTrips.length} Züge`}</span>
           </div>
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
