@@ -4,7 +4,7 @@ import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type
 import { stationMarkerHierarchy } from "./station-marker";
 import { stationPassengerInfo } from "./station-passengers";
 import { SavedRoutesPanel } from "./saved-routes-panel";
-import { parseSavedRoutes, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
+import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
@@ -980,7 +980,8 @@ export default function Home() {
   function saveCurrentRoute() {
     const from=stationById.get(startId),to=stationById.get(targetId);
     if(!from||!to||from.id===to.id)return;
-    const next=parseSavedRoutes([{from,to,createdAt:new Date().toISOString()},...savedRoutes]);
+    const next=saveRoute(savedRoutes,from,to);
+    if(!next){setRouteSaveMessage("Du hast bereits 20 Pendelstrecken gespeichert. Entferne zuerst eine Strecke.");return;}
     storeRoutes(next);
   }
   function openSavedRoute(route:SavedRoute,reverse:boolean) {

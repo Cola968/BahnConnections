@@ -19,3 +19,10 @@ export function parseSavedRoutes(value:unknown):SavedRoute[] {
     return [{id,from,to,createdAt:typeof v.createdAt==='string'?v.createdAt.slice(0,40):''}];
   });
 }
+export function saveRoute(routes:SavedRoute[],from:Station,to:Station):SavedRoute[]|null {
+  const candidate=parseSavedRoutes([{from,to,createdAt:new Date().toISOString()}])[0];
+  if(!candidate)return null;
+  const others=routes.filter(route=>route.id!==candidate.id);
+  if(others.length>=20)return null;
+  return [candidate,...others];
+}

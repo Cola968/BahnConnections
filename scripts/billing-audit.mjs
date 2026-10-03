@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Stripe from 'stripe';
 import {billingConfig,approvedSubscription,sameOrigin,verifiedEvent} from '../app/billing/core.ts';
-import {parseSavedRoutes} from '../app/saved-routes.ts';
+import {parseSavedRoutes,saveRoute} from '../app/saved-routes.ts';
 const env={BILLING_MODE:'test',STRIPE_SECRET_KEY:'rk_test_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture',STRIPE_PRICE_MONTH:'price_month',STRIPE_PRICE_YEAR:'price_year',BILLING_ORIGIN:'https://bahnconnections.example',STRIPE_PORTAL_CONFIGURATION:'bpc_fixture'};
 const config=billingConfig(env);assert.ok(config);
 for(const patch of [{BILLING_MODE:'live'},{STRIPE_SECRET_KEY:'sk_live_fixture'},{STRIPE_WEBHOOK_SECRET:''},{STRIPE_PRICE_YEAR:''},{BILLING_ORIGIN:'https://bahnconnections.example/untrusted'},{BILLING_ORIGIN:'http://bahnconnections.example'}])assert.equal(billingConfig({...env,...patch}),null);
@@ -22,4 +22,8 @@ const routes=parseSavedRoutes([{from:a,to:b},{from:a,to:b},{from:b,to:a},{from:a
 assert.equal(routes.length,2);assert.notEqual(routes[0].id,routes[1].id);
 assert.deepEqual(parseSavedRoutes({plan:'plus'}),[]);
 assert.equal(parseSavedRoutes(Array.from({length:30},(_,i)=>({from:{...a,id:String(i)},to:b}))).length,20);
+const full=parseSavedRoutes(Array.from({length:20},(_,i)=>({from:{...a,id:String(i)},to:b})));
+assert.equal(saveRoute(full,{...a,id:'new'},b),null);
+const refreshed=saveRoute(full,full[5].from,b);
+assert.equal(refreshed.length,20);assert.equal(refreshed.at(-1).id,full.at(-1).id);
 console.log('Billing audit passed: sandbox-only config, origin checks, expiry/status/product entitlement boundaries, signed/tampered webhooks, validated bounded routes. No external Stripe payment executed.');
