@@ -607,32 +607,47 @@ export default function Home() {
       const isConnected = connectedIds.has(station.id);
       const profile = stationImportance.get(station.id);
       const isMajorHub = MAJOR_HUB_IDS.has(station.id);
-      const passengerBaseRadius = station.passengerBand === "> 1.000" ? 6.6 : station.passengerBand === "100 - 1.000" ? 4.7 : station.passengerBand === "< 100" ? 3.1 : null;
-      const networkLift = Math.min(2.4, Math.sqrt(Math.max(0, profile?.dailyStops ?? 0)) / 5.4);
-      const fallbackRadius = isMajorHub ? 8.6 : station.hub ? 6.8 : Math.min(5.8, 3.3 + (profile?.domesticDirect ?? 0) / 18);
-      const baseRadius = passengerBaseRadius === null ? fallbackRadius : Math.min(10.2, passengerBaseRadius + networkLift + (isMajorHub ? .8 : station.hub ? .35 : 0));
+      if (mapZoom < 7 && station.passengerBand === "< 100" && !isSelected && !isDestination && !isTransfer) continue;
+      const passengerBaseRadius = station.passengerBand === "> 1.000" ? 9.2 : station.passengerBand === "100 - 1.000" ? 5.8 : station.passengerBand === "< 100" ? 3 : null;
+      const networkLift = Math.min(1.8, Math.sqrt(Math.max(0, profile?.dailyStops ?? 0)) / 7);
+      const fallbackRadius = isMajorHub ? 10.4 : station.hub ? 7.4 : Math.min(5.6, 3.2 + (profile?.domesticDirect ?? 0) / 20);
+      const baseRadius = passengerBaseRadius === null ? fallbackRadius : Math.min(12.4, passengerBaseRadius + networkLift + (isMajorHub ? 1.2 : station.hub ? .45 : 0));
       const connected = overviewRoutesVisible ? connections.find((connection) => connection.station.id === station.id) : undefined;
       const reachability = reachableById.get(station.id);
       const reachabilityColor = !reachability ? (theme === "dark" ? "#2d5662" : "#b6d7dc") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
       const markerPalette = theme === "dark"
-        ? { edge:"#8fc4d0", low:"#17323b", medium:"#1d5260", high:"#237b8f", active:"#5a91c2" }
-        : { edge:"#0b7890", low:"#f4fcfd", medium:"#cdeff4", high:"#59c3d3", active:"#2f7db8" };
+        ? { edge:"#8bc5d2", low:"#18313a", medium:"#245b67", high:"#2f8797", active:"#5a91c2", halo:"#79c0cf" }
+        : { edge:"#0a7187", low:"#f8fdfe", medium:"#c5ebf0", high:"#3eafc0", active:"#2f7db8", halo:"#198da0" };
       const passengerFill = station.passengerBand === "> 1.000" ? markerPalette.high : station.passengerBand === "100 - 1.000" ? markerPalette.medium : markerPalette.low;
+      const passengerClass = station.passengerBand === "> 1.000" ? "passenger-high" : station.passengerBand === "100 - 1.000" ? "passenger-medium" : station.passengerBand === "< 100" ? "passenger-low" : "";
       const markerClasses = [
         "station-point",
         isMajorHub ? "major-hub" : "",
         station.hub ? "hub" : "",
         station.source === "db" ? "db-station" : "",
-        station.passengerBand === "> 1.000" ? "passenger-high" : station.passengerBand === "100 - 1.000" ? "passenger-medium" : station.passengerBand === "< 100" ? "passenger-low" : "",
+        passengerClass,
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
+      const markerRadius = journey ? Math.min(3.2, Math.max(1.8, baseRadius * .27)) : isSelected || isDestination ? Math.max(10.4, baseRadius + 1.4) : isTransfer ? Math.max(7.8, baseRadius) : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? Math.max(5.4, baseRadius) : baseRadius;
+      const showPassengerHalo = !journey && !reachabilityVisible && (station.passengerBand === "> 1.000" || isMajorHub) && !isSelected;
+      if (showPassengerHalo) {
+        L.circleMarker([station.lat, station.lon], {
+          radius:markerRadius + 3.5,
+          color:markerPalette.halo,
+          weight:1.25,
+          opacity:theme === "dark" ? .34 : .26,
+          fillOpacity:0,
+          interactive:false,
+          className:`station-halo ${isMajorHub ? "major-hub-halo" : "passenger-high-halo"}`,
+        }).addTo(layer);
+      }
       const marker = L.circleMarker([station.lat, station.lon], {
-        radius: journey ? Math.min(3.1, Math.max(1.8, baseRadius * .32)) : isSelected || isDestination ? Math.max(9.4, baseRadius + 1.2) : isTransfer ? Math.max(7.2, baseRadius) : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? Math.max(5.1, baseRadius) : baseRadius,
+        radius:markerRadius,
         color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#d0b57e" : "#9a7233") : markerPalette.edge,
-        opacity: journey ? .24 : .98,
-        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : baseRadius >= 8 ? 2.6 : baseRadius >= 5.5 ? 2.1 : 1.7,
+        opacity: journey ? .24 : .99,
+        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : baseRadius >= 9 ? 2.8 : baseRadius >= 5 ? 2.15 : 1.45,
         fillColor: isSelected || isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#725f3c" : "#e8d8b8") : reachabilityVisible ? reachabilityColor : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#2d6470" : "#bce4ea") : passengerFill,
-        fillOpacity: journey ? .16 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .18 : .97,
+        fillOpacity: journey ? .15 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .18 : station.passengerBand === "< 100" ? .82 : .97,
         className: markerClasses,
       }).addTo(layer);
       const reachabilityDetail = reachabilityVisible && reachability ? ` · ${formatDuration(reachability.minutes)} · ${reachability.changes ? `${reachability.changes} Umstieg${reachability.changes > 1 ? "e" : ""}` : "direkt"}` : "";
