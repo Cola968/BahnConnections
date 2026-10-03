@@ -771,3 +771,20 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane {
     }
   }
 }
+
+
+/* V40.1 · scroll-edge glass must blur content, not show a second readable text layer */
+@media (max-width:1023px) and (min-height:521px) {
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel>.panel-tools {
+    background:color-mix(in srgb,var(--paper) 78%,transparent);
+    border-bottom:1px solid color-mix(in srgb,var(--glass-stroke) 42%,transparent);
+    box-shadow:0 10px 22px color-mix(in srgb,var(--paper) 26%,transparent);
+    -webkit-backdrop-filter:blur(34px) saturate(126%);
+    backdrop-filter:blur(34px) saturate(126%);
+  }
+  html[data-theme="dark"] .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel>.panel-tools {
+    background:color-mix(in srgb,#12202a 76%,transparent);
+    border-bottom-color:rgba(225,241,249,.07);
+    box-shadow:0 10px 22px rgba(0,0,0,.18);
+  }
+}
