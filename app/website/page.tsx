@@ -46,12 +46,12 @@ export default function WebsitePage() {
 
       <section className={styles.hero}>
         <div className={styles.heroMain}>
-          <span className={styles.eyebrow}>BahnConnections im Browser</span>
-          <h1>Fahrplan und Live-Informationen für deine Bahnreise.</h1>
-          <p>Verbindungen suchen, Abfahrten prüfen und Fahrtverläufe nachvollziehen. BahnConnections bündelt die wichtigsten Informationen in einer eigenständigen Webanwendung.</p>
+          <span className={styles.eyebrow}>Fahrplan & Echtzeit</span>
+          <h1>Fahrplan, Abfahrten und Live-Informationen.</h1>
+          <p>BahnConnections bündelt Verbindungssuche, Bahnhofstafeln und Fahrtverläufe in einer eigenständigen Webanwendung.</p>
 
           <div className={styles.heroActions}>
-            <Link className={styles.primaryButton} href="/">Web-App öffnen <Arrow /></Link>
+            <Link className={styles.primaryButton} href="/">Fahrplan öffnen <Arrow /></Link>
             <Link className={styles.secondaryButton} href="/install">Als App installieren</Link>
           </div>
 
@@ -100,11 +100,11 @@ export default function WebsitePage() {
         </aside>
       </section>
 
-      <section className={styles.quickLinks} aria-label="Direkteinstiege">
-        <div className={styles.quickIntro}><strong>Direkt zur Web-App</strong><span>Die eigentliche Reiseplanung findet in BahnConnections statt.</span></div>
-        <Link href="/"><span>Verbindung planen</span><Arrow /></Link>
-        <Link href="/"><span>Abfahrten prüfen</span><Arrow /></Link>
-        <Link href="/"><span>Karte und Fahrten</span><Arrow /></Link>
+      <section className={styles.quickLinks} aria-label="Funktionen der Web-App">
+        <div className={styles.quickIntro}><strong>In der Web-App</strong><span>Die Reiseplanung selbst findet in BahnConnections statt.</span></div>
+        <div className={styles.quickItem}><strong>Verbindung planen</strong><span>Start, Ziel, Zeit und Alternativen</span></div>
+        <div className={styles.quickItem}><strong>Abfahrten prüfen</strong><span>Ist-Zeit, Gleis und Ausfälle</span></div>
+        <div className={styles.quickItem}><strong>Karte und Fahrten</strong><span>Bahnhöfe, Strecken und Verläufe</span></div>
       </section>
 
       <section className={styles.section} id="funktionen">
