@@ -1,3 +1,14 @@
+# V39.0 · Liquid Map Polish
+
+- Stationsmarker skalieren jetzt vorrangig nach den vorhandenen DB-Reisendenklassen; kuratierte Hauptbahnhöfe übernehmen dafür ihre DB-Aliasdaten statt nur nach Hub-Status dargestellt zu werden.
+- Größere Bahnhöfe erhalten sichtbar größere Marker, kleinere Stationen bleiben zurückhaltend; innerhalb großer Klassen differenziert die vorhandene Netzbedeutung zusätzlich.
+- Grau als Standardmarkerfarbe entfernt: Light und Dark Mode nutzen ein konsistentes blau/teal Stationssystem.
+- Dark Mode behält die echte OpenStreetMap-Geometrie, verwendet aber eine kontrastreiche Nacht-Transformation mit invertierten Beschriftungen statt der bisherigen matschigen Abdunklung.
+- Mobile Kopfzeile korrigiert: Kartenoptionen oben rechts sind fest auf 46×46 px begrenzt und können nicht mehr als vertikale weiße Fläche ausbrechen.
+- Brand, Suche, Kartenoptionen, Standort, Zoom, Sheet und Bottom-Bar verwenden stärkeres, aber zusammenhängendes Liquid Glass; lange Inhaltslisten bleiben flach.
+- Dark Journey/Station-Inhalte verzichten weiter auf verschachtelte Glas-Karten; Alternativverbindungen zeigen weniger redundante Statusprosa.
+- PWA-Version und Cache auf V39.0 angehoben.
+
 # V38.0 · Native Minimal UI
 
 - Heller Mobile-Look näher an der bevorzugten Referenz: Karte übernimmt die Fläche, Suche/Navigation/Sheet bleiben die wenigen bewussten Glass-Schichten.
