@@ -199,6 +199,7 @@ export default function Home() {
   const [liveTick, setLiveTick] = useState(0);
   const [statsOpen, setStatsOpen] = useState(false);
   const [liveFiltersOpen, setLiveFiltersOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [boardSummary, setBoardSummary] = useState<BoardSummary | null>(null);
@@ -404,7 +405,7 @@ export default function Home() {
       if (event.key.toLocaleLowerCase() === "l") setLiveVisible((value) => !value);
       if (event.key.toLocaleLowerCase() === "s") { event.preventDefault(); document.querySelector<HTMLInputElement>(".station-search input")?.focus(); }
       if (event.key.toLocaleLowerCase() === "f") { const drawer = document.querySelector<HTMLDetailsElement>(".filter-drawer"); if (drawer) drawer.open = !drawer.open; }
-      if (event.key === "Escape") { setHelpOpen(false); setStatsOpen(false); setExploreOpen(false); setViewMenuOpen(false); setLiveFiltersOpen(false); setSelectedLiveTrip(null); setTrackedTripId(null); }
+      if (event.key === "Escape") { setHelpOpen(false); setStatsOpen(false); setExploreOpen(false); setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false); setSelectedLiveTrip(null); setTrackedTripId(null); }
     };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
@@ -1041,7 +1042,7 @@ export default function Home() {
     : activePrimaryPanel === "stats" ? "Netz und Qualität" : "Live-Lage und Simulation";
 
   function navigate(view: DesktopView) {
-    setDesktopView(view); setMobileView(view); setViewMenuOpen(false); setLiveFiltersOpen(false);
+    setDesktopView(view); setMobileView(view); setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
     setStatsOpen(view === "stats"); setLabOpen(view === "network");
     setExploreOpen(!desktopWorkspace && view === "connections" && !journey);
     if (view === "map" && !desktopWorkspace) { setMobileSheetState("collapsed"); return; }
@@ -1095,7 +1096,7 @@ export default function Home() {
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
         <div className="header-actions">
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
-          <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
+          <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setMoreMenuOpen(false); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
           <div className="view-options">
             <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe"><UiIcon name="more" /></button>
@@ -1126,15 +1127,21 @@ export default function Home() {
           </div>
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
-            <div className="map-menu-dismiss"><strong>Ansicht & mehr</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
-            <div className="map-menu-actions"><button onClick={() => { setExploreOpen(true); setMobileView("connections"); setSelectedLiveTrip(null); setStatsOpen(false); setLabOpen(false); setLiveFiltersOpen(false); setMobileSheetState("expanded"); }}>Verbindung suchen</button><button onClick={() => navigate("stats")}>Netzreport 2025</button><button onClick={() => navigate("network")}>Netzlabor · Simulation</button></div>
-            <span>Oberfläche</span><div className="popover-buttons surface-buttons"><button onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}>{theme === "light" ? "Dunkel" : "Hell"}</button><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>Schrift</button><button onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Hilfe</button></div>
-            <span>Kartenlage</span><div className="popover-buttons"><button className={liveVisible && liveView === "stress" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("stress"); }}>Kompakte Live-Lage</button><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>Züge ab Zoom 10</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
+            <div className="map-menu-dismiss"><strong>Kartenansicht</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
+            <span>Live-Züge</span><div className="popover-buttons"><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>An</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
             <span>Zugarten</span><div className="popover-buttons"><button className={liveCategories.includes("fern") ? "active fern" : ""} onClick={() => toggleLiveCategory("fern")}>ICE/IC</button><button className={liveCategories.includes("regional") ? "active regional" : ""} onClick={() => toggleLiveCategory("regional")}>RE/RB</button><button className={liveCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => toggleLiveCategory("sbahn")}>S-Bahn</button><button className={liveCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => toggleLiveCategory("ubahn")}>U-Bahn</button><button className={liveCategories.includes("tram") ? "active tram" : ""} onClick={() => toggleLiveCategory("tram")}>Tram</button></div>
-            <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle Status</option><option value="delayed">Nur verspätet</option><option value="ontime">Nur pünktlich</option></select></label>
-            <span>Netzebenen</span><button className={overviewRoutesVisible ? "overview-route-toggle active" : "overview-route-toggle"} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}><b>Kuratiertes Fernnetz</b><small>{overviewRoutesVisible ? "sichtbar · nicht vollständig" : `aus · ${ROUTES.length} Referenzlinien`}</small></button>
-            <div className="map-display-toggles"><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={minimalMode ? "active" : ""} onClick={() => setMinimalMode((value) => !value)}>Minimalmodus</button><button className={focusMode ? "active" : ""} onClick={() => setFocusMode((value) => !value)}>Fokusmodus</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugschweif</button></div>
-            <div className="map-menu-links"><a href="/install">App installieren</a><button type="button" onClick={() => { setHelpOpen(true); setLiveFiltersOpen(false); }}>Datenquellen & Datenschutz</button><small>BahnConnections Plus · noch nicht verfügbar<br />Verbindungssuche und Live-Tafeln bleiben frei.</small><small>{APP_VERSION_LABEL}</small></div>
+            <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle</option><option value="delayed">Verspätet</option><option value="ontime">Pünktlich</option></select></label>
+            <details className="map-advanced-options"><summary>Weitere Kartenoptionen</summary><div><button className={overviewRoutesVisible ? "active" : ""} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}>Fernnetz</button><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugspur</button></div></details>
+          </div>}
+          {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
+          {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
+            <div className="map-menu-dismiss"><strong>Mehr</strong><button type="button" onClick={() => setMoreMenuOpen(false)} aria-label="Mehr schließen"><UiIcon name="close" /></button></div>
+            <div className="simple-more-list">
+              <button type="button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}><span>Darstellung</span><small>{theme === "light" ? "Dunkelmodus" : "Hellmodus"}</small></button>
+              <a href="/install"><span>App & Updates</span><small>Installieren oder aktualisieren</small></a>
+              <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><span>Hilfe & Daten</span><small>Quellen, Datenschutz und Methodik</small></button>
+            </div>
+            <small className="more-version">{APP_VERSION_LABEL}</small>
           </div>}
         </>}
 
@@ -1237,7 +1244,7 @@ export default function Home() {
 
       </section>
 
-      {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} moreOpen={liveFiltersOpen} />}
+      {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setHelpOpen(false)}>
