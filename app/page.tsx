@@ -1101,7 +1101,7 @@ export default function Home() {
           <div className="view-options">
             <button className={viewMenuOpen ? "round-button active" : "round-button"} onClick={() => setViewMenuOpen((value) => !value)} aria-expanded={viewMenuOpen} aria-label="Darstellung und Hilfe"><UiIcon name="more" /></button>
             {viewMenuOpen && <div className="view-menu-popover">
-              <button onClick={() => { navigate("stats"); setViewMenuOpen(false); }}><UiIcon name="chart" />Netzreport</button>
+              <button onClick={() => { navigate("stats"); setViewMenuOpen(false); }}><UiIcon name="network" />Netzreport</button>
               <button onClick={() => { navigate("network"); setViewMenuOpen(false); }}><UiIcon name="layers" />Netzlabor</button>
               <button onClick={() => { setHelpOpen(true); setViewMenuOpen(false); }}><UiIcon name="info" />Hilfe & Daten</button>
               <details className="accessibility-menu"><summary>Barrierefreiheit</summary><div><button className={highContrast ? "active" : ""} onClick={() => setHighContrast((value) => !value)}>Hoher Kontrast</button><button className={fontScale === "large" ? "active" : ""} onClick={() => setFontScale((value) => value === "large" ? "normal" : "large")}>Große Schrift</button></div></details>
