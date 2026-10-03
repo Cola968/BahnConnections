@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type UIEvent } from "react";
 import { stationMarkerHierarchy } from "./station-marker";
+import { compactStationName } from "./display-name";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
@@ -1032,7 +1033,7 @@ export default function Home() {
   const plannerVisible = !statsOpen && !labOpen && (exploreOpen || desktopSearchMode);
   const activePrimaryPanel = plannerVisible ? "planner" : statsOpen ? "stats" : labOpen ? "lab" : journey && !departuresView ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
   const primaryPanelOpen = Boolean(activePrimaryPanel);
-  const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? selected?.name ?? "Bahnhof" : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Netzlabor";
+  const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? compactStationName(selected?.name ?? "Bahnhof") : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Netzlabor";
   const mobileSheetSummary = journey && activePrimaryPanel === "journey"
     ? `${clock(journey.startTime)}–${clock(journey.endTime)} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`
     : activePrimaryPanel === "planner" ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}`
@@ -1157,7 +1158,7 @@ export default function Home() {
 
         {!statsOpen && !plannerVisible && !labOpen && (!journey || departuresView) && !selectedLiveTrip && selected && !sidebarCollapsed ? (
           <aside className={`station-card floating-panel mobile-sheet-panel station-right${stationPanel !== "live" ? " detail-width" : ""}`} style={stationControls.style} onScroll={markPanelScroll}>
-            <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={selected.name} mobileSummary="" />
+            <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={compactStationName(selected.name)} mobileSummary="" />
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div className="station-section-tabs" role="tablist" aria-label="Bahnhofsinformationen">
               <button role="tab" aria-selected={stationPanel === "live"} className={stationPanel === "live" ? "active" : ""} onClick={() => setStationPanel("live")}><i /> Tafel</button>
@@ -1180,8 +1181,8 @@ export default function Home() {
 
         {journey && !departuresView && !statsOpen && !plannerVisible && !labOpen && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style} onScroll={markPanelScroll}>
-            <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} />
-            <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{selectedJourneyStart.name} → {selectedJourneyTarget.name}</span></div>
+            <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${compactStationName(selectedJourneyStart.name)} → ${compactStationName(selectedJourneyTarget.name)}`} />
+            <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{compactStationName(selectedJourneyStart.name)} → {compactStationName(selectedJourneyTarget.name)}</span></div>
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
                 <JourneyTimeRange journey={journey} />
@@ -1197,7 +1198,7 @@ export default function Home() {
                 const wait=transferWaitMinutes(journey,index);
                 return <article className={`live-journey-leg ${serviceClass(leg.category)}${journey.transitLegs.length === 1 ? " single-leg" : ""}`} key={`${leg.tripId ?? leg.name}-${index}`}>
                   <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b>{leg.headsign ? <small>Richtung {leg.headsign}</small> : null}</span>{leg.cancelled ? <span className="leg-live-state cancel">Ausfall</span> : null}</header>
-                  <div className="leg-route-line"><span><b>{leg.from.name}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{leg.to.name}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
+                  <div className="leg-route-line"><span><b title={leg.from.name}>{compactStationName(leg.from.name)}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b title={leg.to.name}>{compactStationName(leg.to.name)}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span></div>
                   {forecast.level >= 3 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Hohe Auslastung erwartet</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div>}
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
@@ -1205,7 +1206,7 @@ export default function Home() {
                     const actual=stop.departure ?? stop.arrival;
                     const planned=stop.scheduledDeparture ?? stop.scheduledArrival;
                     return <li className={stop.cancelled || leg.cancelled ? "cancelled" : ""} key={`${stop.id ?? stop.name}-${stopIndex}`}>
-                      <i aria-hidden="true" /><span className="stop-description"><b>{stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span>
+                      <i aria-hidden="true" /><span className="stop-description"><b title={stop.name}>{compactStationName(stop.name)}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span>
                       <RealtimeTime scheduled={planned} actual={actual} realtime={leg.realtime} cancelled={stop.cancelled || leg.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact />
                     </li>;
                   })}</ol>
