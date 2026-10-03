@@ -310,3 +310,29 @@ html[data-theme="dark"] .station-search:focus-within {
     box-shadow:0 12px 32px #17202b16,inset 0 1px 0 rgba(255,255,255,.48);
   }
 }
+
+
+/* V40 · controls float above map content instead of becoming opaque cards */
+@media (max-width:1023px) and (min-height:521px) {
+  .brand {
+    background:var(--glass-clear);
+    border-color:color-mix(in srgb,var(--glass-stroke) 86%,transparent);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+  .mobile-map-view-button {
+    background:var(--glass-clear);
+    border-color:color-mix(in srgb,var(--glass-stroke) 84%,transparent);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+  .topbar>.station-search {
+    background:var(--glass-regular);
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 80%,transparent);
+    box-shadow:var(--glass-shadow);
+    -webkit-backdrop-filter:var(--glass-filter-strong);
+    backdrop-filter:var(--glass-filter-strong);
+  }
+}
