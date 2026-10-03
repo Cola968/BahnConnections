@@ -456,3 +456,18 @@ html[data-theme="dark"] .map-canvas { background:#18252e; }
     backdrop-filter:var(--glass-filter-strong);
   }
 }
+
+
+/* V41.1 · elevated popover, flat inner actions */
+.map-menu-popover.detached button {
+  border-color:transparent;
+  background:transparent;
+}
+.map-menu-popover.detached button:hover {
+  background:color-mix(in srgb,var(--ink) 5%,transparent);
+}
+.map-menu-popover.detached button.active {
+  color:var(--accent);
+  border-color:transparent;
+  background:color-mix(in srgb,var(--accent) 8%,transparent);
+}
