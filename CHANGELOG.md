@@ -1,3 +1,10 @@
+# V47.1 · Mobile Header Fix
+
+- Mobiles Suchfeld stabilisiert: Clear-Button und „Anzeigen“-Button haben feste, kollisionsfreie Geometrie und können sich nicht mehr gegenseitig überdecken.
+- Suchtext wird bei sehr wenig Platz sauber gekürzt statt unter Controls zu laufen.
+- Leaflet-+/-Zoomsteuerung auf Mobile und Tablet entfernt; Pinch-to-zoom und Double-Tap bleiben erhalten.
+- PWA-Version und Cache auf V47.1 angehoben.
+
 # V47.0 · Desktop Glass & Station Visibility
 
 - Desktop-Workspace auf eine konsistente Layout-Basis reduziert; alte V34–V37-Override-Ketten entfernt, damit Panels und Karte weniger gegeneinander arbeiten.
