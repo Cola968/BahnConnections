@@ -4,28 +4,11 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V40.0 · Liquid Hierarchy
+## V42.0 · Deep Liquid Glass
 
-V40.0 baut das map-first Layout zu einer klareren Funktionshierarchie aus. Liquid Glass ist deutlich transparenter und liegt nur auf Navigation, Suche, Kartencontrols und Sheet-Chrome. Halb geöffnete Sheets schweben über der Karte, voll geöffnete Sheets werden für Lesbarkeit deckender. Stationsmarker unterscheiden Reisendenklassen jetzt wesentlich stärker und geben sehr großen Knoten einen zusätzlichen Halo; kleine Stationen treten bei weitem Zoom zurück. Journey, Bahnhof und Live-Tafel wurden gleichzeitig um redundante Status-, KPI- und Datenquellen-Texte reduziert.
+V42.0 macht die Materialebene sichtbar stärker. Suche, Navigation, Kartencontrols, Bottom-Sheets, Popover und Desktop-Inspector nutzen nun transparentere Mehrschicht-Flächen mit stärkerem Backdrop-Blur, Sättigung, inneren Lichtkanten und räumlicher Elevation. Mobile bleibt map-first: Die echte Karte ist der optische Hintergrund, darüber schweben voneinander getrennte Glaslinsen. Expanded Sheets werden für längere Fahrplandaten bewusst dichter, während halb geöffnete Sheets und Kartencontrols stärker transparent bleiben.
 
-Der Reiseplaner zeigt Abfahrt/Ankunft und Datum/Zeit direkt im Hauptfluss; seltenere Optionen bleiben eingeklappt. Primäre Aktionen verwenden das BahnConnections-Rot, Auswahl- und Informationszustände Blau. Echtzeitstatusfarben bleiben davon getrennt.
-
-Journey und Live-Tafel verwenden ein gemeinsames Zeit- und Gleissystem. Bei einer Abweichung steht die durchgestrichene Planzeit direkt vor der aktuellen Zeit und dem Text zur Änderung. Bestätigte Echtzeit bis +5 Minuten ist grün, +6–14 amber und ab +15 rot; frühere Abfahrten sind amber. Das sind BahnConnections-Schwellen, keine offiziellen Betreiberfarben. Fehlende Echtzeit bleibt neutral. Ausfälle zeigen keinen erfundenen Istzeitpunkt.
-
-Desktop: Planer + Karte vor der Auswahl, Karte + Journey-Inspector danach. „Ändern“ öffnet gezielt den Planer; die ausgewählte Verbindung bleibt erhalten. Mobile behält das frei ziehbare Sheet mit getrenntem Minimieren, Schließen und Wiederherstellen.
-
-V33.1 präzisiert den Echtzeitstatus von auf der Karte geöffneten Bahnhofsfahrtverläufen: vollständige und teilweise Echtzeitabdeckung werden getrennt benannt. Zeit- und Gleisinformationen liefern Screenreadern jetzt echten versteckten Beschreibungstext statt als Bildrolle aufzutreten.
-
-V33.2 ergänzte das Update-System für die installierte PWA. V33.3 härtet zusätzlich die Ringlinienprüfung: wiederholte Ringfahrten werden weiterhin auf einen plausiblen Abschnitt begrenzt, bereits von der Datenquelle begrenzte Fahrtabschnitte werden aber nicht künstlich erweitert oder fälschlich als Fehler behandelt. Die App prüft weiterhin regelmäßig `/version.json` und den Service Worker; verfügbare Updates werden erst nach Entscheidung des Nutzers aktiviert.
-
-Prüfungen und offene Cloud-Einschränkungen: [V33-QA](docs/V33-QA.md); V34 wird über denselben CI-/Browser-QA-Workflow validiert. Der GitHub-Workflow führt TypeScript, Lint, Audits, Build und responsive Browser-QA aus. Ein echtes Android-/iOS-Gerät muss zusätzlich geprüft werden.
-
-```bash
-pnpm audit:realtime
-pnpm audit:ui
-pnpm audit:board
-pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
-```
+Dark Mode wurde separat kalibriert, damit Glasflächen nicht wie schwarze Karten wirken. Accessibility-Fallbacks für Reduced Transparency, High Contrast, Forced Colors und fehlendes backdrop-filter bleiben erhalten. Journey-, Bahnhof- und Tafel-Inhalte behalten ihre flache Informationshierarchie; der stärkere Effekt liegt primär auf Chrome, Controls und Interaktionsflächen.
 
 ## Funktionen
 

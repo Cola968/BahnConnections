@@ -1,3 +1,15 @@
+# V42.0 · Deep Liquid Glass
+
+- Optische Materialschicht komplett verstärkt: deutlich mehr Transparenz, Backdrop-Blur, Sättigung, innere Lichtkanten und räumliche Schatten statt flacher halbtransparenter Flächen.
+- Mobile Suche, Brand, Kartenoptionen, Standort, Bottom-Navigation, Bottom-Sheets und Popover wirken als getrennte schwebende Glaslinsen über der realen Karte.
+- Aktiver Navigationstab erhält eine eigene transluzente Innenfläche mit Lichtkante statt nur einer Farbmarkierung.
+- Halb geöffnete und minimierte Sheets bekommen stärkere Refraction-/Highlight-Wirkung; Expanded Sheets werden für lange Fahrplandaten bewusst etwas dichter.
+- Desktop-Chrome überarbeitet: Topbar, Navigation, Suche, Inspector und Kartenrahmen bilden ein zusammenhängendes, tiefes Glass-System.
+- Formularfelder und wichtige Micro-Controls sind keine grauen Boxen mehr, sondern klare Glass-Aperturen mit Fokuslicht und kontrollierter Elevation.
+- Dark Mode erhält hellere Glaskanten und stärkere Tiefentrennung, damit die Oberfläche nicht zu schwarzen Karten zusammenfällt.
+- Reduced Transparency, High Contrast, Forced Colors und Browser ohne backdrop-filter fallen weiterhin auf solide, gut lesbare Oberflächen zurück.
+- PWA-Version und Cache auf V42.0 angehoben.
+
 # V40.0 · Liquid Hierarchy
 
 - Liquid Glass neu kalibriert: deutlich transparentere Navigation/Controls, stärkerer Backdrop-Blur und echte Trennung zwischen Karteninhalt und Funktionsschicht.
