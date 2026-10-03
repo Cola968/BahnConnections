@@ -235,7 +235,8 @@ try {
   if (await evaluate(`document.querySelector('.mobile-map-view-button').getAttribute('aria-expanded')`) !== 'true') throw new Error('Ansicht-Knopf öffnet das Menü nicht');
   await screenshot('390-menu');
   await pause(250);
-  await tap(".map-menu-actions button:first-child");
+  await tap(".map-menu-dismiss button");
+  await tap(".mobile-navigation button:nth-child(2)");
   await pause(700);
   snapshots.push(await layoutSnapshot("390x844 planner"));
   await screenshot("390-planner");
@@ -366,6 +367,8 @@ try {
   const boardDestinations = await evaluate(`Array.from(document.querySelectorAll('.board-destination')).map(el => ({text:el.textContent.trim(),width:el.getBoundingClientRect().width}))`);
   if (useJourneyFixture && !boardDestinations.length) throw new Error('Board-Fixture wurde nicht geladen');
   if (boardDestinations.some(row => !row.text || row.width < 40)) throw new Error('Fahrplanziel fehlt oder ist unsichtbar');
+  if (useJourneyFixture && boardDestinations.some(row => /Zugang\\s+(?:über|via)/i.test(row.text))) throw new Error('Technischer Zugangszusatz ist noch in der Tafel sichtbar: '+JSON.stringify(boardDestinations));
+  if (useJourneyFixture && !boardDestinations.some(row => row.text.includes('München Hbf'))) throw new Error('Hauptbahnhof wird in der Tafel nicht kompakt dargestellt: '+JSON.stringify(boardDestinations));
   await screenshot('1440-board-destinations');
   await evaluate(`document.querySelector('.board-row-summary')?.scrollIntoView({block:'center'})`);
   await screenshot('1440-board-realtime');
@@ -384,19 +387,22 @@ try {
   await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
   await tap('.mobile-navigation button:last-child');
-  await tap('.mobile-navigation button:last-child');
-  if (await evaluate(`Boolean(document.querySelector('.map-menu-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
-  await tap('.mobile-map-view-button');
-  await tap('.map-display-toggles button:nth-child(3)');
-  await tap('.quick-map-actions button:nth-child(2)');
-  if (await evaluate(`document.querySelector('.app-shell').classList.contains('focus-mode')`)) throw new Error('Fokusmodus lässt sich nicht verlassen');
-  for (const index of [2,3,1]) {
-    await tap('.mobile-map-view-button');
-    await tap(`.map-menu-actions button:nth-child(${index})`);
-    await tap('.mobile-sheet-actions button:last-child');
-    if (await evaluate(`getComputedStyle(document.querySelector('.mobile-sheet-panel')).display !== 'none'`)) throw new Error('X eines weiteren Panels reagiert nicht');
-    await tap('.mobile-sheet-restore');
+  const simpleMore = await evaluate(`(() => {
+    const menu=document.querySelector('.simple-more-popover');
+    if (!menu) return null;
+    const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
+    return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
+  })()`);
+  if (!simpleMore || simpleMore.count !== 3) throw new Error('Mehr-Menü ist nicht auf drei Kernaktionen reduziert: '+JSON.stringify(simpleMore));
+  for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
+    if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
+  for (const required of ['Darstellung','App & Updates','Hilfe & Daten']) {
+    if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
+  }
+  await screenshot('390-more-simple');
+  await tap('.mobile-navigation button:last-child');
+  if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
   const realtimeChecks = [];
   if (useJourneyFixture) {
     await setViewport(320,700);

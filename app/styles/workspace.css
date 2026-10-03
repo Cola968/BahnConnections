@@ -380,3 +380,85 @@ html[data-theme="dark"] .map-canvas { background:#0b0d0f; }
 
 /* Scrolled body text is masked at the navigation edge, without flattening the sheet itself. */
 .app-shell .mobile-sheet-panel[data-scrolled="true"]>.panel-tools { background:var(--glass-scroll-edge); -webkit-backdrop-filter:var(--glass-filter-strong); backdrop-filter:var(--glass-filter-strong); }
+
+
+/* V44 · simple More menu */
+.simple-more-popover {
+  gap:8px;
+  padding:14px;
+}
+.simple-more-list {
+  display:grid;
+  gap:6px;
+}
+.simple-more-list>a,
+.simple-more-list>button {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  width:100%;
+  min-height:56px;
+  padding:10px 12px;
+  border:0;
+  border-radius:12px;
+  color:var(--ink);
+  background:transparent;
+  text-align:left;
+  text-decoration:none;
+}
+.simple-more-list>a:hover,
+.simple-more-list>button:hover {
+  background:color-mix(in srgb,var(--ink) 6%,transparent);
+}
+.simple-more-list span {
+  font-weight:650;
+}
+.simple-more-list small {
+  max-width:170px;
+  color:var(--muted);
+  font-size:var(--type-caption);
+  line-height:1.35;
+  text-align:right;
+}
+.more-version {
+  display:block;
+  padding:6px 12px 2px;
+  color:var(--muted);
+  font-size:var(--type-caption);
+}
+.map-advanced-options {
+  border-top:1px solid var(--line-subtle);
+  padding-top:8px;
+}
+.map-advanced-options>summary {
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  color:var(--muted);
+  cursor:pointer;
+  font-weight:600;
+}
+.map-advanced-options>div {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  padding-top:6px;
+}
+.map-advanced-options button {
+  min-height:44px;
+  border:1px solid var(--line-subtle);
+  border-radius:10px;
+  color:var(--ink);
+  background:transparent;
+}
+.map-advanced-options button.active {
+  border-color:color-mix(in srgb,var(--accent) 42%,var(--line-subtle));
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+}
+@media (max-width:1023px) {
+  .simple-more-popover {
+    max-width:520px;
+    margin-inline:auto;
+  }
+}

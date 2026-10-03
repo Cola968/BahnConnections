@@ -1,4 +1,5 @@
 import { compareBoardRows, normaliseBoardLine } from "../app/board-verification.ts";
+import { compactStationLabel } from "../app/transit-style.ts";
 
 const start = new Date("2026-09-03T10:00:00+02:00");
 const at = (minutes) => new Date(start.getTime() + minutes * 60_000).toISOString();
@@ -16,6 +17,8 @@ if (duplicate.matchedRows !== 1 || duplicate.comparedRows !== 1) throw new Error
 
 const arrival = compareBoardRows([{ displayName:"U2", place:{ scheduledArrival:at(15), arrival:at(30) } }], [{ line:{ name:"U 2" }, plannedWhen:at(15), when:at(30) }], true, start);
 if (arrival.matchedRows !== 1) throw new Error(`Ankunft vergleicht nicht die getrennte Sollzeit: ${JSON.stringify(arrival)}`);
+if (compactStationLabel("München Hauptbahnhof – Zugang über den Bahnhofsvorplatz") !== "München Hbf") throw new Error("Technischer Zugangszusatz wurde nicht entfernt");
+if (compactStationLabel("Berlin Hauptbahnhof, Zugang via Europaplatz") !== "Berlin Hbf") throw new Error("Via-Zugangszusatz wurde nicht entfernt");
 
 console.log(JSON.stringify({ checkedAt:new Date().toISOString(), checks:[
   { name:"Liniennummer-Normalisierung", ok:true },
@@ -23,4 +26,5 @@ console.log(JSON.stringify({ checkedAt:new Date().toISOString(), checks:[
   { name:"Erkannte Quellenabweichung", ok:true, ...difference },
   { name:"Keine Doppelverwendung", ok:true },
   { name:"Soll-/Ist-Zeit getrennt", ok:true },
+  { name:"Öffentliche Bahnhofsnamen ohne Zugangszusätze", ok:true },
 ] }, null, 2));

@@ -1,3 +1,16 @@
+# V44.0 · Simpler More & Cleaner Board
+
+- Mobiles „Mehr“ vom Karten-Ansicht-Menü getrennt.
+- „Mehr“ auf drei Kernaktionen reduziert: Darstellung, App & Updates sowie Hilfe & Daten.
+- Netzreport, Netzlabor, Kontrast-/Schrift-Schalter und technische Kartenoptionen aus dem allgemeinen Mehr-Menü entfernt.
+- Kartenoptionen bleiben unter „Ansicht“ verfügbar; seltene Optionen liegen hinter „Weitere Kartenoptionen“.
+- Technische Haltestellenzusätze wie „Zugang über den …“ werden in der Tafel entfernt.
+- „Hauptbahnhof“ wird in kompakten Tafelzielen als „Hbf“ dargestellt.
+- Doppelte Ausfalltexte unter dem Fahrziel entfernt; „Entfällt“ bleibt als eindeutiger Status bestehen.
+- Abfahrtszeilen leicht verdichtet, ohne Zeit, Ziel, Zugnummer oder Gleis zu verlieren.
+- QA ergänzt: exakt drei Mehr-Aktionen, keine technischen Zugangszusätze im Board und kompakte Bahnhofsnamen.
+- PWA-Version und Cache auf V44.0 angehoben.
+
 # V43.0 · Dark Material & Realtime Polish
 
 - Dark Mode nach aktuellen Materialprinzipien neu kalibriert: neutrale Base-/Elevated-Flächen statt blau getönter Karten, klarere Tiefenstaffelung und höherer Textkontrast.
