@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import styles from "./website.module.css";
 
 export const metadata: Metadata = {
@@ -17,17 +19,17 @@ export default function WebsitePage() {
   return (
     <main className={styles.site}>
       <header className={styles.header}>
-        <a className={styles.brand} href="/website" aria-label="BahnConnections Website">
-          <img src="/app-icon.svg" alt="" width="34" height="34" />
+        <Link className={styles.brand} href="/website" aria-label="BahnConnections Website">
+          <Image src="/app-icon.svg" alt="" width={34} height={34} priority />
           <span>BahnConnections</span>
-        </a>
+        </Link>
         <nav className={styles.nav} aria-label="Website Navigation">
           <a href="#produkt">Produkt</a>
           <a href="#live">Live</a>
           <a href="#ausblick">Ausblick</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <a className={styles.headerCta} href="/">App öffnen <Arrow /></a>
+        <Link className={styles.headerCta} href="/">App öffnen <Arrow /></Link>
       </header>
 
       <section className={styles.hero}>
@@ -37,8 +39,8 @@ export default function WebsitePage() {
           <h1>Bahnreisen,<br /><em>endlich klar.</em></h1>
           <p className={styles.heroLead}>Planen, prüfen, losfahren. BahnConnections bringt Verbindungssuche, Live-Abfahrten und Zugstatus in eine ruhige Oberfläche, die nur zeigt, was du gerade brauchst.</p>
           <div className={styles.heroActions}>
-            <a className={styles.primaryCta} href="/">BahnConnections öffnen <Arrow /></a>
-            <a className={styles.secondaryCta} href="/install">Als App installieren</a>
+            <Link className={styles.primaryCta} href="/">BahnConnections öffnen <Arrow /></Link>
+            <Link className={styles.secondaryCta} href="/install">Als App installieren</Link>
           </div>
           <div className={styles.trustRow}>
             <span><i className={styles.liveDot} /> Live-Daten, wenn verfügbar</span>
@@ -128,7 +130,7 @@ export default function WebsitePage() {
           <span className={styles.eyebrow}><i className={styles.liveDot} /> Echtzeit mit Kontext</span>
           <h2>Live heißt bei uns<br />nicht automatisch genau.</h2>
           <p>BahnConnections unterscheidet sichtbar zwischen Fahrplan und bestätigter Echtzeit. Wenn eine Quelle keine Live-Daten liefert, wird daraus keine scheinbare Präzision.</p>
-          <a href="/">Live-Abfahrten öffnen <Arrow /></a>
+          <Link href="/">Live-Abfahrten öffnen <Arrow /></Link>
         </div>
         <div className={styles.statusStack}>
           <article><span className={styles.statusIconGreen}>✓</span><div><b>Früher</b><p>Bestätigte frühere Abfahrt oder Ankunft.</p></div><strong className={styles.early}>−3 Min.</strong></article>
@@ -182,14 +184,14 @@ export default function WebsitePage() {
           <h2>Deine nächste Verbindung.<br />Ohne Umwege in der Oberfläche.</h2>
         </div>
         <div className={styles.finalActions}>
-          <a className={styles.primaryCta} href="/">App öffnen <Arrow /></a>
-          <a className={styles.secondaryCta} href="/install">Installieren</a>
+          <Link className={styles.primaryCta} href="/">App öffnen <Arrow /></Link>
+          <Link className={styles.secondaryCta} href="/install">Installieren</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <a className={styles.footerBrand} href="/website"><img src="/app-icon.svg" alt="" width="30" height="30" /><b>BahnConnections</b></a>
-        <div><a href="/">App</a><a href="/install">Installation</a><a href="#faq">FAQ</a></div>
+        <Link className={styles.footerBrand} href="/website"><Image src="/app-icon.svg" alt="" width={30} height={30} /><b>BahnConnections</b></Link>
+        <div><Link href="/">App</Link><Link href="/install">Installation</Link><a href="#faq">FAQ</a></div>
         <p>Fahrplan- und Echtzeitinformationen können kurzfristig abweichen.</p>
       </footer>
     </main>
