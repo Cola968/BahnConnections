@@ -563,7 +563,7 @@ try {
           width:root?.getBoundingClientRect().width ?? 0
         };
       })()`);
-      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Bahnreise") || !state.independent || !state.dbTarget || !state.departureExample) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
+      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Fahrplan") || !state.title.includes("Live-Informationen") || !state.independent || !state.dbTarget || !state.departureExample) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
       await screenshot(width+"-"+theme+"-website");
       websiteChecks.push({width,height,theme,...state});
     }
