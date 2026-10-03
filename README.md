@@ -4,11 +4,11 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V42.0 · Deep Liquid Glass
+## V43.0 · Dark Material & Realtime Polish
 
-V42.0 macht die Materialebene sichtbar stärker. Suche, Navigation, Kartencontrols, Bottom-Sheets, Popover und Desktop-Inspector nutzen nun transparentere Mehrschicht-Flächen mit stärkerem Backdrop-Blur, Sättigung, inneren Lichtkanten und räumlicher Elevation. Mobile bleibt map-first: Die echte Karte ist der optische Hintergrund, darüber schweben voneinander getrennte Glaslinsen. Expanded Sheets werden für längere Fahrplandaten bewusst dichter, während halb geöffnete Sheets und Kartencontrols stärker transparent bleiben.
+V43.0 kalibriert den Dark Mode neu: statt blau getönter Flächen nutzt BahnConnections eine neutrale Base-/Elevated-Hierarchie, damit Hintergrund und Karte zurücktreten und Controls, Navigation und Inspector klar nach vorn kommen. Liquid Glass bleibt deutlich sichtbar, übernimmt im Dark Mode aber stärker die Helligkeit und Farbe der Karte, statt selbst eine dominante Farbe vorzugeben. Die Nachtkarte ist dunkler, weniger gesättigt und ruhiger; Bahnhofsmarker wurden dafür ebenfalls entschärft.
 
-Dark Mode wurde separat kalibriert, damit Glasflächen nicht wie schwarze Karten wirken. Accessibility-Fallbacks für Reduced Transparency, High Contrast, Forced Colors und fehlendes backdrop-filter bleiben erhalten. Journey-, Bahnhof- und Tafel-Inhalte behalten ihre flache Informationshierarchie; der stärkere Effekt liegt primär auf Chrome, Controls und Interaktionsflächen.
+Echtzeitdarstellung ist semantisch korrigiert: eine bestätigte frühere Ankunft oder Abfahrt wird nun als positiver Zustand grün dargestellt. Pünktliche und geringe Verspätungen bleiben bewusst ruhiger, mittlere Verspätungen amber und größere Abweichungen rot. Zusätzlich behebt V43 einen Querformat-Bug im mobilen Header und räumt mehrere ältere Light-Only-Flächen auf, die im Dark Mode sichtbar werden konnten.
 
 ## Funktionen
 
