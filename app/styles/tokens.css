@@ -17,10 +17,11 @@
   --z-map:1; --z-sheet:700; --z-header:1000; --z-navigation:1100; --z-backdrop:1190; --z-menu:1200; --z-dialog:1500;
   /* Five real translucent navigation materials, with different optical depth. */
   --glass-clear:color-mix(in srgb,#f6fafc 48%,transparent);
-  --glass-regular:color-mix(in srgb,#f6fafc 68%,transparent);
-  --glass-elevated:color-mix(in srgb,#f6fafc 84%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#f6fafc 88%,transparent);
+  --glass-regular:color-mix(in srgb,#f6fafc 60%,transparent);
+  --glass-elevated:color-mix(in srgb,#f6fafc 80%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#f6fafc 86%,transparent);
   --glass-navigation:color-mix(in srgb,#f6fafc 74%,transparent);
+  --glass-scroll-edge:color-mix(in srgb,var(--paper) 96%,transparent);
   --glass-strong:var(--glass-elevated);
   --glass-stroke:rgba(255,255,255,.64);
   --glass-shadow:0 12px 32px rgba(21,46,61,.16),inset 0 1px 0 rgba(255,255,255,.84),inset 0 -1px 0 rgba(61,93,111,.08);
@@ -35,9 +36,9 @@ html[data-theme="dark"] {
   --red:#f05b68; --teal:#8bb5c4; --card:var(--paper); --accent:#a1c8dc; --action:#f05b68;
   --success:#9cb5a4; --warning:#e0b675; --danger:#f2939d;
   --glass-clear:color-mix(in srgb,#203442 48%,transparent);
-  --glass-regular:color-mix(in srgb,#1c2e3b 68%,transparent);
-  --glass-elevated:color-mix(in srgb,#1c2b36 84%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#1c2b36 88%,transparent);
+  --glass-regular:color-mix(in srgb,#1c2e3b 60%,transparent);
+  --glass-elevated:color-mix(in srgb,#1c2b36 80%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#1c2b36 86%,transparent);
   --glass-navigation:color-mix(in srgb,#203340 76%,transparent);
   --glass-stroke:rgba(211,234,248,.18);
   --glass-shadow:0 16px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(232,246,255,.16),inset 0 -1px 0 rgba(232,246,255,.04);
@@ -69,7 +70,7 @@ button,input,select { transition:background-color var(--motion-fast),border-colo
 /* Preference overrides follow all theme values, so dark mode cannot override them. */
 html[data-contrast="high"],html[data-theme="dark"][data-contrast="high"] {
   --glass-clear:var(--paper); --glass-regular:var(--paper); --glass-elevated:var(--paper);
-  --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-stroke:var(--line);
+  --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper); --glass-stroke:var(--line);
   --glass-filter:none; --glass-filter-strong:none;
 }
 html[data-contrast="high"] { --muted:#354550; --line:#60737f; }
@@ -77,7 +78,7 @@ html[data-theme="dark"][data-contrast="high"] { --muted:#d6e1e8; --line:#a9bdc9;
 @media (prefers-reduced-transparency:reduce) {
   :root,html[data-theme="dark"] {
     --glass-clear:var(--paper); --glass-regular:var(--paper); --glass-elevated:var(--paper);
-    --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper);
+    --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper);
     --glass-filter:none; --glass-filter-strong:none;
   }
 }
@@ -85,7 +86,7 @@ html[data-theme="dark"][data-contrast="high"] { --muted:#d6e1e8; --line:#a9bdc9;
   :root,html[data-theme="dark"] {
     --ink:CanvasText; --muted:CanvasText; --paper:Canvas; --soft:Canvas; --accent:LinkText; --action:LinkText;
     --glass-clear:Canvas; --glass-regular:Canvas; --glass-elevated:Canvas;
-    --glass-sheet-expanded:Canvas; --glass-navigation:Canvas; --glass-stroke:CanvasText;
+    --glass-sheet-expanded:Canvas; --glass-navigation:Canvas; --glass-scroll-edge:Canvas; --glass-stroke:CanvasText;
     --glass-filter:none; --glass-filter-strong:none;
   }
 }

@@ -219,3 +219,7 @@
   .desktop-workspace .journey-alternatives { margin-top:0; }
   .station-card>.panel-tools { margin-right:20px; margin-left:20px; }
 }
+
+@media (min-width:1024px) and (max-width:1439px) {
+  .desktop-workspace .topbar { grid-template-columns:200px max-content minmax(180px,1fr) auto; gap:12px; }
+}

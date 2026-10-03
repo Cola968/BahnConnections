@@ -314,7 +314,7 @@ html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:brightness(.65) 
 .leaflet-control-zoom a { background:transparent!important; }
 .station-point,.station-halo { filter:none!important; }
 .station-halo { pointer-events:none; }
-html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:invert(.88) hue-rotate(180deg) brightness(.72) saturate(.54) contrast(1.04); opacity:1; }
+html[data-theme="dark"] .map-canvas .leaflet-tile-pane { filter:invert(.92) hue-rotate(180deg) brightness(.95) saturate(.25) contrast(.9); opacity:1; }
 html[data-theme="dark"] .map-canvas { background:#18252e; }
 @media (max-width:1023px) {
   .mobile-navigation {
@@ -376,3 +376,6 @@ html[data-theme="dark"] .map-canvas { background:#18252e; }
 @media (forced-colors:active) {
   .brand,.mobile-map-view-button,.topbar>.station-search,.location-trigger,.leaflet-control-zoom,.mobile-navigation,.floating-panel,.mobile-sheet-panel>.panel-tools,.map-menu-popover.detached { background:Canvas!important; border:1px solid CanvasText!important; box-shadow:none!important; -webkit-backdrop-filter:none!important; backdrop-filter:none!important; }
 }
+
+/* Scrolled body text is masked at the navigation edge, without flattening the sheet itself. */
+.app-shell .mobile-sheet-panel[data-scrolled="true"]>.panel-tools { background:var(--glass-scroll-edge); -webkit-backdrop-filter:var(--glass-filter-strong); backdrop-filter:var(--glass-filter-strong); }

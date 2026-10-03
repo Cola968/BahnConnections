@@ -472,13 +472,16 @@ try {
               sheetTop:panel?.getBoundingClientRect().top ?? null,headerBottom:controls?.getBoundingClientRect().bottom ?? null,
               navigationTop:nav?.getBoundingClientRect().top ?? null,
               activeTabs:document.querySelectorAll('.mobile-navigation button.active').length,
+              headerOverlap:innerWidth>=1024 && document.querySelector('.desktop-navigation').getBoundingClientRect().right>document.querySelector('.topbar>.station-search').getBoundingClientRect().left+1,
+              scrollEdge:controls ? getComputedStyle(controls).backgroundColor : null,
+              scrolled:panel?.dataset.scrolled ?? null,
               loadedMapTiles:document.querySelectorAll('.leaflet-tile-loaded').length,
               contentBackground:panel ? getComputedStyle(panel).backgroundColor : null,
               blur:panel ? getComputedStyle(panel).backdropFilter : null,
               normalTimeColor:time?.querySelector('.realtime-time__actual') ? getComputedStyle(time.querySelector('.realtime-time__actual')).color : null,
               scrollHeight:panel?.scrollHeight ?? null};
           })()`);
-          if(state.horizontalOverflow || state.panelOverflow) throw new Error('Matrix overflow '+width+' '+theme+' '+view+': '+JSON.stringify(state));
+          if(state.horizontalOverflow || state.panelOverflow || state.headerOverlap) throw new Error('Matrix overflow '+width+' '+theme+' '+view+': '+JSON.stringify(state));
           if(mobile && state.activeTabs!==1) throw new Error('Matrix active tab ownership '+JSON.stringify(state));
           const name=width+'-'+theme+'-'+view;
           await screenshot(name);
