@@ -45,8 +45,8 @@ html[data-theme="dark"] {
   --glass-stroke:rgba(211,234,248,.16);
   --glass-shadow:0 16px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(232,246,255,.16),inset 0 -1px 0 rgba(232,246,255,.04);
   --glass-shadow-soft:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(232,246,255,.13),inset 0 -1px 0 rgba(232,246,255,.03);
-  --glass-filter:blur(28px) saturate(134%);
-  --glass-filter-strong:blur(38px) saturate(146%);
+  --glass-filter:blur(28px) saturate(134%) brightness(1.07);
+  --glass-filter-strong:blur(38px) saturate(146%) brightness(1.10);
 }
 html[data-theme="light"] { color-scheme:light; }
 * { box-sizing:border-box; }
