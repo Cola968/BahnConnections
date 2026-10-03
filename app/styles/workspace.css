@@ -462,3 +462,54 @@ html[data-theme="dark"] .map-canvas { background:#0b0d0f; }
     margin-inline:auto;
   }
 }
+
+/* V47.1 · mobile search geometry and touch-first map controls */
+@media (max-width:1023px) {
+  /* Phones and tablets already support pinch/double-tap zoom; fixed +/- chrome
+     only consumes map space and competes with the bottom sheet. */
+  .leaflet-control-zoom {
+    display:none!important;
+  }
+}
+
+@media (max-width:1023px) and (min-height:521px) {
+  .topbar>.station-search {
+    box-sizing:border-box;
+    gap:6px;
+    height:48px;
+    padding:0 4px 0 12px;
+  }
+
+  .topbar>.station-search input {
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .topbar>.station-search .search-clear {
+    position:relative;
+    z-index:1;
+    flex:0 0 36px;
+    width:36px;
+    min-width:36px;
+    height:40px;
+    min-height:40px;
+    padding:0;
+  }
+
+  .topbar>.station-search>button[type="submit"] {
+    position:relative;
+    z-index:2;
+    flex:0 0 auto;
+    width:auto;
+    min-width:0;
+    max-width:42%;
+    height:40px;
+    min-height:40px;
+    padding:0 14px;
+    border-radius:12px;
+    line-height:1;
+    white-space:nowrap;
+  }
+}
+
