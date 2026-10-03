@@ -50,3 +50,17 @@ export function cleanDestination(value?: string) {
   const cleaned = value?.trim().replace(/\s+/g, " ");
   return cleaned || undefined;
 }
+
+export function compactStationLabel(value?: string) {
+  const cleaned = cleanDestination(value);
+  if (!cleaned) return undefined;
+  const withoutAccess = cleaned
+    .replace(/\s+[–—-]\s+Zugang\s+(?:über|via)\b.*$/i, "")
+    .replace(/,\s*Zugang\s+(?:über|via)\b.*$/i, "")
+    .replace(/\s+Zugang\s+(?:über|via)\b.*$/i, "");
+  const compact = withoutAccess
+    .replace(/\bHauptbahnhof\b/g, "Hbf")
+    .replace(/\s+/g, " ")
+    .trim();
+  return compact || undefined;
+}
