@@ -468,6 +468,7 @@ try {
             const time=document.querySelector('.journey-mobile-overview .realtime-time');
             return {horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
               panelOverflow:Boolean(panel && panel.scrollWidth>panel.clientWidth+1),
+              overflowElements:panel ? Array.from(panel.querySelectorAll("*")).filter(e=>e.clientWidth>0 && e.scrollWidth>e.clientWidth+1).slice(0,8).map(e=>({className:e.className,width:e.clientWidth,scrollWidth:e.scrollWidth})) : [],
               sheetTop:panel?.getBoundingClientRect().top ?? null,headerBottom:controls?.getBoundingClientRect().bottom ?? null,
               navigationTop:nav?.getBoundingClientRect().top ?? null,
               activeTabs:document.querySelectorAll('.mobile-navigation button.active').length,

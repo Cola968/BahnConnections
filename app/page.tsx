@@ -42,6 +42,8 @@ type LiveStatusFilter = "all" | "delayed" | "ontime";
 type LiveView = "stress" | "trains";
 type GeoPosition = { lat: number; lon: number; accuracy: number; updatedAt: number };
 
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 const MAJOR_HUB_IDS = new Set(["berlin", "muenchen", "frankfurt", "hamburg", "koeln"]);
 
 function routeElement(label: string, detail?: string) {
@@ -742,7 +744,7 @@ export default function Home() {
   useEffect(() => {
     if (!trackedTripId || !mapRef.current) return;
     const trip = liveTrips.find((candidate) => candidate.tripId === trackedTripId);
-    if (trip) mapRef.current.panTo(pointOnTrip(trip, liveTripProgress(trip, liveTick)), { animate:true, duration:.8 });
+    if (trip) mapRef.current.panTo(pointOnTrip(trip, liveTripProgress(trip, liveTick)), { animate:!prefersReducedMotion(), duration:.8 });
   }, [liveTick, liveTrips, trackedTripId]);
 
   function selectStation(match: Station) {
@@ -751,7 +753,7 @@ export default function Home() {
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
     setMobileSheetState("half");
     setMobileView("departures"); setLabOpen(false);
-    mapRef.current?.flyTo([match.lat, match.lon], match.source === "db" ? 10 : match.country === "DE" ? 8 : 6, { duration:.7 });
+    mapRef.current?.flyTo([match.lat, match.lon], match.source === "db" ? 10 : match.country === "DE" ? 8 : 6, { animate:!prefersReducedMotion(), duration:.7 });
   }
 
   function startLocation() {
@@ -761,7 +763,7 @@ export default function Home() {
       return;
     }
     if (geoWatchRef.current !== null) {
-      if (geoPosition) mapRef.current?.flyTo([geoPosition.lat, geoPosition.lon], Math.max(mapRef.current.getZoom(), 14), { duration:.45 });
+      if (geoPosition) mapRef.current?.flyTo([geoPosition.lat, geoPosition.lon], Math.max(mapRef.current.getZoom(), 14), { animate:!prefersReducedMotion(), duration:.45 });
       return;
     }
     firstGeoFixRef.current = true;
@@ -776,7 +778,7 @@ export default function Home() {
         setGeoMessage("");
         if (firstGeoFixRef.current) {
           firstGeoFixRef.current = false;
-          mapRef.current?.flyTo([next.lat, next.lon], Math.max(mapRef.current.getZoom(), 14), { duration:.55 });
+          mapRef.current?.flyTo([next.lat, next.lon], Math.max(mapRef.current.getZoom(), 14), { animate:!prefersReducedMotion(), duration:.55 });
         }
         const pendingTarget = pendingWalkTargetRef.current;
         if (pendingTarget) { pendingWalkTargetRef.current = null; void requestWalk(pendingTarget, next); }
@@ -833,7 +835,7 @@ export default function Home() {
       const L = leafletRef.current;
       if (map && L) {
         const mobile = window.matchMedia("(max-width: 1023px)").matches;
-        map.fitBounds(L.latLngBounds(payload.route.points), { paddingTopLeft:[30,90], paddingBottomRight:mobile ? [30,Math.min(map.getSize().y * .55, 210)] : [40,40], maxZoom:16, animate:true });
+        map.fitBounds(L.latLngBounds(payload.route.points), { paddingTopLeft:[30,90], paddingBottomRight:mobile ? [30,Math.min(map.getSize().y * .55, 210)] : [40,40], maxZoom:16, animate:!prefersReducedMotion() });
       }
       if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed");
     } catch (error) {
@@ -1004,7 +1006,7 @@ export default function Home() {
     setSelectedId(null); setSearch(""); setJourney(null); setJourneyOptions([]); setJourneyMessage(""); setRouteInfo(null); setReachabilityVisible(false);
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
     setMobileSheetState("closed"); setLabOpen(false);
-    mapRef.current?.setView([51.15, 10.35], 6, { animate:true });
+    mapRef.current?.setView([51.15, 10.35], 6, { animate:!prefersReducedMotion() });
   }
 
   function surpriseMe() {
