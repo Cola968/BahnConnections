@@ -342,3 +342,30 @@ html[data-theme="dark"] .station-search:focus-within {
   -webkit-backdrop-filter:var(--glass-filter-strong);
   backdrop-filter:var(--glass-filter-strong);
 }
+
+
+/* V41.1b · override legacy solid submit styling with a glass icon control */
+@media (max-width:1023px) and (min-height:521px) {
+  .topbar>.station-search>button.search-submit-icon {
+    width:44px;
+    min-width:44px;
+    min-height:44px;
+    padding:0;
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 86%,transparent);
+    border-radius:14px;
+    color:var(--action);
+    background:color-mix(in srgb,var(--glass-clear) 84%,transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 3px 10px rgba(22,44,60,.08);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+  .topbar>.station-search>button.search-submit-icon:hover,
+  .topbar>.station-search>button.search-submit-icon:focus-visible {
+    color:var(--action);
+    background:color-mix(in srgb,var(--action) 9%,var(--glass-clear));
+  }
+  html[data-theme="dark"] .topbar>.station-search>button.search-submit-icon {
+    background:color-mix(in srgb,var(--glass-clear) 88%,transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 4px 12px rgba(0,0,0,.12);
+  }
+}
