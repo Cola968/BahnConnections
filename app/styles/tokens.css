@@ -15,7 +15,7 @@
   --motion-native:cubic-bezier(.22,1,.36,1); --motion-press:cubic-bezier(.2,.8,.2,1);
   --app-header:64px; --bottom-navigation:0px;
   --z-map:1; --z-sheet:700; --z-header:1000; --z-navigation:1100; --z-backdrop:1190; --z-menu:1200; --z-dialog:1500;
-  /* Five real translucent navigation materials, with different optical depth. */
+  /* Functional translucent navigation materials, with different optical depth. */
   --glass-clear:color-mix(in srgb,#f6fafc 30%,transparent);
   --glass-regular:color-mix(in srgb,#f6fafc 40%,transparent);
   --glass-elevated:color-mix(in srgb,#f6fafc 56%,transparent);
@@ -72,7 +72,7 @@ button,input,select { transition:background-color var(--motion-fast),border-colo
 /* Preference overrides follow all theme values, so dark mode cannot override them. */
 html[data-contrast="high"],html[data-theme="dark"][data-contrast="high"] {
   --glass-clear:var(--paper); --glass-regular:var(--paper); --glass-elevated:var(--paper);
-  --glass-sheet-half:var(--paper); --glass-sheet-half:var(--paper); --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper); --glass-stroke:var(--line);
+  --glass-sheet-half:var(--paper); --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper); --glass-stroke:var(--line);
   --glass-filter:none; --glass-filter-strong:none;
 }
 html[data-contrast="high"] { --muted:#354550; --line:#60737f; }
@@ -80,7 +80,7 @@ html[data-theme="dark"][data-contrast="high"] { --muted:#d6e1e8; --line:#a9bdc9;
 @media (prefers-reduced-transparency:reduce) {
   :root,html[data-theme="dark"] {
     --glass-clear:var(--paper); --glass-regular:var(--paper); --glass-elevated:var(--paper);
-    --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper);
+    --glass-sheet-half:var(--paper); --glass-sheet-expanded:var(--paper); --glass-navigation:var(--paper); --glass-scroll-edge:var(--paper);
     --glass-filter:none; --glass-filter-strong:none;
   }
 }
