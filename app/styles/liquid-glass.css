@@ -562,3 +562,73 @@ html[data-theme="dark"][data-contrast="high"] {
     backdrop-filter:none!important;
   }
 }
+
+/* Prototype desktop-only material refinement.
+   Mobile intentionally stays on the proven V46 composition. */
+@media (min-width:1024px) {
+  .desktop-workspace .topbar {
+    background:color-mix(in srgb,var(--glass-regular) 88%,transparent);
+    -webkit-backdrop-filter:blur(24px) saturate(145%);
+    backdrop-filter:blur(24px) saturate(145%);
+    border-bottom-color:color-mix(in srgb,var(--glass-stroke) 74%,transparent);
+    box-shadow:0 8px 30px color-mix(in srgb,var(--glass-depth) 42%,transparent);
+  }
+
+  .desktop-workspace .brand {
+    border-radius:15px;
+    background:
+      linear-gradient(145deg,var(--glass-highlight-soft),transparent 42%),
+      var(--glass-clear);
+  }
+
+  .desktop-workspace .topbar>.station-search {
+    border-radius:16px;
+    background:
+      linear-gradient(145deg,var(--glass-highlight-soft),transparent 38%),
+      var(--glass-clear);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    backdrop-filter:blur(18px) saturate(140%);
+  }
+
+  .desktop-workspace .floating-panel {
+    border-color:color-mix(in srgb,var(--glass-stroke) 74%,transparent);
+    background:color-mix(in srgb,var(--glass-elevated) 91%,transparent);
+    -webkit-backdrop-filter:blur(24px) saturate(140%);
+    backdrop-filter:blur(24px) saturate(140%);
+    box-shadow:
+      0 20px 54px color-mix(in srgb,var(--glass-depth) 58%,transparent),
+      inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 66%,transparent);
+  }
+
+  .desktop-workspace .floating-panel>.panel-tools {
+    margin:0;
+    background:color-mix(in srgb,var(--glass-regular) 90%,transparent);
+    -webkit-backdrop-filter:blur(22px) saturate(142%);
+    backdrop-filter:blur(22px) saturate(142%);
+    border-bottom-color:color-mix(in srgb,var(--glass-stroke) 56%,transparent);
+  }
+
+  .desktop-navigation {
+    border:0;
+    background:transparent;
+    box-shadow:none;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+
+  .desktop-navigation>button,
+  .navigation-more>summary {
+    border-radius:12px;
+  }
+
+  .desktop-navigation>button.active {
+    color:var(--action);
+    background:color-mix(in srgb,var(--glass-elevated) 58%,transparent);
+    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 54%,transparent);
+  }
+
+  .desktop-workspace .map-canvas {
+    border-color:color-mix(in srgb,var(--glass-stroke) 44%,transparent);
+    box-shadow:0 16px 46px color-mix(in srgb,var(--glass-depth) 45%,transparent);
+  }
+}
