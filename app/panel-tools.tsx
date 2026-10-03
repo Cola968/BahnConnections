@@ -175,7 +175,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
       </div>
       {mobileState && onMobileStateChange && <div className="mobile-sheet-actions">
         <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); selectSize(mobileState === "collapsed" ? "half" : "collapsed"); }} aria-label={`${label} ${mobileState === "collapsed" ? "vergrößern" : "minimieren"}`}><UiIcon name="chevron" style={mobileState === "collapsed" ? { transform:"rotate(180deg)" } : undefined} /></button>
-        <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.preventDefault(); event.stopPropagation(); onMobileStateChange("closed"); }} aria-label={`${label} schließen`}><UiIcon name="close" /></button>
+        <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.preventDefault(); event.stopPropagation(); if (onClose) onClose(); else onMobileStateChange("closed"); }} aria-label={`${label} schließen`}><UiIcon name="close" /></button>
       </div>}
     </div>
   );

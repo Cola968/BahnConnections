@@ -285,6 +285,12 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [refreshToken, setRefreshToken] = useState(0);
   const [displayLimit, setDisplayLimit] = useState(50);
   const previewSignatureRef = useRef("");
+  const rowRequestRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    rowRequestRef.current = controller;
+    return () => controller.abort();
+  }, []);
   const endpointSignatureRef = useRef("");
 
   useEffect(() => {
@@ -498,12 +504,16 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       return;
     }
     setTripDetailState((current) => ({ ...current, [key]:"loading" }));
+    const controller = rowRequestRef.current ?? new AbortController();
+    rowRequestRef.current = controller;
     try {
-      const detail = await loadTrip(entry.tripId, station, entry.when ?? entry.plannedWhen);
+      const detail = await loadTrip(entry.tripId, station, entry.when ?? entry.plannedWhen, controller.signal);
+      if (controller.signal.aborted) return;
       setTripDetails((current) => ({ ...current, [key]:detail }));
       setTripDetailState((current) => ({ ...current, [key]:"ready" }));
       if (detail.points.length) onMapTrip?.(mapTrip(entry, detail));
     } catch {
+      if (controller.signal.aborted) return;
       setTripDetailState((current) => ({ ...current, [key]:"error" }));
     }
   }

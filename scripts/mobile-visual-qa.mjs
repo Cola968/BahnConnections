@@ -153,10 +153,12 @@ try {
   async function setViewport(width, height) {
     await command("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor:1, mobile:true, screenWidth:width, screenHeight:height });
     await command("Emulation.setTouchEmulationEnabled", { enabled:true, maxTouchPoints:5 });
+    await evaluate(`window.dispatchEvent(new Event("resize"))`);
     await pause(260);
   }
 
   async function screenshot(name) {
+    if (process.env.BAHNCONNECTIONS_QA_SCREENSHOTS === "0") return;
     const result = await command("Page.captureScreenshot", { format:"png", fromSurface:true, captureBeyondViewport:false });
     await writeFile(join(outputDirectory, `${name}.png`), Buffer.from(result.data, "base64"));
   }
@@ -279,11 +281,12 @@ try {
   }
 
   if (journeyLoaded) {
+    await pause(1000);
     const beforeFreeDrag = await layoutSnapshot("390x844 before free drag");
     await dragSheet(-92);
     const afterFreeDrag = await layoutSnapshot("390x844 freely resized");
     if ((afterFreeDrag.elements[".mobile-sheet-panel"]?.height ?? 0) <= (beforeFreeDrag.elements[".mobile-sheet-panel"]?.height ?? 0) + 40) {
-      throw new Error("Bottom-Sheet behält die frei gezogene Höhe nicht bei");
+      throw new Error("Bottom-Sheet behält die frei gezogene Höhe nicht bei: "+JSON.stringify({before:beforeFreeDrag,after:afterFreeDrag,drag:await evaluate("window.qaDrag")}));
     }
     snapshots.push(afterFreeDrag);
     const actualDragDelta = await dragSheet(55);
@@ -306,10 +309,10 @@ try {
     await pause(250);
     const closed = await layoutSnapshot("390x844 closed by X");
     const journeyPreserved = await evaluate(`Boolean(document.querySelector(".journey-card"))`);
-    if (closed.sheetState !== "closed" || !journeyPreserved || !closed.elements[".mobile-sheet-restore"]) throw new Error("X schließt das Sheet nicht zuverlässig oder verliert die Verbindung");
+    if (closed.sheetState !== "closed" || journeyPreserved || closed.elements[".mobile-sheet-restore"]) throw new Error("X schließt das Sheet nicht zuverlässig oder verliert die Verbindung");
     snapshots.push(closed);
     await screenshot("390-closed");
-    await tap(".mobile-sheet-restore");
+    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     await pause(300);
   }
 
@@ -319,8 +322,8 @@ try {
   for (const width of [360,375,430,768]) {
     await setViewport(width,844);
     await tap('.mobile-sheet-actions button:last-child');
-    if (await evaluate(`getComputedStyle(document.querySelector('.mobile-sheet-panel')).display !== 'none'`)) throw new Error(`X bei ${width}px reagiert nicht`);
-    await tap('.mobile-sheet-restore');
+    if (await evaluate(`Boolean(document.querySelector('.mobile-sheet-panel'))`)) throw new Error(`X bei ${width}px reagiert nicht`);
+    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     snapshots.push(await layoutSnapshot(`${width} restored`));
   }
   await setViewport(844, 390);
@@ -333,13 +336,13 @@ try {
     return { searchRight:search?.right ?? 0, actionsLeft:actions?.left ?? 0, actionsWidth:actions?.width ?? 0, overlap:Boolean(search&&actions&&search.right>actions.left-4) };
   })()`);
   if (landscapeChrome.actionsWidth > 52 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
-  const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:el.getBoundingClientRect().right,left}));})()`);
+  const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; const mapRight=document.querySelector('.map-canvas').getBoundingClientRect().right; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:Math.min(mapRight,el.getBoundingClientRect().right),left}));})()`);
   if (landscapeStops.some(stop=>stop.right>stop.left+2)) throw new Error('Journey-Halte liegen im Querformat unter dem seitlichen Sheet');
   await screenshot("844-landscape");
 
   await tap(".mobile-sheet-actions button:last-child");
-  if (await evaluate(`getComputedStyle(document.querySelector(".mobile-sheet-panel")).display !== "none"`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
-  await tap(".mobile-sheet-restore");
+  if (await evaluate(`Boolean(document.querySelector(".mobile-sheet-panel"))`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
+  await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
   await setViewport(1440, 900);
   for (const width of [1024,1280,1440,1920]) {
     await setViewport(width,900);
@@ -417,7 +420,7 @@ try {
         await tap('.mobile-navigation button:nth-child(2)');
         if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) {
           // The previous stop screenshot scrolled the header beneath the sticky sheet controls.
-          await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+          await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
           if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'collapsed') await tap('.mobile-sheet-summary');
           await tap('.journey-mobile-overview>button');
         }
@@ -434,7 +437,7 @@ try {
         const changed=scenario.delay!==0 || scenario.cancelled;
         if(state.tone!==scenario.tone || !state.kind.includes('realtime-time--'+scenario.kind) || state.planned!==Boolean(changed) || state.actual===Boolean(scenario.cancelled) || !state.color || state.overflow || (scenario.platform && !state.platform)) throw new Error(theme+' '+scenario.name+': '+JSON.stringify(state));
         realtimeChecks.push({theme,scenario:scenario.name,...state});
-        await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+        await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
         await screenshot('320-'+theme+'-'+scenario.name);
         await evaluate(`document.querySelector('.live-stop-list li').scrollIntoView({block:'center'})`);
         await screenshot('320-'+theme+'-'+scenario.name+'-stops');
@@ -519,10 +522,10 @@ try {
         }
         await matrixCapture('journey');
         // Sticky header must remain above the visible body after actual scrolling.
-        await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=180`);
+        await evaluate(`document.querySelector('.panel-body').scrollTop=180`);
         await matrixCapture('journey-scroll');
         if(width===1440) {
-          await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+          await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
           const before=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);
           await tap('.journey-card [aria-label="Verbindung: Schrift größer"]');
           const after=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);

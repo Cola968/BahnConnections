@@ -6,7 +6,7 @@ const FALLBACK_COLORS: Record<RailCategory, string> = {
   fern: "#ec0016",
   regional: "#1455a0",
   sbahn: "#2f8f57",
-  ubahn: "#596b75",
+  ubahn: "#6f3fa0",
   tram: "#b45309",
 };
 
@@ -37,8 +37,14 @@ export function serviceColors(category: RailCategory, routeColor?: string, route
   const lineKey = lineName?.replace(/\s+/g, "").toLocaleLowerCase("de");
   const berlin = /berlin|bvg|s-bahn berlin/i.test(networkHint ?? "");
   const officialFallback = berlin && lineKey ? BERLIN_LINE_COLORS[lineKey] : undefined;
-  const background = validHex(routeColor) ?? officialFallback ?? FALLBACK_COLORS[category];
-  return { background, text:validHex(routeTextColor) ?? contrastText(background) };
+  const supplied = validHex(routeColor);
+  // Generic grey/black/white feeds must not erase the transport identity.
+  const hex = supplied?.slice(1);
+  const expanded = hex?.length === 3 ? hex.split("").map(character => character + character).join("") : hex;
+  const channels = expanded ? [0, 2, 4].map(offset => Number.parseInt(expanded.slice(offset, offset + 2), 16)) : [];
+  const usable = supplied && Math.max(...channels) - Math.min(...channels) > 18 ? supplied : undefined;
+  const background = usable ?? officialFallback ?? FALLBACK_COLORS[category];
+  return { background, text:usable ? validHex(routeTextColor) ?? contrastText(background) : contrastText(background) };
 }
 
 export function serviceBadgeStyle(category: RailCategory, routeColor?: string, routeTextColor?: string, lineName?: string, networkHint?: string): CSSProperties {

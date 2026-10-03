@@ -1,0 +1,79 @@
+/* The header never shares a scroll plane with content. */
+.app-shell .floating-panel {
+  position:fixed;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+@media (min-width:1024px) {
+  .app-shell .floating-panel {
+    top:calc(var(--app-header) + 14px);
+    right:16px;
+    bottom:16px;
+    left:auto;
+    width:var(--workspace-right,360px);
+    max-height:calc(100dvh - var(--app-header) - 30px);
+  }
+  .app-shell.desktop-search-mode .explore-card { left:16px; right:auto; width:var(--workspace-left,300px); }
+}
+.app-shell .floating-panel>.panel-tools {
+  position:relative;
+  top:auto;
+  flex:0 0 auto;
+  margin-bottom:0;
+  background:var(--paper);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+.app-shell .floating-panel>.panel-body {
+  flex:1 1 auto;
+  min-height:0;
+  min-width:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  padding-top:12px;
+  overflow-wrap:anywhere;
+}
+.app-shell[data-mobile-sheet="closed"] .mobile-sheet-panel { display:none; }
+.app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel>.panel-body { display:none; }
+@media (max-width:1023px) {
+  .app-shell .mobile-sheet-panel { top:auto; }
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel { height:min(var(--mobile-sheet-height,48dvh),var(--sheet-limit)); }
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel { height:min(var(--mobile-sheet-height,var(--sheet-limit)),var(--sheet-limit)); }
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel { height:100px; }
+}
+.app-shell .station-line-list { max-height:none; overflow:visible; }
+.app-shell .station-lines { padding-top:0; }
+.station-lines-progress { margin:0 0 12px; color:var(--muted); font-size:.8125rem; }
+.app-shell .station-line-row { grid-template-columns:max-content minmax(0,1fr); align-items:start; }
+.app-shell .station-line-row>span:last-child { grid-column:2; white-space:normal; text-transform:none; }
+.app-shell .station-line-row .service-logo { min-width:36px; width:auto; max-width:100%; }
+.app-shell .station-line-row>span:nth-child(2) :is(b,small) { white-space:normal; overflow-wrap:anywhere; }
+.app-shell .board-row-summary { grid-template-columns:3px max-content minmax(0,1fr) minmax(0,108px); }
+.app-shell .board-time .realtime-time__pair { flex-wrap:wrap; justify-content:flex-end; }
+.app-shell .board-time .realtime-time__delta { max-width:100%; }
+.app-shell .board-service { min-width:0; max-width:64px; }
+.app-shell .board-platform { min-width:0; white-space:normal; overflow-wrap:anywhere; }
+.app-shell .panel-body .board-table-head { position:static; }
+.app-shell .live-stop-list li,.app-shell .trip-stop-list li { grid-template-columns:12px minmax(0,1fr) minmax(0,120px); }
+.app-shell .realtime-time__pair { flex-wrap:wrap; }
+.app-shell .panel-body :is(.leg-route-line,.journey-time-range,.line-route-detail>header,.station-lines-mapbar,.stats-footer) { flex-wrap:wrap; }
+.app-shell .panel-body :is(.line-route-detail>header>span,.leg-route-line>span) { min-width:0; }
+.app-shell .panel-body .service-logo.ubahn { background:#6f3fa0; }
+@media (max-width:1023px) and (max-height:520px) {
+  .app-shell.has-primary-panel .mobile-sheet-panel { left:auto; right:0; width:50%; }
+  .app-shell.has-primary-panel:not([data-mobile-sheet="closed"]) .map-stage { padding-right:50%; }
+  .app-shell.has-primary-panel:not([data-mobile-sheet="closed"]) .location-tools { right:calc(50% + 12px); }
+}
+@media (max-width:380px) {
+  .app-shell .board-row-summary { grid-template-columns:3px max-content minmax(0,1fr); }
+  .app-shell .board-row-summary .board-destination { grid-column:3; grid-row:1; }
+  .app-shell .board-row-summary .board-time { grid-column:3; grid-row:2; text-align:left; }
+  .app-shell .board-row-summary .board-platform { grid-column:3; grid-row:3; text-align:left; }
+  .app-shell .board-row-summary .board-service,.app-shell .board-row-summary .row-status { grid-row:1/4; }
+  .app-shell .board-time .realtime-time { align-items:flex-start; }
+  .app-shell .board-time .realtime-time__pair { justify-content:flex-start; }
+  .app-shell .live-stop-list li,.app-shell .trip-stop-list li { grid-template-columns:12px minmax(0,1fr); }
+  .app-shell :is(.live-stop-list,.trip-stop-list) li>.realtime-time { grid-column:2; justify-content:flex-start; max-width:100%; }
+}

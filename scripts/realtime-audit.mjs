@@ -4,7 +4,7 @@ import { deriveRealtimePresentation as derive, derivePlatformPresentation, forma
 const scheduled = "2026-10-01T23:28:00+02:00";
 const at = minutes => new Date(new Date(scheduled).getTime() + minutes * 60_000).toISOString();
 const checks = [];
-for (const [delay, kind, tone] of [[-3,"early","success"],[0,"on-time","success"],[1,"minor-delay","success"],[3,"minor-delay","success"],[5,"minor-delay","success"],[6,"delay","warning"],[10,"delay","warning"],[14,"delay","warning"],[15,"major-delay","danger"],[24,"major-delay","danger"],[30,"major-delay","danger"],[45,"major-delay","danger"]]) {
+for (const [delay, kind, tone] of [[-3,"early","success"],[0,"on-time","success"],[1,"minor-delay","warning"],[3,"minor-delay","warning"],[5,"minor-delay","warning"],[6,"delay","warning"],[10,"major-delay","danger"],[11,"major-delay","danger"],[14,"major-delay","danger"],[15,"major-delay","danger"],[24,"major-delay","danger"],[30,"major-delay","danger"],[45,"major-delay","danger"]]) {
   const state = derive({ scheduled, actual:at(delay), realtime:true });
   assert.equal(state.kind, kind);
   assert.equal(state.tone, tone);

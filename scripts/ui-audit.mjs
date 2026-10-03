@@ -25,7 +25,7 @@ const realtimePlatform = await read("app/realtime-platform.tsx");
 const pwaRegister = await read("app/pwa-register.tsx");
 const appVersion = await read("app/app-version.ts");
 const versionMetadata = await read("public/version.json");
-check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 15') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
+check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
@@ -63,8 +63,8 @@ check("Mobile search floats above the map while landscape keeps inline search",c
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
 check("Drag limits exclude navigation and virtual keyboard",panelTools.includes("navigationHeight") && panelTools.includes("window.visualViewport?.height"));
-check("Close and collapse are separate real buttons",panelTools.includes('event.stopPropagation(); onMobileStateChange("closed")') && css.includes(".mobile-sheet-actions button"));
-check("Sheet restoration preserves selected journey and endpoints",page.includes("mobile-sheet-restore") && page.includes("journeyEndpoints") && page.includes('current === "expanded" ? "half" : current'));
+check("Close and collapse are separate real buttons",panelTools.includes('if (onClose) onClose(); else onMobileStateChange("closed")') && css.includes(".mobile-sheet-actions button"));
+check("Close resets selections and pending work",page.includes("onClose={resetMap}") && page.includes("pendingWalkTargetRef.current = null") && page.includes("setJourneyEndpoints(null)") && page.includes("plannerRequestRef.current?.abort()"));
 check("Navigation preserves journey data",page.includes("!journey || departuresView") && page.includes('journey && !departuresView'));
 check("Resize observer accounts for the measured sheet",page.includes("new ResizeObserver") && page.includes("measuredHeight") && page.includes("invalidateSize"));
 check("44px mobile actions and scalable 16px input prevent iOS zoom",css.includes("width:44px; height:44px") && css.includes(".station-search input { font-size:calc(1rem * var(--panel-scale,1))"));
@@ -77,7 +77,7 @@ check("Alternative selection and pagination retained",alternatives.includes("onS
 check("Transfer displays concrete times, platforms and walks",alternatives.includes("previous.to.track") && alternatives.includes("next.from.track") && alternatives.includes("Fußweg enthalten") && !page.includes("{journeyQuality.score}"));
 check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
 check("Destination has a visible dedicated grid column",css.includes(".board-row-summary .board-destination { grid-column:3") && css.includes("minmax(0,1fr)"));
-check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("Alle gefilterten Linien auf Karte"));
+check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("void loadMapLines()") && !stationLines.includes("station-line-filters"));
 check("Ring lines retain the selected loop",tripTrimming.includes("trimRepeatedStationLoop") && board.includes("trimRepeatedStationLoop(stops, points, station, referenceTime)") && stationLines.includes("trimRepeatedStationLoop(stops, points, station, sample.time)"));
 check("No invented straight rail geometry",trackRouting.includes("points:[], segments:[], coverage:0") && !trackRouting.includes("[[from.lat, from.lon], [to.lat, to.lon]]") && !liveJourney.includes("[[from.lat, from.lon], [to.lat, to.lon]]"));
 check("Disconnected geometry segments remain separate",page.includes("for (const segment of exactTripSegments(stationTrip))") && page.includes("for (const points of segments)"));
