@@ -1,0 +1,5 @@
+"use client";
+import type { SavedRoute } from './saved-routes';
+export function SavedRoutesPanel({routes,onOpen,onRemove}:{routes:SavedRoute[];onOpen:(route:SavedRoute,reverse:boolean)=>void;onRemove:(id:string)=>void}) {
+  return <section className="saved-routes" aria-label="Gespeicherte Pendelstrecken"><h3>Deine Pendelstrecken <span>{routes.length}/20</span></h3>{routes.length===0?<p>Speichere Start und Ziel im Planer. Uhrzeiten und Echtzeit werden bei jeder Suche neu geprüft.</p>:<ul>{routes.map(route=><li key={route.id}><button className="saved-route-open" onClick={()=>onOpen(route,false)}><strong>{route.from.name}</strong><span>→ {route.to.name}</span><small>Im Planer öffnen</small></button><div><button onClick={()=>onOpen(route,true)} aria-label={`Rückweg von ${route.to.name} nach ${route.from.name}`}>⇄ Rückweg</button><button onClick={()=>onRemove(route.id)} aria-label={`Pendelstrecke ${route.from.name} nach ${route.to.name} löschen`}>Entfernen</button></div></li>)}</ul>}</section>;
+}

@@ -76,3 +76,18 @@ html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-mo
 @media (prefers-reduced-transparency:reduce) { .settings-dialog { background:var(--paper); backdrop-filter:none; -webkit-backdrop-filter:none; }.settings-dialog::backdrop { backdrop-filter:none; -webkit-backdrop-filter:none; } }
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) { .settings-dialog { background:var(--paper); } }
 @media (forced-colors:active) { .settings-dialog { background:Canvas; border-color:CanvasText; }.settings-toggle i { border-color:CanvasText; }.settings-toggle input:checked+i { background:Highlight; }.settings-toggle i::after { background:CanvasText; } }
+
+.saved-routes { margin-top:20px; border-top:1px solid var(--line-subtle); padding-top:16px; }
+.saved-routes h3 { display:flex; justify-content:space-between; gap:12px; font-size:.9375rem; }
+.saved-routes h3 span,.saved-routes p,.saved-route-open small { color:var(--muted); font-size:.8125rem; line-height:1.5; }
+.saved-routes ul { margin:12px 0 0; padding:0; list-style:none; display:grid; gap:10px; }
+.saved-routes li { min-width:0; padding:12px; border-radius:16px; border:1px solid var(--glass-stroke); background:var(--glass-clear); box-shadow:inset 0 1px var(--glass-highlight-soft); }
+.saved-route-open { display:flex; flex-direction:column; gap:5px; width:100%; text-align:left; background:none; border:0; color:var(--ink); padding:4px; min-height:44px; overflow-wrap:anywhere; }
+.saved-route-open span { font-size:.875rem; }.saved-route-open small { margin-top:4px; }
+.saved-routes li>div { display:flex; justify-content:space-between; gap:8px; margin-top:8px; }
+.saved-routes li>div button { border:0; background:none; color:var(--muted); font-size:.8125rem; min-height:44px; padding:8px 4px; }
+.planner-saved-routes { padding:0 16px 16px; }
+.planner-saved-routes>.settings-link { margin-top:12px; }.planner-saved-routes button:disabled { opacity:.5; }
+.billing-price-options { display:grid!important; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.billing-price-options>span { display:flex; flex-direction:column; gap:4px; padding:12px; border:1px solid var(--glass-stroke); border-radius:14px; }
+.billing-price-options strong { color:var(--ink); font-size:1.25rem; }.billing-price-options small { line-height:1.5; }

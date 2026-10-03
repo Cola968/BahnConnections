@@ -15,20 +15,22 @@
     "audit:board": "node scripts/board-verification-audit.mjs",
     "audit:ui": "node scripts/ui-audit.mjs",
     "audit:mobile": "node scripts/mobile-visual-qa.mjs",
-    "audit:api": "node scripts/api-smoke.mjs"
+    "audit:api": "node scripts/api-smoke.mjs",
+    "audit:billing": "node scripts/billing-audit.mjs"
   },
   "dependencies": {
     "leaflet": "1.9.4",
     "next": "16.2.6",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "stripe": "22.6.0"
   },
   "devDependencies": {
-    "@types/leaflet": "1.9.21",
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
     "@openai/sites-vite-plugin": "^0.1.0 || ^0.2.0",
     "@tailwindcss/postcss": "4.2.1",
+    "@types/leaflet": "1.9.21",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
@@ -45,4 +47,3 @@
   },
   "type": "module"
 }
-

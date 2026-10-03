@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties, type UIEvent } from "react";
 import { stationMarkerHierarchy } from "./station-marker";
 import { stationPassengerInfo } from "./station-passengers";
+import { SavedRoutesPanel } from "./saved-routes-panel";
+import { parseSavedRoutes, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
@@ -183,6 +185,8 @@ export default function Home() {
   const [curatedAliases, setCuratedAliases] = useState<Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>>({});
   const [mapZoom, setMapZoom] = useState(6);
   const [mapViewportToken, setMapViewportToken] = useState(0);
+  const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>([]);
+  const [routeSaveMessage,setRouteSaveMessage]=useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [boardOnly, setBoardOnly] = useState(false);
@@ -347,6 +351,7 @@ export default function Home() {
         setHighContrast(localStorage.getItem("bahnconnections-contrast") === "high");
         setFontScale(localStorage.getItem("bahnconnections-font") === "large" ? "large" : "normal");
         setMinimalMode(localStorage.getItem("bahnconnections-minimal") === "1");
+        setSavedRoutes(parseSavedRoutes(JSON.parse(localStorage.getItem(SAVED_ROUTES_KEY) ?? "[]")));
         setProfile(parseLocalProfile(JSON.parse(localStorage.getItem("bahnconnections-profile") ?? "null")));
         setAutoLocation(localStorage.getItem("bahnconnections-auto-location") !== "0");
         setReducedMotion(localStorage.getItem("bahnconnections-motion") === "reduced");
@@ -967,6 +972,26 @@ export default function Home() {
     }
   }
 
+  function storeRoutes(next:SavedRoute[]) {
+    setSavedRoutes(next);
+    try {localStorage.setItem(SAVED_ROUTES_KEY,JSON.stringify(next));setRouteSaveMessage("Pendelstrecken auf diesem Gerät gespeichert.");}
+    catch {setRouteSaveMessage("Nur für diese Sitzung gespeichert. Browser-Speicherung ist nicht verfügbar.");}
+  }
+  function saveCurrentRoute() {
+    const from=stationById.get(startId),to=stationById.get(targetId);
+    if(!from||!to||from.id===to.id)return;
+    const next=parseSavedRoutes([{from,to,createdAt:new Date().toISOString()},...savedRoutes]);
+    storeRoutes(next);
+  }
+  function openSavedRoute(route:SavedRoute,reverse:boolean) {
+    const from=reverse?route.to:route.from,to=reverse?route.from:route.to;
+    setLiveSearchStations(current=>[...current.filter(s=>s.id!==from.id&&s.id!==to.id),from,to]);
+    setStartId(from.id);setStartSearch(from.name);setTargetId(to.id);setTargetSearch(to.name);
+    setJourney(null);setJourneyOptions([]);setJourneyEndpoints(null);setStationTrip(null);
+    setJourneyMessage("");setPlannerState("idle");setExploreOpen(true);
+    setDesktopView("connections");setMobileView("connections");setMobileSheetState("expanded");
+  }
+
   function chooseJourney(option: LiveJourney) {
     setJourney(option);
     setExploreOpen(false);
@@ -1162,6 +1187,7 @@ export default function Home() {
             onOptions={(options) => { if (options.arriveBy !== undefined) setArriveBy(options.arriveBy); if (options.maxChanges !== undefined) setMaxChanges(options.maxChanges); if (options.transferMinutes !== undefined) setTransferMinutes(options.transferMinutes); if (options.wheelchair !== undefined) setWheelchairRouting(options.wheelchair); if (options.bike !== undefined) setBikeRequired(options.bike); }}
             loading={plannerState === "loading"} canSearch={Boolean(startId && targetId && startId !== targetId && journeyDeparture)} onSearch={() => void runPlanner()} onDiscover={surpriseMe} onReset={resetMap}
           />
+          <section className="planner-saved-routes"><button type="button" className="settings-link" onClick={saveCurrentRoute} disabled={!startId||!targetId||startId===targetId}>＋ Diese Pendelstrecke speichern</button><p role="status" className="settings-message">{routeSaveMessage}</p><SavedRoutesPanel routes={savedRoutes} onOpen={openSavedRoute} onRemove={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))}/></section>
           {journeyMessage && <div className={`planner-message ${plannerState}`} role="status"><p>{journeyMessage}</p>{plannerState==="error" && <button type="button" className="settings-link" onClick={()=>void runPlanner()}>Erneut versuchen</button>}</div>}
         </aside>}
 
@@ -1245,7 +1271,7 @@ export default function Home() {
 
       </section>
 
-      {settingsOpen && <SettingsDialog onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setDesktopView("departures");setMobileView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} largeFont={fontScale==="large"} onLargeFont={value=>setFontScale(value ? "large" : "normal")} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy}/>}
+      {settingsOpen && <SettingsDialog savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setDesktopView("departures");setMobileView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} largeFont={fontScale==="large"} onLargeFont={value=>setFontScale(value ? "large" : "normal")} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy}/>}
       {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (
