@@ -137,3 +137,22 @@ html[data-theme="dark"] {
   --glass-shadow:0 16px 38px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10);
   --glass-shadow-soft:0 9px 26px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08);
 }
+
+
+/* V39 · blue-charcoal dark material, calibrated from real browser screenshots */
+html[data-theme="dark"] {
+  --ink:#f3f6f8;
+  --muted:#a9b3bc;
+  --paper:#121920;
+  --soft:#19232c;
+  --line:#31404b;
+  --line-subtle:#24323c;
+  --elevated:#162029;
+  --elevated-soft:#1a252e;
+  --accent:#82aec9;
+  --action:#ed4350;
+  --glass-clear:color-mix(in srgb,#15202a 68%,transparent);
+  --glass-regular:color-mix(in srgb,#15202a 78%,transparent);
+  --glass-strong:color-mix(in srgb,#15202a 86%,transparent);
+  --glass-stroke:rgba(220,236,246,.12);
+}
