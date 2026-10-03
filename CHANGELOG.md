@@ -1,3 +1,13 @@
+# V47.0 · Desktop Glass & Station Visibility
+
+- Desktop-Workspace auf eine konsistente Layout-Basis reduziert; alte V34–V37-Override-Ketten entfernt, damit Panels und Karte weniger gegeneinander arbeiten.
+- Desktop-Liquid-Glass gezielter eingesetzt: Navigation, Suche und Inspector erhalten Materialtiefe, während die Karte visuell dominant bleibt.
+- Mobile bleibt bewusst auf der bewährten V46-Komposition statt das Desktop-Redesign zu übernehmen.
+- Offizielle DB-Bahnhöfe werden nicht mehr allein wegen fehlender Fahrgast-Metadaten ausgeblendet.
+- Für Bahnhöfe ohne Fahrgastklasse nutzt die Karte strukturelle Fallbacks aus Bahnhofsart und zusammengeführten Betriebsstellen; dadurch kann unter anderem Berlin-Gesundbrunnen wieder sichtbar werden.
+- Keine künstlichen Strecken, dekorativen Kartenlinien oder erfundenen Verkehrsdaten ergänzt.
+- PWA-Version und Cache auf V47.0 angehoben.
+
 # V44.0 · Simpler More & Cleaner Board
 
 - Mobiles „Mehr“ vom Karten-Ansicht-Menü getrennt.
