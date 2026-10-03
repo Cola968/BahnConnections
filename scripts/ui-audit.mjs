@@ -7,6 +7,8 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
   "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
 ].map(read));
+const website = await read("app/website/page.tsx");
+const websiteCss = await read("app/website/website.module.css");
 const css = styles.join("\n");
 const apis = await Promise.all(["stations/search","stations/[id]/services","stations/[id]/board","trips/[source]/[id]","journeys"].map(route=>read("app/api/"+route+"/route.ts")));
 const checks = [];
@@ -59,6 +61,19 @@ check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 102
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
 check("V45 mobile More is reduced to three core actions",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Einstellungen & Profil","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
 check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
+check("Standalone website is professional, transparent and service-first",
+  website.includes('APP_VERSION_LABEL') &&
+  website.includes('Zum Inhalt springen') &&
+  website.includes('application/ld+json') &&
+  website.includes('Aktuell unabhängig') &&
+  website.includes('keine offizielle Anwendung der Deutschen Bahn AG') &&
+  website.includes('https://transitous.org/') &&
+  website.includes('https://transport.rest/') &&
+  website.includes('https://www.openstreetmap.org/') &&
+  websiteCss.includes('position:sticky') &&
+  websiteCss.includes(':focus-visible') &&
+  !/heroGlow|featureGrid|abstractMap|radial-gradient|linear-gradient|backdrop-filter/.test(website + websiteCss)
+);
 check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (max-width:1023px) and (max-height:520px)"));
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
