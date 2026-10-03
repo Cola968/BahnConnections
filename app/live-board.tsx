@@ -244,12 +244,6 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
   };
 }
 
-function statusText(entry: BoardEntry) {
-  if (entry.canceled) return entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt";
-  if (entry.alerts?.length) return "Betriebshinweis vorhanden";
-  return "Fahrtverlauf öffnen";
-}
-
 function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
   return {
     tripId:entry.tripId ?? entryKey(entry),
