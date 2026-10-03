@@ -1,4 +1,4 @@
-/* V42 · Deep Liquid Glass
+/* V43 · Deep Liquid Glass
    A deliberate optical-material layer loaded last. It increases depth and
    translucency while preserving the flat transport hierarchy underneath. */
 
@@ -35,35 +35,37 @@
 }
 
 html[data-theme="dark"] {
-  --glass-clear:color-mix(in srgb,#17303f 38%,transparent);
-  --glass-regular:color-mix(in srgb,#182f3d 52%,transparent);
-  --glass-elevated:color-mix(in srgb,#1a303d 66%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#1a2d39 78%,transparent);
-  --glass-navigation:color-mix(in srgb,#1b3443 54%,transparent);
-  --glass-scroll-edge:color-mix(in srgb,#182a36 90%,transparent);
-  --glass-stroke:rgba(220,241,255,.24);
-  --glass-highlight:rgba(229,245,255,.22);
-  --glass-highlight-soft:rgba(225,243,255,.10);
-  --glass-depth:rgba(0,0,0,.24);
+  /* Dark Liquid Glass stays luminance-driven and nearly neutral. The map supplies
+     the colour; the material supplies depth, separation and legibility. */
+  --glass-clear:color-mix(in srgb,#272a2e 30%,transparent);
+  --glass-regular:color-mix(in srgb,#24272b 46%,transparent);
+  --glass-elevated:color-mix(in srgb,#2a2d31 62%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#1c1f22 82%,transparent);
+  --glass-navigation:color-mix(in srgb,#272a2e 52%,transparent);
+  --glass-scroll-edge:color-mix(in srgb,#1b1e21 90%,transparent);
+  --glass-stroke:rgba(248,251,253,.16);
+  --glass-highlight:rgba(255,255,255,.17);
+  --glass-highlight-soft:rgba(255,255,255,.075);
+  --glass-depth:rgba(0,0,0,.38);
   --glass-shadow:
-    0 24px 68px rgba(0,0,0,.42),
+    0 24px 72px rgba(0,0,0,.46),
     0 5px 16px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(235,248,255,.22),
-    inset 1px 0 0 rgba(235,248,255,.07),
-    inset 0 -1px 0 rgba(235,248,255,.04);
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 1px 0 0 rgba(255,255,255,.045),
+    inset 0 -1px 0 rgba(255,255,255,.025);
   --glass-shadow-soft:
-    0 12px 32px rgba(0,0,0,.32),
+    0 12px 34px rgba(0,0,0,.34),
     0 2px 9px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(235,248,255,.18),
-    inset 0 -1px 0 rgba(235,248,255,.03);
+    inset 0 1px 0 rgba(255,255,255,.13),
+    inset 0 -1px 0 rgba(255,255,255,.02);
   --glass-shadow-float:
-    0 30px 82px rgba(0,0,0,.48),
-    0 10px 28px rgba(0,0,0,.30),
-    inset 0 1px 0 rgba(235,248,255,.24),
-    inset 0 -1px 0 rgba(235,248,255,.04);
-  --glass-filter:blur(28px) saturate(145%) contrast(1.04);
-  --glass-filter-strong:blur(40px) saturate(155%) contrast(1.045);
-  --glass-filter-ultra:blur(52px) saturate(165%) contrast(1.05);
+    0 32px 88px rgba(0,0,0,.52),
+    0 10px 30px rgba(0,0,0,.31),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.025);
+  --glass-filter:blur(28px) saturate(116%) contrast(1.035);
+  --glass-filter-strong:blur(40px) saturate(122%) contrast(1.04);
+  --glass-filter-ultra:blur(52px) saturate(128%) contrast(1.045);
 }
 
 /* Shared optical surface. The first gradient is the specular light edge,
@@ -421,6 +423,45 @@ html[data-theme="dark"] {
       linear-gradient(145deg,var(--glass-highlight-soft),transparent 64%),
       color-mix(in srgb,var(--glass-elevated) 30%,transparent);
   }
+}
+
+/* Dark content uses a base/elevated stack instead of blue-tinted cards. */
+html[data-theme="dark"] .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel {
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.055),transparent 24%),
+    color-mix(in srgb,var(--elevated) 90%,transparent);
+}
+html[data-theme="dark"] :is(.floating-panel,.source-modal,.map-menu-popover.detached,.view-menu-popover,.search-suggestions) {
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.055),transparent 30%),
+    color-mix(in srgb,var(--elevated) 72%,transparent);
+}
+html[data-theme="dark"] :is(.trip-stop-heading button,.station-line-filters button,.station-line-search,.line-mode-grid span,.station-line-routes) {
+  color:var(--ink);
+  border-color:var(--line-subtle);
+  background:var(--elevated-soft);
+}
+html[data-theme="dark"] :is(.endpoint-note,.station-lines-proof,.geometry-missing,.line-route-detail>p) {
+  color:var(--muted);
+  background:color-mix(in srgb,var(--elevated-soft) 82%,transparent);
+}
+html[data-theme="dark"] .endpoint-note.warning,
+html[data-theme="dark"] .geometry-missing { color:var(--warning); }
+html[data-theme="dark"] .journey-live-badge {
+  color:var(--muted);
+  background:color-mix(in srgb,var(--elevated-soft) 88%,transparent);
+}
+html[data-theme="dark"] .journey-live-badge.live { color:var(--success); }
+html[data-theme="dark"] .journey-live-badge.cancel { color:var(--danger); }
+html[data-theme="dark"] .favorite-shortcuts button {
+  color:var(--warning);
+  border-color:color-mix(in srgb,var(--warning) 38%,var(--line-subtle));
+  background:color-mix(in srgb,var(--warning) 10%,var(--elevated-soft));
+}
+html[data-theme="dark"] .blocked-chips button {
+  color:var(--danger);
+  border-color:color-mix(in srgb,var(--danger) 36%,var(--line-subtle));
+  background:color-mix(in srgb,var(--danger) 10%,var(--elevated-soft));
 }
 
 /* Dark glass needs a brighter rim to avoid looking like a flat black card. */

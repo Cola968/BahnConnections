@@ -1,3 +1,17 @@
+# V43.0 · Dark Material & Realtime Polish
+
+- Dark Mode nach aktuellen Materialprinzipien neu kalibriert: neutrale Base-/Elevated-Flächen statt blau getönter Karten, klarere Tiefenstaffelung und höherer Textkontrast.
+- Liquid Glass im Dark Mode luminanzorientiert abgestimmt: weniger Farbstich, weniger Sättigung, subtilere Lichtkanten und stärker vom Karteninhalt beeinflusste Glasflächen.
+- Dark-Map deutlich ruhiger: geringere Helligkeit und Sättigung, neutralerer Hintergrund und zurückhaltendere Stationsmarker.
+- Expanded Sheets nutzen im Dark Mode ein dichteres neutrales Elevated-Material; schwebende Controls, Suche und Navigation bleiben transparenter.
+- Frühere bestätigte Abfahrt/Ankunft ist jetzt semantisch success und wird explizit grün dargestellt; Realtime-, Board- und Screenshot-Fixtures sichern das Verhalten ab.
+- Live-Zugmarker und Trails übernehmen für frühe Züge ebenfalls den grünen Status statt des bisherigen Warnzustands.
+- Mobile Querformat korrigiert: Header-Aktionen bleiben auf 44 px begrenzt und können die Suche nicht mehr überdecken.
+- Responsive-QA enthält einen Regressionstest gegen die Header-Überlappung im 844×390-Querformat.
+- Mehrere alte Light-Only-Hintergründe in Linien-, Warn- und Statuskomponenten erhalten Dark-Mode-sichere Materialwerte.
+- Accessibility-Fallbacks für Reduced Transparency, High Contrast, Forced Colors und Browser ohne backdrop-filter bleiben erhalten.
+- PWA-Version und Cache auf V43.0 angehoben.
+
 # V42.0 · Deep Liquid Glass
 
 - Optische Materialschicht komplett verstärkt: deutlich mehr Transparenz, Backdrop-Blur, Sättigung, innere Lichtkanten und räumliche Schatten statt flacher halbtransparenter Flächen.

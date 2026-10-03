@@ -5,7 +5,7 @@ export const realtimeScenarios = [
   {name:"delay-10",delay:10,tone:"warning",kind:"delay"},
   {name:"major-24",delay:24,tone:"danger",kind:"major-delay"},
   {name:"severe-45",delay:45,tone:"danger",kind:"major-delay"},
-  {name:"early",delay:-3,tone:"warning",kind:"early"},
+  {name:"early",delay:-3,tone:"success",kind:"early"},
   {name:"platform",delay:0,tone:"success",kind:"on-time",platform:true},
   {name:"cancelled-stop",delay:0,tone:"danger",kind:"cancelled",cancelled:true},
   {name:"cancelled-leg",delay:0,tone:"danger",kind:"cancelled",cancelled:true,legCancelled:true},

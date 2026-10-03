@@ -323,8 +323,15 @@ try {
     snapshots.push(await layoutSnapshot(`${width} restored`));
   }
   await setViewport(844, 390);
-  snapshots.push(await layoutSnapshot("844x390 landscape"));
+  const landscapeSnapshot = await layoutSnapshot("844x390 landscape");
+  snapshots.push(landscapeSnapshot);
   await pause(350);
+  const landscapeChrome = await evaluate(`(() => {
+    const search=document.querySelector('.topbar>.station-search')?.getBoundingClientRect();
+    const actions=document.querySelector('.header-actions')?.getBoundingClientRect();
+    return { searchRight:search?.right ?? 0, actionsLeft:actions?.left ?? 0, actionsWidth:actions?.width ?? 0, overlap:Boolean(search&&actions&&search.right>actions.left-4) };
+  })()`);
+  if (landscapeChrome.actionsWidth > 52 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
   const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:el.getBoundingClientRect().right,left}));})()`);
   if (landscapeStops.some(stop=>stop.right>stop.left+2)) throw new Error('Journey-Halte liegen im Querformat unter dem seitlichen Sheet');
   await screenshot("844-landscape");
@@ -414,7 +421,7 @@ try {
         const state = await evaluate(`(() => {
           const row=document.querySelector('.live-stop-list li'), time=row?.querySelector('.realtime-time'), actual=time?.querySelector('.realtime-time__actual'), planned=time?.querySelector('del'), platform=row?.querySelector('.realtime-platform');
           if (!time) throw new Error('Kein Zeitfeld');
-          const expectedColor=getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(theme === 'dark' && scenario.tone === 'success' ? '--ink' : scenario.tone === 'success' ? '--status-on-time' : scenario.tone === 'warning' ? '--status-delay' : scenario.tone === 'danger' ? '--status-disruption' : '--ink')});
+          const expectedColor=getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(scenario.kind === 'early' ? '--status-early' : scenario.tone === 'success' ? '--status-on-time' : scenario.tone === 'warning' ? '--status-delay' : scenario.tone === 'danger' ? '--status-disruption' : '--ink')});
           const probe=document.createElement('span'); probe.style.color=expectedColor; document.body.append(probe); const color=getComputedStyle(probe).color; probe.remove();
           return {tone:time.dataset.tone,kind:time.className,planned:Boolean(planned),actual:Boolean(actual),delta:time.querySelector('.realtime-time__delta')?.textContent ?? '',aria:time.getAttribute('aria-label'),color:actual ? getComputedStyle(actual).color===color : true,platform:platform?.dataset.changed==='true',overflow:Array.from(document.querySelectorAll('.live-journey-leg,.mobile-sheet-panel,.realtime-time')).some(el=>el.scrollWidth>el.clientWidth+1)};
         })()`);
