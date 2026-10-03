@@ -209,3 +209,13 @@
     backdrop-filter:var(--glass-filter);
   }
 }
+/* Desktop uses the same quiet chrome and transport hierarchy as the phone. */
+@media (min-width:1024px) {
+  .desktop-workspace .topbar { background:var(--glass-elevated); }
+  .desktop-navigation { background:transparent; border:0; box-shadow:none; backdrop-filter:none; }
+  .desktop-navigation>button.active { color:var(--action); background:transparent; box-shadow:none; }
+  .desktop-navigation>button,.navigation-more>summary { min-height:44px; border-radius:0; }
+  .desktop-workspace .floating-panel { background:var(--glass-elevated); box-shadow:var(--glass-shadow); }
+  .desktop-workspace .journey-alternatives { margin-top:0; }
+  .station-card>.panel-tools { margin-right:20px; margin-left:20px; }
+}

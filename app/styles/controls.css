@@ -250,89 +250,28 @@ html[data-theme="dark"] .station-search:focus-within {
 }
 
 
-/* V39 · mobile liquid chrome with fixed geometry */
+/* Fixed chrome geometry, shared with sheet rhythm. */
+.station-search>button,.station-search .search-clear { min-width:44px; min-height:44px; }
+.station-search { padding-left:12px; }
+.route-search-pair { gap:16px; }
+.route-station-search { background:color-mix(in srgb,var(--ink) 4%,transparent); box-shadow:inset 0 0 0 1px var(--line-subtle); }
+.swap-button { width:44px; height:44px; right:8px; top:64px; background:var(--glass-elevated); }
+.filter-drawer { border:0; border-top:1px solid var(--line-subtle); border-radius:0; padding:0; background:transparent; }
+.planner-types button { border-radius:8px; min-height:44px; }
+.planner-check { padding:8px 0; background:transparent; }
+.plan-button { min-height:48px; border-radius:12px; box-shadow:none; }
 @media (max-width:1023px) and (min-height:521px) {
-  .topbar { pointer-events:none; }
-  .brand,
-  .topbar>.station-search,
-  .header-actions { pointer-events:auto; }
-
-  .brand {
-    justify-self:start;
-    min-height:44px;
-    padding:5px 11px 5px 5px;
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 88%,transparent);
-    border-radius:16px;
-    background:var(--glass-regular);
-    box-shadow:var(--glass-shadow-soft);
-    -webkit-backdrop-filter:blur(24px) saturate(118%);
-    backdrop-filter:blur(24px) saturate(118%);
-    text-shadow:none;
-  }
-
-  .header-actions {
-    width:46px;
-    height:46px;
-    min-width:46px;
-    max-width:46px;
-    flex:0 0 46px;
-    justify-self:end;
-    align-self:center;
-    overflow:visible;
-  }
-
-  .mobile-map-view-button {
-    width:46px;
-    height:46px;
-    min-width:46px;
-    min-height:46px;
-    flex:0 0 46px;
-    padding:0;
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 88%,transparent);
-    border-radius:15px;
-    background:var(--glass-regular);
-    color:var(--ink);
-    box-shadow:var(--glass-shadow-soft);
-    -webkit-backdrop-filter:blur(24px) saturate(118%);
-    backdrop-filter:blur(24px) saturate(118%);
-  }
+  .brand { justify-self:start; min-height:44px; padding:4px 12px 4px 4px; border:1px solid var(--glass-stroke); border-radius:16px; background:var(--glass-clear); box-shadow:var(--glass-shadow-soft); text-shadow:none; -webkit-backdrop-filter:var(--glass-filter); backdrop-filter:var(--glass-filter); }
+  .brand-mark { width:32px; height:32px; }
+  .header-actions { width:44px; height:44px; min-width:44px; max-width:44px; justify-self:end; }
+  .mobile-map-view-button { width:44px; height:44px; min-width:44px; min-height:44px; padding:0; border:1px solid var(--glass-stroke); border-radius:16px; color:var(--ink); background:var(--glass-clear); box-shadow:var(--glass-shadow-soft); -webkit-backdrop-filter:var(--glass-filter); backdrop-filter:var(--glass-filter); }
   .mobile-map-view-button svg { width:22px; height:22px; }
-  .mobile-map-view-button.active {
-    color:var(--accent);
-    background:color-mix(in srgb,var(--glass-strong) 82%,var(--accent) 5%);
-  }
-
-  .topbar>.station-search {
-    right:12px;
-    left:12px;
-    overflow:visible;
-    background:color-mix(in srgb,var(--glass-strong) 90%,transparent);
-    box-shadow:0 12px 32px #17202b16,inset 0 1px 0 rgba(255,255,255,.48);
-  }
+  .topbar>.station-search { height:52px; border-radius:16px; padding:0 4px 0 12px; background:var(--glass-regular); border:1px solid var(--glass-stroke); box-shadow:var(--glass-shadow-soft); -webkit-backdrop-filter:var(--glass-filter-strong); backdrop-filter:var(--glass-filter-strong); }
+  .topbar>.station-search>button[type="submit"] { border-radius:12px; padding:0 16px; }
+  .topbar>.station-search .search-clear { width:44px; }
 }
-
-
-/* V40 · controls float above map content instead of becoming opaque cards */
-@media (max-width:1023px) and (min-height:521px) {
-  .brand {
-    background:var(--glass-clear);
-    border-color:color-mix(in srgb,var(--glass-stroke) 86%,transparent);
-    box-shadow:var(--glass-shadow-soft);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-  }
-  .mobile-map-view-button {
-    background:var(--glass-clear);
-    border-color:color-mix(in srgb,var(--glass-stroke) 84%,transparent);
-    box-shadow:var(--glass-shadow-soft);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-  }
-  .topbar>.station-search {
-    background:var(--glass-regular);
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 80%,transparent);
-    box-shadow:var(--glass-shadow);
-    -webkit-backdrop-filter:var(--glass-filter-strong);
-    backdrop-filter:var(--glass-filter-strong);
-  }
+@media (max-width:359px) {
+  .brand-name { font-size:.9375rem; }
+  .topbar>.station-search>button[type="submit"] { padding:0 12px; }
 }
+.route-discovery-head>p { display:none; }

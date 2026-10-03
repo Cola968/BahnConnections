@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { stationMarkerHierarchy } from "./station-marker";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
@@ -600,25 +601,22 @@ export default function Home() {
     const selectedExtra = selected?.source === "db" && !contextualStations.some((station) => station.id === selected.id) ? [selected] : [];
     for (const station of [...curatedMapStations, ...contextualStations, ...selectedExtra]) {
       if (station.country !== "DE" && !filteredStationIds.has(station.id)) continue;
-      if (mapZoom <= 6 && station.source !== "db" && !station.hub && !MAJOR_HUB_IDS.has(station.id) && station.id !== selectedId) continue;
       const isSelected = station.id === selectedId;
       const isDestination = false;
       const isTransfer = false;
       const isConnected = connectedIds.has(station.id);
       const profile = stationImportance.get(station.id);
       const isMajorHub = MAJOR_HUB_IDS.has(station.id);
-      if (mapZoom < 7 && station.passengerBand === "< 100" && !isSelected && !isDestination && !isTransfer) continue;
-      const passengerBaseRadius = station.passengerBand === "> 1.000" ? 9.2 : station.passengerBand === "100 - 1.000" ? 5.8 : station.passengerBand === "< 100" ? 3 : null;
-      const networkLift = Math.min(1.8, Math.sqrt(Math.max(0, profile?.dailyStops ?? 0)) / 7);
-      const fallbackRadius = isMajorHub ? 10.4 : station.hub ? 7.4 : Math.min(5.6, 3.2 + (profile?.domesticDirect ?? 0) / 20);
-      const baseRadius = passengerBaseRadius === null ? fallbackRadius : Math.min(12.4, passengerBaseRadius + networkLift + (isMajorHub ? 1.2 : station.hub ? .45 : 0));
+      const hierarchy = stationMarkerHierarchy({ majorHub:isMajorHub, hub:station.hub, passengerBand:station.passengerBand, dailyStops:profile?.dailyStops, directConnections:profile?.domesticDirect });
+      if (mapZoom < hierarchy.minimumZoom && !isSelected) continue;
+      const baseRadius = hierarchy.radius;
       const connected = overviewRoutesVisible ? connections.find((connection) => connection.station.id === station.id) : undefined;
       const reachability = reachableById.get(station.id);
       const reachabilityColor = !reachability ? (theme === "dark" ? "#2d5662" : "#b6d7dc") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
       const markerPalette = theme === "dark"
         ? { edge:"#8bc5d2", low:"#18313a", medium:"#245b67", high:"#2f8797", active:"#5a91c2", halo:"#79c0cf" }
         : { edge:"#0a7187", low:"#f8fdfe", medium:"#c5ebf0", high:"#3eafc0", active:"#2f7db8", halo:"#198da0" };
-      const passengerFill = station.passengerBand === "> 1.000" ? markerPalette.high : station.passengerBand === "100 - 1.000" ? markerPalette.medium : markerPalette.low;
+      const passengerFill = hierarchy.level >= 3 ? markerPalette.high : hierarchy.level === 2 ? markerPalette.medium : markerPalette.low;
       const passengerClass = station.passengerBand === "> 1.000" ? "passenger-high" : station.passengerBand === "100 - 1.000" ? "passenger-medium" : station.passengerBand === "< 100" ? "passenger-low" : "";
       const markerClasses = [
         "station-point",
@@ -629,7 +627,7 @@ export default function Home() {
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
       const markerRadius = journey ? Math.min(3.2, Math.max(1.8, baseRadius * .27)) : isSelected || isDestination ? Math.max(10.4, baseRadius + 1.4) : isTransfer ? Math.max(7.8, baseRadius) : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? Math.max(5.4, baseRadius) : baseRadius;
-      const showPassengerHalo = !journey && !reachabilityVisible && (station.passengerBand === "> 1.000" || isMajorHub) && !isSelected;
+      const showPassengerHalo = !journey && !reachabilityVisible && hierarchy.halo && !isSelected;
       if (showPassengerHalo) {
         L.circleMarker([station.lat, station.lon], {
           radius:markerRadius + 3.5,
@@ -647,7 +645,7 @@ export default function Home() {
         opacity: journey ? .24 : .99,
         weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : baseRadius >= 9 ? 2.8 : baseRadius >= 5 ? 2.15 : 1.45,
         fillColor: isSelected || isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#725f3c" : "#e8d8b8") : reachabilityVisible ? reachabilityColor : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#2d6470" : "#bce4ea") : passengerFill,
-        fillOpacity: journey ? .15 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .18 : station.passengerBand === "< 100" ? .82 : .97,
+        fillOpacity: journey ? .15 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .18 : hierarchy.level === 1 ? .55 : .94,
         className: markerClasses,
       }).addTo(layer);
       const reachabilityDetail = reachabilityVisible && reachability ? ` · ${formatDuration(reachability.minutes)} · ${reachability.changes ? `${reachability.changes} Umstieg${reachability.changes > 1 ? "e" : ""}` : "direkt"}` : "";
@@ -1157,10 +1155,6 @@ export default function Home() {
           <aside className={`station-card floating-panel mobile-sheet-panel station-right${stationPanel !== "live" ? " detail-width" : ""}`} style={stationControls.style}>
             <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={selected.name} mobileSummary="" />
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
-            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{selected.name}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
-            <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
-            <details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
-            <div className="stat-row station-line-kpis"><div><strong>{stationLineSummary?.fern ?? "–"}</strong><span>Fern</span></div><div><strong>{stationLineSummary?.regional ?? "–"}</strong><span>Regio</span></div><div><strong>{stationLineSummary?.sbahn ?? "–"}</strong><span>S-Bahn</span></div><div><strong>{stationLineSummary?.ubahn ?? "–"}</strong><span>U-Bahn</span></div><div><strong>{stationLineSummary?.tram ?? "–"}</strong><span>Tram</span></div></div>
             <div className="station-section-tabs" role="tablist" aria-label="Bahnhofsinformationen">
               <button role="tab" aria-selected={stationPanel === "live"} className={stationPanel === "live" ? "active" : ""} onClick={() => setStationPanel("live")}><i /> Tafel</button>
               <button role="tab" aria-selected={stationPanel === "destinations"} className={stationPanel === "destinations" ? "active" : ""} onClick={() => setStationPanel("destinations")}>Linien</button>
@@ -1168,7 +1162,11 @@ export default function Home() {
             </div>
             <div hidden={stationPanel !== "live"}><LiveBoard station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} onStationTrips={handleStationTrips} /></div>
             <div hidden={stationPanel !== "destinations"}><StationLines station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={showStationTripsOnMap} /></div>
-            {stationPanel === "stats" && <StationStats station={selected} boardSummary={boardSummary} lineSummary={stationLineSummary} />}
+            {stationPanel === "stats" && <div className="station-info">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{selected.name}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
+            <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
+            <details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
+
+<StationStats station={selected} boardSummary={boardSummary} lineSummary={stationLineSummary} /></div>}
           </aside>
         ) : null}
         {!statsOpen && !plannerVisible && !labOpen && !journey && !selectedLiveTrip && selected && sidebarCollapsed && <button className="sidebar-restore right" onClick={() => setSidebarCollapsed(false)}><span>{selected.name}</span><b>Live-Tafel öffnen</b></button>}
@@ -1179,6 +1177,7 @@ export default function Home() {
         {journey && !departuresView && !statsOpen && !plannerVisible && !labOpen && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style}>
             <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} />
+            <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{selectedJourneyStart.name} → {selectedJourneyTarget.name}</span></div>
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
                 <JourneyTimeRange journey={journey} />
@@ -1192,11 +1191,11 @@ export default function Home() {
               {journey.transitLegs.map((leg, index) => {
                 const forecast=occupancyForecast(leg.startTime, leg.name);
                 const wait=transferWaitMinutes(journey,index);
-                return <article className={`live-journey-leg ${serviceClass(leg.category)}`} key={`${leg.tripId ?? leg.name}-${index}`}>
+                return <article className={`live-journey-leg ${serviceClass(leg.category)}${journey.transitLegs.length === 1 ? " single-leg" : ""}`} key={`${leg.tripId ?? leg.name}-${index}`}>
                   <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b>{leg.headsign ? <small>Richtung {leg.headsign}</small> : null}</span>{leg.cancelled ? <span className="leg-live-state cancel">Ausfall</span> : null}</header>
                   <div className="leg-route-line"><span><b>{leg.from.name}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{leg.to.name}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span></div>
-                  {journey.transitLegs.length > 1 && forecast.level >= 3 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Hohe Auslastung erwartet</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div>}
+                  {forecast.level >= 3 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Hohe Auslastung erwartet</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div>}
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
                   <ol className="model-stop-list live-stop-list">{leg.stops.map((stop,stopIndex) => {
                     const actual=stop.departure ?? stop.arrival;
@@ -1212,6 +1211,7 @@ export default function Home() {
             </div>
             {journey.legs.some((leg) => leg.category === "walk") && <p className="journey-walk-note">Fußwege am Start, Ziel oder beim Umstieg sind in der Gesamtdauer enthalten.</p>}
             {journeyQuality && journey.transfers > 0 && <div className={`transfer-quality ${journeyQuality.tone}`}><span><b>Umstieg {journeyQuality.label}</b><small>{journeyQuality.explanation}</small></span></div>}
+            <details className="journey-secondary-info"><summary>Reiseinformationen</summary><p>{journey.sourceLabel}{journey.updatedAt ? ` · Stand ${new Date(journey.updatedAt).toLocaleTimeString("de-DE", { hour:"2-digit", minute:"2-digit", timeZone:"Europe/Berlin" })}` : ""}</p>{journey.transitLegs.map((leg,index) => <div key={index}><b>{leg.name}</b>{leg.operator && <p>{leg.operator}</p>}<p>{leg.realtime ? "Echtzeit für diesen Fahrtabschnitt verfügbar" : "Fahrplandaten für diesen Fahrtabschnitt"}</p><p>{occupancyForecast(leg.startTime,leg.name).label} · Prognose, keine Live-Belegungsmessung</p>{leg.wheelchairAccessible && <p>Barrierefreiheit: {leg.wheelchairAccessible === "ACCESSIBLE" ? "als zugänglich gemeldet" : "Angabe des Verkehrsunternehmens: " + leg.wheelchairAccessible}</p>}</div>)}</details>
             {journey.warnings.length > 0 && <div className="journey-source-warnings">{journey.warnings.map((warning, index) => <p key={`${warning}-${index}`}>{warning}</p>)}</div>}
           </section>
         )}
