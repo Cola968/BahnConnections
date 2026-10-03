@@ -618,7 +618,7 @@ export default function Home() {
       const reachability = reachableById.get(station.id);
       const reachabilityColor = !reachability ? (theme === "dark" ? "#2d5662" : "#b6d7dc") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
       const markerPalette = theme === "dark"
-        ? { edge:"#8bc5d2", low:"#18313a", medium:"#245b67", high:"#2f8797", active:"#5a91c2", halo:"#79c0cf" }
+        ? { edge:"#b8c7ce", low:"#202427", medium:"#4a565c", high:"#667881", active:"#6f99bd", halo:"#98aab2" }
         : { edge:"#0a7187", low:"#f8fdfe", medium:"#c5ebf0", high:"#3eafc0", active:"#2f7db8", halo:"#198da0" };
       const passengerFill = hierarchy.level >= 3 ? markerPalette.high : hierarchy.level === 2 ? markerPalette.medium : markerPalette.low;
       const passengerClass = station.passengerBand === "> 1.000" ? "passenger-high" : station.passengerBand === "100 - 1.000" ? "passenger-medium" : station.passengerBand === "< 100" ? "passenger-low" : "";
@@ -733,9 +733,9 @@ export default function Home() {
         const progress = liveTripProgress(trip, liveTick);
         const position = pointOnTrip(trip, progress);
         const presentation = deriveRealtimePresentation({ scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime });
-        const statusToken = { neutral:"--status-schedule", success:"--status-on-time", warning:"--status-delay", danger:"--status-disruption" }[presentation.tone];
+        const statusToken = presentation.kind === "early" ? "--status-early" : { neutral:"--status-schedule", success:"--status-on-time", warning:"--status-delay", danger:"--status-disruption" }[presentation.tone];
         if (showTrails) L.polyline(trailForTrip(trip, progress), { color:getComputedStyle(document.documentElement).getPropertyValue(statusToken).trim(), weight:1.6, opacity:.24, dashArray:"2 7", lineCap:"round" }).addTo(layer);
-        const className = `live-train-marker glyph ${trip.category} status-${presentation.tone}${trackedTripId === trip.tripId ? " tracked" : ""}`;
+        const className = `live-train-marker glyph ${trip.category} status-${presentation.tone} status-${presentation.kind}${trackedTripId === trip.tripId ? " tracked" : ""}`;
         const marker = L.marker(position, { zIndexOffset:900, icon:L.divIcon({ className:"live-train-wrap", html:`<div class="${className}"><i></i></div>`, iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(layer);
         marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`, { scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime }), { direction:"top", offset:[0,-11] });
         marker.on("click", () => { setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded"); });
