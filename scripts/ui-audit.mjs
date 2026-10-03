@@ -31,7 +31,7 @@ check("Brand, route and disruption colours stay separate",css.includes('--route-
 check("V39 station markers scale from passenger classes",page.includes('passengerBaseRadius = station.passengerBand === "> 1.000" ? 6.6') && page.includes('curatedMapStations = STATIONS.map') && page.includes('"passenger-high"') && page.includes('markerPalette = theme === "dark"'));
 check("V39 liquid chrome keeps fixed mobile controls",css.includes("mobile liquid chrome with fixed geometry") && css.includes(".header-actions") && css.includes("width:46px") && css.includes("backdrop-filter:blur(30px)"));
 check("Live layer status is not exposed as mobile chrome",!page.includes('Live-Ebene aus') && page.includes('Live-Daten nicht aktiv') && page.includes('Keine Echtzeitdaten'));
-check("Dark map keeps real OSM geometry with crisp theme treatment",css.includes("invert(.88) hue-rotate(180deg) brightness(.58)") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
+check("Dark map keeps real OSM geometry with crisp theme treatment",css.includes("invert(.88) hue-rotate(180deg) brightness(.72)") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
 check("Alternative journeys avoid redundant realtime prose",!alternatives.includes('" · mit Echtzeit"') && !alternatives.includes('" · Fahrplan"'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
