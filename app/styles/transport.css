@@ -709,3 +709,34 @@
     margin-top:8px;
   }
 }
+
+
+/* V40.1 · compact board hierarchy on narrow phones */
+@media (max-width:1023px) {
+  .board-destination b {
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+    overflow-wrap:normal;
+    word-break:normal;
+    line-height:1.32;
+  }
+}
+@media (max-width:359px) {
+  .board-table-head,
+  .board-row-summary {
+    grid-template-columns:3px 46px minmax(0,1fr) 34px;
+    column-gap:7px;
+  }
+  .board-platform .realtime-platform {
+    font-size:calc(.78rem * var(--panel-scale,1));
+  }
+  .board-service .service-logo {
+    min-width:32px;
+    padding:0 6px;
+  }
+  .board-destination b {
+    font-size:calc(.82rem * var(--panel-scale,1));
+  }
+}
