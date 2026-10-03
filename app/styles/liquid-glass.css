@@ -6,7 +6,7 @@
   --glass-clear:color-mix(in srgb,#f8fcff 34%,transparent);
   --glass-regular:color-mix(in srgb,#f8fcff 48%,transparent);
   --glass-elevated:color-mix(in srgb,#fbfdff 64%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#fbfdff 74%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#fbfdff 68%,transparent);
   --glass-navigation:color-mix(in srgb,#f8fcff 50%,transparent);
   --glass-scroll-edge:color-mix(in srgb,#fbfdff 88%,transparent);
   --glass-stroke:rgba(255,255,255,.72);
@@ -40,7 +40,7 @@ html[data-theme="dark"] {
   --glass-clear:color-mix(in srgb,#272a2e 30%,transparent);
   --glass-regular:color-mix(in srgb,#24272b 46%,transparent);
   --glass-elevated:color-mix(in srgb,#2a2d31 62%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#1c1f22 82%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#1c1f22 74%,transparent);
   --glass-navigation:color-mix(in srgb,#272a2e 52%,transparent);
   --glass-scroll-edge:color-mix(in srgb,#1b1e21 90%,transparent);
   --glass-stroke:rgba(248,251,253,.16);

@@ -2,7 +2,7 @@
 
 import { UiIcon, type IconName } from "./ui-icon";
 
-export type DesktopView = "connections" | "map" | "departures" | "network" | "stats";
+export type DesktopView = "connections" | "map" | "departures" | "settings" | "stats";
 
 const destinations: { view: DesktopView; label: string; icon: IconName }[] = [
   { view:"connections", label:"Verbindungen", icon:"route" },
@@ -15,7 +15,7 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
     {destinations.map(({ view, label, icon }) =>
       <button type="button" key={view} className={value === view ? "active" : ""} aria-current={value === view ? "page" : undefined} onClick={() => onChange(view)}><UiIcon name={icon} />{label}</button>
     )}
-    <details className="navigation-more"><summary><UiIcon name="more" />Mehr<UiIcon name="chevron" /></summary><div><button onClick={(event) => { onChange("stats"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Netzreport</button><button onClick={(event) => { onChange("network"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Netzlabor · Simulation</button></div></details>
+    <details className="navigation-more"><summary><UiIcon name="more" />Mehr<UiIcon name="chevron" /></summary><div><button onClick={(event) => { onChange("stats"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Netzreport</button><button onClick={(event) => { onChange("settings"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>Einstellungen & Profil</button></div></details>
   </nav>;
 }
 

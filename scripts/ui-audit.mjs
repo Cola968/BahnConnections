@@ -30,20 +30,21 @@ check("Journey and board use the same time and platform components",[page,board]
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
 check("Brand, route and disruption colours stay separate",css.includes('--route-focus:var(--accent)') && css.includes('--status-disruption:var(--danger)'));
-// Hub status must never be demoted by a coarse or conflicting passenger band.
-for (const passengerBand of [undefined,"< 100","100 - 1.000","> 1.000"]) {
-  assert.equal(stationMarkerHierarchy({majorHub:true,passengerBand}).radius,13);
-  assert.equal(stationMarkerHierarchy({majorHub:true,passengerBand}).minimumZoom,0);
+// A transport hub must not acquire fictional passenger volume.
+for(const band of [undefined,"< 100","100 - 1.000","> 1.000"]) {
+  const ordinary=stationMarkerHierarchy({passengerBand:band});
+  const hub=stationMarkerHierarchy({majorHub:true,hub:true,passengerBand:band,dailyStops:500,directConnections:100});
+  assert.equal(ordinary.radius,hub.radius);
 }
-assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"< 100"}).radius,3);
-assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"100 - 1.000"}).radius,5.5);
-assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"> 1.000"}).radius,10);
-assert.equal(stationMarkerHierarchy({majorHub:false,hub:true,passengerBand:"< 100"}).level,3);
-assert.equal(stationMarkerHierarchy({majorHub:false,dailyStops:100}).level,3);
-assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"> 1.000"}).minimumZoom,7);
-assert.equal(stationMarkerHierarchy({majorHub:false,hub:true}).minimumZoom,5);
-assert.equal(stationMarkerHierarchy({majorHub:false,directConnections:8}).level,2);
-check("Four marker levels use real source classes and network importance",page.includes('stationMarkerHierarchy(') && page.includes('hierarchy.minimumZoom') && page.includes('showPassengerHalo') && page.includes('interactive:false') && page.includes('"passenger-high"'));
+assert.equal(stationMarkerHierarchy({dailyStops:500,directConnections:100}).unknown,true);
+assert.equal(stationMarkerHierarchy({dailyPassengers:NaN}).unknown,true);
+assert.equal(stationMarkerHierarchy({dailyPassengers:-1}).unknown,true);
+assert.equal(stationMarkerHierarchy({dailyPassengers:Infinity}).unknown,true);
+const smaller=stationMarkerHierarchy({dailyPassengers:50_000});
+const larger=stationMarkerHierarchy({dailyPassengers:200_000});
+assert.ok(Math.abs(larger.radius/smaller.radius-2)<1e-9,"Four times the passengers must yield four times the circle area");
+assert.ok(stationMarkerHierarchy({passengerBand:"> 1.000"}).radius>stationMarkerHierarchy({passengerBand:"100 - 1.000"}).radius);
+check("Passenger volume controls size with explicit unknown data",page.includes('dailyPassengers:passengers.daily') && page.includes('hierarchy.unknown') && page.includes('passengers.detail') && !page.includes('<NetworkLab'));
 check("Five distinct glass roles and sheet states keep flat content",["clear","regular","elevated","sheet-expanded","navigation"].every(role=>css.includes("--glass-"+role+":")) && css.includes('[data-mobile-sheet="half"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="expanded"] .mobile-sheet-panel') && css.includes("background:transparent") && css.includes("backdrop-filter:var(--glass-filter-strong)"));
 check("High contrast overrides dark glass after theme calibration",css.lastIndexOf('html[data-contrast="high"],html[data-theme="dark"][data-contrast="high"]') > css.indexOf('html[data-theme="dark"] {'));
 check("Journey has one identity and accessible secondary information",page.includes('single-leg') && css.includes('.live-journey-leg.single-leg>header,.live-journey-leg.single-leg>.leg-route-line { display:none; }') && page.includes('<details className="journey-secondary-info">') && page.includes('journey.sourceLabel'));
@@ -56,8 +57,8 @@ check("V40 mobile station first layer is reduced",page.includes('mobileTitle={se
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
-check("V44 mobile More is reduced to three core actions",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Darstellung","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
-check("V44 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
+check("V45 mobile More is reduced to three core actions",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Einstellungen & Profil","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
+check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
 check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (max-width:1023px) and (max-height:520px)"));
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
@@ -85,8 +86,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "44.0"') && versionMetadata.includes('"version": "44.0"') && versionMetadata.includes('/install?update=V44.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "45.0"') && versionMetadata.includes('"version": "45.0"') && versionMetadata.includes('/install?update=V45.0'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V44.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v44-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V45.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v45-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
