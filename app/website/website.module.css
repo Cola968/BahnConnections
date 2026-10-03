@@ -116,7 +116,7 @@
 .hero h1 {
   max-width:680px;
   margin-bottom:20px;
-  font-size:clamp(2.9rem,4.6vw,4.7rem);
+  font-size:clamp(2.7rem,4vw,4rem);
   line-height:1;
   letter-spacing:-.052em;
   font-weight:760;
@@ -234,23 +234,17 @@
   display:grid;
   grid-template-columns:1.4fr repeat(3,1fr);
 }
-.quickIntro,.quickLinks>a {
+.quickIntro,.quickItem {
   min-height:92px;
   padding:16px 20px;
   border-right:1px solid var(--line);
 }
 .quickIntro { border-left:1px solid var(--line); display:flex; flex-direction:column; justify-content:center; gap:4px; }
+.quickItem { display:flex; flex-direction:column; justify-content:center; gap:5px; }
 .quickIntro strong { font-size:.88rem; }
 .quickIntro span { color:var(--muted); font-size:.75rem; line-height:1.4; }
-.quickLinks>a {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  font-size:.84rem;
-  font-weight:700;
-}
-.quickLinks>a:hover { background:#fff; color:var(--red); }
+.quickItem strong { font-size:.84rem; }
+.quickItem span { color:var(--muted); font-size:.74rem; line-height:1.4; }
 
 .section,.realtimeSection,.dataSection,.partnershipSection,.webSection,.faqSection,.finalCta {
   width:min(var(--max),calc(100% - 32px));
@@ -492,7 +486,7 @@
   .journeyExample { max-width:720px; }
   .quickLinks { grid-template-columns:1fr 1fr; }
   .quickIntro { border-bottom:1px solid var(--line); }
-  .quickLinks>a:nth-child(2) { border-bottom:1px solid var(--line); }
+  .quickItem:nth-child(2) { border-bottom:1px solid var(--line); }
   .serviceList article { grid-template-columns:52px 1fr; }
   .serviceList ul { grid-column:2; }
   .realtimeSection,.dataSection,.webSection,.faqSection { grid-template-columns:1fr; gap:40px; }
@@ -510,7 +504,7 @@
     width:calc(100% - 24px);
   }
   .hero { padding:48px 0 54px; }
-  .hero h1 { font-size:clamp(2.35rem,12vw,3.7rem); }
+  .hero h1 { font-size:clamp(2.3rem,10.8vw,3.25rem); }
   .heroMain>p { font-size:.94rem; }
   .heroActions { align-items:stretch; flex-direction:column; }
   .heroActions .primaryButton,.heroActions .secondaryButton { width:100%; }
@@ -529,8 +523,8 @@
   .departureRow>strong:last-child { display:none; }
   .timeBlock { justify-content:flex-end; text-align:right; }
   .quickLinks { grid-template-columns:1fr; padding-inline:12px; }
-  .quickIntro,.quickLinks>a { min-height:70px; border-left:1px solid var(--line); border-bottom:1px solid var(--line); }
-  .quickLinks>a:last-child { border-bottom:0; }
+  .quickIntro,.quickItem { min-height:70px; border-left:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .quickItem:last-child { border-bottom:0; }
   .section,.realtimeSection,.dataSection,.webSection,.faqSection { padding:70px 0; }
   .sectionHeading { margin-bottom:32px; }
   .serviceList article { grid-template-columns:38px 1fr; gap:12px; padding:18px 0; }
