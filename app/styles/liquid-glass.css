@@ -1,4 +1,4 @@
-/* V42 · Deep Liquid Glass
+/* V43 · Deep Liquid Glass
    A deliberate optical-material layer loaded last. It increases depth and
    translucency while preserving the flat transport hierarchy underneath. */
 
@@ -453,6 +453,16 @@ html[data-theme="dark"] .journey-live-badge {
 }
 html[data-theme="dark"] .journey-live-badge.live { color:var(--success); }
 html[data-theme="dark"] .journey-live-badge.cancel { color:var(--danger); }
+html[data-theme="dark"] .favorite-shortcuts button {
+  color:var(--warning);
+  border-color:color-mix(in srgb,var(--warning) 38%,var(--line-subtle));
+  background:color-mix(in srgb,var(--warning) 10%,var(--elevated-soft));
+}
+html[data-theme="dark"] .blocked-chips button {
+  color:var(--danger);
+  border-color:color-mix(in srgb,var(--danger) 36%,var(--line-subtle));
+  background:color-mix(in srgb,var(--danger) 10%,var(--elevated-soft));
+}
 
 /* Dark glass needs a brighter rim to avoid looking like a flat black card. */
 html[data-theme="dark"] :is(
