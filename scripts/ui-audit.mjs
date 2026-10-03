@@ -40,6 +40,8 @@ assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"100 - 1.000"}
 assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"> 1.000"}).radius,10);
 assert.equal(stationMarkerHierarchy({majorHub:false,hub:true,passengerBand:"< 100"}).level,3);
 assert.equal(stationMarkerHierarchy({majorHub:false,dailyStops:100}).level,3);
+assert.equal(stationMarkerHierarchy({majorHub:false,passengerBand:"> 1.000"}).minimumZoom,7);
+assert.equal(stationMarkerHierarchy({majorHub:false,hub:true}).minimumZoom,5);
 assert.equal(stationMarkerHierarchy({majorHub:false,directConnections:8}).level,2);
 check("Four marker levels use real source classes and network importance",page.includes('stationMarkerHierarchy(') && page.includes('hierarchy.minimumZoom') && page.includes('showPassengerHalo') && page.includes('interactive:false') && page.includes('"passenger-high"'));
 check("Five distinct glass roles and sheet states keep flat content",["clear","regular","elevated","sheet-expanded","navigation"].every(role=>css.includes("--glass-"+role+":")) && css.includes('[data-mobile-sheet="half"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="expanded"] .mobile-sheet-panel') && css.includes("background:transparent") && css.includes("backdrop-filter:var(--glass-filter-strong)"));
