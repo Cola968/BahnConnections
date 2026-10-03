@@ -17,7 +17,7 @@ const Arrow = () => <span aria-hidden="true">↗</span>;
 
 export default function WebsitePage() {
   return (
-    <main className={styles.site}>
+    <main className={styles.site} data-website="bahnconnections">
       <header className={styles.header}>
         <Link className={styles.brand} href="/website" aria-label="BahnConnections Website">
           <Image src="/app-icon.svg" alt="" width={34} height={34} priority />
