@@ -505,6 +505,15 @@ try {
         // Sticky header must remain above the visible body after actual scrolling.
         await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=180`);
         await matrixCapture('journey-scroll');
+        if(width===1440) {
+          await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+          const before=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);
+          await tap('.journey-card [aria-label="Verbindung: Schrift größer"]');
+          const after=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);
+          if(after<=before) throw new Error('Inspector text size control does not enlarge primary times');
+          await matrixCapture('journey-large-type');
+          await tap('.journey-card [aria-label="Verbindung: Schriftgröße zurücksetzen"]');
+        }
       }
     }
   }
