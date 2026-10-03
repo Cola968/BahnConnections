@@ -1,10 +1,13 @@
-/** A visual class, never a passenger count estimate. Hub identity wins over coarse source bands. */
+/** Marker size represents only the available DB passenger band.
+ *  Hub flags, modelled train stops and direct destinations must never inflate the circle.
+ *  Stations without passenger data stay a small neutral point.
+ */
 export function stationMarkerHierarchy(input: {
   majorHub:boolean; hub?:boolean; passengerBand?:string; dailyStops?:number; directConnections?:number;
 }) {
-  const activity = Math.max(0, input.dailyStops ?? 0);
-  const destinations = Math.max(0, input.directConnections ?? 0);
-  const level = input.majorHub ? 4 : input.hub || input.passengerBand === "> 1.000" || activity >= 100 || destinations >= 30 ? 3 : input.passengerBand === "100 - 1.000" || activity >= 20 || destinations >= 8 ? 2 : 1;
-  const radius = level === 4 ? 13 : level === 3 ? 10 : level === 2 ? 5.5 : 3;
-  return { level, radius, minimumZoom:level === 4 ? 0 : level === 3 ? input.hub ? 5 : 7 : level === 2 ? 8 : 10, halo:level === 4 };
+  const band=input.passengerBand;
+  const level = band === "> 1.000" ? 3 : band === "100 - 1.000" ? 2 : band === "< 100" ? 1 : 0;
+  const radius = level === 3 ? 9.5 : level === 2 ? 6 : level === 1 ? 3.5 : 2.4;
+  const minimumZoom = level === 3 ? 5 : level === 2 ? 7 : level === 1 ? 9 : 11;
+  return { level, radius, minimumZoom, halo:level === 3, hasPassengerData:level > 0 };
 }
