@@ -1,3 +1,21 @@
+# V41.1 · Liquid Polish
+
+- Funktionales Liquid Glass sichtbar verstärkt: transparentere Materialrollen, stärkerer Backdrop-Blur und feinere Innenkanten für Suche, Navigation, Kartencontrols, Menüs und Sheets.
+- Die mobile Bahnhofssuche verwendet statt des dominanten roten „Anzeigen“-Buttons eine kompakte Öffnen-Aktion; Enter und direkte Vorschlagsauswahl bleiben erhalten.
+- Suchvorschläge sind kürzer und zeigen keine technischen Herkunftslabels mehr.
+- Lange Stationsnamen werden in primären UI-Flächen kompakt dargestellt (z. B. „Hauptbahnhof“ → „Hbf“ und Zugang-/Vorplatz-Zusätze ausgeblendet), während der vollständige Quellname erhalten bleibt.
+- Journey-Details wurden weiter gekürzt: „Reiseinformationen“ heißt „Details“, Echtzeit/Fahrplan und Auslastungsprognose verwenden kurze Statuszeilen.
+- Der Kartenansichts-Popover ist selbst Glass, seine inneren Aktionen bleiben flach statt als zusätzliche Karten zu erscheinen.
+- README, Versionsmetadaten und PWA-Cache auf V41.1 synchronisiert.
+
+# V41.0 · Minimal Travel Hierarchy
+
+- Direkte Fahrten verwenden nur noch eine primäre Identität und starten inhaltlich mit der Stop-Timeline statt Zug, Route und Zeiten mehrfach zu wiederholen.
+- Normale Pünktlichkeit bleibt visuell ruhig; Amber/Rot bleiben Abweichungen, Ausfällen und Gleisänderungen vorbehalten.
+- Bahnhofsinformationen und KPIs wurden in „Info“ verschoben; Tafel und Linien bleiben task-fokussiert.
+- Vier Markerklassen priorisieren die stärkste Evidenz aus Hub-Identität, Passagierklasse und Netzaktivität; große Knoten werden bei weitem Zoom bevorzugt.
+- Fünf funktionale Glass-Rollen, bessere Scroll-Edge-Maskierung, Dark-OSM-Kalibrierung und breitere responsive Browser-QA eingeführt.
+
 # V40.0 · Liquid Hierarchy
 
 - Liquid Glass neu kalibriert: deutlich transparentere Navigation/Controls, stärkerer Backdrop-Blur und echte Trennung zwischen Karteninhalt und Funktionsschicht.
