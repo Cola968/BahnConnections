@@ -639,12 +639,16 @@ try {
           installLinks:installLinks.length,
           sections:root?.querySelectorAll('section').length ?? 0,
           independent:text.includes('keine offizielle Anwendung der Deutschen Bahn AG'),
-          dbTarget:text.includes('Zielbild · nicht aktuell vereinbart'),
-          departureExample:text.includes('Beispieldaten · keine aktuelle Bahnhofstafel'),
+          dbStatus:text.includes('Aktuell unabhängig'),
+          departureExample:text.includes('Beispieldaten zur Darstellung der Statuslogik'),
+          versionVisible:text.includes('Web-App V'),
+          sourceLinks:root?.querySelectorAll('a[href^="https://transitous.org"],a[href^="https://transport.rest"],a[href^="https://www.openstreetmap.org"]').length ?? 0,
+          skipLink:Boolean(root?.querySelector('a[href="#main-content"]')),
+          structuredData:Boolean(root?.querySelector('script[type="application/ld+json"]')),
           width:root?.getBoundingClientRect().width ?? 0
         };
       })()`);
-      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Fahrplan") || !state.title.includes("Live-Informationen") || !state.independent || !state.dbTarget || !state.departureExample) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
+      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Bahnreisen planen") || !state.independent || !state.dbStatus || !state.departureExample || !state.versionVisible || state.sourceLinks<3 || !state.skipLink || !state.structuredData) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
       await screenshot(width+"-"+theme+"-website");
       websiteChecks.push({width,height,theme,...state});
     }
