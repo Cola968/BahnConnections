@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
 import { occupancyForecast } from "./occupancy";
 import { decodePolyline } from "./live-trains";
-import { cleanDestination, serviceBadgeStyle } from "./transit-style";
+import { cleanDestination, compactStationLabel, serviceBadgeStyle } from "./transit-style";
 import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
 import { trimRepeatedStationLoop } from "./trip-trimming";
 
@@ -195,8 +195,8 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal)
     canceled: entry.cancelled || entry.tripCancelled || entry.place.cancelled,
     cancellationScope:entry.tripCancelled || entry.cancelled ? "leg" : entry.place.cancelled ? "stop" : undefined,
     realtime: entry.realTime,
-    direction: cleanDestination(entry.headsign) ?? cleanDestination(entry.tripTo?.name) ?? cleanDestination(entry.routeLongName),
-    provenance: cleanDestination(entry.tripFrom?.name),
+    direction: compactStationLabel(entry.headsign) ?? compactStationLabel(entry.tripTo?.name) ?? compactStationLabel(entry.routeLongName),
+    provenance: compactStationLabel(entry.tripFrom?.name),
     alerts:(entry.alerts ?? []).map(alertHeader).filter((value): value is string => Boolean(value)),
     line: { name: entry.displayName || entry.routeShortName, product: product(entry.mode), routeId:entry.routeId, color:entry.routeColor, textColor:entry.routeTextColor },
   }));
@@ -237,8 +237,8 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
     points:selected.points,
     segments:selectedSegments,
     realtime:legs.some((leg) => leg.realTime),
-    origin:cleanDestination(selected.stops[0]?.name),
-    destination:cleanDestination(selected.stops.at(-1)?.name),
+    origin:compactStationLabel(selected.stops[0]?.name),
+    destination:compactStationLabel(selected.stops.at(-1)?.name),
     color:legs.find((leg) => leg.routeColor)?.routeColor,
     textColor:legs.find((leg) => leg.routeTextColor)?.routeTextColor,
   };
@@ -260,7 +260,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
     textColor:entry.line?.textColor ?? detail.textColor,
     points:detail.points,
     segments:detail.segments,
-    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled, realtime:stop.realtime })),
+    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:compactStationLabel(stop.name) ?? stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled, realtime:stop.realtime })),
   };
 }
 
@@ -574,19 +574,19 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
               const detail = tripDetails[key];
               const detailState = tripDetailState[key];
               const severity = presentation.kind === "cancelled" ? "cancel" : presentation.severe ? "severe" : presentation.kind;
+              const destination = entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt …" : entry.direction ?? "Ziel wird ermittelt …";
               return (
                 <article className={`board-row ${severity}${rowOpen ? " open" : ""}`} key={`${key}-${index}`}>
                   <button className="board-row-summary" onClick={() => void toggleRow(entry)} aria-expanded={rowOpen}>
                     <i className="row-status" aria-hidden="true" />
                     <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : brand.className === "tram" ? "tram" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
                     <span className="board-time"><RealtimeTime scheduled={entry.plannedWhen} actual={entry.when} realtime={entry.realtime} cancelled={entry.canceled} cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} compact /></span>
-                    <span className="board-via">{compact ? "" : "Zwischenhalte"}<small>{compact ? "" : "öffnen"}</small></span>
-                    <span className="board-destination" title={entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt" : entry.direction ?? "Ziel wird ermittelt"}><b>{entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt …" : entry.direction ?? "Ziel wird ermittelt …"}</b>{(entry.canceled || entry.alerts?.length) ? <small>{statusText(entry)}</small> : null}</span>
+                    <span className="board-destination" title={destination}><b>{destination}</b>{!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null}</span>
                     <span className="board-platform"><RealtimePlatform scheduled={entry.plannedPlatform} actual={entry.platform} compact /></span>
                   </button>
                   {rowOpen && <div className="board-row-detail">
                     <div className="trip-detail-summary"><div>{entry.canceled ? <b>Fahrt entfällt</b> : null}{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>{alert}</small>)}</div><div className={`occupancy-forecast level-${forecast.level}`}><b>Auslastung {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
-                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
+                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; const stopName=compactStationLabel(stop.name) ?? stop.name; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stopName}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
                   </div>}
                 </article>
               );
