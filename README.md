@@ -4,11 +4,11 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V43.0 · Dark Material & Realtime Polish
+## V44.0 · Simpler More & Cleaner Board
 
-V43.0 kalibriert den Dark Mode neu: statt blau getönter Flächen nutzt BahnConnections eine neutrale Base-/Elevated-Hierarchie, damit Hintergrund und Karte zurücktreten und Controls, Navigation und Inspector klar nach vorn kommen. Liquid Glass bleibt deutlich sichtbar, übernimmt im Dark Mode aber stärker die Helligkeit und Farbe der Karte, statt selbst eine dominante Farbe vorzugeben. Die Nachtkarte ist dunkler, weniger gesättigt und ruhiger; Bahnhofsmarker wurden dafür ebenfalls entschärft.
+V44.0 reduziert die sichtbare Bedienoberfläche weiter. Der mobile Tab „Mehr“ ist jetzt ein eigenes, kurzes Menü mit nur drei Kernpunkten: Darstellung, App & Updates sowie Hilfe & Daten. Technische Kartenfilter und Netzoptionen liegen nicht mehr im allgemeinen Mehr-Menü, sondern ausschließlich hinter der Kartenansicht; seltene Kartenoptionen sind dort zusätzlich eingeklappt.
 
-Echtzeitdarstellung ist semantisch korrigiert: eine bestätigte frühere Ankunft oder Abfahrt wird nun als positiver Zustand grün dargestellt. Pünktliche und geringe Verspätungen bleiben bewusst ruhiger, mittlere Verspätungen amber und größere Abweichungen rot. Zusätzlich behebt V43 einen Querformat-Bug im mobilen Header und räumt mehrere ältere Light-Only-Flächen auf, die im Dark Mode sichtbar werden konnten.
+Die Abfahrtstafel zeigt öffentliche Bahnhofsnamen statt technischer Haltestellenbezeichnungen. Zusätze wie „Zugang über den Bahnhofsvorplatz“ werden entfernt und „Hauptbahnhof“ wird in der kompakten Tafelansicht zu „Hbf“. Doppelte Ausfalltexte unter dem Ziel entfallen, da der rote Echtzeitstatus bereits eindeutig ist. Zeilen wurden zusätzlich etwas kompakter abgestimmt.
 
 ## Funktionen
 
