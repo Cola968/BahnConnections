@@ -621,7 +621,24 @@ export default function Home() {
     const connectedIds = overviewRoutesVisible ? new Set(connections.map((connection) => connection.station.id)) : new Set<string>();
     const filteredStationIds = new Set(filteredRoutes.flatMap((route) => route.stops));
     const bounds = map.getBounds().pad(.08);
-    const contextualStations = mapZoom >= 11 ? extraStations.filter((station) => Boolean(station.passengerBand) && bounds.contains([station.lat, station.lon])).slice(0, 500) : [];
+    // DB operating-point metadata is incomplete for some major stations
+    // (for example Berlin-Gesundbrunnen has no passengerBand). Visibility must
+    // therefore be derived from the hierarchy when possible and fall back to
+    // station structure instead of silently dropping stations without counts.
+    const contextualStations = extraStations
+      .filter((station) => bounds.contains([station.lat, station.lon]))
+      .filter((station) => {
+        const passengers = stationPassengerInfo(station);
+        const hierarchy = stationMarkerHierarchy({
+          hub:station.hub,
+          passengerBand:station.passengerBand,
+          dailyPassengers:passengers.daily,
+        });
+        const mergedInterchange = station.kind === "Bf" && (station.mergedCount ?? 0) >= 2;
+        const fallbackMinimumZoom = mergedInterchange ? 9 : station.kind === "Bf" ? 10 : 11;
+        return mapZoom >= (hierarchy.unknown ? fallbackMinimumZoom : hierarchy.minimumZoom);
+      })
+      .slice(0, mapZoom >= 11 ? 700 : 320);
     const curatedMapStations = STATIONS.map((item) => ({ ...item, ...curatedAliases[item.id], state:curatedStates[item.id] ?? item.state }));
     const selectedExtra = selected?.source === "db" && !contextualStations.some((station) => station.id === selected.id) ? [selected] : [];
     for (const station of [...curatedMapStations, ...contextualStations, ...selectedExtra]) {
