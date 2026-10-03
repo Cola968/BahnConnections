@@ -275,3 +275,70 @@ html[data-theme="dark"] .station-search:focus-within {
   .topbar>.station-search>button[type="submit"] { padding:0 12px; }
 }
 .route-discovery-head>p { display:none; }
+
+
+/* V41.1 · lighter search chrome and glass suggestion layer */
+@media (max-width:1023px) and (min-height:521px) {
+  .brand,
+  .mobile-map-view-button {
+    background:var(--glass-clear);
+    border-color:var(--glass-stroke);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+  .topbar>.station-search {
+    background:var(--glass-regular);
+    border-color:var(--glass-stroke);
+    box-shadow:var(--glass-shadow);
+    -webkit-backdrop-filter:var(--glass-filter-strong);
+    backdrop-filter:var(--glass-filter-strong);
+  }
+  .topbar>.station-search .search-submit-icon {
+    width:44px;
+    min-width:44px!important;
+    min-height:44px;
+    padding:0!important;
+    border:1px solid color-mix(in srgb,var(--action) 22%,transparent);
+    border-radius:14px;
+    color:var(--action);
+    background:color-mix(in srgb,var(--action) 9%,transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+  }
+  .topbar>.station-search .search-submit-icon:hover,
+  .topbar>.station-search .search-submit-icon:focus-visible {
+    background:color-mix(in srgb,var(--action) 15%,transparent);
+  }
+}
+.search-suggestions {
+  border-color:var(--glass-stroke);
+  border-radius:18px;
+  background:var(--glass-elevated);
+  box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:var(--glass-filter-strong);
+  backdrop-filter:var(--glass-filter-strong);
+}
+.suggestion-heading {
+  padding:10px 13px 8px;
+  border-bottom-color:var(--line-subtle);
+}
+.search-suggestions>button {
+  min-height:58px;
+  padding:10px 13px;
+}
+.search-suggestions>button.active,
+.search-suggestions>button:hover {
+  background:color-mix(in srgb,var(--ink) 5%,transparent);
+}
+.search-suggestions b {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.app-update-notice {
+  border-color:var(--glass-stroke);
+  background:var(--glass-elevated);
+  box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:var(--glass-filter-strong);
+  backdrop-filter:var(--glass-filter-strong);
+}
