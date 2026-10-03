@@ -586,3 +586,157 @@
     box-shadow:none;
   }
 }
+
+
+/* V40 · ruthless mobile declutter: one summary, then actionable detail */
+@media (max-width:1023px) {
+  .station-context-bar,
+  .station-card-head,
+  .station-line-kpis,
+  .station-walk-action,
+  .station-technical {
+    display:none!important;
+  }
+
+  .station-section-tabs {
+    margin-top:2px;
+    gap:22px;
+  }
+  .station-section-tabs button {
+    min-height:40px;
+    font-size:calc(.82rem * var(--panel-scale,1));
+  }
+
+  .board-actions button:nth-child(2),
+  .board-actions button:nth-child(3) {
+    display:none;
+  }
+  .board-product-tabs {
+    gap:4px 14px;
+    padding:4px 0 7px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .board-product-tabs::-webkit-scrollbar { display:none; }
+  .board-product-tabs button {
+    flex:0 0 auto;
+    min-height:34px;
+    padding:4px 0;
+  }
+  .board-live-summary {
+    min-height:0;
+    padding:5px 0 7px;
+    border:0;
+    background:transparent;
+  }
+  .board-live-summary span {
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+  .board-footer a { display:none; }
+  .board-footer {
+    justify-content:flex-end;
+    min-height:42px;
+    padding-top:6px;
+  }
+
+  .journey-mobile-overview {
+    gap:8px;
+    margin:0 0 6px;
+    padding:0;
+  }
+  .journey-mobile-route {
+    gap:3px;
+  }
+  .journey-time-range {
+    margin:0;
+  }
+  .journey-mobile-overview>button {
+    align-self:center;
+    min-height:40px;
+    padding:6px 0 6px 10px;
+    background:transparent;
+    box-shadow:none;
+  }
+
+  .journey-quick-facts,
+  .journey-mobile-data,
+  .journey-data-note {
+    display:none!important;
+  }
+
+  .live-journey-leg,
+  html[data-theme="dark"] .live-journey-leg {
+    margin:0;
+    padding:14px 0;
+    border:0;
+    border-top:1px solid var(--line-subtle);
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  .live-journey-leg:first-child { border-top:0; }
+  .live-journey-leg>header {
+    min-height:42px;
+    padding:0 0 10px;
+    border:0;
+  }
+  .live-journey-leg>header>span:nth-child(2) small {
+    margin-top:1px;
+    color:var(--muted);
+  }
+  .leg-facts {
+    gap:12px;
+    margin-top:8px;
+  }
+  .leg-facts span {
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+  .occupancy-forecast.compact {
+    margin:8px 0 0;
+    padding:7px 0;
+    border:0;
+    background:transparent;
+  }
+  .transfer-quality {
+    margin-top:8px;
+    padding:10px 0;
+    border-left:0;
+    border-right:0;
+    border-radius:0;
+    background:transparent;
+  }
+  .journey-source-warnings {
+    margin-top:8px;
+  }
+}
+
+
+/* V40.1 · compact board hierarchy on narrow phones */
+@media (max-width:1023px) {
+  .board-destination b {
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+    overflow-wrap:normal;
+    word-break:normal;
+    line-height:1.32;
+  }
+}
+@media (max-width:359px) {
+  .board-table-head,
+  .board-row-summary {
+    grid-template-columns:3px 46px minmax(0,1fr) 34px;
+    column-gap:7px;
+  }
+  .board-platform .realtime-platform {
+    font-size:calc(.78rem * var(--panel-scale,1));
+  }
+  .board-service .service-logo {
+    min-width:32px;
+    padding:0 6px;
+  }
+  .board-destination b {
+    font-size:calc(.82rem * var(--panel-scale,1));
+  }
+}

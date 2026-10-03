@@ -156,3 +156,45 @@ html[data-theme="dark"] {
   --glass-strong:color-mix(in srgb,#15202a 86%,transparent);
   --glass-stroke:rgba(220,236,246,.12);
 }
+
+
+/* V40 · real translucent navigation material, calibrated against current Liquid Glass guidance */
+:root {
+  --glass-clear:color-mix(in srgb,#ffffff 46%,transparent);
+  --glass-regular:color-mix(in srgb,#ffffff 62%,transparent);
+  --glass-strong:color-mix(in srgb,#ffffff 80%,transparent);
+  --glass-stroke:rgba(255,255,255,.66);
+  --glass-shadow:0 14px 38px rgba(19,42,56,.16),inset 0 1px 0 rgba(255,255,255,.76),inset 0 -1px 0 rgba(255,255,255,.18);
+  --glass-shadow-soft:0 8px 24px rgba(19,42,56,.12),inset 0 1px 0 rgba(255,255,255,.70),inset 0 -1px 0 rgba(255,255,255,.14);
+  --glass-filter:blur(30px) saturate(155%) contrast(1.025);
+  --glass-filter-strong:blur(38px) saturate(165%) contrast(1.035);
+}
+html[data-theme="dark"] {
+  --glass-clear:color-mix(in srgb,#12202a 42%,transparent);
+  --glass-regular:color-mix(in srgb,#12202a 58%,transparent);
+  --glass-strong:color-mix(in srgb,#12202a 76%,transparent);
+  --glass-stroke:rgba(225,241,249,.14);
+  --glass-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(255,255,255,.035);
+  --glass-shadow-soft:0 10px 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.11),inset 0 -1px 0 rgba(255,255,255,.03);
+}
+@media (prefers-reduced-transparency:reduce) {
+  :root,
+  html[data-theme="dark"] {
+    --glass-clear:var(--paper);
+    --glass-regular:var(--paper);
+    --glass-strong:var(--paper);
+    --glass-filter:none;
+    --glass-filter-strong:none;
+  }
+}
+@media (forced-colors:active) {
+  :root,
+  html[data-theme="dark"] {
+    --glass-clear:Canvas;
+    --glass-regular:Canvas;
+    --glass-strong:Canvas;
+    --glass-stroke:CanvasText;
+    --glass-filter:none;
+    --glass-filter-strong:none;
+  }
+}

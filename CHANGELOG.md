@@ -1,3 +1,17 @@
+# V40.0 · Liquid Hierarchy
+
+- Liquid Glass neu kalibriert: deutlich transparentere Navigation/Controls, stärkerer Backdrop-Blur und echte Trennung zwischen Karteninhalt und Funktionsschicht.
+- Halb geöffnete und minimierte Mobile-Sheets schweben mit Abstand zum Rand über der Karte; voll geöffnete Sheets werden für Lesbarkeit bewusst deckender.
+- Bottom-Navigation nutzt Glass als gemeinsame Fläche; aktive Tabs werden nur über Farbe markiert statt über zusätzliche Pill-Karten.
+- Bahnhofsmarker erhalten eine klare Größenhierarchie aus DB-Reisendenklassen: kleine Stationen bleiben kleine Punkte, mittlere werden deutlich größer, große Bahnhöfe erhalten starke Marker und sehr große Knoten zusätzlich einen äußeren Halo.
+- Kleine Stationen werden bei Deutschland-Zoom reduziert, damit die Karte nicht mit gleichwertigen Punkten überladen wird.
+- Journey-Sheet stark entschlackt: keine doppelte Zug-/Routenüberschrift, keine prominente Live-Daten-Zeile, keine Top-Level-Auslastungs-/Barrierefreiheitsprosa und weniger Statuswiederholungen in Fahrtabschnitten.
+- Bahnhof Mobile entschlackt: Stationsname steht direkt im Sheet-Kopf; die fünf Linien-KPIs, technische Details und der doppelte Bahnhofskopf sind nicht mehr in der ersten Ebene.
+- Live-Tafel zeigt keine Gesamtzahl/Echtzeitquote mehr, solange nichts auffällig ist; Verspätungen und Ausfälle bleiben sichtbar. Verkehrsmittel-Zähler und das separate 500-Minuten-Kommando wurden aus der Hauptzeile entfernt.
+- Expanded Journey/Board-Inhalte bleiben flach; Glass wird nicht in Inhaltskarten verschachtelt.
+- Accessibility-Fallbacks für Reduced Transparency, Forced Colors und Browser ohne backdrop-filter bleiben erhalten.
+- PWA-Version und Cache auf V40.0 angehoben.
+
 # V39.0 · Liquid Map Polish
 
 - Stationsmarker skalieren jetzt vorrangig nach den vorhandenen DB-Reisendenklassen; kuratierte Hauptbahnhöfe übernehmen dafür ihre DB-Aliasdaten statt nur nach Hub-Status dargestellt zu werden.
