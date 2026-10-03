@@ -559,6 +559,37 @@ try {
     if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
     profileChecks.push({width,saved:true,settings:true,plannedBilling:true,noOverflow:true});
   }
+  for(const width of [320,390,1440]) {
+    await setViewport(width,width<1024?844:900);
+    await evaluate(`localStorage.setItem('bahnconnections-saved-routes',JSON.stringify([{from:{id:'berlin',name:'Berlin Hbf',lat:52.5251,lon:13.3694,country:'DE'},to:{id:'muenchen',name:'München Hbf',lat:48.1402,lon:11.5586,country:'DE'}}]))`);
+    const oldOrigin=await evaluate(`performance.timeOrigin`);
+    await command('Page.reload');
+    await waitFor(`performance.timeOrigin>${oldOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell[data-preferences-ready="true"]'))`,'Route reload failed');
+    if(width<1024){await tap('.mobile-navigation button:last-child');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
+    else await tap('[aria-label="Einstellungen und Profil"]');
+    await waitFor(`Boolean(document.querySelector('.settings-dialog .saved-routes li'))`,'Saved route not restored');
+    await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
+    await pause(200);
+    await screenshot(width+'-saved-routes');
+    await tap('.settings-dialog .saved-routes li>div button:first-child');
+    await waitFor(`!document.querySelector('.settings-dialog') && Boolean(document.querySelector('.explore-card'))`,'Return route did not open planner');
+    const names=await evaluate(`Array.from(document.querySelectorAll('.route-station-search input')).map(x=>x.value)`);
+    if(names[0]!=='München Hbf'||names[1]!=='Berlin Hbf')throw new Error('Return route endpoints incorrect: '+JSON.stringify(names));
+    await evaluate(`document.querySelector('.planner-saved-routes>.settings-link').scrollIntoView({block:'center'})`);
+    await pause(200);
+    await tap('.planner-saved-routes>.settings-link');
+    await waitFor(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes')).length===2`,'Reverse route not persisted');
+    await screenshot(width+'-saved-route-planner');
+    const horizontal=await evaluate(`document.documentElement.scrollWidth>innerWidth+1`);if(horizontal)throw new Error('Saved routes overflow');
+    await evaluate(`document.querySelector('.planner-saved-routes .saved-routes li:first-child>div button:last-child').scrollIntoView({block:'center'})`);
+    await pause(200);
+    await tap('.planner-saved-routes .saved-routes li:first-child>div button:last-child');
+    await waitFor(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes')).length===1`,'Route deletion failed');
+    profileChecks.push({width,routeRestored:true,reverse:true,save:true,remove:true});
+  }
+  await setViewport(1440,900);
+  const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
+  if(closedBilling.some(status=>status!==503))throw new Error('Unconfigured billing endpoint not closed');
   // Permission already granted must activate location without an extra app click.
   await command('Browser.grantPermissions',{permissions:['geolocation'],origin:new URL(url).origin});
   await command('Emulation.setGeolocationOverride',{latitude:52.5251,longitude:13.3694,accuracy:3200});

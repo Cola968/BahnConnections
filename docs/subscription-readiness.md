@@ -1,3 +1,5 @@
+> Continued in [V46 billing implementation](v46-billing.md): Stripe sandbox resources and approved pricing now exist. This document describes the V45 baseline.
+
 # V45: Profile and subscription preparation
 
 The existing application had no account, subscription or billing integration. V45 adds a local profile, a shared Free/Plus catalog and a read-only `GET /api/subscription` endpoint. Free features remain available; Plus is explicitly planned and cannot be purchased. No price, payment provider or launch date has been approved.
