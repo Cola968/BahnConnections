@@ -535,7 +535,38 @@ try {
   }
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots, responsiveMatrix };
+  // Standalone marketing website: separate route, separate visual ownership.
+  const websiteChecks = [];
+  const websiteUrl = new URL("/website", url).toString();
+  for (const [width,height] of [[390,844],[1440,900]]) {
+    for (const theme of ["light","dark"]) {
+      await command("Emulation.setEmulatedMedia",{features:[{name:"prefers-color-scheme",value:theme}]});
+      await setViewport(width,height);
+      await command("Page.navigate",{url:websiteUrl});
+      await waitFor(`Boolean(document.querySelector('[data-website="bahnconnections"]'))`,"Website route missing");
+      await pause(700);
+      const state=await evaluate(`(() => {
+        const root=document.querySelector('[data-website="bahnconnections"]');
+        const h1=root?.querySelector('h1');
+        const appLinks=[...root.querySelectorAll('a[href="/"]')];
+        const installLinks=[...root.querySelectorAll('a[href="/install"]')];
+        return {
+          title:h1?.textContent.replace(/\\s+/g,' ').trim() ?? '',
+          horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
+          appLinks:appLinks.length,
+          installLinks:installLinks.length,
+          sections:root?.querySelectorAll('section').length ?? 0,
+          width:root?.getBoundingClientRect().width ?? 0
+        };
+      })()`);
+      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Bahnreisen")) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
+      await screenshot(width+"-"+theme+"-website");
+      websiteChecks.push({width,height,theme,...state});
+    }
+  }
+  await command("Emulation.setEmulatedMedia",{features:[]});
+
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots, responsiveMatrix, websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {
