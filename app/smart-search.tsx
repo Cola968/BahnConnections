@@ -3,6 +3,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useId, useMemo, useState } from "react";
 import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
+import { compactStationName } from "./display-name";
 
 function normalise(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de").replace(/[^a-z0-9]+/g, " ").trim();
@@ -37,7 +38,7 @@ function score(station: Station, query: string) {
   return typo <= Math.max(1, Math.floor(query.length / 4)) ? 4 + typo / 10 : 99;
 }
 
-export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, variant = "header", placeholder, submitLabel = "Anzeigen", ariaLabel = "Bahnhof oder Betriebsstelle suchen", liveTransit = false }: {
+export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, variant = "header", placeholder, submitLabel = "Öffnen", ariaLabel = "Bahnhof oder Betriebsstelle suchen", liveTransit = false }: {
   stations: Station[];
   value: string;
   onChange: (value: string) => void;
@@ -144,14 +145,16 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
         placeholder={placeholder ?? "Bahnhof suchen"}
       />
       {value && <button className="search-clear" type="button" onClick={() => { onChange(""); setOpen(true); }} aria-label="Suche leeren"><UiIcon name="close" width="18" height="18" /></button>}
-      <button type="submit">{submitLabel}</button>
+      {variant === "header"
+        ? <button className="search-submit-icon" type="submit" aria-label="Ersten Treffer öffnen" title="Öffnen"><UiIcon name="arrow" /></button>
+        : <button type="submit">{submitLabel}</button>}
       {open && (
         <div className="search-suggestions" id={suggestionsId} role="listbox">
-          <div className="suggestion-heading"><span>{value ? "Passende Stationen" : favoriteIds.length ? "Favoriten & zuletzt gesucht" : "Beliebte Stationen"}</span><small>{liveSearching ? "Haltestellen werden geprüft …" : liveTransit ? "Deutschlandweit · Transitous" : `${stations.length.toLocaleString("de-DE")} verfügbar`}</small></div>
+          <div className="suggestion-heading"><span>{value ? "Vorschläge" : favoriteIds.length ? "Favoriten & zuletzt" : "Beliebte Stationen"}</span>{liveSearching && <small>Suche läuft …</small>}</div>
           {suggestions.map((station, index) => (
             <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
               <span className="station-symbol"><UiIcon name="train" /></span>
-              <span><b>{station.name}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
+              <span><b title={station.name}>{compactStationName(station.name)}</b><small>{station.state ?? station.country}</small></span>
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}

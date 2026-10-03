@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { stationMarkerHierarchy } from "../app/station-marker.ts";
+import { compactStationName } from "../app/display-name.ts";
 import { readFile } from "node:fs/promises";
 
 const read = name => readFile(new URL("../"+name,import.meta.url),"utf8");
@@ -45,14 +46,14 @@ assert.equal(stationMarkerHierarchy({majorHub:false,hub:true}).minimumZoom,5);
 assert.equal(stationMarkerHierarchy({majorHub:false,directConnections:8}).level,2);
 check("Four marker levels use real source classes and network importance",page.includes('stationMarkerHierarchy(') && page.includes('hierarchy.minimumZoom') && page.includes('showPassengerHalo') && page.includes('interactive:false') && page.includes('"passenger-high"'));
 check("Five distinct glass roles and sheet states keep flat content",["clear","regular","elevated","sheet-expanded","navigation"].every(role=>css.includes("--glass-"+role+":")) && css.includes('[data-mobile-sheet="half"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="expanded"] .mobile-sheet-panel') && css.includes("background:transparent") && css.includes("backdrop-filter:var(--glass-filter-strong)"));
-check("High contrast overrides dark glass after theme calibration",css.lastIndexOf('html[data-contrast="high"],html[data-theme="dark"][data-contrast="high"]') > css.indexOf('--glass-filter:blur(20px) saturate(120%)'));
+check("High contrast overrides dark glass after theme calibration",css.lastIndexOf('html[data-contrast="high"],html[data-theme="dark"][data-contrast="high"]') > css.indexOf('--glass-filter:blur(28px) saturate(134%)'));
 check("Journey has one identity and accessible secondary information",page.includes('single-leg') && css.includes('.live-journey-leg.single-leg>header,.live-journey-leg.single-leg>.leg-route-line { display:none; }') && page.includes('<details className="journey-secondary-info">') && page.includes('journey.sourceLabel'));
 check("Normal board times are quiet; exceptions and screenreader status remain",!board.includes('cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} showStatus') && realtimeTime.includes('accessibleLabel') && css.includes('--status-on-time:var(--ink)'));
 check("Live layer status is not exposed as mobile chrome",!page.includes('Live-Ebene aus') && page.includes('Live-Daten nicht aktiv') && page.includes('Keine Echtzeitdaten'));
 check("Dark map keeps real OSM geometry with crisp theme treatment",css.includes("invert(.92) hue-rotate(180deg) brightness(.95)") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
 check("Alternative journeys avoid redundant realtime prose",!alternatives.includes('" · mit Echtzeit"') && !alternatives.includes('" · Fahrplan"'));
 check("V40 primary journey removes duplicated mobile prose",!page.includes('journey-quick-facts') && !page.includes('<details className="journey-mobile-data"') && !page.includes('Betreiber nicht gemeldet') && !page.includes('journey-data-note'));
-check("V40 mobile station first layer is reduced",page.includes('mobileTitle={selected.name} mobileSummary=""') && page.includes('> Tafel</button>') && page.includes('>Info</button>') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
+check("V41.1 mobile station first layer stays reduced",page.includes('mobileTitle={compactStationName(selected.name)} mobileSummary=""') && page.includes('> Tafel</button>') && page.includes('>Info</button>') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
 check("V40 live board hides aggregate noise unless actionable",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && board.includes('(entry.canceled || entry.alerts?.length) ? <small>{statusText(entry)}</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
@@ -70,6 +71,13 @@ check("Planner is a controlled extracted view",page.includes("<JourneySearch") &
 check("Travel options collapsed by default",planner.includes('<details className="filter-drawer route-options">') && !planner.includes('route-options" open') && planner.includes('className="planner-time-row"'));
 check("All five modes and five transfers retained",["fern","regional","sbahn","ubahn","tram"].every(mode=>planner.includes("'"+mode+"'")) && planner.includes("[0,1,2,3,4,5]"));
 check("Autocomplete has active descendant and Escape handling",(await read("app/smart-search.tsx")).includes("aria-activedescendant"));
+const smartSearch = await read("app/smart-search.tsx");
+assert.equal(compactStationName("Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz"),"Halle (Saale) Hbf");
+assert.equal(compactStationName("Berlin Hbf"),"Berlin Hbf");
+check("V41.1 compact station labels preserve source names",smartSearch.includes("compactStationName(station.name)") && page.includes("compactStationName(stop.name)") && board.includes("compactStationName("));
+check("V41.1 header search uses compact icon action",smartSearch.includes('className="search-submit-icon"') && !smartSearch.includes('submitLabel = "Anzeigen"') && css.includes(".search-submit-icon"));
+check("V41.1 glass is visibly more translucent",css.includes("--glass-clear:color-mix(in srgb,#f6fafc 30%,transparent)") && css.includes("--glass-sheet-half:color-mix(in srgb,#f6fafc 34%,transparent)") && css.includes("--glass-sheet-expanded:color-mix(in srgb,#f6fafc 64%,transparent)") && css.includes("--glass-navigation:color-mix(in srgb,#203340 42%,transparent)"));
+
 check("Alternative selection and pagination retained",alternatives.includes("onSelect(journey)") && alternatives.includes("alternatives.slice(0,limit)") && alternatives.includes("onMore"));
 check("Transfer displays concrete times, platforms and walks",alternatives.includes("previous.to.track") && alternatives.includes("next.from.track") && alternatives.includes("Fußweg enthalten") && !page.includes("{journeyQuality.score}"));
 check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
@@ -83,8 +91,8 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "41.0"') && versionMetadata.includes('"version": "41.0"') && versionMetadata.includes('/install?update=V41.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "41.1"') && versionMetadata.includes('"version": "41.1"') && versionMetadata.includes('/install?update=V41.1'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
-check("V41.0 worker waits for explicit update activation",worker.includes("bahnconnections-static-v41-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V41.1 worker waits for explicit update activation",worker.includes("bahnconnections-static-v41-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;

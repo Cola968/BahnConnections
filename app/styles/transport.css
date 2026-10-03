@@ -313,3 +313,22 @@
 .station-info .station-walk-action button { background:transparent; padding:0; }
 .station-info .station-card-actions { flex-shrink:0; }
 @media (max-width:1023px) { .station-stats { padding:0 0 20px; } }
+
+
+/* V41.1 · compact platform changes remain readable at 320px */
+.realtime-platform>span { gap:3px; }
+.realtime-platform__arrow {
+  color:var(--muted);
+  font-style:normal;
+  font-size:.82em;
+  line-height:1;
+}
+.board-platform .realtime-platform[data-changed="true"]>span {
+  gap:2px;
+  white-space:nowrap;
+}
+@media (max-width:359px) {
+  .board-platform .realtime-platform[data-changed="true"] {
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+}
