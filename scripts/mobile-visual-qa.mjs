@@ -550,16 +550,20 @@ try {
         const h1=root?.querySelector('h1');
         const appLinks=[...root.querySelectorAll('a[href="/"]')];
         const installLinks=[...root.querySelectorAll('a[href="/install"]')];
+        const text=root?.textContent.replace(/\\s+/g,' ').trim() ?? '';
         return {
           title:h1?.textContent.replace(/\\s+/g,' ').trim() ?? '',
           horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
           appLinks:appLinks.length,
           installLinks:installLinks.length,
           sections:root?.querySelectorAll('section').length ?? 0,
+          independent:text.includes('keine offizielle Anwendung der Deutschen Bahn AG'),
+          dbTarget:text.includes('Zielbild · nicht aktuell vereinbart'),
+          departureExample:text.includes('Beispieldaten · keine aktuelle Bahnhofstafel'),
           width:root?.getBoundingClientRect().width ?? 0
         };
       })()`);
-      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Bahnreisen")) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
+      if(state.horizontalOverflow || state.appLinks<2 || state.installLinks<1 || state.sections<6 || !state.title.includes("Bahnreise") || !state.independent || !state.dbTarget || !state.departureExample) throw new Error("Website QA "+width+" "+theme+": "+JSON.stringify(state));
       await screenshot(width+"-"+theme+"-website");
       websiteChecks.push({width,height,theme,...state});
     }
