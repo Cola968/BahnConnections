@@ -397,7 +397,7 @@ try {
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Darstellung','App & Updates','Hilfe & Daten']) {
+  for (const required of ['Einstellungen & Profil','App & Updates','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
@@ -533,6 +533,56 @@ try {
       }
     }
   }
+  const profileChecks=[];
+  for(const width of [320,390,1440]) {
+    await setViewport(width, width<1024 ? 844 : 900);
+    if(width<1024) {await tap('.mobile-navigation button:last-child');await tap('.simple-more-list>button:first-child');}
+    else await tap('[aria-label="Einstellungen und Profil"]');
+    await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
+    await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+    await tap('.profile-form button[type="submit"]');
+    const profile=await evaluate(`JSON.parse(localStorage.getItem('bahnconnections-profile'))`);
+    if(profile?.name!=='Alex Bahn'||profile?.homeStationId!=='berlin') throw new Error('Profile was not saved');
+    await screenshot(width+'-settings-profile');
+    await tap('.settings-tabs button:nth-child(2)');
+    await tap('.settings-toggle:nth-of-type(3)');
+    if(await evaluate(`document.documentElement.dataset.motion`) !== 'reduced') throw new Error('Reduced motion preference did not apply');
+    await tap('.settings-toggle:nth-of-type(3)');
+    await screenshot(width+'-settings-display');
+    await tap('.settings-tabs button:nth-child(3)');
+    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    await screenshot(width+'-settings-plans');
+    const bounds=await evaluate(`(() => {const r=document.querySelector('.settings-dialog').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,overflow:document.querySelector('.settings-dialog').scrollWidth>document.querySelector('.settings-dialog').clientWidth+1};})()`);
+    if(bounds.left<0||bounds.right>width+1||bounds.top<0||bounds.bottom>(width<1024?844:900)+1||bounds.overflow) throw new Error('Settings overflow at '+width+': '+JSON.stringify(bounds));
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+    await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+    if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
+    profileChecks.push({width,saved:true,settings:true,plannedBilling:true,noOverflow:true});
+  }
+  // Permission already granted must activate location without an extra app click.
+  await command('Browser.grantPermissions',{permissions:['geolocation'],origin:new URL(url).origin});
+  await command('Emulation.setGeolocationOverride',{latitude:52.5251,longitude:13.3694,accuracy:3200});
+  await evaluate(`localStorage.setItem('bahnconnections-auto-location','1')`);
+  const firstOrigin=await evaluate(`performance.timeOrigin`);
+  await command('Page.reload');
+  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
+  await tap('[aria-label="Einstellungen und Profil"]');
+  await tap('.settings-tabs button:nth-child(2)');
+  const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
+  if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
+  await tap('[aria-label="Einstellungen schließen"]');
+  await tap('.location-stop');
+  if(await evaluate(`localStorage.getItem('bahnconnections-auto-location')`) !== '0') throw new Error('Stopping location did not persist opt-out');
+  const stoppedOrigin=await evaluate(`performance.timeOrigin`);
+  await command('Page.reload');
+  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger'))`,'Location control did not reload');
+  await new Promise(resolve=>setTimeout(resolve,800));
+  if(await evaluate(`Boolean(document.querySelector('.location-trigger.active'))`)) throw new Error('Opted-out location restarted');
+  await command('Browser.resetPermissions');
+  await command('Emulation.clearGeolocationOverride');
+  const subscription=await evaluate(`fetch('/api/subscription').then(r=>r.json())`);
+  if(subscription.entitlements.plan!=='free'||subscription.entitlements.checkoutEnabled!==false||subscription.entitlements.accountSync!==false) throw new Error('Subscription endpoint granted unconfigured paid features');
+  profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
   // Standalone marketing website: separate route, separate visual ownership.
@@ -566,7 +616,9 @@ try {
   }
   await command("Emulation.setEmulatedMedia",{features:[]});
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots, responsiveMatrix, websiteChecks };
+
+
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {

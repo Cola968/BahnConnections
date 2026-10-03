@@ -6,6 +6,7 @@ import "./styles/workspace.css";
 import "./styles/transport.css";
 import "./desktop-workspace.css";
 import "./styles/liquid-glass.css";
+import "./styles/profile.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {

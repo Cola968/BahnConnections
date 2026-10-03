@@ -1,10 +1,11 @@
-/** A visual class, never a passenger count estimate. Hub identity wins over coarse source bands. */
+/** Passenger volume determines size; network importance only controls visibility. */
 export function stationMarkerHierarchy(input: {
-  majorHub:boolean; hub?:boolean; passengerBand?:string; dailyStops?:number; directConnections?:number;
+  majorHub?:boolean; hub?:boolean; passengerBand?:string; dailyPassengers?:number; dailyStops?:number; directConnections?:number;
 }) {
-  const activity = Math.max(0, input.dailyStops ?? 0);
-  const destinations = Math.max(0, input.directConnections ?? 0);
-  const level = input.majorHub ? 4 : input.hub || input.passengerBand === "> 1.000" || activity >= 100 || destinations >= 30 ? 3 : input.passengerBand === "100 - 1.000" || activity >= 20 || destinations >= 8 ? 2 : 1;
-  const radius = level === 4 ? 13 : level === 3 ? 10 : level === 2 ? 5.5 : 3;
-  return { level, radius, minimumZoom:level === 4 ? 0 : level === 3 ? input.hub ? 5 : 7 : level === 2 ? 8 : 10, halo:level === 4 };
+  const count=input.dailyPassengers;
+  const measured=typeof count==="number" && Number.isFinite(count) && count>0;
+  const level=measured ? count>=100_000 ? 4 : count>1_000 ? 3 : count>=100 ? 2 : 1 : input.passengerBand==="> 1.000" ? 3 : input.passengerBand==="100 - 1.000" ? 2 : input.passengerBand==="< 100" ? 1 : 0;
+  // Area scales with the published count. Small stops remain selectable.
+  const radius=measured ? Math.max(2.5,Math.min(14,14*Math.sqrt(count/345_084))) : level===3 ? 6 : level===2 ? 4 : level===1 ? 2.5 : 3;
+  return {level,radius,minimumZoom:input.majorHub || level===4 ? 0 : input.hub ? 5 : level===3 ? 7 : level===2 ? 9 : 11,halo:false,measured,unknown:level===0};
 }
