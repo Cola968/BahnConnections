@@ -34,7 +34,7 @@ export function deriveRealtimePresentation(input: RealtimeInput): RealtimePresen
   if (!scheduled || !actual) return base;
   const delayMinutes = Math.round((new Date(actual).getTime() - new Date(scheduled).getTime()) / 60_000);
   const kind: RealtimeKind = delayMinutes < 0 ? "early" : delayMinutes === 0 ? "on-time" : delayMinutes <= 5 ? "minor-delay" : delayMinutes < 15 ? "delay" : "major-delay";
-  const tone: RealtimeTone = delayMinutes < 0 ? "warning" : delayMinutes <= 5 ? "success" : delayMinutes < 15 ? "warning" : "danger";
+  const tone: RealtimeTone = delayMinutes < 0 ? "success" : delayMinutes <= 5 ? "success" : delayMinutes < 15 ? "warning" : "danger";
   return { ...base, kind, tone, delayMinutes, changed:delayMinutes !== 0, severe:delayMinutes >= 30 };
 }
 
