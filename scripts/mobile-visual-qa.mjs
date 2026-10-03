@@ -445,9 +445,84 @@ try {
     snapshots.push(await layoutSnapshot('320 high contrast large type reduced motion'));
     await screenshot('320-accessibility-board');
   }
+  const responsiveMatrix = [];
+  if (useJourneyFixture) {
+    // Full product matrix supplements (and does not replace) the interaction/realtime checks above.
+    activeJourneys = [fixtureJourney,alternativeJourney];
+    await command('Emulation.setEmulatedMedia',{features:[]});
+    for (const [width,height] of [[320,740],[360,844],[390,844],[430,932],[768,1024],[1024,900],[1440,900],[1920,1080]]) {
+      for (const theme of ['light','dark']) {
+        await setViewport(1280,900);
+        await command('Page.navigate',{url});
+        await pause(2200);
+        await waitFor(`Boolean(document.querySelector('.desktop-navigation'))`,'Matrix navigation missing');
+        if (await evaluate(`document.documentElement.dataset.theme`) !== theme) await tap(theme === 'dark' ? '[aria-label="Dunkles Kartenthema"]' : '[aria-label="Helles Kartenthema"]');
+        await evaluate(`delete document.documentElement.dataset.contrast;delete document.documentElement.dataset.font`);
+        await setViewport(width,height);
+        const mobile=width<1024;
+        const nav = index => mobile ? '.mobile-navigation button:nth-child('+index+')' : '.desktop-navigation button:nth-child('+({1:2,2:1,3:3}[index])+')';
+        async function matrixCapture(view) {
+          await pause(300);
+          const state=await evaluate(`(() => {
+            const panel=document.querySelector('.mobile-sheet-panel'), controls=panel?.querySelector('.panel-tools'), nav=document.querySelector('.mobile-navigation');
+            const time=document.querySelector('.journey-mobile-overview .realtime-time');
+            return {horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
+              panelOverflow:Boolean(panel && panel.scrollWidth>panel.clientWidth+1),
+              overflowElements:panel ? Array.from(panel.querySelectorAll("*")).filter(e=>e.clientWidth>0 && e.scrollWidth>e.clientWidth+1).slice(0,8).map(e=>({className:e.className,width:e.clientWidth,scrollWidth:e.scrollWidth})) : [],
+              sheetTop:panel?.getBoundingClientRect().top ?? null,headerBottom:controls?.getBoundingClientRect().bottom ?? null,
+              navigationTop:nav?.getBoundingClientRect().top ?? null,
+              activeTabs:document.querySelectorAll('.mobile-navigation button.active').length,
+              headerOverlap:innerWidth>=1024 && document.querySelector('.desktop-navigation').getBoundingClientRect().right>document.querySelector('.topbar>.station-search').getBoundingClientRect().left+1,
+              scrollEdge:controls ? getComputedStyle(controls).backgroundColor : null,
+              scrolled:panel?.dataset.scrolled ?? null,
+              loadedMapTiles:document.querySelectorAll('.leaflet-tile-loaded').length,
+              contentBackground:panel ? getComputedStyle(panel).backgroundColor : null,
+              blur:panel ? getComputedStyle(panel).backdropFilter : null,
+              normalTimeColor:time?.querySelector('.realtime-time__actual') ? getComputedStyle(time.querySelector('.realtime-time__actual')).color : null,
+              scrollHeight:panel?.scrollHeight ?? null};
+          })()`);
+          if(state.horizontalOverflow || state.panelOverflow || state.headerOverlap) throw new Error('Matrix overflow '+width+' '+theme+' '+view+': '+JSON.stringify(state));
+          if(mobile && state.activeTabs!==1) throw new Error('Matrix active tab ownership '+JSON.stringify(state));
+          const name=width+'-'+theme+'-'+view;
+          await screenshot(name);
+          responsiveMatrix.push({width,height,theme,view,...state});
+          console.log('Matrix '+name);
+        }
+        await tap(nav(1));
+        await matrixCapture('map');
+        await tap(nav(3));
+        await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
+        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
+        await matrixCapture('board');
+        await tap('.station-section-tabs button:nth-child(3)');
+        await matrixCapture('station-info');
+        await tap(nav(2));
+        await matrixCapture('planner');
+        await tap('.plan-button');
+        await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Matrix journey missing');
+        if(mobile) {
+          await matrixCapture('journey-half');
+          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await tap('.mobile-sheet-summary');
+        }
+        await matrixCapture('journey');
+        // Sticky header must remain above the visible body after actual scrolling.
+        await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=180`);
+        await matrixCapture('journey-scroll');
+        if(width===1440) {
+          await evaluate(`document.querySelector('.mobile-sheet-panel').scrollTop=0`);
+          const before=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);
+          await tap('.journey-card [aria-label="Verbindung: Schrift größer"]');
+          const after=await evaluate(`parseFloat(getComputedStyle(document.querySelector('.journey-time-range .realtime-time')).fontSize)`);
+          if(after<=before) throw new Error('Inspector text size control does not enlarge primary times');
+          await matrixCapture('journey-large-type');
+          await tap('.journey-card [aria-label="Verbindung: Schriftgröße zurücksetzen"]');
+        }
+      }
+    }
+  }
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots };
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, snapshots, responsiveMatrix };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {

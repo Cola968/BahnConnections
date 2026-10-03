@@ -66,3 +66,45 @@ jobs:
             work/network-audit.json
             work/api-smoke.json
             work/api-dev.log
+
+      # Smaller evidence bundles can be inspected in tools with a 32 MiB transfer limit.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-phone-compact
+          path: |
+            work/mobile-qa/320-*.png
+            work/mobile-qa/360-*.png
+            work/mobile-qa/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-phone-standard
+          path: |
+            work/mobile-qa/390-*.png
+            work/mobile-qa/430-*.png
+            work/mobile-qa/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-tablet
+          path: |
+            work/mobile-qa/768-*.png
+            work/mobile-qa/1024-*.png
+            work/mobile-qa/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-desktop-light
+          path: |
+            work/mobile-qa/1440-light-*.png
+            work/mobile-qa/1920-light-*.png
+            work/mobile-qa/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-desktop-dark
+          path: |
+            work/mobile-qa/1440-dark-*.png
+            work/mobile-qa/1920-dark-*.png
+            work/mobile-qa/report.json
