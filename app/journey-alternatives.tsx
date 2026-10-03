@@ -20,7 +20,7 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
       <em>{label(journey,journeys[0])}</em>
       <JourneyTimeRange journey={journey} />
       <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
-      <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}{journey.cancelled ? " · Ausfall enthalten" : journey.realtime ? " · mit Echtzeit" : " · Fahrplan"}</small>
+      <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}</small>
     </button>)}{alternatives.length > limit && <button type="button" className="journey-more" onClick={onMore}>Weitere Verbindungen anzeigen</button>}</div>
   </details>;
 }

@@ -248,3 +248,65 @@ button:active:not(:disabled) { transform:scale(.985); }
 html[data-theme="dark"] .station-search:focus-within {
   box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent),var(--glass-shadow);
 }
+
+
+/* V39 · mobile liquid chrome with fixed geometry */
+@media (max-width:1023px) and (min-height:521px) {
+  .topbar { pointer-events:none; }
+  .brand,
+  .topbar>.station-search,
+  .header-actions { pointer-events:auto; }
+
+  .brand {
+    justify-self:start;
+    min-height:44px;
+    padding:5px 11px 5px 5px;
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 88%,transparent);
+    border-radius:16px;
+    background:var(--glass-regular);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:blur(24px) saturate(118%);
+    backdrop-filter:blur(24px) saturate(118%);
+    text-shadow:none;
+  }
+
+  .header-actions {
+    width:46px;
+    height:46px;
+    min-width:46px;
+    max-width:46px;
+    flex:0 0 46px;
+    justify-self:end;
+    align-self:center;
+    overflow:visible;
+  }
+
+  .mobile-map-view-button {
+    width:46px;
+    height:46px;
+    min-width:46px;
+    min-height:46px;
+    flex:0 0 46px;
+    padding:0;
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 88%,transparent);
+    border-radius:15px;
+    background:var(--glass-regular);
+    color:var(--ink);
+    box-shadow:var(--glass-shadow-soft);
+    -webkit-backdrop-filter:blur(24px) saturate(118%);
+    backdrop-filter:blur(24px) saturate(118%);
+  }
+  .mobile-map-view-button svg { width:22px; height:22px; }
+  .mobile-map-view-button.active {
+    color:var(--accent);
+    background:color-mix(in srgb,var(--glass-strong) 82%,var(--accent) 5%);
+  }
+
+  .topbar>.station-search {
+    right:12px;
+    left:12px;
+    overflow:visible;
+    background:color-mix(in srgb,var(--glass-strong) 90%,transparent);
+    box-shadow:0 12px 32px #17202b16,inset 0 1px 0 rgba(255,255,255,.48);
+  }
+}

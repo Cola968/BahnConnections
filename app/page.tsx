@@ -596,8 +596,9 @@ export default function Home() {
     const filteredStationIds = new Set(filteredRoutes.flatMap((route) => route.stops));
     const bounds = map.getBounds().pad(.08);
     const contextualStations = mapZoom >= 11 ? extraStations.filter((station) => bounds.contains([station.lat, station.lon])).slice(0, 500) : [];
+    const curatedMapStations = STATIONS.map((item) => ({ ...item, ...curatedAliases[item.id], state:curatedStates[item.id] ?? item.state }));
     const selectedExtra = selected?.source === "db" && !contextualStations.some((station) => station.id === selected.id) ? [selected] : [];
-    for (const station of [...STATIONS, ...contextualStations, ...selectedExtra]) {
+    for (const station of [...curatedMapStations, ...contextualStations, ...selectedExtra]) {
       if (station.country !== "DE" && !filteredStationIds.has(station.id)) continue;
       if (mapZoom <= 6 && station.source !== "db" && !station.hub && !MAJOR_HUB_IDS.has(station.id) && station.id !== selectedId) continue;
       const isSelected = station.id === selectedId;
@@ -606,29 +607,32 @@ export default function Home() {
       const isConnected = connectedIds.has(station.id);
       const profile = stationImportance.get(station.id);
       const isMajorHub = MAJOR_HUB_IDS.has(station.id);
-      const extraRadius = station.passengerBand === "> 1.000" ? 4 : station.passengerBand === "100 - 1.000" ? 3.2 : station.kind === "Bf" ? 2.9 : 2.4;
-      const importanceRadius = isMajorHub ? 9.5 : station.hub ? 7.6 : Math.min(7, 3.8 + (profile?.domesticDirect ?? 0) / 15);
+      const passengerBaseRadius = station.passengerBand === "> 1.000" ? 6.6 : station.passengerBand === "100 - 1.000" ? 4.7 : station.passengerBand === "< 100" ? 3.1 : null;
+      const networkLift = Math.min(2.4, Math.sqrt(Math.max(0, profile?.dailyStops ?? 0)) / 5.4);
+      const fallbackRadius = isMajorHub ? 8.6 : station.hub ? 6.8 : Math.min(5.8, 3.3 + (profile?.domesticDirect ?? 0) / 18);
+      const baseRadius = passengerBaseRadius === null ? fallbackRadius : Math.min(10.2, passengerBaseRadius + networkLift + (isMajorHub ? .8 : station.hub ? .35 : 0));
       const connected = overviewRoutesVisible ? connections.find((connection) => connection.station.id === station.id) : undefined;
       const reachability = reachableById.get(station.id);
-      const reachabilityColor = !reachability ? (theme === "dark" ? "#61747a" : "#9fb6ba") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
+      const reachabilityColor = !reachability ? (theme === "dark" ? "#2d5662" : "#b6d7dc") : reachability.minutes <= 60 ? "#2d8c79" : reachability.minutes <= 120 ? "#6aa27a" : reachability.minutes <= 180 ? "#b58a47" : "#ad6b5e";
       const markerPalette = theme === "dark"
-        ? { edge:"#7fa9b3", fill:"#142b32", dbFill:"#1b343b", hub:"#d7e9ed", major:"#8eb8c1", active:"#4e86bd" }
-        : { edge:"#0f7486", fill:"#f7fcfd", dbFill:"#edf7f8", hub:"#dff1f3", major:"#178395", active:"#2d76b8" };
-      const baseRadius = station.source === "db" ? Math.max(2.8, extraRadius - .4) : isMajorHub ? 7.4 : station.hub ? 6.2 : Math.min(5.8, 3.4 + (profile?.domesticDirect ?? 0) / 18);
+        ? { edge:"#8fc4d0", low:"#17323b", medium:"#1d5260", high:"#237b8f", active:"#5a91c2" }
+        : { edge:"#0b7890", low:"#f4fcfd", medium:"#cdeff4", high:"#59c3d3", active:"#2f7db8" };
+      const passengerFill = station.passengerBand === "> 1.000" ? markerPalette.high : station.passengerBand === "100 - 1.000" ? markerPalette.medium : markerPalette.low;
       const markerClasses = [
         "station-point",
         isMajorHub ? "major-hub" : "",
         station.hub ? "hub" : "",
         station.source === "db" ? "db-station" : "",
+        station.passengerBand === "> 1.000" ? "passenger-high" : station.passengerBand === "100 - 1.000" ? "passenger-medium" : station.passengerBand === "< 100" ? "passenger-low" : "",
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
       const marker = L.circleMarker([station.lat, station.lon], {
-        radius: journey ? 2.2 : isSelected || isDestination ? 8.6 : isTransfer ? 7.2 : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? 5.1 : baseRadius,
-        color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#c8a86b" : "#a77d38") : isMajorHub ? "#fff" : markerPalette.edge,
-        opacity: journey ? .2 : .98,
-        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : isMajorHub ? 2.6 : station.hub ? 2.1 : 1.7,
-        fillColor: isSelected ? markerPalette.active : isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#806d49" : "#e7d6b3") : reachabilityVisible ? reachabilityColor : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#315e68" : "#cde5e8") : isMajorHub ? markerPalette.major : station.hub ? markerPalette.hub : station.source === "db" ? markerPalette.dbFill : markerPalette.fill,
-        fillOpacity: journey ? .12 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .16 : .96,
+        radius: journey ? Math.min(3.1, Math.max(1.8, baseRadius * .32)) : isSelected || isDestination ? Math.max(9.4, baseRadius + 1.2) : isTransfer ? Math.max(7.2, baseRadius) : reachabilityVisible && reachability && reachability.minutes <= reachabilityMinutes ? Math.max(5.1, baseRadius) : baseRadius,
+        color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#d0b57e" : "#9a7233") : markerPalette.edge,
+        opacity: journey ? .24 : .98,
+        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : baseRadius >= 8 ? 2.6 : baseRadius >= 5.5 ? 2.1 : 1.7,
+        fillColor: isSelected || isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#725f3c" : "#e8d8b8") : reachabilityVisible ? reachabilityColor : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#2d6470" : "#bce4ea") : passengerFill,
+        fillOpacity: journey ? .16 : reachabilityVisible && (!reachability || reachability.minutes > reachabilityMinutes) ? .18 : .97,
         className: markerClasses,
       }).addTo(layer);
       const reachabilityDetail = reachabilityVisible && reachability ? ` · ${formatDuration(reachability.minutes)} · ${reachability.changes ? `${reachability.changes} Umstieg${reachability.changes > 1 ? "e" : ""}` : "direkt"}` : "";
@@ -655,7 +659,7 @@ export default function Home() {
       if ("bringToFront" in routeLayer) (routeLayer as import("leaflet").Path).bringToFront();
     }
 
-  }, [connections, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, railState, reachabilityMinutes, reachabilityVisible, reachableById, routeInfo, selected, selectedId, showRouteLabels, stationImportance, stationTrip, stationTrips, theme]);
+  }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, railState, reachabilityMinutes, reachabilityVisible, reachableById, routeInfo, selected, selectedId, showRouteLabels, stationImportance, stationTrip, stationTrips, theme]);
 
   useEffect(() => {
     if (!selected || !liveVisible) {
