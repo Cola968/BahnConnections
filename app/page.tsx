@@ -56,7 +56,7 @@ function routeElement(label: string, detail?: string) {
   if (detail) {
     const meta = document.createElement("div");
     meta.textContent = detail;
-    meta.style.fontSize = "10px";
+    meta.style.fontSize = "12px";
     meta.style.opacity = ".75";
     meta.style.marginTop = "2px";
     node.appendChild(meta);
@@ -141,6 +141,8 @@ function tripRealtimeLabel(trip: BoardMapTrip) {
   if (confirmedStops.length || trip.realtime) return "Echtzeit teilweise verfügbar";
   return "Fahrplanfahrt";
 }
+
+function PassengerLegend() { return <div className="passenger-legend"><span><i className="passenger-sample low"/>unter 100/Tag</span><span><i className="passenger-sample medium"/>100–1.000/Tag</span><span><i className="passenger-sample high"/>über 1.000/Tag</span><span><i className="passenger-sample known"/>Tageszahl veröffentlicht</span><span><i className="passenger-sample unknown"/>Keine Daten</span><small>Größere Fläche = höheres Tagesaufkommen. Klassen sind keine exakten Zahlen. Verfügbare Werte, Bezugsjahr und Quelle stehen beim Bahnhof.</small></div>; }
 
 export default function Home() {
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
@@ -1130,6 +1132,7 @@ export default function Home() {
             <span>Live-Züge</span><div className="popover-buttons"><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>An</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
             <span>Zugarten</span><div className="popover-buttons"><button className={liveCategories.includes("fern") ? "active fern" : ""} onClick={() => toggleLiveCategory("fern")}>ICE/IC</button><button className={liveCategories.includes("regional") ? "active regional" : ""} onClick={() => toggleLiveCategory("regional")}>RE/RB</button><button className={liveCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => toggleLiveCategory("sbahn")}>S-Bahn</button><button className={liveCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => toggleLiveCategory("ubahn")}>U-Bahn</button><button className={liveCategories.includes("tram") ? "active tram" : ""} onClick={() => toggleLiveCategory("tram")}>Tram</button></div>
             <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle</option><option value="delayed">Verspätet</option><option value="ontime">Pünktlich</option></select></label>
+            <details className="map-advanced-options"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>
             <details className="map-advanced-options"><summary>Weitere Kartenoptionen</summary><div><button className={overviewRoutesVisible ? "active" : ""} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}>Fernnetz</button><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugspur</button></div></details>
           </div>}
           {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
@@ -1237,7 +1240,7 @@ export default function Home() {
           </section>
         )}
 
-        {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><div className="passenger-legend"><span><i className="passenger-sample low"/>unter 100/Tag</span><span><i className="passenger-sample medium"/>100–1.000/Tag</span><span><i className="passenger-sample high"/>über 1.000/Tag</span><span><i className="passenger-sample known"/>Tageszahl veröffentlicht</span><span><i className="passenger-sample unknown"/>Keine Daten</span><small>Größere Fläche = höheres Tagesaufkommen. Klassen sind keine exakten Zahlen. Verfügbare Werte, Bezugsjahr und Quelle stehen beim Bahnhof.</small></div></details>}
+        {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
         {primaryPanelOpen && mobileSheetState === "closed" && <button type="button" className="mobile-sheet-restore" onClick={() => setMobileSheetState("expanded")}><span><b>{mobileSheetTitle}</b><small>{mobileSheetSummary}</small></span><strong>Öffnen ↑</strong></button>}
 
       </section>
