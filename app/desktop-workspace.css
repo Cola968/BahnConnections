@@ -1,225 +1,231 @@
-/* Desktop and tablet deliberately have different workspace ownership. */
-@media (min-width:1024px) {
-  .desktop-workspace { --workspace-left:300px; --workspace-right:360px; --app-header:72px; }
-  .topbar { grid-template-columns:200px minmax(320px,1fr) minmax(180px,240px) auto; gap:12px; }
-  .desktop-workspace .brand { position:relative; padding-bottom:16px; }
-  .beta { position:absolute; left:42px; bottom:0; font-size:calc(0.75rem * var(--panel-scale,1)); }
-  .desktop-navigation { display:flex; align-items:center; gap:4px; justify-content:center; }
-  .desktop-navigation>button,.navigation-more>summary { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 10px; border:0; border-radius:8px; background:none; color:var(--muted); font-size:calc(0.875rem * var(--panel-scale,1)); font-weight:500; cursor:pointer; list-style:none; }
-  .desktop-navigation>button.active { color:var(--ink); background:var(--soft); }
-  .navigation-more { position:relative; }
-  .navigation-more>div { position:absolute; z-index:1200; top:48px; right:0; width:240px; padding:8px; border:1px solid var(--line); border-radius:10px; background:var(--paper); box-shadow:var(--shadow-menu); }
-  .navigation-more button { display:block; width:100%; min-height:44px; padding:8px; border:0; background:none; color:var(--ink); font-size:calc(0.875rem * var(--panel-scale,1)); text-align:left; }
-  .topbar>.station-search { height:44px; background:var(--soft); }
-  .topbar>.station-search>button[type="submit"] { display:none; }
-  .desktop-workspace .map-stage { padding:calc(var(--app-header) + 12px) 12px 12px; }
-  .desktop-workspace.has-primary-panel .map-stage { padding-right:calc(var(--workspace-right) + 24px); }
-  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px; }
-  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px; padding-right:calc(var(--workspace-right) + 24px); }
-  .desktop-workspace .map-canvas { border-radius:10px; border:1px solid var(--line); }
-  .desktop-workspace .floating-panel { top:calc(var(--app-header) + 12px); right:12px; bottom:12px; left:auto; width:var(--workspace-right); max-height:none; min-width:0; }
-  .desktop-workspace.desktop-search-mode .explore-card { left:12px; right:auto; width:var(--workspace-left); }
-  .desktop-workspace.desktop-search-mode .explore-card>.panel-tools { display:none; }
-  .desktop-workspace .compact-toolbar,.desktop-workspace .location-tools { top:calc(var(--app-header) + 24px); left:24px; }
-  .desktop-workspace .location-tools { top:calc(var(--app-header) + 84px); }
-  .desktop-workspace.desktop-search-mode .compact-toolbar,.desktop-workspace.desktop-search-mode .location-tools { left:calc(var(--workspace-left) + 36px); }
-  .desktop-workspace .walking-card { top:calc(var(--app-header) + 140px); left:24px; }.desktop-workspace.desktop-search-mode .walking-card { left:calc(var(--workspace-left) + 36px); }
-  .desktop-workspace .map-legend { right:24px; }
-  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-legend { right:calc(var(--workspace-right) + 36px); }
-  .desktop-workspace .leaflet-control-zoom { margin-bottom:80px!important; }
-  .desktop-workspace .journey-alternatives { margin-top:20px; }
-  .focus-mode.desktop-workspace .map-stage { padding:0; }
-}
-@media (min-width:1440px) { .desktop-workspace { --workspace-left:340px; --workspace-right:380px; }.topbar { grid-template-columns:230px minmax(360px,1fr) 280px auto; }.desktop-navigation>button { padding:8px 16px; } }
-@media (min-width:1800px) { .desktop-workspace { --workspace-left:360px; --workspace-right:390px; } }
-@media (min-width:1024px) and (max-width:1199px) { .desktop-navigation svg { display:none; }.brand-name { font-size:calc(1rem * var(--panel-scale,1)); }.topbar { grid-template-columns:180px minmax(280px,1fr) 180px auto; }.header-actions>.round-button { display:none; } }
-
-
-
-/* V34 · desktop workspace */
-@media (min-width:1024px) {
-  .desktop-workspace { --workspace-left:326px; --workspace-right:398px; --app-header:72px; }
-  .desktop-workspace .topbar { grid-template-columns:210px minmax(300px,1fr) minmax(300px,430px) auto; gap:16px; padding:0 18px; }
-  .desktop-workspace .brand { padding-bottom:0; }
-  .desktop-workspace .beta { position:static; margin-left:2px; }
-  .desktop-navigation { justify-content:flex-start; gap:3px; padding:3px; border:1px solid var(--line-subtle); border-radius:13px; background:var(--soft); }
-  .desktop-navigation>button,.navigation-more>summary { position:relative; min-height:38px; padding:7px 11px; border-radius:9px; font-weight:600; }
-  .desktop-navigation>button.active { color:var(--ink); background:var(--paper); box-shadow:0 1px 4px #17202b12; }
-  .desktop-navigation>button.active::after { position:absolute; right:10px; bottom:4px; left:10px; height:2px; border-radius:999px; background:var(--action); content:""; }
-  .navigation-more>div { top:45px; width:252px; border-color:var(--line-subtle); border-radius:14px; background:var(--elevated); box-shadow:var(--shadow-menu); }
-  .navigation-more button { border-radius:9px; }
-  .navigation-more button:hover { background:var(--soft); }
-  .topbar>.station-search { height:44px; border-radius:12px; background:var(--soft); }
-  .desktop-workspace .map-stage { padding:calc(var(--app-header) + 16px) 16px 16px; }
-  .desktop-workspace.has-primary-panel .map-stage { padding-right:calc(var(--workspace-right) + 32px); }
-  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 24px); padding-right:12px; }
-  .desktop-workspace.desktop-search-mode .map-stage { padding-left:calc(var(--workspace-left) + 32px); padding-right:12px; }
-  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:12px; padding-right:calc(var(--workspace-right) + 24px); }
-  .desktop-workspace.desktop-journey-mode .map-stage { padding-left:16px; padding-right:calc(var(--workspace-right) + 32px); }
-  .desktop-workspace .map-canvas { border:1px solid var(--line-subtle); border-radius:18px; box-shadow:0 8px 30px #17202b0c; }
-  .desktop-workspace .floating-panel { top:calc(var(--app-header) + 16px); right:16px; bottom:16px; width:var(--workspace-right); border-radius:18px; }
-  .desktop-workspace.desktop-search-mode .explore-card { left:16px; right:auto; width:var(--workspace-left); }
-  .desktop-workspace .compact-toolbar,.desktop-workspace .location-tools { top:calc(var(--app-header) + 28px); left:28px; }
-  .desktop-workspace .location-tools { top:calc(var(--app-header) + 82px); }
-  .desktop-workspace.desktop-search-mode .compact-toolbar,.desktop-workspace.desktop-search-mode .location-tools { left:calc(var(--workspace-left) + 44px); }
-  .desktop-workspace .walking-card { top:calc(var(--app-header) + 136px); left:28px; }
-  .desktop-workspace.desktop-search-mode .walking-card { left:calc(var(--workspace-left) + 44px); }
-  .desktop-workspace .map-legend { right:28px; bottom:32px; }
-  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-legend { right:calc(var(--workspace-right) + 44px); }
-  .desktop-workspace .journey-alternatives { margin-top:18px; }
-}
-@media (min-width:1440px) {
-  .desktop-workspace { --workspace-left:350px; --workspace-right:420px; }
-  .desktop-workspace .topbar { grid-template-columns:230px minmax(340px,1fr) 430px auto; }
-}
-@media (min-width:1800px) { .desktop-workspace { --workspace-left:370px; --workspace-right:440px; } }
+/* Canonical desktop workspace.
+   Consolidates the old V34–V37 override chain into one source of truth. */
 
 @media (min-width:1024px) {
+  .desktop-workspace {
+    --workspace-left:310px;
+    --workspace-right:382px;
+    --app-header:68px;
+  }
+
+  .desktop-workspace .topbar {
+    height:var(--app-header);
+    grid-template-columns:210px max-content minmax(240px,1fr) auto;
+    gap:14px;
+    padding:0 16px;
+  }
+
+  .desktop-workspace .brand {
+    position:relative;
+    padding-bottom:0;
+  }
+
   .desktop-workspace .beta { display:none; }
-}
 
-@media (min-width:1440px) {
-  .desktop-workspace .topbar { grid-template-columns:230px max-content minmax(320px,1fr) auto; }
-  .desktop-navigation { justify-self:start; }
-}
+  .desktop-navigation {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:2px;
+    padding:2px;
+  }
 
-/* V35 · desktop refinement */
-@media (min-width:1024px) {
-  .desktop-navigation { border-color:transparent; box-shadow:inset 0 0 0 1px var(--line-subtle); }
-  .desktop-navigation>button.active { box-shadow:0 1px 5px #17202b12; }
-  .desktop-navigation>button.active::after { display:none; }
-  .desktop-workspace .map-canvas { border-color:transparent; box-shadow:0 10px 34px #17202b0d; }
-  .desktop-workspace .floating-panel { box-shadow:0 20px 52px #17202b12; }
-  .desktop-workspace.desktop-search-mode .explore-card { border-radius:20px; }
-}
+  .desktop-navigation>button,
+  .navigation-more>summary {
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:40px;
+    padding:8px 11px;
+    border:0;
+    border-radius:12px;
+    background:transparent;
+    color:var(--muted);
+    font-size:calc(.875rem * var(--panel-scale,1));
+    font-weight:600;
+    cursor:pointer;
+    list-style:none;
+  }
 
-/* V36 · narrower rails, stronger map ownership */
-@media (min-width:1024px) {
-  .desktop-workspace { --workspace-left:310px; --workspace-right:382px; }
-  .desktop-workspace .topbar { height:68px; --app-header:68px; padding-right:16px; padding-left:16px; }
-  .desktop-workspace .map-stage { padding-top:calc(var(--app-header) + 14px); }
-  .desktop-workspace .floating-panel { top:calc(var(--app-header) + 14px); bottom:14px; }
-  .desktop-navigation { background:transparent; box-shadow:none; }
-  .desktop-navigation>button,.navigation-more>summary { min-height:36px; }
-}
-@media (min-width:1440px) {
-  .desktop-workspace { --workspace-left:320px; --workspace-right:390px; }
-}
-@media (min-width:1800px) {
-  .desktop-workspace { --workspace-left:330px; --workspace-right:400px; }
-}
+  .desktop-navigation>button:hover,
+  .navigation-more>summary:hover {
+    color:var(--ink);
+    background:color-mix(in srgb,var(--glass-elevated) 48%,transparent);
+  }
 
-/* V36 · narrow planner keeps date/time fully readable */
-@media (min-width:1024px) {
+  .desktop-navigation>button.active {
+    color:var(--action);
+    background:color-mix(in srgb,var(--glass-elevated) 64%,transparent);
+    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 58%,transparent);
+  }
+
+  .navigation-more { position:relative; }
+
+  .navigation-more>div {
+    position:absolute;
+    z-index:1200;
+    top:46px;
+    right:0;
+    width:252px;
+    padding:8px;
+    border-radius:18px;
+  }
+
+  .navigation-more button {
+    display:block;
+    width:100%;
+    min-height:44px;
+    padding:9px 10px;
+    border:0;
+    border-radius:11px;
+    background:transparent;
+    color:var(--ink);
+    font-size:calc(.875rem * var(--panel-scale,1));
+    text-align:left;
+  }
+
+  .navigation-more button:hover {
+    background:color-mix(in srgb,var(--glass-elevated) 56%,transparent);
+  }
+
+  .desktop-workspace .topbar>.station-search {
+    height:44px;
+    min-width:0;
+    border-radius:16px;
+  }
+
+  .desktop-workspace .topbar>.station-search>button[type="submit"] { display:none; }
+
+  .desktop-workspace .map-stage {
+    padding:calc(var(--app-header) + 14px) 14px 14px;
+  }
+
+  .desktop-workspace.has-primary-panel .map-stage {
+    padding-right:calc(var(--workspace-right) + 28px);
+  }
+
+  .desktop-workspace.desktop-search-mode .map-stage {
+    padding-right:14px;
+    padding-left:calc(var(--workspace-left) + 28px);
+  }
+
+  .desktop-workspace.desktop-journey-mode .map-stage {
+    padding-right:calc(var(--workspace-right) + 28px);
+    padding-left:14px;
+  }
+
+  .desktop-workspace .map-canvas {
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 44%,transparent);
+    border-radius:24px;
+    box-shadow:0 16px 46px color-mix(in srgb,var(--glass-depth) 48%,transparent);
+  }
+
+  .desktop-workspace .floating-panel {
+    top:calc(var(--app-header) + 14px);
+    right:14px;
+    bottom:14px;
+    left:auto;
+    width:var(--workspace-right);
+    max-height:none;
+    min-width:0;
+    border-radius:24px;
+    overflow:hidden;
+  }
+
+  .desktop-workspace.desktop-search-mode .explore-card {
+    right:auto;
+    left:14px;
+    width:var(--workspace-left);
+  }
+
+  .desktop-workspace.desktop-search-mode .explore-card>.panel-tools { display:none; }
+
+  .desktop-workspace .floating-panel>.panel-tools {
+    position:sticky;
+    top:0;
+    z-index:12;
+    margin:0;
+  }
+
+  .desktop-workspace .compact-toolbar,
+  .desktop-workspace .location-tools {
+    top:calc(var(--app-header) + 28px);
+    left:28px;
+  }
+
+  .desktop-workspace .location-tools { top:calc(var(--app-header) + 82px); }
+
+  .desktop-workspace.desktop-search-mode .compact-toolbar,
+  .desktop-workspace.desktop-search-mode .location-tools {
+    left:calc(var(--workspace-left) + 42px);
+  }
+
+  .desktop-workspace .walking-card {
+    top:calc(var(--app-header) + 136px);
+    left:28px;
+  }
+
+  .desktop-workspace.desktop-search-mode .walking-card {
+    left:calc(var(--workspace-left) + 42px);
+  }
+
+  .desktop-workspace .map-legend {
+    right:28px;
+    bottom:32px;
+  }
+
+  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-legend {
+    right:calc(var(--workspace-right) + 42px);
+  }
+
+  .desktop-workspace .leaflet-control-zoom { margin-bottom:80px!important; }
+  .desktop-workspace .journey-alternatives { margin-top:0; }
+
   .desktop-workspace.desktop-search-mode .planner-time-row {
     grid-template-columns:1fr;
     align-items:stretch;
     gap:8px;
   }
+
   .desktop-workspace.desktop-search-mode .planner-time-row .planner-time-mode {
     min-width:0;
     width:100%;
   }
+
   .desktop-workspace.desktop-search-mode .planner-departure input { width:100%; }
+
+  .focus-mode.desktop-workspace .map-stage { padding:0; }
 }
 
-/* V37 · desktop liquid glass chrome */
-@media (min-width:1024px) {
+@media (min-width:1440px) {
+  .desktop-workspace {
+    --workspace-left:320px;
+    --workspace-right:400px;
+  }
+
   .desktop-workspace .topbar {
-    background:var(--glass-strong);
-    border-bottom:1px solid color-mix(in srgb,var(--glass-stroke) 75%,transparent);
-    -webkit-backdrop-filter:blur(18px) saturate(125%);
-    backdrop-filter:blur(18px) saturate(125%);
+    grid-template-columns:230px max-content minmax(320px,1fr) auto;
   }
-  .desktop-navigation {
-    padding:3px;
-    border:1px solid var(--glass-stroke);
-    background:var(--glass-regular);
-    box-shadow:var(--glass-shadow-soft);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-  }
-  .desktop-navigation>button.active {
-    background:color-mix(in srgb,var(--paper) 66%,transparent);
-    box-shadow:0 2px 8px #17202b10,inset 0 1px 0 rgba(255,255,255,.55);
-  }
-  .desktop-workspace .topbar>.station-search {
-    background:var(--glass-regular);
-    border:1px solid var(--glass-stroke);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-    box-shadow:var(--glass-shadow-soft);
-  }
-  .desktop-workspace .floating-panel {
-    background:var(--glass-strong);
-    border:1px solid var(--glass-stroke);
-    box-shadow:var(--glass-shadow);
-    -webkit-backdrop-filter:var(--glass-filter-strong);
-    backdrop-filter:var(--glass-filter-strong);
-  }
-  .desktop-workspace .floating-panel>.panel-tools {
-    position:sticky;
-    top:0;
-    z-index:12;
-    margin-right:-20px;
-    margin-left:-20px;
-    padding-right:20px;
-    padding-left:20px;
-    background:var(--glass-regular);
-    -webkit-backdrop-filter:var(--glass-filter-strong);
-    backdrop-filter:var(--glass-filter-strong);
-  }
-  .desktop-workspace .station-card.floating-panel>.panel-tools {
-    margin-right:0;
-    margin-left:0;
-  }
-  .desktop-workspace .map-canvas {
-    border-radius:22px;
-    box-shadow:0 14px 42px #17202b10;
-  }
-  .navigation-more>div {
-    background:var(--glass-regular);
-    border:1px solid var(--glass-stroke);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-    box-shadow:var(--glass-shadow);
-  }
+
+  .desktop-navigation>button { padding-inline:14px; }
 }
-@media (prefers-reduced-transparency:reduce) {
-  .desktop-workspace .topbar,
-  .desktop-navigation,
-  .desktop-workspace .topbar>.station-search,
-  .desktop-workspace .floating-panel,
-  .desktop-workspace .floating-panel>.panel-tools,
-  .navigation-more>div {
-    background:var(--paper);
+
+@media (min-width:1800px) {
+  .desktop-workspace {
+    --workspace-left:336px;
+    --workspace-right:414px;
   }
 }
 
-/* V37 · performance/legibility: large data rails stay in the content layer */
-@media (min-width:1024px) {
-  .desktop-workspace .floating-panel {
-    background:var(--paper);
-    -webkit-backdrop-filter:none;
-    backdrop-filter:none;
-  }
-  .desktop-workspace .floating-panel>.panel-tools {
-    background:var(--glass-regular);
-    -webkit-backdrop-filter:var(--glass-filter);
-    backdrop-filter:var(--glass-filter);
-  }
-}
-/* Desktop uses the same quiet chrome and transport hierarchy as the phone. */
-@media (min-width:1024px) {
-  .desktop-workspace .topbar { background:var(--glass-elevated); }
-  .desktop-navigation { background:transparent; border:0; box-shadow:none; backdrop-filter:none; }
-  .desktop-navigation>button.active { color:var(--action); background:transparent; box-shadow:none; }
-  .desktop-navigation>button,.navigation-more>summary { min-height:44px; border-radius:0; }
-  .desktop-workspace .floating-panel { background:var(--glass-elevated); box-shadow:var(--glass-shadow); }
-  .desktop-workspace .journey-alternatives { margin-top:0; }
-  .station-card>.panel-tools { margin-right:20px; margin-left:20px; }
-}
+@media (min-width:1024px) and (max-width:1199px) {
+  .desktop-navigation svg { display:none; }
+  .brand-name { font-size:calc(1rem * var(--panel-scale,1)); }
 
-@media (min-width:1024px) and (max-width:1439px) {
-  .desktop-workspace .topbar { grid-template-columns:200px max-content minmax(180px,1fr) auto; gap:12px; }
+  .desktop-workspace .topbar {
+    grid-template-columns:188px max-content minmax(180px,1fr) auto;
+    gap:10px;
+  }
+
+  .header-actions>.round-button { display:none; }
 }
