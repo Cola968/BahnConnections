@@ -4,195 +4,212 @@ import Link from "next/link";
 import styles from "./website.module.css";
 
 export const metadata: Metadata = {
-  title: "BahnConnections – Bahnreisen. Klarer.",
-  description: "BahnConnections verbindet Reiseplanung, Live-Abfahrten und Zugstatus in einer klaren Oberfläche – mit transparenten Daten statt erfundenen Verbindungen.",
+  title: "BahnConnections | Fahrplan, Live-Abfahrten und Karte",
+  description: "BahnConnections ist eine unabhängige Bahn-Webanwendung für Verbindungssuche, Live-Abfahrten, Fahrtdetails und Kartenansichten.",
   openGraph: {
-    title: "BahnConnections – Bahnreisen. Klarer.",
-    description: "Planen, Live-Status prüfen und Abfahrten verstehen – in einer ruhigen Oberfläche.",
+    title: "BahnConnections | Bahnreisen planen und Live-Status prüfen",
+    description: "Verbindungen, Abfahrten und Echtzeitinformationen in einer klaren Weboberfläche.",
     images: ["/og.png"],
   },
 };
 
-const Arrow = () => <span aria-hidden="true">↗</span>;
+const Arrow = () => <span aria-hidden="true">→</span>;
 
 export default function WebsitePage() {
   return (
     <main className={styles.site} data-website="bahnconnections">
+      <div className={styles.notice}>Unabhängiges Projekt · keine offizielle Anwendung der Deutschen Bahn AG</div>
+
       <header className={styles.header}>
-        <Link className={styles.brand} href="/website" aria-label="BahnConnections Website">
-          <Image src="/app-icon.svg" alt="" width={34} height={34} priority />
+        <Link className={styles.brand} href="/website" aria-label="BahnConnections Startseite">
+          <Image src="/app-icon.svg" alt="" width={32} height={32} priority />
           <span>BahnConnections</span>
         </Link>
-        <nav className={styles.nav} aria-label="Website Navigation">
-          <a href="#produkt">Produkt</a>
-          <a href="#live">Live</a>
-          <a href="#ausblick">Ausblick</a>
+        <nav className={styles.nav} aria-label="Hauptnavigation">
+          <a href="#funktionen">Funktionen</a>
+          <a href="#echtzeit">Echtzeit</a>
+          <a href="#daten">Daten & DB</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <Link className={styles.headerCta} href="/">App öffnen <Arrow /></Link>
+        <div className={styles.headerActions}>
+          <Link href="/install">Installieren</Link>
+          <Link className={styles.appButton} href="/">App öffnen</Link>
+        </div>
       </header>
 
       <section className={styles.hero}>
-        <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroCopy}>
-          <span className={styles.eyebrow}><i /> Für Bahnreisen in Deutschland</span>
-          <h1>Bahnreisen,<br /><em>endlich klar.</em></h1>
-          <p className={styles.heroLead}>Planen, prüfen, losfahren. BahnConnections bringt Verbindungssuche, Live-Abfahrten und Zugstatus in eine ruhige Oberfläche, die nur zeigt, was du gerade brauchst.</p>
+          <span className={styles.kicker}>Bahnreisen in Deutschland</span>
+          <h1>Bahnreisen planen.<br />Echtzeit prüfen.</h1>
+          <p>BahnConnections verbindet Fahrplanauskunft, Live-Abfahrten und Kartenansichten in einer übersichtlichen Weboberfläche. Ohne unnötige Produkttexte und ohne vorgetäuschte Echtzeit.</p>
           <div className={styles.heroActions}>
-            <Link className={styles.primaryCta} href="/">BahnConnections öffnen <Arrow /></Link>
-            <Link className={styles.secondaryCta} href="/install">Als App installieren</Link>
-          </div>
-          <div className={styles.trustRow}>
-            <span><i className={styles.liveDot} /> Live-Daten, wenn verfügbar</span>
-            <span>Keine erfundenen Verbindungen</span>
-            <span>Klare Soll-/Ist-Zeiten</span>
+            <Link className={styles.primaryButton} href="/">Verbindung planen <Arrow /></Link>
+            <Link className={styles.textButton} href="/?view=departures">Abfahrten ansehen <Arrow /></Link>
           </div>
         </div>
 
-        <div className={styles.heroProduct} aria-label="Beispielansicht von BahnConnections">
-          <div className={styles.productChrome}>
-            <span className={styles.fakeDot} />
-            <span className={styles.fakeDot} />
-            <span className={styles.fakeDot} />
-            <strong>Beispielansicht</strong>
+        <aside className={styles.quickPanel} aria-label="Schnellzugriff">
+          <div className={styles.quickPanelHead}>
+            <strong>Schnellzugriff</strong>
+            <span>Direkt in BahnConnections</span>
           </div>
-          <div className={styles.productBody}>
-            <div className={styles.routeCard}>
-              <div className={styles.routeTop}>
-                <span>Berlin Hbf</span><b>→</b><span>Hamburg Hbf</span>
-              </div>
-              <div className={styles.routeTime}><strong>18:02</strong><span>1 h 51 min</span><strong>19:53</strong></div>
-              <div className={styles.routeMeta}>
-                <span className={styles.iceBadge}>ICE</span>
-                <span>Direkt</span>
-                <span className={styles.good}>pünktlich</span>
-              </div>
-            </div>
-            <div className={styles.boardPreview}>
-              <div><span className={styles.trainBadge}>ICE</span><b>München Hbf</b><strong>16:41</strong></div>
-              <small>1205</small><span className={styles.early}>3 Min. früher</span>
-              <div><span className={styles.regioBadge}>RE</span><b>Leipzig Hbf</b><strong>16:52</strong></div>
-              <small>3151</small><span>Gleis 7</span>
-              <div><span className={styles.trainBadge}>ICE</span><b>Frankfurt (Main) Hbf</b><strong className={styles.cancel}>Entfällt</strong></div>
-              <small>279</small><span className={styles.cancel}>Fahrt fällt aus</span>
-            </div>
-            <div className={styles.mapStrip} aria-hidden="true">
-              <span className={styles.cityA} />
-              <span className={styles.cityB} />
-              <span className={styles.cityC} />
-              <i />
-            </div>
-          </div>
+          <Link href="/">
+            <span><b>Verbindung suchen</b><small>Start, Ziel und Reisezeit</small></span><Arrow />
+          </Link>
+          <Link href="/?view=departures">
+            <span><b>Abfahrten prüfen</b><small>Sollzeit, Istzeit und Gleis</small></span><Arrow />
+          </Link>
+          <Link href="/?view=map">
+            <span><b>Karte öffnen</b><small>Bahnhöfe und Zugverläufe</small></span><Arrow />
+          </Link>
+          <Link href="/install">
+            <span><b>Als App installieren</b><small>PWA für Desktop und Mobilgeräte</small></span><Arrow />
+          </Link>
+        </aside>
+      </section>
+
+      <section className={styles.serviceStrip} aria-label="Produktübersicht">
+        <div><strong>Verbindungssuche</strong><span>Fern-, Regional- und Stadtverkehr</span></div>
+        <div><strong>Live-Abfahrten</strong><span>mit sichtbarer Datenlage</span></div>
+        <div><strong>Fahrtdetails</strong><span>Halte, Gleise und Abweichungen</span></div>
+        <div><strong>Kartenansicht</strong><span>Strecken und Bahnhöfe</span></div>
+      </section>
+
+      <section className={styles.contentSection} id="funktionen">
+        <div className={styles.sectionIntro}>
+          <span className={styles.sectionLabel}>Funktionen</span>
+          <h2>Für die Reise gebaut, nicht für eine Produktdemo.</h2>
+          <p>Die Website erklärt die wichtigsten Funktionen. Die eigentliche Reiseplanung findet direkt in BahnConnections statt.</p>
+        </div>
+
+        <div className={styles.featureRows}>
+          <article>
+            <span className={styles.featureIndex}>01</span>
+            <div><h3>Verbindungen</h3><p>Verbindungen mit Alternativen, Umstiegen und erwarteter Ankunft vergleichen.</p></div>
+            <Link href="/">Planer öffnen <Arrow /></Link>
+          </article>
+          <article>
+            <span className={styles.featureIndex}>02</span>
+            <div><h3>Abfahrten</h3><p>Abfahrt, Ankunft, Gleis und Ausfall werden getrennt und eindeutig dargestellt.</p></div>
+            <Link href="/?view=departures">Abfahrten öffnen <Arrow /></Link>
+          </article>
+          <article>
+            <span className={styles.featureIndex}>03</span>
+            <div><h3>Fahrtverlauf</h3><p>Alle Halte einer Fahrt mit Soll-/Ist-Zeiten und verfügbaren Echtzeitinformationen.</p></div>
+            <Link href="/">Fahrt suchen <Arrow /></Link>
+          </article>
+          <article>
+            <span className={styles.featureIndex}>04</span>
+            <div><h3>Karte</h3><p>Bahnhöfe, Strecken und Zugverläufe als Ergänzung zur Reiseinformation.</p></div>
+            <Link href="/?view=map">Karte öffnen <Arrow /></Link>
+          </article>
         </div>
       </section>
 
-      <section className={styles.statement} id="produkt">
-        <span>Ein Produkt. Drei Kernaufgaben.</span>
-        <h2>Weniger suchen.<br />Mehr verstehen.</h2>
-        <p>Die Website erklärt das Produkt. Die App erledigt die Reise. Keine überladene Funktionsliste, sondern ein klarer Weg von der Planung bis zur Abfahrt.</p>
-      </section>
-
-      <section className={styles.featureGrid}>
-        <article className={styles.featureCard}>
-          <div className={styles.featureNumber}>01</div>
-          <h3>Verbindungen planen</h3>
-          <p>Start, Ziel, Zeit. Danach nur noch die Informationen, die für die konkrete Reise zählen.</p>
-          <div className={styles.miniPlanner} aria-hidden="true">
-            <span><small>Von</small><b>Berlin Hbf</b></span>
-            <span><small>Nach</small><b>Hamburg Hbf</b></span>
-            <button tabIndex={-1}>Verbindungen anzeigen</button>
-          </div>
-        </article>
-
-        <article className={styles.featureCard}>
-          <div className={styles.featureNumber}>02</div>
-          <h3>Abfahrten verstehen</h3>
-          <p>Sollzeit, Istzeit, Gleis und Ausfall werden visuell getrennt. Frühere Fahrten sind grün, Störungen klar rot.</p>
-          <div className={styles.statusDemo} aria-hidden="true">
-            <div><span>16:44</span><del>16:44</del><b className={styles.early}>16:41</b></div>
-            <small className={styles.early}>3 Min. früher</small>
-          </div>
-        </article>
-
-        <article className={styles.featureCard}>
-          <div className={styles.featureNumber}>03</div>
-          <h3>Auf der Karte bleiben</h3>
-          <p>Bahnhöfe, Zugverläufe und Live-Lage ergänzen die Reise, ohne die eigentliche Aufgabe zu überdecken.</p>
-          <div className={styles.abstractMap} aria-hidden="true">
-            <i /><i /><i /><i /><i />
-            <span />
-          </div>
-        </article>
-      </section>
-
-      <section className={styles.liveSection} id="live">
-        <div className={styles.liveIntro}>
-          <span className={styles.eyebrow}><i className={styles.liveDot} /> Echtzeit mit Kontext</span>
-          <h2>Live heißt bei uns<br />nicht automatisch genau.</h2>
-          <p>BahnConnections unterscheidet sichtbar zwischen Fahrplan und bestätigter Echtzeit. Wenn eine Quelle keine Live-Daten liefert, wird daraus keine scheinbare Präzision.</p>
-          <Link href="/">Live-Abfahrten öffnen <Arrow /></Link>
+      <section className={styles.realtimeSection} id="echtzeit">
+        <div className={styles.sectionIntro}>
+          <span className={styles.sectionLabel}>Echtzeit</span>
+          <h2>Fahrplan und Live-Daten bleiben unterscheidbar.</h2>
+          <p>Eine geplante Zeit wird nicht als Echtzeit ausgegeben. Abweichungen werden nur hervorgehoben, wenn die zugrunde liegende Information das hergibt.</p>
         </div>
-        <div className={styles.statusStack}>
-          <article><span className={styles.statusIconGreen}>✓</span><div><b>Früher</b><p>Bestätigte frühere Abfahrt oder Ankunft.</p></div><strong className={styles.early}>−3 Min.</strong></article>
-          <article><span className={styles.statusIconNeutral}>•</span><div><b>Pünktlich</b><p>Ruhig dargestellt, ohne unnötige Signalfarbe.</p></div><strong>±0 Min.</strong></article>
-          <article><span className={styles.statusIconAmber}>!</span><div><b>Verspätet</b><p>Abweichungen werden deutlich hervorgehoben.</p></div><strong className={styles.late}>+9 Min.</strong></article>
-          <article><span className={styles.statusIconRed}>×</span><div><b>Entfällt</b><p>Ausfälle stehen klar über sekundären Informationen.</p></div><strong className={styles.cancel}>Ausfall</strong></article>
+
+        <div className={styles.statusTable}>
+          <div className={styles.statusHeader}><span>Status</span><span>Darstellung</span><span>Bedeutung</span></div>
+          <div><span><i className={styles.greenDot} />Früher</span><strong className={styles.green}>−3 Min.</strong><p>Bestätigte frühere Abfahrt oder Ankunft.</p></div>
+          <div><span><i className={styles.neutralDot} />Pünktlich</span><strong>±0 Min.</strong><p>Keine unnötige Signalfarbe bei normalem Betrieb.</p></div>
+          <div><span><i className={styles.amberDot} />Verspätet</span><strong className={styles.amber}>+9 Min.</strong><p>Abweichung gegenüber dem Fahrplan.</p></div>
+          <div><span><i className={styles.redDot} />Entfällt</span><strong className={styles.red}>Ausfall</strong><p>Ausfall wird vor sekundären Informationen priorisiert.</p></div>
         </div>
       </section>
 
-      <section className={styles.principles}>
+      <section className={styles.dataSection} id="daten">
+        <div className={styles.dataCopy}>
+          <span className={styles.sectionLabel}>Daten & DB</span>
+          <h2>Klare Quellen. Klare Rollen.</h2>
+          <p>BahnConnections nutzt externe Fahrplan- und Echtzeitquellen und kennzeichnet Datenlücken sichtbar. Die Anwendung ist aktuell unabhängig und kein offizielles Angebot der Deutschen Bahn.</p>
+
+          <dl className={styles.sourceList}>
+            <div><dt>Transitous / MOTIS</dt><dd>Hauptquelle für Haltestellen, Fahrten und Echtzeitdaten</dd></div>
+            <div><dt>DB transport.rest</dt><dd>Unabhängige Gegenprüfung ausgewählter Reiseinformationen</dd></div>
+            <div><dt>OpenStreetMap</dt><dd>Kartenmaterial und geografischer Kontext</dd></div>
+          </dl>
+        </div>
+
+        <aside className={styles.partnershipBox}>
+          <span className={styles.statusTag}>Zielbild</span>
+          <h3>Offizielle DB-Partnerschaft</h3>
+          <p>Für eine spätere Ausbaustufe ist eine offizielle technische Zusammenarbeit mit der Deutschen Bahn ein mögliches Ziel. Sie könnte Datenzugänge, Störungsinformationen und Verknüpfungen zu offiziellen Buchungswegen verbessern.</p>
+          <ul>
+            <li>verlässlichere offizielle Datenzugänge</li>
+            <li>klarere Verknüpfung mit DB-Reiseinformationen</li>
+            <li>mögliche Deep-Links zu offiziellen Buchungswegen</li>
+          </ul>
+          <div className={styles.partnershipNote}><strong>Aktueller Status:</strong> keine offizielle Partnerschaft. DB-Marken oder Logos werden deshalb nicht als Partnerkennzeichnung verwendet.</div>
+        </aside>
+      </section>
+
+      <section className={styles.projectSection}>
         <div>
-          <span>Designprinzip</span>
-          <h2>Die Oberfläche soll verschwinden, sobald du weißt, was zu tun ist.</h2>
+          <span className={styles.sectionLabel}>Projekt</span>
+          <h2>Webanwendung statt Marketing-Fassade.</h2>
         </div>
-        <div className={styles.principleList}>
-          <article><b>01</b><span><strong>Hierarchie vor Dichte</strong><small>Wichtige Informationen zuerst. Technische Details nur bei Bedarf.</small></span></article>
-          <article><b>02</b><span><strong>Echtzeit vor Effekten</strong><small>Statusfarben haben eine Bedeutung und werden nicht dekorativ verwendet.</small></span></article>
-          <article><b>03</b><span><strong>Transparenz vor Behauptung</strong><small>Quellen, Grenzen und fehlende Daten bleiben nachvollziehbar.</small></span></article>
-        </div>
-      </section>
-
-      <section className={styles.future} id="ausblick">
-        <div className={styles.futureHead}>
-          <span>In Planung</span>
-          <h2>Die Reise endet nicht am Gleis.</h2>
-          <p>Die nächsten Website-Module werden separat vom Kern der App entwickelt und erst veröffentlicht, wenn sie echten Nutzen bringen.</p>
-        </div>
-        <div className={styles.futureGrid}>
-          <article><span>Passport</span><h3>Deine Reisen an einem Ort.</h3><p>Gefahrene Strecken, Städte und Züge als persönlicher Reiseverlauf.</p><small>Konzept</small></article>
-          <article><span>Insights</span><h3>Verstehen, wie du reist.</h3><p>Persönliche Statistiken, wiederkehrende Strecken und Monatsrückblicke.</p><small>Konzept</small></article>
-          <article><span>Assist</span><h3>Hilfe, wenn etwas schiefläuft.</h3><p>Störungen verständlich zusammenfassen und sinnvolle nächste Schritte zeigen.</p><small>Konzept</small></article>
+        <div className={styles.projectText}>
+          <p>BahnConnections soll vor allem eine funktionierende Fahrgastoberfläche sein. Deshalb stehen Datenqualität, Lesbarkeit und nachvollziehbare Echtzeit vor dekorativen Effekten.</p>
+          <p>Neue Funktionen kommen erst dann auf die Website, wenn sie in der Anwendung einen konkreten Nutzen haben.</p>
         </div>
       </section>
 
-      <section className={styles.faq} id="faq">
-        <div>
-          <span>FAQ</span>
-          <h2>Kurz beantwortet.</h2>
+      <section className={styles.faqSection} id="faq">
+        <div className={styles.sectionIntro}>
+          <span className={styles.sectionLabel}>FAQ</span>
+          <h2>Häufige Fragen.</h2>
         </div>
+
         <div className={styles.faqList}>
-          <details><summary>Ist BahnConnections eine neue Bahn-App?</summary><p>BahnConnections ist eine eigenständige Fahrgastoberfläche für Verbindungssuche, Live-Abfahrten und Kartenansichten. Die Website hier erklärt das Produkt; die eigentliche Reiseplanung findet in der App statt.</p></details>
-          <details><summary>Woher kommen die Fahrplan- und Echtzeitdaten?</summary><p>Die App nutzt unter anderem Transitous/MOTIS und kennzeichnet, ob Informationen als Fahrplan oder als Echtzeit vorliegen. Quellen und Methodik sind in der App transparent dokumentiert.</p></details>
-          <details><summary>Ersetzt BahnConnections die Angebote der Verkehrsunternehmen?</summary><p>Nein. BahnConnections bündelt und visualisiert Informationen für die Reise. Verbindliche betriebliche Hinweise und Beförderungsbedingungen kommen weiterhin von den jeweiligen Verkehrsunternehmen.</p></details>
-          <details><summary>Kostet die App etwas?</summary><p>Die Kernfunktionen für Verbindungssuche und Live-Tafeln sind als frei zugängliche Produktbasis vorgesehen. Zusätzliche Funktionen können später separat hinzukommen.</p></details>
+          <details>
+            <summary>Ist BahnConnections ein Angebot der Deutschen Bahn?</summary>
+            <p>Nein. BahnConnections ist aktuell ein unabhängiges Projekt und keine offizielle Anwendung der Deutschen Bahn AG.</p>
+          </details>
+          <details>
+            <summary>Gibt es bereits eine DB-Partnerschaft?</summary>
+            <p>Nein. Eine offizielle technische Partnerschaft ist ein mögliches Ziel für eine spätere Ausbaustufe, wird auf dieser Website aber nicht als bestehend dargestellt.</p>
+          </details>
+          <details>
+            <summary>Woher kommen Fahrplan- und Echtzeitdaten?</summary>
+            <p>Die Anwendung nutzt Transitous/MOTIS als Hauptquelle und DB transport.rest als zusätzliche Gegenprüfung. Kartenmaterial stammt aus OpenStreetMap-Quellen.</p>
+          </details>
+          <details>
+            <summary>Kann ich BahnConnections im Browser nutzen?</summary>
+            <p>Ja. BahnConnections ist eine Webanwendung und kann direkt im Browser geöffnet werden. Zusätzlich lässt sie sich als Progressive Web App installieren.</p>
+          </details>
         </div>
       </section>
 
-      <section className={styles.finalCta}>
-        <div>
-          <span className={styles.eyebrow}><i /> BahnConnections</span>
-          <h2>Deine nächste Verbindung.<br />Ohne Umwege in der Oberfläche.</h2>
-        </div>
+      <section className={styles.finalSection}>
+        <div><h2>BahnConnections im Browser öffnen.</h2><p>Keine Registrierung erforderlich, um die öffentlichen Kernfunktionen zu nutzen.</p></div>
         <div className={styles.finalActions}>
-          <Link className={styles.primaryCta} href="/">App öffnen <Arrow /></Link>
-          <Link className={styles.secondaryCta} href="/install">Installieren</Link>
+          <Link className={styles.primaryButton} href="/">App öffnen <Arrow /></Link>
+          <Link className={styles.secondaryButton} href="/install">Installieren</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <Link className={styles.footerBrand} href="/website"><Image src="/app-icon.svg" alt="" width={30} height={30} /><b>BahnConnections</b></Link>
-        <div><Link href="/">App</Link><Link href="/install">Installation</Link><a href="#faq">FAQ</a></div>
-        <p>Fahrplan- und Echtzeitinformationen können kurzfristig abweichen.</p>
+        <div className={styles.footerMain}>
+          <Link className={styles.brand} href="/website">
+            <Image src="/app-icon.svg" alt="" width={30} height={30} />
+            <span>BahnConnections</span>
+          </Link>
+          <nav aria-label="Footer">
+            <Link href="/">App</Link>
+            <Link href="/install">Installation</Link>
+            <a href="#daten">Daten & DB</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+        </div>
+        <div className={styles.footerLegal}>
+          <span>Unabhängiges Projekt. Keine offizielle Anwendung der Deutschen Bahn AG.</span>
+          <span>Fahrplan- und Echtzeitinformationen können kurzfristig abweichen.</span>
+        </div>
       </footer>
     </main>
   );
