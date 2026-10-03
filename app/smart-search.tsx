@@ -154,7 +154,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
           {suggestions.map((station, index) => (
             <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
               <span className="station-symbol"><UiIcon name="train" /></span>
-              <span><b title={station.name}>{compactStationName(station.name)}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
+              <span><b title={station.name}>{compactStationName(station.name)}</b><small>{station.state ?? station.country}</small></span>
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}
