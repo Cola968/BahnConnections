@@ -16,18 +16,18 @@
   --app-header:64px; --bottom-navigation:0px;
   --z-map:1; --z-sheet:700; --z-header:1000; --z-navigation:1100; --z-backdrop:1190; --z-menu:1200; --z-dialog:1500;
   /* Five real translucent navigation materials, with different optical depth. */
-  --glass-clear:color-mix(in srgb,#f6fafc 48%,transparent);
-  --glass-regular:color-mix(in srgb,#f6fafc 60%,transparent);
-  --glass-elevated:color-mix(in srgb,#f6fafc 80%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#f6fafc 86%,transparent);
-  --glass-navigation:color-mix(in srgb,#f6fafc 74%,transparent);
-  --glass-scroll-edge:color-mix(in srgb,var(--paper) 96%,transparent);
+  --glass-clear:color-mix(in srgb,#f6fafc 38%,transparent);
+  --glass-regular:color-mix(in srgb,#f6fafc 52%,transparent);
+  --glass-elevated:color-mix(in srgb,#f6fafc 68%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#f6fafc 76%,transparent);
+  --glass-navigation:color-mix(in srgb,#f6fafc 62%,transparent);
+  --glass-scroll-edge:color-mix(in srgb,var(--paper) 90%,transparent);
   --glass-strong:var(--glass-elevated);
-  --glass-stroke:rgba(255,255,255,.64);
-  --glass-shadow:0 12px 32px rgba(21,46,61,.16),inset 0 1px 0 rgba(255,255,255,.84),inset 0 -1px 0 rgba(61,93,111,.08);
-  --glass-shadow-soft:0 6px 20px rgba(21,46,61,.12),inset 0 1px 0 rgba(255,255,255,.76),inset 0 -1px 0 rgba(61,93,111,.06);
-  --glass-filter:blur(20px) saturate(140%);
-  --glass-filter-strong:blur(28px) saturate(145%);
+  --glass-stroke:rgba(255,255,255,.58);
+  --glass-shadow:0 16px 38px rgba(21,46,61,.14),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(61,93,111,.07);
+  --glass-shadow-soft:0 9px 24px rgba(21,46,61,.11),inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(61,93,111,.05);
+  --glass-filter:blur(26px) saturate(150%);
+  --glass-filter-strong:blur(34px) saturate(162%);
 }
 html[data-theme="dark"] {
   color-scheme:dark;
@@ -35,16 +35,16 @@ html[data-theme="dark"] {
   --line-subtle:rgba(182,205,220,.17); --elevated:#1b2833; --elevated-soft:#22323f;
   --red:#f05b68; --teal:#8bb5c4; --card:var(--paper); --accent:#a1c8dc; --action:#f05b68;
   --success:#9cb5a4; --warning:#e0b675; --danger:#f2939d;
-  --glass-clear:color-mix(in srgb,#203442 48%,transparent);
-  --glass-regular:color-mix(in srgb,#1c2e3b 60%,transparent);
-  --glass-elevated:color-mix(in srgb,#1c2b36 80%,transparent);
-  --glass-sheet-expanded:color-mix(in srgb,#1c2b36 86%,transparent);
-  --glass-navigation:color-mix(in srgb,#203340 76%,transparent);
-  --glass-stroke:rgba(211,234,248,.18);
+  --glass-clear:color-mix(in srgb,#203442 36%,transparent);
+  --glass-regular:color-mix(in srgb,#1c2e3b 50%,transparent);
+  --glass-elevated:color-mix(in srgb,#1c2b36 66%,transparent);
+  --glass-sheet-expanded:color-mix(in srgb,#1c2b36 74%,transparent);
+  --glass-navigation:color-mix(in srgb,#203340 60%,transparent);
+  --glass-stroke:rgba(211,234,248,.16);
   --glass-shadow:0 16px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(232,246,255,.16),inset 0 -1px 0 rgba(232,246,255,.04);
   --glass-shadow-soft:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(232,246,255,.13),inset 0 -1px 0 rgba(232,246,255,.03);
-  --glass-filter:blur(20px) saturate(120%);
-  --glass-filter-strong:blur(28px) saturate(125%);
+  --glass-filter:blur(24px) saturate(130%);
+  --glass-filter-strong:blur(32px) saturate(140%);
 }
 html[data-theme="light"] { color-scheme:light; }
 * { box-sizing:border-box; }
