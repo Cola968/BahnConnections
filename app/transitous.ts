@@ -55,8 +55,10 @@ export async function resolveTransitousStopId(station: Station, signal?: AbortSi
     const best = candidates[0];
     return best && best.distance <= 1_200 ? best.item.id : null;
   })().catch(() => null);
-  stopIdCache.set(key, request);
-  return request;
+  // An aborted caller must not poison the station ID for other views or retries.
+  const stopId = await request;
+  if (stopId && !signal?.aborted) stopIdCache.set(key, Promise.resolve(stopId));
+  return signal?.aborted ? null : stopId;
 }
 
 export async function requireTransitousStopId(station: Station, signal?: AbortSignal) {

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { BoardMapTrip } from "./live-board";
 import { decodePolyline } from "./live-trains";
 import type { Station } from "./network-data";
-import { cleanDestination, serviceBadgeStyle } from "./transit-style";
-import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
+import { cleanDestination, serviceBadgeStyle, serviceColors } from "./transit-style";
+import { inBatches, requireTransitousStopId } from "./transitous";
 import { trimRepeatedStationLoop } from "./trip-trimming";
 
 export type StationLineCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
@@ -93,14 +93,6 @@ const RAIL_MODES = new Map<string, StationLineCategory>([
   ["SUBWAY", "ubahn"],
   ["TRAM", "tram"],
 ]);
-
-const CATEGORY_LABELS: Record<StationLineCategory, string> = {
-  fern:"Fernverkehr",
-  regional:"Regionalverkehr",
-  sbahn:"S-Bahn",
-  ubahn:"U-Bahn",
-  tram:"Straßenbahn",
-};
 
 function lineBadge(line: StationLine) {
   if (line.category === "sbahn" || line.category === "ubahn" || line.category === "tram") return line.shortName.replace(/\s+/g, "");
@@ -217,14 +209,17 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   const [lines, setLines] = useState<StationLine[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [statusMessage, setStatusMessage] = useState("");
-  const [category, setCategory] = useState<StationLineCategory | "all">("all");
-  const [query, setQuery] = useState("");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [routeDetails, setRouteDetails] = useState<Record<string, BoardMapTrip[]>>({});
   const [routeStates, setRouteStates] = useState<Record<string, "loading" | "ready" | "error">>({});
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [bulk, setBulk] = useState<{ state:"idle" | "loading" | "ready"; completed:number; total:number; failed:number }>({ state:"idle", completed:0, total:0, failed:0 });
   const bulkControllerRef = useRef<AbortController | null>(null);
+  const detailControllerRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    detailControllerRef.current = controller;
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -233,6 +228,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
       setLines([]);
       setExpandedKey(null);
       setRouteDetails({});
+      setRouteStates({});
       setBulk({ state:"idle", completed:0, total:0, failed:0 });
       bulkControllerRef.current?.abort();
       try {
@@ -244,7 +240,6 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
         const payload = await response.json() as { routes?:ApiRoute[]; stopTimes?:StopTime[] };
         setLines(normaliseRoutes(payload.routes ?? [], payload.stopTimes ?? []));
         setStatusMessage("");
-        setUpdatedAt(new Date());
         setStatus("ready");
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
@@ -270,10 +265,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
 
   useEffect(() => { if (status === "ready") onSummary?.(summary); }, [onSummary, status, summary]);
 
-  const visibleLines = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("de");
-    return lines.filter((line) => (category === "all" || line.category === category) && (!needle || `${line.shortName} ${line.longName} ${line.operator} ${line.destinations.join(" ")}`.toLocaleLowerCase("de").includes(needle)));
-  }, [category, lines, query]);
+
 
   async function toggleLine(line: StationLine) {
     if (expandedKey === line.key) { setExpandedKey(null); return; }
@@ -281,9 +273,11 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     if (routeDetails[line.key] || routeStates[line.key] === "loading") return;
     if (!line.samples.length) { setRouteStates((current) => ({ ...current, [line.key]:"error" })); return; }
     setRouteStates((current) => ({ ...current, [line.key]:"loading" }));
+    const controller = detailControllerRef.current ?? new AbortController();
+    detailControllerRef.current = controller;
     try {
-      const controller = new AbortController();
       const results = await inBatches(line.samples, 6, (sample) => loadFullTrip(line, sample, station, controller.signal));
+      if (controller.signal.aborted) return;
       const trips = results.filter((result): result is PromiseFulfilledResult<BoardMapTrip> => result.status === "fulfilled" && result.value.stops.length > 1);
       const longestByDirection = new Map<string, BoardMapTrip>();
       for (const result of trips) {
@@ -295,81 +289,74 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
       setRouteDetails((current) => ({ ...current, [line.key]:resolved }));
       setRouteStates((current) => ({ ...current, [line.key]:resolved.length ? "ready" : "error" }));
     } catch {
+      if (controller.signal.aborted) return;
       setRouteStates((current) => ({ ...current, [line.key]:"error" }));
     }
   }
 
-  async function showAllOnMap() {
-    if (bulk.state === "loading") {
-      bulkControllerRef.current?.abort();
-      setBulk((current) => ({ ...current, state:"idle" }));
-      return;
-    }
-    const chosen: { line:StationLine; sample:LineSample }[] = [];
-    const seen = new Set<string>();
-    for (const line of visibleLines) {
-      for (const sample of line.samples) {
-        const key = `${line.key}|${sample.destination ?? sample.origin ?? sample.tripId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        chosen.push({ line, sample });
+  useEffect(() => {
+    if (status !== "ready") return;
+    async function loadMapLines() {
+      const chosen: { line:StationLine; sample:LineSample }[] = [];
+      const seen = new Set<string>();
+      for (const line of lines) {
+        for (const sample of line.samples) {
+          const key = `${line.key}|${sample.destination ?? sample.origin ?? sample.tripId}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          chosen.push({ line, sample });
+        }
       }
+      if (!chosen.length) return;
+      const controller = new AbortController();
+      bulkControllerRef.current = controller;
+      const collected: BoardMapTrip[] = [];
+      let failed = 0;
+      setBulk({ state:"loading", completed:0, total:chosen.length, failed:0 });
+      await inBatches(chosen, 5, ({ line, sample }) => loadFullTrip(line, sample, station, controller.signal), (results, completed) => {
+        if (controller.signal.aborted) return;
+        collected.push(...results.filter((result): result is PromiseFulfilledResult<BoardMapTrip> => result.status === "fulfilled" && result.value.points.length > 1).map((result) => result.value));
+        failed += results.filter((result) => result.status === "rejected").length;
+        onMapTrips?.([...collected]);
+        setBulk({ state:"loading", completed, total:chosen.length, failed });
+      });
+      if (!controller.signal.aborted) setBulk({ state:"ready", completed:chosen.length, total:chosen.length, failed });
     }
-    if (!chosen.length) return;
-    const controller = new AbortController();
-    bulkControllerRef.current = controller;
-    const collected: BoardMapTrip[] = [];
-    let failed = 0;
-    setBulk({ state:"loading", completed:0, total:chosen.length, failed:0 });
-    await inBatches(chosen, 5, ({ line, sample }) => loadFullTrip(line, sample, station, controller.signal), (results, completed) => {
-      if (controller.signal.aborted) return;
-      collected.push(...results.filter((result): result is PromiseFulfilledResult<BoardMapTrip> => result.status === "fulfilled" && result.value.points.length > 1).map((result) => result.value));
-      failed += results.filter((result) => result.status === "rejected").length;
-      onMapTrips?.([...collected]);
-      setBulk({ state:"loading", completed, total:chosen.length, failed });
-    });
-    if (!controller.signal.aborted) setBulk({ state:"ready", completed:chosen.length, total:chosen.length, failed });
-  }
+    void loadMapLines();
+    return () => bulkControllerRef.current?.abort();
+  }, [lines, station, status, onMapTrips]);
 
   return (
     <section className="station-lines" aria-live="polite">
-      <div className="station-lines-proof"><i /><span><b>Vollständiger Linienbestand</b><small>Linien kommen aus der Haltestellen-Stammliste; Ziele und Echtzeit aus den gemeldeten Fahrten.</small></span></div>
-      {status === "ready" && <div className="station-lines-mapbar"><button className={bulk.state === "loading" ? "active" : ""} onClick={() => void showAllOnMap()} disabled={!visibleLines.some((line) => line.samples.length)}>{bulk.state === "loading" ? "Laden abbrechen" : "Alle gefilterten Linien auf Karte"}</button><span>{bulk.state === "idle" ? `${visibleLines.length} Linien auswählbar` : `${bulk.completed}/${bulk.total} Verläufe${bulk.failed ? ` · ${bulk.failed} nicht verfügbar` : ""}`}</span></div>}
-      <div className="station-line-filters" aria-label="Linienarten">
-        <button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}>Alle <span>{summary.total}</span></button>
-        {(["fern","regional","sbahn","ubahn","tram"] as StationLineCategory[]).map((item) => <button className={`${category === item ? "active " : ""}${item}`} onClick={() => setCategory(item)} key={item}>{CATEGORY_LABELS[item]} <span>{summary[item]}</span></button>)}
-      </div>
-      <label className="station-line-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Linie, Ziel oder Betreiber suchen" aria-label="Linien am Bahnhof durchsuchen" />{query && <button onClick={() => setQuery("")} aria-label="Liniensuche leeren">×</button>}</label>
+      {bulk.state === "loading" && <p className="station-lines-progress" role="status">Linienverläufe laden … {bulk.completed}/{bulk.total}</p>}
+      {bulk.failed > 0 && bulk.state === "ready" && <p className="station-lines-progress">{bulk.failed} Linienverläufe derzeit nicht verfügbar. Alle gemeldeten Linien bleiben in der Liste sichtbar.</p>}
       {status === "loading" && <div className="station-line-state"><i />Linien und Fahrtziele werden live geprüft …</div>}
       {status === "error" && <div className="station-line-state error"><b>Linienauskunft gerade nicht erreichbar.</b><span>{statusMessage.startsWith("Keine eindeutige Haltestellen-ID") ? statusMessage : "Live-Daten derzeit unvollständig. Es wird bewusst keine statische Ersatzliste als vollständig ausgegeben."}</span></div>}
       {status === "ready" && <div className="station-line-list">
-        {visibleLines.map((line) => {
+        {lines.map((line) => {
           const details = routeDetails[line.key] ?? [];
           const detailState = routeStates[line.key];
           const expanded = expandedKey === line.key;
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
             <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded}>
-              <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${line.operator}`)}>{lineBadge(line)}</span>
-              <span><b>{line.category === "sbahn" || line.category === "ubahn" || line.category === "tram" ? CATEGORY_LABELS[line.category] : line.shortName}</b><small>{line.destinations.length ? `Richtung ${line.destinations.join(" · ")}` : line.longName || "Heute keine weitere Fahrt gemeldet"}</small><em>{line.operator}{line.reportedTrips ? ` · ${line.reportedTrips} gemeldete Fahrten` : ""}</em></span>
+              <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${station.name} ${line.operator}`)}>{lineBadge(line)}</span>
+              <span><b>{line.shortName}</b><small>{line.destinations.length ? `Richtung ${line.destinations.join(" · ")}` : line.longName || "Heute keine weitere Fahrt gemeldet"}</small></span>
               <span>{expanded ? "Schließen" : line.nextTime ? `${lineTime(line.nextTime)} · ${line.realtimeTrips ? "Live" : "Plan"}` : "keine weitere"}</span>
             </button>
             {expanded && <div className="station-line-routes">
               {detailState === "loading" && <div className="station-line-state"><i />Vollständige Fahrtverläufe werden verglichen …</div>}
               {detailState === "error" && <div className="station-line-state error"><b>Kein abrufbarer Fahrtverlauf im aktuellen Zeitfenster.</b><span>Die Linie und ihre gemeldeten Ziele bleiben sichtbar.</span></div>}
-              {detailState === "ready" && details.map((trip) => <section className="line-route-detail" style={{ borderTopColor:serviceBadgeStyle(line.category, trip.color, trip.textColor).backgroundColor }} key={trip.tripId}>
+              {detailState === "ready" && details.map((trip) => <section className="line-route-detail" style={{ borderTopColor:serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background }} key={trip.tripId}>
                 <header><span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${line.operator}`)}>{lineBadge(line)}</span><span><b>{tripDirection(trip)}</b><small>{trip.realtime ? "Aktuelle Fahrt mit Echtzeit" : "Aktueller Fahrplan"}</small></span>{trip.points.length ? <button onClick={() => onMapTrip?.(trip)} aria-label={`${line.shortName} auf Karte zeigen`}>◎</button> : null}</header>
-                <div className="line-route-kpis"><span><b>{trip.stops.length}</b> Halte</span><span><b>{trip.points.length.toLocaleString("de-DE")}</b> Geometriepunkte</span><span><b>{trip.realtime ? "Live" : "Plan"}</b> Datenlage</span></div>
-                <p>Gezeigt wird die längste gefundene aktuelle Fahrt dieser Richtung – nicht nur der Abschnitt ab {station.name}. Betriebliche Kurzführungen bleiben als solche korrekt.</p>
-                {trip.points.length ? <div className="line-route-actions"><button onClick={() => onMapTrip?.(trip)}>Exakten Verlauf auf Karte</button><button onClick={() => onMapTrip?.(trip)}>Alle Halte anzeigen</button></div> : <p className="geometry-missing">Die Quelle liefert aktuell keine belastbare Streckengeometrie. Die Halte bleiben sichtbar; eine Luftlinie wird bewusst nicht gezeichnet.</p>}
+                {trip.points.length ? <div className="line-route-actions"><button onClick={() => onMapTrip?.(trip)}>Exakten Verlauf auf Karte</button></div> : <p className="geometry-missing">Die Quelle liefert aktuell keine belastbare Streckengeometrie. Die Halte bleiben sichtbar; eine Luftlinie wird bewusst nicht gezeichnet.</p>}
                 <div className="line-stop-heading"><b>Vollständige Haltefolge</b><span>{trip.stops.length} Stationen</span></div>
-                <ol className="line-stop-list">{trip.stops.map((stop, index) => <li key={`${stop.name}-${index}`}><button onClick={() => onMapTrip?.(trip)}><i style={{ backgroundColor:serviceBadgeStyle(line.category, trip.color, trip.textColor).backgroundColor, boxShadow:`0 0 0 1px ${serviceBadgeStyle(line.category, trip.color, trip.textColor).backgroundColor}` }} /><span><b>{stop.name}</b><small>{index === 0 ? "Start" : index === trip.stops.length - 1 ? "Endstation" : stop.track ? `Gleis ${stop.track}` : "Zwischenhalt"}</small></span><time>{stop.departure || stop.arrival ? lineTime(stop.departure ?? stop.arrival) : "–"}</time></button></li>)}</ol>
+                <ol className="line-stop-list">{trip.stops.map((stop, index) => <li key={`${stop.name}-${index}`}><button onClick={() => onMapTrip?.(trip)}><i style={{ backgroundColor:serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background, boxShadow:`0 0 0 1px ${serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background}` }} /><span><b>{stop.name}</b><small>{index === 0 ? "Start" : index === trip.stops.length - 1 ? "Endstation" : stop.track ? `Gleis ${stop.track}` : "Zwischenhalt"}</small></span><time>{stop.departure || stop.arrival ? lineTime(stop.departure ?? stop.arrival) : "–"}</time></button></li>)}</ol>
               </section>)}
             </div>}
           </article>;
         })}
-        {!visibleLines.length && <div className="station-line-state">Keine passenden Bahnlinien in dieser Auswahl.</div>}
+        {!lines.length && <div className="station-line-state">Keine Bahnlinien für diesen Bahnhof gemeldet.</div>}
       </div>}
-      {status === "ready" && <footer><span><i /> Transitous-Stammdaten + aktueller Fahrplan</span><b>{summary.total} Linien · {summary.operators.length} Betreiber · {updatedAt ? berlinTimestamp(updatedAt) : "gerade geprüft"}</b></footer>}
     </section>
   );
 }

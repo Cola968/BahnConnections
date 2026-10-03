@@ -15,6 +15,8 @@
     "audit:board": "node scripts/board-verification-audit.mjs",
     "audit:ui": "node scripts/ui-audit.mjs",
     "audit:mobile": "node scripts/mobile-visual-qa.mjs",
+    "audit:layout": "node scripts/content-layout-qa.mjs",
+    "audit:transport": "node scripts/transport-style-audit.mjs",
     "audit:api": "node scripts/api-smoke.mjs",
     "audit:billing": "node scripts/billing-audit.mjs"
   },

@@ -150,12 +150,26 @@ export default function Home() {
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
   const [desktopView, setDesktopView] = useState<DesktopView>("connections");
   const [mobileView, setMobileView] = useState<DesktopView>("map");
+  const layoutModeRef = useRef<boolean | null>(null);
   useEffect(() => {
     const query = window.matchMedia("(min-width: 1024px)");
-    const update = () => setDesktopWorkspace(query.matches);
+    const update = () => {
+      if (layoutModeRef.current !== null && layoutModeRef.current !== query.matches) {
+        if (query.matches) setDesktopView(mobileView);
+        else setMobileView(desktopView);
+      }
+      layoutModeRef.current = query.matches;
+      setDesktopWorkspace(query.matches);
+    };
     update(); query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
+    window.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      query.removeEventListener("change", update);
+      window.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
+  }, [desktopView, mobileView]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -515,7 +529,7 @@ export default function Home() {
       const segments = trackGeometry?.segments ?? [];
       if (!segments.length) return;
       const coverage = Math.round((trackGeometry?.coverage ?? 0) * 100);
-      const palette: Record<TrainType, string> = minimalMode ? { ICE:"#64777c", IC:"#78898d", EC:"#8d999c" } : { ICE:"#df4050", IC:"#208a92", EC:"#7256c9" };
+      const palette: Record<TrainType, string> = { ICE:"#df4050", IC:"#208a92", EC:"#7256c9" };
       for (const points of segments) {
         L.polyline(points, { color: theme === "dark" ? "#0c222a" : "#fffdf9", weight: featured ? 6.4 : muted ? 3 : 4.6, opacity: featured ? .82 : muted ? .1 : .72, lineCap: "round" }).addTo(layer);
         const line = L.polyline(points, {
@@ -539,11 +553,10 @@ export default function Home() {
     };
 
     if (journey) {
-      const livePalette: Record<PlannerCategory, string> = minimalMode ? { fern:"#65757b", regional:"#76878d", sbahn:"#6f8177", ubahn:"#746f82", tram:"#7d7770" } : { fern:"#ec0016", regional:"#1455a0", sbahn:"#2f8f57", ubahn:"#6f3fa0", tram:"#b45309" };
       for (const leg of journey.transitLegs) {
         if (leg.points.length < 2) continue;
         L.polyline(leg.points, { color:theme === "dark" ? "#071d26" : "#fff", weight:7, opacity:.86, lineCap:"round", lineJoin:"round" }).addTo(layer);
-        const legColor = minimalMode ? livePalette[leg.category as PlannerCategory] : serviceColors(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor).background;
+        const legColor = serviceColors(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`).background;
         const line = L.polyline(leg.points, { color:legColor, weight:4.6, opacity:.98, lineCap:"round", lineJoin:"round" }).addTo(layer);
         line.bindTooltip(realtimeTooltip(leg.name, { scheduled:leg.scheduledStartTime, actual:leg.startTime, realtime:leg.realtime, cancelled:leg.cancelled }, undefined, "Fahrtabschnitt entfällt"), { sticky:true });
       }
@@ -567,7 +580,7 @@ export default function Home() {
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:showPermanentStopLabel, className:showPermanentStopLabel ? "station-route-label live" : "" });
       });
     } else if (stationTrip && exactTripSegments(stationTrip).length) {
-      const color = minimalMode ? "#65757b" : serviceColors(stationTrip.category, stationTrip.color, stationTrip.textColor).background;
+      const color = serviceColors(stationTrip.category, stationTrip.color, stationTrip.textColor, stationTrip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
       for (const segment of exactTripSegments(stationTrip)) {
         L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:8, opacity:.9, lineCap:"round", lineJoin:"round" }).addTo(layer);
         const exactLine = L.polyline(segment, { color, weight:4.8, opacity:.98, lineCap:"round", lineJoin:"round", className:"station-trip-exact" }).addTo(layer);
@@ -586,7 +599,7 @@ export default function Home() {
       for (const trip of stationTrips) {
         const tripSegments = exactTripSegments(trip);
         if (!tripSegments.length) continue;
-        const color = minimalMode ? "#65757b" : serviceColors(trip.category, trip.color, trip.textColor).background;
+        const color = serviceColors(trip.category, trip.color, trip.textColor, trip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
         for (const segment of tripSegments) {
           L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:4.6, opacity:.62, lineCap:"round", lineJoin:"round" }).addTo(layer);
           const previewLine = L.polyline(segment, { color, weight:2.4, opacity:.72, lineCap:"round", lineJoin:"round", className:"station-trip-preview" }).addTo(layer);
@@ -851,6 +864,7 @@ export default function Home() {
     try {
       const response = await fetch("/api/walk", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ from:{ lat:origin.lat, lon:origin.lon }, to:{ lat:station.lat, lon:station.lon } }), signal:controller.signal, cache:"no-store" });
       const payload = await response.json() as { route?: WalkingRoute; error?: string };
+      if (controller.signal.aborted) return;
       if (!response.ok || !payload.route) throw new Error(payload.error ?? "Fußweg nicht verfügbar.");
       setWalkRoute(payload.route);
       setWalkStatus("ready");
@@ -886,14 +900,6 @@ export default function Home() {
     }
   }
 
-  function showStationTripsOnMap(trips: BoardMapTrip[]) {
-    setStationTrip(null);
-    setStationTrips(trips);
-    setJourney(null);
-    setSelectedLiveTrip(null);
-    const points = trips.flatMap((trip) => trip.points);
-    if (mapRef.current && leafletRef.current && points.length) mapRef.current.fitBounds(leafletRef.current.latLngBounds(points), { padding:[70,70], maxZoom:11 });
-  }
 
   function toggleFavorite(station: Station) {
     setFavoriteIds((current) => {
@@ -954,6 +960,7 @@ export default function Home() {
         bike:bikeRequired,
         signal:controller.signal,
       });
+      if (controller.signal.aborted) return;
       const result = results[0] ?? null;
       setJourneyOptions(results);
       setJourney(result);
@@ -1023,7 +1030,8 @@ export default function Home() {
     const sheetRect = sheet?.getBoundingClientRect();
     const measuredHeight = sheetRect?.height ?? 0;
     const sideSheet = mobile && window.matchMedia("(max-height:520px)").matches && sheetState !== "closed";
-    const rightPadding = sideSheet ? (sheetRect?.width ?? window.innerWidth / 2) + 28 : 28;
+    // Landscape reserves the right half in CSS, so Leaflet already sees the usable map.
+    const rightPadding = 28;
     const bottomPadding = !mobile ? 64 : sideSheet ? 28 : Math.min(Math.max(0, mapHeight - 140), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
     mapRef.current.fitBounds(leafletRef.current.latLngBounds(points), mobile ? {
       paddingTopLeft:[28,28],
@@ -1034,6 +1042,12 @@ export default function Home() {
   }
 
   function resetMap() {
+    plannerRequestRef.current?.abort(); walkRequestRef.current?.abort(); pendingWalkTargetRef.current = null;
+    setPlannerState("idle"); setJourneyEndpoints(null); setJourneyOptionLimit(8);
+    setMobileSheetHeight(null); setStationPanel("live"); setSidebarCollapsed(false);
+    setDesktopView("map"); setMobileView("map");
+    setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
+    setWalkRoute(null); setWalkTargetId(null); setWalkStatus("idle"); setWalkMessage("");
     setSelectedId(null); setSearch(""); setJourney(null); setJourneyOptions([]); setJourneyMessage(""); setRouteInfo(null);
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
     setMobileSheetState("closed");
@@ -1174,7 +1188,8 @@ export default function Home() {
         </>}
 
         {plannerVisible && <aside className={`explore-card floating-panel mobile-sheet-panel${selected ? " condensed" : ""}`} style={exploreControls.style} onScroll={markPanelScroll}>
-          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={() => setExploreOpen(false)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={startSearch || targetSearch ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}` : "Neue Verbindung"} mobileSummary="Verbindung planen" />
+          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={startSearch || targetSearch ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}` : "Neue Verbindung"} mobileSummary="Verbindung planen" />
+            <div className="panel-body">
           {journey && <button type="button" className="planner-return" onClick={() => setExploreOpen(false)}>← Zur ausgewählten Verbindung <span>{clock(journey.startTime)}–{clock(journey.endTime)}</span></button>}
           {nearestStation && <button className="planner-nearby settings-link" onClick={()=>{setStartId(nearestStation.station.id);setStartSearch(nearestStation.station.name);}}>Ab nächstem Bahnhof · {nearestStation.station.name}</button>}
           <JourneySearch
@@ -1190,33 +1205,37 @@ export default function Home() {
           />
           <section className="planner-saved-routes"><button type="button" className="settings-link" onClick={saveCurrentRoute} disabled={!startId||!targetId||startId===targetId}>+ Diese Pendelstrecke speichern</button><p role="status" className="settings-message">{routeSaveMessage}</p><SavedRoutesPanel routes={savedRoutes} onOpen={openSavedRoute} onRemove={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))}/></section>
           {journeyMessage && <div className={`planner-message ${plannerState}`} role="status"><p>{journeyMessage}</p>{plannerState==="error" && <button type="button" className="settings-link" onClick={()=>void runPlanner()}>Erneut versuchen</button>}</div>}
-        </aside>}
+        </div>
+          </aside>}
 
         {!statsOpen && !plannerVisible && (!journey || departuresView) && !selectedLiveTrip && selected && !sidebarCollapsed ? (
           <aside className={`station-card floating-panel mobile-sheet-panel station-right${stationPanel !== "live" ? " detail-width" : ""}`} style={stationControls.style} onScroll={markPanelScroll}>
-            <PanelTools controls={stationControls} label="Bahnhof" onClose={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={selected.name} mobileSummary="" />
+            <PanelTools controls={stationControls} label="Bahnhof" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={selected.name} mobileSummary="" />
+            <div className="panel-body">
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div className="station-section-tabs" role="tablist" aria-label="Bahnhofsinformationen">
               <button role="tab" aria-selected={stationPanel === "live"} className={stationPanel === "live" ? "active" : ""} onClick={() => setStationPanel("live")}><i /> Tafel</button>
               <button role="tab" aria-selected={stationPanel === "destinations"} className={stationPanel === "destinations" ? "active" : ""} onClick={() => setStationPanel("destinations")}>Linien</button>
               <button role="tab" aria-selected={stationPanel === "stats"} className={stationPanel === "stats" ? "active" : ""} onClick={() => setStationPanel("stats")}>Info</button>
             </div>
-            <div hidden={stationPanel !== "live"}><LiveBoard station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} onStationTrips={handleStationTrips} /></div>
-            <div hidden={stationPanel !== "destinations"}><StationLines station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={showStationTripsOnMap} /></div>
+            <div hidden={stationPanel !== "live"}><LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} /></div>
+            <div hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "stats" && <div className="station-info">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{selected.name}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
             <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
 
 <StationStats station={selected} boardSummary={boardSummary} lineSummary={stationLineSummary} /></div>}
+          </div>
           </aside>
         ) : null}
         {!statsOpen && !plannerVisible && !journey && !selectedLiveTrip && selected && sidebarCollapsed && <button className="sidebar-restore right" onClick={() => setSidebarCollapsed(false)}><span>{selected.name}</span><b>Live-Tafel öffnen</b></button>}
 
-        <NetworkStats open={statsOpen} onClose={() => setStatsOpen(false)} stations={allStations} liveTrips={liveTrips} selectedStation={selected} liveUpdatedAt={liveUpdatedAt} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
+        <NetworkStats open={statsOpen} onClose={resetMap} stations={allStations} liveTrips={liveTrips} selectedStation={selected} liveUpdatedAt={liveUpdatedAt} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
 
         {journey && !departuresView && !statsOpen && !plannerVisible && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style} onScroll={markPanelScroll}>
-            <PanelTools controls={journeyControls} label="Verbindung" onClose={() => setJourney(null)} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} />
+            <PanelTools controls={journeyControls} label="Verbindung" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${selectedJourneyStart.name} → ${selectedJourneyTarget.name}`} />
+            <div className="panel-body">
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{selectedJourneyStart.name} → {selectedJourneyTarget.name}</span></div>
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
@@ -1253,17 +1272,20 @@ export default function Home() {
             {journeyQuality && journey.transfers > 0 && <div className={`transfer-quality ${journeyQuality.tone}`}><span><b>Umstieg {journeyQuality.label}</b><small>{journeyQuality.explanation}</small></span></div>}
             <details className="journey-secondary-info"><summary>Reiseinformationen</summary><p>{journey.sourceLabel}{journey.updatedAt ? ` · Stand ${new Date(journey.updatedAt).toLocaleTimeString("de-DE", { hour:"2-digit", minute:"2-digit", timeZone:"Europe/Berlin" })}` : ""}</p>{journey.transitLegs.map((leg,index) => <div key={index}><b>{leg.name}</b>{leg.operator && <p>{leg.operator}</p>}<p>{leg.realtime ? "Echtzeit für diesen Fahrtabschnitt verfügbar" : "Fahrplandaten für diesen Fahrtabschnitt"}</p><p>{occupancyForecast(leg.startTime,leg.name).label} · Prognose, keine Live-Belegungsmessung</p>{leg.wheelchairAccessible && <p>Barrierefreiheit: {leg.wheelchairAccessible === "ACCESSIBLE" ? "als zugänglich gemeldet" : "Angabe des Verkehrsunternehmens: " + leg.wheelchairAccessible}</p>}</div>)}</details>
             {journey.warnings.length > 0 && <div className="journey-source-warnings">{journey.warnings.map((warning, index) => <p key={`${warning}-${index}`}>{warning}</p>)}</div>}
+          </div>
           </section>
         )}
 
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
           <section className="live-trip-card floating-panel mobile-sheet-panel" style={tripControls.style} aria-live="polite">
-            <PanelTools controls={tripControls} label="Zugdetails" onClose={() => { setSelectedLiveTrip(null); setTrackedTripId(null); }} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${selectedLiveTrip.from.name} → ${selectedLiveTrip.to.name}`} />
+            <PanelTools controls={tripControls} label="Zugdetails" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${selectedLiveTrip.from.name} → ${selectedLiveTrip.to.name}`} />
+            <div className="panel-body">
             <div className="live-trip-title"><span className={`service-pill ${selectedLiveTrip.category === "fern" ? "ice" : selectedLiveTrip.category === "sbahn" ? "sbahn" : selectedLiveTrip.category === "ubahn" ? "ubahn" : selectedLiveTrip.category === "tram" ? "tram" : "regional"}`}>{selectedLiveTrip.name}</span><div><b>{selectedLiveTrip.from.name} → {selectedLiveTrip.to.name}</b><small>{selectedLiveTrip.realTime ? "Position aus Echtzeit interpoliert" : "Position aus Fahrplan interpoliert"}</small></div></div>
             <div className="trip-progress"><i style={{ width:`${Math.round(selectedTripProgress * 100)}%` }} /><span style={{ left:`${Math.round(selectedTripProgress * 100)}%` }} /></div>
             <div className="live-trip-stops"><span><small>Letzter Halt</small><b>{selectedLiveTrip.from.name}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledDeparture} actual={selectedLiveTrip.departure} realtime={selectedLiveTrip.realTime} showStatus compact /></span><span><small>Nächster Halt</small><b>{selectedLiveTrip.to.name}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledArrival} actual={selectedLiveTrip.arrival} realtime={selectedLiveTrip.realTime} showStatus compact /></span></div>
             <div className="live-trip-stats"><span><b>{selectedTripSpeed}</b> km/h Ø Segment</span><span><b>{Math.round(selectedTripProgress * 100)}%</b> des Abschnitts</span></div>
             <button className={trackedTripId === selectedLiveTrip.tripId ? "track-button active" : "track-button"} onClick={() => setTrackedTripId((current) => current === selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)}>{trackedTripId === selectedLiveTrip.tripId ? "Kamerafolge beenden" : "Zug auf Karte verfolgen"}</button>
+          </div>
           </section>
         )}
 

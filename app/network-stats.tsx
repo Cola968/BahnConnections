@@ -144,6 +144,7 @@ export function NetworkStats({ open, onClose, stations, liveTrips, selectedStati
   return (
     <aside className="stats-panel floating-panel mobile-sheet-panel" style={controls.style} aria-label="Netz- und Qualitätsstatistiken">
       <PanelTools controls={controls} label="Netzreport" onClose={onClose} mobileState={mobileSheetState} onMobileStateChange={onMobileSheetState} mobileSummary={`Datenstand ${REPORT_YEAR}`} />
+      <div className="panel-body">
       <header className="stats-head">
         <div><span className="eyebrow plain">BAHNCONNECTIONS NETZREPORT</span><h2>Netz & Qualität</h2><p>Datenstand: {REPORT_YEAR} · Fahrplan {SCHEDULE_YEAR} · jährliche Aktualisierung</p></div>
       </header>
@@ -182,6 +183,7 @@ export function NetworkStats({ open, onClose, stations, liveTrips, selectedStati
       </div>}
 
       <footer className="stats-footer"><span>Geprüft am 30.08.2026</span><div><a href="https://ibir.deutschebahn.com/2025/de/zusammengefasster-lagebericht/entwicklung-der-geschaeftsfelder/geschaeftsfeld-db-fernverkehr/entwicklung-im-berichtsjahr/" target="_blank" rel="noreferrer">DB-Bericht ↗</a><a href="https://www.deutschebahn.com/de/konzern/konzernprofil/zahlen_fakten/puenktlichkeitswerte-6878476" target="_blank" rel="noreferrer">Monatswerte ↗</a><a href="https://www.bkg.bund.de/SharedDocs/Produktinformationen/BKG/DE/P-2025/251027_VG250.html" target="_blank" rel="noreferrer">BKG ↗</a></div></footer>
+      </div>
     </aside>
   );
 }
