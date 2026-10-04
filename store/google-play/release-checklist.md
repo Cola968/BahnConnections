@@ -4,7 +4,7 @@
 - [x] Trusted Web Activity Android-Projekt
 - [x] applicationId de.bahnconnections.app
 - [x] targetSdk 36 / minSdk 24
-- [x] Android Browser Helper 2.7.4
+- [x] Android Browser Helper 2.7.3
 - [x] nur INTERNET als native Berechtigung
 - [x] Debug-CI und signierter AAB-Workflow via GitHub Secrets
 - [x] Datenschutz/Nutzung/Support als öffentliche In-App-Seiten
