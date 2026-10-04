@@ -36,7 +36,8 @@ import {
   type Station,
   type TrainType,
 } from "./network-data";
-import { TrackRouter, type RailNetwork } from "./track-routing";
+import { WorkerTrackRouter } from "./track-worker-client";
+import { declutterStations } from "./map-density";
 import { distanceMeters, type WalkingRoute } from "./walking-route";
 
 type ExtraStationsPayload = { source: string; retrievedAt: string; totalOfficialPoints: number; curatedStates?: Record<string, string>; curatedAliases?: Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>; stations: Station[] };
@@ -238,7 +239,8 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [journeyDeparture, setJourneyDeparture] = useState("");
   const [journeyOptionLimit, setJourneyOptionLimit] = useState(8);
-  const [mobileSheetState, setMobileSheetState] = useState<MobileSheetState>("expanded");
+  const [mobileSheetState, setMobileSheetState] = useState<MobileSheetState>("half");
+  const stationLinkAppliedRef = useRef(false);
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
   const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
@@ -259,12 +261,15 @@ export default function Home() {
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const overlayRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const stationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const routeRendererRef = useRef<import("leaflet").Canvas | null>(null);
+  const [railRevision, setRailRevision] = useState(0);
   const liveLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const locationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const walkingLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileRef = useRef<import("leaflet").TileLayer | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
-  const trackRouterRef = useRef<TrackRouter | null>(null);
+  const trackRouterRef = useRef<WorkerTrackRouter | null>(null);
   const plannerRequestRef = useRef<AbortController | null>(null);
   const walkRequestRef = useRef<AbortController | null>(null);
   const geoWatchRef = useRef<number | null>(null);
@@ -409,16 +414,21 @@ export default function Home() {
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("station");
     const station = requested ? stationById.get(requested) : null;
-    if (!station) return;
-    const timer = window.setTimeout(() => { setSelectedId(station.id); setSearch(station.name); setStationPanel("live"); }, 0);
+    if (!station || stationLinkAppliedRef.current) return;
+    const timer = window.setTimeout(() => {
+      stationLinkAppliedRef.current = true;
+      setSelectedId(station.id); setSearch(station.name); setStationPanel("live");
+      setMobileView("departures"); setDesktopView("departures"); setMobileSheetState("half");
+    }, 0);
     return () => window.clearTimeout(timer);
   }, [stationById]);
 
   useEffect(() => {
     const firstTick = window.setTimeout(() => setLiveTick(Date.now()), 0);
-    const timer = window.setInterval(() => setLiveTick(Date.now()), 4_000);
+    if (!liveVisible) return;
+    const timer = window.setInterval(() => { if (!document.hidden) setLiveTick(Date.now()); }, 4_000);
     return () => { window.clearTimeout(firstTick); window.clearInterval(timer); };
-  }, []);
+  }, [liveVisible]);
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -434,15 +444,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("/db-rail-network.json", { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`Streckennetz ${response.status}`);
-        return response.json() as Promise<RailNetwork>;
-      })
-      .then((network) => { trackRouterRef.current = new TrackRouter(network); setRailState("ready"); })
-      .catch((error) => { if ((error as Error).name !== "AbortError") setRailState("error"); });
-    return () => controller.abort();
+    const router = new WorkerTrackRouter(() => setRailState("ready"), () => setRailRevision(value => value + 1), () => setRailState("error"));
+    trackRouterRef.current = router;
+    return () => { router.dispose(); trackRouterRef.current = null; };
   }, []);
 
   useEffect(() => {
@@ -455,9 +459,12 @@ export default function Home() {
       const map = L.map(mapElementRef.current, { zoomControl: false, minZoom: 4, maxBoundsViscosity: 0.35 }).setView([51.15, 10.35], 6);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       tileRef.current = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18, attribution: "© OpenStreetMap contributors",
+        maxZoom: 18, updateWhenIdle:true, updateWhenZooming:false, attribution: "© OpenStreetMap contributors",
       }).addTo(map);
+      map.createPane("rail-routes").style.zIndex = "390";
+      routeRendererRef.current = L.canvas({ pane:"rail-routes", padding:.2 });
       overlayRef.current = L.layerGroup().addTo(map);
+      stationLayerRef.current = L.layerGroup().addTo(map);
       liveLayerRef.current = L.layerGroup().addTo(map);
       walkingLayerRef.current = L.layerGroup().addTo(map);
       locationLayerRef.current = L.layerGroup().addTo(map);
@@ -465,8 +472,8 @@ export default function Home() {
         setMapZoom(map.getZoom());
         setMapViewportToken((value) => value + 1);
       };
-      map.on("zoomend", syncViewport);
-      map.on("moveend", syncViewport);
+      map.on("movestart", () => mapElementRef.current?.closest(".app-shell")?.classList.add("map-moving"));
+      map.on("moveend", () => { syncViewport(); mapElementRef.current?.closest(".app-shell")?.classList.remove("map-moving"); });
       mapRef.current = map;
       setMapReady(true);
     }
@@ -474,17 +481,6 @@ export default function Home() {
     return () => { active = false; mapRef.current?.remove(); mapRef.current = null; };
   }, []);
 
-  useEffect(() => {
-    const L = leafletRef.current;
-    const map = mapRef.current;
-    if (!mapReady || !L || !map) return;
-    tileRef.current?.remove();
-    tileRef.current = L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      { maxZoom: 18, attribution: "© OpenStreetMap contributors" },
-    ).addTo(map);
-    tileRef.current.bringToBack();
-  }, [mapReady, theme]);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -515,6 +511,8 @@ export default function Home() {
     walkRequestRef.current?.abort();
   }, []);
 
+  const routeZoom = mapZoom >= 11 ? 11 : mapZoom >= 6 ? 6 : 0;
+
   useEffect(() => {
     const L = leafletRef.current;
     const map = mapRef.current;
@@ -532,8 +530,8 @@ export default function Home() {
       const coverage = Math.round((trackGeometry?.coverage ?? 0) * 100);
       const palette: Record<TrainType, string> = { ICE:"#df4050", IC:"#208a92", EC:"#7256c9" };
       for (const points of segments) {
-        L.polyline(points, { color: theme === "dark" ? "#0c222a" : "#fffdf9", weight: featured ? 6.4 : muted ? 3 : 4.6, opacity: featured ? .82 : muted ? .1 : .72, lineCap: "round" }).addTo(layer);
-        const line = L.polyline(points, {
+        L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color: theme === "dark" ? "#0c222a" : "#fffdf9", weight: featured ? 6.4 : muted ? 3 : 4.6, opacity: featured ? .82 : muted ? .1 : .72, lineCap: "round" }).addTo(layer);
+        const line = L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5,
           color: palette[route.type], weight: featured ? 4.4 : muted ? 2.1 : Math.min(4, 2.15 + route.frequency / 10),
           opacity: featured ? .96 : muted ? .14 : minimalMode ? .28 : .84, lineCap: "round", lineJoin: "round",
         }).addTo(layer);
@@ -541,7 +539,7 @@ export default function Home() {
         line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
       }
       const labelPoints = [...segments].sort((left, right) => right.length - left.length)[0];
-      if (showRouteLabels && !minimalMode && !muted && mapZoom >= 6 && labelPoints.length > 1) {
+      if (showRouteLabels && !minimalMode && !muted && routeZoom >= 6 && labelPoints.length > 1) {
         const hash = [...route.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0);
         const ratio = .27 + (hash % 47) / 100;
         const anchor = labelPoints[Math.min(labelPoints.length - 1, Math.max(0, Math.round((labelPoints.length - 1) * ratio)))];
@@ -556,9 +554,9 @@ export default function Home() {
     if (journey) {
       for (const leg of journey.transitLegs) {
         if (leg.points.length < 2) continue;
-        L.polyline(leg.points, { color:theme === "dark" ? "#071d26" : "#fff", weight:7, opacity:.86, lineCap:"round", lineJoin:"round" }).addTo(layer);
+        L.polyline(leg.points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:7, opacity:.86, lineCap:"round", lineJoin:"round" }).addTo(layer);
         const legColor = serviceColors(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`).background;
-        const line = L.polyline(leg.points, { color:legColor, weight:4.6, opacity:.98, lineCap:"round", lineJoin:"round" }).addTo(layer);
+        const line = L.polyline(leg.points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:legColor, weight:4.6, opacity:.98, lineCap:"round", lineJoin:"round" }).addTo(layer);
         line.bindTooltip(realtimeTooltip(leg.name, { scheduled:leg.scheduledStartTime, actual:leg.startTime, realtime:leg.realtime, cancelled:leg.cancelled }, undefined, "Fahrtabschnitt entfällt"), { sticky:true });
       }
       const liveStops = journey.transitLegs.flatMap((leg) => leg.stops.map(stop => ({ ...stop, realtime:leg.realtime, cancelled:stop.cancelled || leg.cancelled }))).filter((stop, index, items) => items.findIndex((item) => (item.id && stop.id ? item.id === stop.id : item.name === stop.name)) === index);
@@ -577,14 +575,14 @@ export default function Home() {
         }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const showPermanentStopLabel = mapZoom >= 11;
+        const showPermanentStopLabel = routeZoom >= 11;
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:showPermanentStopLabel, className:showPermanentStopLabel ? "station-route-label live" : "" });
       });
     } else if (stationTrip && exactTripSegments(stationTrip).length) {
       const color = serviceColors(stationTrip.category, stationTrip.color, stationTrip.textColor, stationTrip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
       for (const segment of exactTripSegments(stationTrip)) {
-        L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:8, opacity:.9, lineCap:"round", lineJoin:"round" }).addTo(layer);
-        const exactLine = L.polyline(segment, { color, weight:4.8, opacity:.98, lineCap:"round", lineJoin:"round", className:"station-trip-exact" }).addTo(layer);
+        L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:8, opacity:.9, lineCap:"round", lineJoin:"round" }).addTo(layer);
+        const exactLine = L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color, weight:4.8, opacity:.98, lineCap:"round", lineJoin:"round", className:"station-trip-exact" }).addTo(layer);
         exactLine.bindTooltip(routeElement(stationTrip.name, `${tripRealtimeLabel(stationTrip)} · gelieferte Fahrtgeometrie · ${stationTrip.stops.length} Halte`), { sticky:true });
       }
       stationTrip.stops.forEach((stop, index) => {
@@ -593,7 +591,7 @@ export default function Home() {
         const point = L.circleMarker([stop.lat, stop.lon], { radius:isEnd ? 6.8 : 4.2, color:"#fff", weight:isEnd ? 3 : 2, fillColor:color, fillOpacity:1, className:"live-journey-stop" }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const permanent = mapZoom >= 11;
+        const permanent = routeZoom >= 11;
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
       });
     } else if (stationTrips.length) {
@@ -602,8 +600,8 @@ export default function Home() {
         if (!tripSegments.length) continue;
         const color = serviceColors(trip.category, trip.color, trip.textColor, trip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
         for (const segment of tripSegments) {
-          L.polyline(segment, { color:theme === "dark" ? "#071d26" : "#fff", weight:4.6, opacity:.62, lineCap:"round", lineJoin:"round" }).addTo(layer);
-          const previewLine = L.polyline(segment, { color, weight:2.4, opacity:.72, lineCap:"round", lineJoin:"round", className:"station-trip-preview" }).addTo(layer);
+          L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:4.6, opacity:.62, lineCap:"round", lineJoin:"round" }).addTo(layer);
+          const previewLine = L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color, weight:2.4, opacity:.72, lineCap:"round", lineJoin:"round", className:"station-trip-preview" }).addTo(layer);
           previewLine.bindTooltip(routeElement(trip.name, `${tripRealtimeLabel(trip)} · klicken für ${trip.stops.length} Halte`), { sticky:true });
           previewLine.on("click", () => setStationTrip(trip));
         }
@@ -618,7 +616,18 @@ export default function Home() {
       }
     }
 
-    const journeyLayers = journey ? layer.getLayers() : [];
+    const canvas = map.getPane("rail-routes")?.querySelector("canvas");
+    if (canvas) {
+      canvas.dataset.routeCount = String(journey ? journey.transitLegs.length : stationTrip ? 1 : stationTrips.filter(trip => exactTripSegments(trip).length).length);
+      canvas.dataset.routeRevision = String(Number(canvas.dataset.routeRevision ?? 0) + 1);
+      canvas.dataset.workerPoints = String(trackRouterRef.current?.completedPoints ?? 0);
+    }
+  }, [filteredRoutes, journey, mapReady, minimalMode, overviewRoutesVisible, railState, railRevision, routeInfo, routeZoom, selected, showRouteLabels, stationTrip, stationTrips, theme]);
+
+  useEffect(() => {
+    const L = leafletRef.current, map = mapRef.current, layer = stationLayerRef.current;
+    if (!mapReady || !L || !map || !layer) return;
+    layer.clearLayers();
     const connectedIds = overviewRoutesVisible ? new Set(connections.map((connection) => connection.station.id)) : new Set<string>();
     const filteredStationIds = new Set(filteredRoutes.flatMap((route) => route.stops));
     const bounds = map.getBounds().pad(.08);
@@ -639,10 +648,18 @@ export default function Home() {
         const fallbackMinimumZoom = mergedInterchange ? 9 : station.kind === "Bf" ? 10 : 11;
         return mapZoom >= (hierarchy.unknown ? fallbackMinimumZoom : hierarchy.minimumZoom);
       })
-      .slice(0, mapZoom >= 11 ? 700 : 320);
+;
     const curatedMapStations = STATIONS.map((item) => ({ ...item, ...curatedAliases[item.id], state:curatedStates[item.id] ?? item.state }));
     const selectedExtra = selected?.source === "db" && !contextualStations.some((station) => station.id === selected.id) ? [selected] : [];
-    for (const station of [...curatedMapStations, ...contextualStations, ...selectedExtra]) {
+    const candidates = [...curatedMapStations, ...contextualStations, ...selectedExtra].filter(station => {
+      if (!bounds.contains([station.lat, station.lon])) return false;
+      if (station.id === selectedId) return true;
+      const hierarchy = stationMarkerHierarchy({ majorHub:MAJOR_HUB_IDS.has(station.id), hub:station.hub, passengerBand:station.passengerBand, dailyPassengers:stationPassengerInfo(station).daily });
+      const minimum = hierarchy.unknown && station.source === "db" ? station.kind === "Bf" && (station.mergedCount ?? 0) >= 2 ? 9 : station.kind === "Bf" ? 10 : 11 : hierarchy.minimumZoom;
+      return mapZoom >= minimum && (station.country === "DE" || filteredStationIds.has(station.id));
+    });
+    const visibleStations = declutterStations(candidates, station => map.latLngToContainerPoint([station.lat, station.lon]), selectedId, window.innerWidth < 1024 ? 120 : 280);
+    for (const station of visibleStations) {
       if (station.country !== "DE" && !filteredStationIds.has(station.id)) continue;
       const isSelected = station.id === selectedId;
       const isDestination = false;
@@ -652,7 +669,6 @@ export default function Home() {
       const isMajorHub = MAJOR_HUB_IDS.has(station.id);
       const passengers=stationPassengerInfo(station);
       const hierarchy = stationMarkerHierarchy({ majorHub:isMajorHub, hub:station.hub, passengerBand:station.passengerBand,dailyPassengers:passengers.daily });
-      if (mapZoom < hierarchy.minimumZoom && !isSelected) continue;
       const baseRadius = hierarchy.radius;
       const connected = overviewRoutesVisible ? connections.find((connection) => connection.station.id === station.id) : undefined;
       const markerPalette = theme === "dark"
@@ -668,12 +684,12 @@ export default function Home() {
         passengerClass,
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
-      const markerRadius = journey ? Math.min(3.2, Math.max(1.8, baseRadius * .27)) : isSelected || isDestination ? Math.max(10.4, baseRadius + 1.4) : isTransfer ? Math.max(7.8, baseRadius) : baseRadius;
+      const markerRadius = journey ? Math.min(3.2, Math.max(1.8, baseRadius * .27)) : isSelected || isDestination ? Math.max(6, baseRadius + 1) : isTransfer ? Math.max(7.8, baseRadius) : baseRadius;
       const marker = L.circleMarker([station.lat, station.lon], {
         radius:markerRadius,
         color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#d0b57e" : "#9a7233") : markerPalette.edge,
         opacity: journey ? .24 : .99,
-        weight: journey ? 1 : isSelected || isDestination ? 3.2 : isTransfer ? 2.6 : baseRadius >= 9 ? 2.8 : baseRadius >= 5 ? 2.15 : 1.45,
+        weight: journey ? 1 : isSelected || isDestination ? 2.2 : isTransfer ? 2.6 : baseRadius >= 9 ? 2.8 : baseRadius >= 5 ? 2.15 : 1.45,
         fillColor: isSelected || isDestination ? markerPalette.active : isTransfer ? (theme === "dark" ? "#725f3c" : "#e8d8b8") : minimalMode ? markerPalette.edge : isConnected ? (theme === "dark" ? "#2d6470" : "#bce4ea") : passengerFill,
         fillOpacity: journey ? .15 : hierarchy.unknown ? .08 : hierarchy.level === 1 ? .45 : .76,
         className: markerClasses,
@@ -697,11 +713,7 @@ export default function Home() {
         });
       }
     }
-    for (const routeLayer of journeyLayers) {
-      if ("bringToFront" in routeLayer) (routeLayer as import("leaflet").Path).bringToFront();
-    }
-
-  }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, railState, routeInfo, selected, selectedId, showRouteLabels, stationImportance, stationTrip, stationTrips, theme]);
+  }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme]);
 
   useEffect(() => {
     if (!selected || !liveVisible) {

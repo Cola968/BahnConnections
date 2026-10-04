@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { TrackRouter } from '../app/track-routing.ts';
+import { declutterStations } from '../app/map-density.ts';
+
+const coordinates = [[13,52],[13.01,52.01],[13.02,52.015],[13.03,52.01],[13.04,52]];
+const router = new TrackRouter({source:'surveyed fixture',retrievedAt:'2026-10-04',accuracy:'fixture',lines:[{route:'curve',coordinates}]});
+const stop = (id,index) => ({id,lon:coordinates[index][0],lat:coordinates[index][1],country:'DE'});
+const forward=router.geometry([stop('a',1),stop('b',3)]);
+assert.deepEqual(forward.segments,[coordinates.slice(1,4).map(([lon,lat])=>[lat,lon])]);
+assert.deepEqual(router.geometry([stop('b',3),stop('a',1)]).segments,[...forward.segments].reverse().map(segment=>[...segment].reverse()));
+assert.equal(router.geometry([{id:'unknown',lon:0,lat:0,country:'DE'},stop('a',1)]).segments.length,0);
+assert.equal(router.geometry([{...stop('foreign',1),country:'FR'},stop('b',3)]).segments.length,0);
+const split = new TrackRouter({source:'fixture',retrievedAt:'2026-10-04',accuracy:'fixture',lines:[{route:'west',coordinates:[[13,52],[13.01,52]]},{route:'east',coordinates:[[13.3,52],[13.31,52]]}]});
+assert.equal(split.geometry([{id:'w',lon:13,lat:52,country:'DE'},{id:'e',lon:13.31,lat:52,country:'DE'}]).segments.length,0,'Disconnected surveyed tracks must not acquire a fictional straight bridge');
+const stations=Array.from({length:1000},(_,i)=>({id:String(i),lat:52,lon:13,x:(i%100)*8,y:Math.floor(i/100)*8}));
+const selected=declutterStations(stations,item=>item,'999',120);
+assert.equal(selected[0].id,'999');
+assert.ok(selected.length<=120);
+for(let i=0;i<selected.length;i++)for(let j=i+1;j<selected.length;j++)assert.ok(Math.hypot(selected[i].x-selected[j].x,selected[i].y-selected[j].y)>=18);
+assert.equal(declutterStations([{id:'curated',lat:52,lon:13,mergedCodes:['AB']},{id:'db',lat:52,lon:13.1,source:'db',mergedCodes:['AB']}],item=>({x:item.lon*10000,y:0}),null,120).length,1);
+console.log('Map audit passed: surveyed curve direction/endpoints, disconnected and foreign tracks, density bound, selected station and DB aliases.');
