@@ -59,7 +59,7 @@ check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={s
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
-check("V45 mobile More is reduced to three core actions",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Einstellungen & Profil","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
+check("V49 mobile More stays limited to four core actions",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Einstellungen","Netzreport","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
 check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
 check("Standalone website is professional, transparent and service-first",
   website.includes('APP_VERSION_LABEL') &&
