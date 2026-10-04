@@ -20,7 +20,7 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
 }
 
 export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value: DesktopView; onChange: (view: DesktopView) => void; onMore: () => void; moreOpen: boolean }) {
-  return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation">
+  return <nav style={{"--active-tab":moreOpen ? 3 : value === "map" ? 0 : value === "connections" ? 1 : 2} as import("react").CSSProperties} className="mobile-navigation" aria-label="Mobile Hauptnavigation">
     {[destinations[1], destinations[0], destinations[2]].map(({ view, label, icon }) => <button key={view} type="button" className={!moreOpen && value === view ? "active" : ""} aria-current={!moreOpen && value === view ? "page" : undefined} aria-label={view === "connections" ? "Planen" : label} onClick={() => onChange(view)}><UiIcon name={icon} /><span>{view === "connections" ? "Planen" : label}</span></button>)}
     <button type="button" onClick={onMore} className={moreOpen ? "active" : ""} aria-expanded={moreOpen} aria-controls="more-menu"><UiIcon name="more" /><span>Mehr</span></button>
   </nav>;

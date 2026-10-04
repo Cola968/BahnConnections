@@ -81,8 +81,10 @@ export class TrackRouter {
   private lineNodes: [number, number][] = [];
   private snapCache = new Map<string, Snap | null>();
   private pathCache = new Map<string, TrackGeometry>();
+  private network: RailNetwork;
 
-  constructor(private network: RailNetwork) {
+  constructor(network: RailNetwork) {
+    this.network = network;
     const nodeByKey = new Map<string, number>();
     const getNode = (point: Coordinate) => {
       const key = `${point[0].toFixed(4)},${point[1].toFixed(4)}`;
@@ -183,6 +185,17 @@ export class TrackRouter {
     const key = `${from.id}>${to.id}`;
     const cached = this.pathCache.get(key);
     if (cached) return cached;
+    const fromSnap = this.snap(from), toSnap = this.snap(to);
+    if (fromSnap && toSnap && fromSnap.lineIndex === toSnap.lineIndex) {
+      const line = this.network.lines[fromSnap.lineIndex].coordinates;
+      const low = Math.min(fromSnap.pointIndex,toSnap.pointIndex), high = Math.max(fromSnap.pointIndex,toSnap.pointIndex);
+      const section = line.slice(low,high + 1);
+      if (fromSnap.pointIndex > toSnap.pointIndex) section.reverse();
+      const points = section.map(([lon,lat]) => [lat,lon] as [number,number]);
+      const result = {points,segments:points.length > 1 ? [points] : [],coverage:1};
+      this.pathCache.set(key,result);
+      return result;
+    }
     const reverseCached = this.pathCache.get(`${to.id}>${from.id}`);
     if (reverseCached) {
       const segments = [...reverseCached.segments].reverse().map((segment) => [...segment].reverse());

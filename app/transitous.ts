@@ -1,4 +1,5 @@
 import type { Station } from "./network-data";
+import { APP_VERSION } from "./app-version.ts";
 
 type GeocodeStop = {
   type?: string;
@@ -15,7 +16,7 @@ const stopIdCache = new Map<string, Promise<string | null>>();
 export const RAIL_MODES = "HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,REGIONAL_FAST_RAIL,REGIONAL_RAIL,SUBURBAN,SUBWAY,TRAM";
 
 export function transitousRequestHeaders(): Record<string, string> {
-  return typeof window === "undefined" ? { Accept:"application/json", "User-Agent":"BahnConnections/16" } : { Accept:"application/json" };
+  return typeof window === "undefined" ? { Accept:"application/json", "User-Agent":`BahnConnections/${APP_VERSION} (https://bahnconnections-de.a-stad.chatgpt.site)` } : { Accept:"application/json" };
 }
 
 export function embeddedTransitousStopId(station: Station) {
@@ -45,7 +46,7 @@ export async function resolveTransitousStopId(station: Station, signal?: AbortSi
     url.searchParams.set("mode", RAIL_MODES);
     url.searchParams.set("language", "de");
     url.searchParams.set("numResults", "12");
-    const response = await fetch(url, { signal, headers:transitousRequestHeaders() });
+    const response = await fetch(url, { signal:signal ? AbortSignal.any([signal, AbortSignal.timeout(5000)]) : AbortSignal.timeout(5000), headers:transitousRequestHeaders() });
     if (!response.ok) return null;
     const payload = await response.json() as GeocodeStop[];
     const candidates = payload

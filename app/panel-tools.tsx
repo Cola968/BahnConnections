@@ -96,8 +96,8 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
       startY:event.clientY,
       startHeight,
       lastHeight:startHeight,
-      minHeight:100,
-      maxHeight:Math.max(100, (window.visualViewport?.height ?? window.innerHeight) - headerHeight - navigationHeight - 8),
+      minHeight:64,
+      maxHeight:Math.max(64, (window.visualViewport?.height ?? window.innerHeight) - headerHeight - navigationHeight - 8),
       dragged:false,
       expandedDuringDrag:false,
       panel,
@@ -132,7 +132,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId || !onMobileStateChange || !mobileState) return;
     if (dragFrame.current !== null) { cancelAnimationFrame(dragFrame.current); dragFrame.current = null; }
-    const nextState: MobileSheetState = drag.lastHeight <= 100 ? "collapsed" : drag.lastHeight >= drag.maxHeight - 10 ? "expanded" : "half";
+    const nextState: MobileSheetState = drag.lastHeight <= 68 ? "collapsed" : drag.lastHeight >= drag.maxHeight - 10 ? "expanded" : "half";
     if (drag.dragged) event.preventDefault();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     if (drag.dragged) {
