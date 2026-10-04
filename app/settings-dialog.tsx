@@ -44,7 +44,7 @@ export function SettingsDialog(p:Props) {
 
   return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
     <header className="settings-heading">
-      <div><h2 id="settings-title">Einstellungen</h2><p>Profil, App und Plus</p></div>
+      <div><h2 id="settings-title">Einstellungen</h2></div>
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
     </header>
     <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex,"--settings-tab-offset":`${tabIndex*100}%`} as CSSProperties}>
@@ -75,14 +75,14 @@ export function SettingsDialog(p:Props) {
 
       {tab==="settings" && <>
         <section className="settings-group">
-          <div className="settings-section-heading"><h3>Oberfläche</h3><p>Nur die Optionen, die das Interface wirklich verändern.</p></div>
+          <div className="settings-section-heading"><h3>Oberfläche</h3></div>
           <div className="theme-choice" aria-label="Farbschema">{(["light","dark"] as const).map(theme=><button key={theme} aria-pressed={p.theme===theme} className={p.theme===theme ? "active" : ""} onClick={()=>p.onTheme(theme)}><UiIcon name={theme==="light"?"sun":"moon"}/><span>{theme==="light"?"Hell":"Dunkel"}</span></button>)}</div>
           <Toggle label="Größere Schrift" description="Mehr Lesbarkeit in Tafeln und Verbindungen" checked={p.largeFont} onChange={p.onLargeFont}/>
           <Toggle label="Hoher Kontrast" description="Stärkere Trennung von Text und Flächen" checked={p.highContrast} onChange={p.onContrast}/>
           <Toggle label="Animationen reduzieren" description="Weniger Bewegung bei Sheets und Navigation" checked={p.reducedMotion} onChange={p.onReducedMotion}/>
         </section>
         <section className="settings-group">
-          <div className="settings-section-heading"><h3>Standort</h3><p>Für den nächsten Bahnhof und Kartenposition.</p></div>
+          <div className="settings-section-heading"><h3>Standort</h3></div>
           <div className="settings-status-row"><span className={p.locationStatus.toLocaleLowerCase("de-DE").includes("aktiv") ? "status-dot active" : "status-dot"} aria-hidden="true"/><span><b>Standortstatus</b><small>{locationText}</small></span><button type="button" onClick={p.onRequestLocation}>Prüfen</button></div>
           <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
         </section>
@@ -91,9 +91,9 @@ export function SettingsDialog(p:Props) {
       {tab==="plans" && <>
         <div className="settings-section-heading"><h3>BahnConnections Plus</h3><p>Komfortfunktionen für häufige Fahrten. Die Basis bleibt kostenlos.</p></div>
         <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={"plan-card "+plan.id} key={plan.id}>
-          <div><h3>{plan.name}</h3><span>{plan.availability==="available"?"Aktiv":"Geplant"}</span></div>
+          <div><h3>{plan.name}</h3><span>{plan.availability==="available"?"Aktiv":"noch nicht buchbar"}</span></div>
           <ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul>
-          {plan.availability==="planned"&&<><div className="billing-price-options"><span><strong>3,99 €</strong><small>monatlich</small></span><span><strong>29,99 €</strong><small>jährlich</small></span></div><p className="settings-note">noch nicht buchbar · Start folgt später.</p></>}
+          {plan.availability==="planned"&&<><div className="billing-price-options"><span><strong>3,99 €</strong><small>monatlich</small></span><span><strong>29,99 €</strong><small>jährlich</small></span></div></>}
         </section>)}</div>
       </>}
     </div>
