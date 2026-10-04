@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import styles from "../legal.module.css";
+export const metadata:Metadata={title:"Support | BahnConnections",description:"Hilfe, Datenlöschung und Kontakt für BahnConnections."};
+export default function SupportPage(){return <main className={styles.page}><div className={styles.shell}><div className={styles.top}><Link className={styles.brand} href="/website">BahnConnections</Link><Link className={styles.back} href="/">Zur App</Link></div><article className={styles.card}>
+<h1>Support</h1><p className={styles.meta}>Hilfe für Web-App, PWA und Android-Version.</p>
+<h2>Probleme melden</h2><p>Für reproduzierbare Fehler, falsche Darstellungen oder Funktionsprobleme nutze <a href="https://github.com/Cola968/BahnConnections/issues" target="_blank" rel="noreferrer">GitHub Issues</a>. Gib nach Möglichkeit Gerät, Betriebssystem, Browser/App-Version, betroffene Station oder Verbindung und die ungefähre Uhrzeit an. Veröffentliche dort keine Passwörter, Zahlungsdaten oder andere vertrauliche Daten.</p>
+<h2>Lokale Daten löschen</h2><p>Öffne Einstellungen → Profil → Profil löschen. Favoriten, gespeicherte Routen und weitere lokale Einstellungen kannst du vollständig entfernen, indem du zusätzlich die Website-/App-Daten für BahnConnections im Browser oder in den Android-App-Einstellungen löschst.</p>
+<h2>Standortfreigabe widerrufen</h2><p>Die Standortfreigabe wird vom Browser bzw. Android-Webanbieter verwaltet und kann dort jederzeit blockiert werden. Die Kernfunktionen bleiben ohne Standort nutzbar.</p>
+<h2>Datenfehler</h2><p>Bei widersprüchlichen oder fehlenden externen Daten kann die App Informationen als unvollständig kennzeichnen. Für unmittelbar reiseentscheidende Angaben solltest du die offizielle Information des Verkehrsunternehmens gegenprüfen.</p>
+<div className={styles.links}><Link href="/privacy">Datenschutz</Link><Link href="/terms">Nutzung</Link><Link href="/website">Website</Link></div></article></div></main>}

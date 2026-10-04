@@ -1,0 +1,13 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import styles from "../legal.module.css";
+export const metadata:Metadata={title:"Nutzungsbedingungen | BahnConnections",description:"Nutzungsbedingungen und Hinweise zu BahnConnections."};
+export default function TermsPage(){return <main className={styles.page}><div className={styles.shell}><div className={styles.top}><Link className={styles.brand} href="/website">BahnConnections</Link><Link className={styles.back} href="/">Zur App</Link></div><article className={styles.card}>
+<h1>Nutzungsbedingungen</h1><p className={styles.meta}>Stand: 4. Oktober 2026</p>
+<h2>Unabhängiges Informationsangebot</h2><p>BahnConnections stellt Fahrplan-, Echtzeit-, Karten- und Reiseinformationen aus externen Quellen dar. Es besteht derzeit keine offizielle Partnerschaft mit der Deutschen Bahn AG. Marken und Quelldaten bleiben Eigentum ihrer jeweiligen Rechteinhaber.</p>
+<h2>Keine Beförderungs- oder Buchungsleistung</h2><p>BahnConnections verkauft derzeit keine Fahrkarten und schließt keinen Beförderungsvertrag. Verbindliche Angaben zu Fahrt, Tarif, Zugbindung, Erstattung und Beförderungsbedingungen erhältst du beim jeweiligen Verkehrsunternehmen oder Verkäufer.</p>
+<h2>Daten können abweichen</h2><p>Fahrplan- und Echtzeitdaten können verspätet, unvollständig oder vorübergehend nicht erreichbar sein. Die App kennzeichnet Datenlage und Quellen, kann jedoch keine durchgehende Fehlerfreiheit oder Verfügbarkeit garantieren. Kritische Reiseentscheidungen sollten zusätzlich bei der offiziellen Verkehrsquelle geprüft werden.</p>
+<h2>Standortfunktion</h2><p>Standort- und Fußwegfunktionen sind optional. Eine berechnete Route ersetzt keine Beurteilung der tatsächlichen Zugänglichkeit, Sicherheit oder lokalen Beschilderung.</p>
+<h2>Verfügbarkeit und Änderungen</h2><p>Funktionen, Datenquellen und Oberflächen können weiterentwickelt, eingeschränkt oder vorübergehend abgeschaltet werden, insbesondere wenn externe Schnittstellen ausfallen oder sich ändern.</p>
+<h2>Abonnements</h2><p>BahnConnections Plus ist derzeit vorbereitet und noch nicht öffentlich buchbar. In einer über Google Play vertriebenen Android-App werden digitale Käufe nur über einen zulässigen Play-Abrechnungsweg angeboten.</p>
+<div className={styles.links}><Link href="/privacy">Datenschutz</Link><Link href="/support">Support</Link><Link href="/website">Website</Link></div></article></div></main>}

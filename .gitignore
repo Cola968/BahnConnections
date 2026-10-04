@@ -43,3 +43,11 @@ next-env.d.ts
 site-v*.tar.gz
 .mobile-qa-*/
 .visual-qa-*/
+
+# Android release
+android/.gradle/
+android/local.properties
+android/**/build/
+android/*.jks
+android/*.keystore
+android/upload-key.jks
