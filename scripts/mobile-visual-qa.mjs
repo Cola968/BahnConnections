@@ -275,7 +275,7 @@ try {
   await screenshot(journeyLoaded ? "390-journey" : "390-planner-result");
   if (journeyLoaded) {
     const mobileJourneyText = await evaluate(`document.querySelector(".journey-card")?.textContent ?? ""`);
-    if (/Zugang\\s+(?:über|via)/i.test(mobileJourneyText)) throw new Error("Technischer Zugangszusatz ist in der mobilen Journey sichtbar");
+    if (/Zugang\s+(?:über|via)/i.test(mobileJourneyText)) throw new Error("Technischer Zugangszusatz ist in der mobilen Journey sichtbar");
     const mobileOverflow = await evaluate(`Array.from(document.querySelectorAll(".journey-card,.live-journey-leg,.leg-route-line,.live-stop-list li")).some(el=>el.scrollWidth>el.clientWidth+1)`);
     if (mobileOverflow) throw new Error("Mobile Journey hat horizontalen Overflow");
   }
