@@ -23,6 +23,9 @@
 - [ ] Auf echtem Android testen: keine Browser-Toolbar, Back, Dark Mode, Standort ablehnen/erlauben, Resume.
 - [ ] Privacy URL /privacy und Support URL /support eintragen.
 - [ ] Data Safety, Inhaltsbewertung, Zielgruppe, App-Zugriff und Werbung ausfüllen.
+- [ ] Transitous-Nutzungsbedingungen klären: öffentliche API ist laut Anbieter für Open-Source, nicht-kommerzielle Projekte vorgesehen; vor Play-Launch Freigabe/Einordnung bestätigen.
+- [ ] Eine passende Open-Source-Lizenz für das Repository bewusst festlegen, falls Transitous weiter als Produktionsquelle genutzt wird.
+- [x] Sichtbare Transitous-Quellen-/Lizenzattribution auf der Website vorbereitet.
 - [ ] vollständige rechtliche Entwickler-/Kontaktangaben auf Datenschutzseite und in Play ergänzen.
 - [ ] echtes 512×512 Icon, echte Smartphone-Screenshots und Feature Graphic 1024×500 hochladen.
 - [ ] Store-Text aus store/google-play/listing-de.md verwenden.
@@ -41,4 +44,4 @@ Erste Play-Version ohne Stripe-Kauf digitaler Plus-Funktionen veröffentlichen.
 - [ ] Kauf, Restore, Kündigung, Erstattung und Pending Purchases testen.
 
 ## Release-Gate
-Nur Produktion, wenn DAL verifiziert, AAB installierbar, Website/APIs stabil, Datenschutz/Data Safety konsistent, rechtliche Angaben vollständig, keine externen Digital-Käufe aktiv, echte Store-Assets fertig und ggf. Closed Test erfüllt sind.
+Nur Produktion, wenn DAL verifiziert, AAB installierbar, Website/APIs stabil, Datenschutz/Data Safety konsistent, rechtliche Angaben vollständig, Transitous-Nutzung/Lizenzierung geklärt, keine externen Digital-Käufe aktiv, echte Store-Assets fertig und ggf. Closed Test erfüllt sind.
