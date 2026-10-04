@@ -826,3 +826,11 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     padding-right:12px;
   }
 }
+
+
+/* Search mode owns only the left planner; never reserve the journey inspector on the right. */
+@media (min-width:1024px) {
+  .desktop-workspace.desktop-search-mode.has-primary-panel .map-stage {
+    padding-right:12px;
+  }
+}
