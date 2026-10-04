@@ -327,3 +327,289 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     box-shadow:none!important;
   }
 }
+
+
+/* V48 structural rework · visible composition change */
+@media (max-width:1023px) and (min-height:521px) {
+  .app-shell {
+    --app-header:calc(64px + env(safe-area-inset-top,0px));
+    --bottom-navigation:calc(74px + env(safe-area-inset-bottom,0px));
+    --sheet-limit:calc(min(100dvh,var(--viewport-height,100dvh)) - var(--app-header) - var(--bottom-navigation) - 14px);
+  }
+
+  .topbar {
+    grid-template-columns:auto 1fr auto;
+    grid-template-rows:44px;
+    height:var(--app-header);
+    padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+    pointer-events:none;
+  }
+
+  .topbar>* { pointer-events:auto; }
+
+  .brand {
+    grid-column:1;
+    grid-row:1;
+    width:46px;
+    min-width:46px;
+    height:46px;
+    padding:0;
+    justify-content:center;
+    border-radius:17px;
+  }
+
+  .brand-name,.beta { display:none!important; }
+
+  .brand-mark {
+    width:30px;
+    height:30px;
+    border-radius:10px;
+  }
+
+  .header-actions {
+    grid-column:3;
+    grid-row:1;
+    width:46px;
+    min-width:46px;
+    height:46px;
+  }
+
+  .mobile-map-view-button {
+    width:46px;
+    height:46px;
+  }
+
+  .topbar>.station-search {
+    position:fixed!important;
+    z-index:calc(var(--z-navigation) + 2);
+    top:auto!important;
+    right:12px!important;
+    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 14px)!important;
+    left:12px!important;
+    width:auto!important;
+    height:60px;
+    padding-left:16px;
+    border-radius:22px;
+    transition:
+      transform var(--motion-panel) var(--motion-native),
+      opacity var(--motion-fast),
+      bottom var(--motion-panel) var(--motion-native);
+  }
+
+  .topbar>.station-search input {
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+
+  .topbar>.station-search>button[type="submit"] {
+    min-width:84px;
+    height:48px;
+    border-radius:17px;
+    font-weight:700;
+  }
+
+  .app-shell.has-primary-panel .topbar>.station-search {
+    opacity:0;
+    transform:translateY(18px) scale(.98);
+    pointer-events:none;
+  }
+
+  .map-stage {
+    padding-top:0!important;
+    padding-bottom:0!important;
+  }
+
+  .location-tools {
+    top:calc(var(--app-header) + 14px)!important;
+    right:12px;
+  }
+
+  .mobile-navigation {
+    bottom:calc(8px + var(--keyboard-inset,0px));
+    height:calc(62px + env(safe-area-inset-bottom,0px));
+    width:min(520px,calc(100% - 24px));
+    padding:4px 7px calc(4px + env(safe-area-inset-bottom,0px));
+    border-radius:25px;
+  }
+
+  .mobile-navigation button {
+    min-height:50px;
+    gap:2px;
+    font-size:.70rem;
+  }
+
+  .mobile-navigation button svg {
+    width:21px;
+    height:21px;
+  }
+
+  .app-shell:not(.has-primary-panel) .mobile-navigation {
+    transform:translateX(-50%);
+  }
+
+  .mobile-sheet-panel {
+    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px))!important;
+  }
+
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 10px)!important;
+    left:10px!important;
+    right:10px!important;
+    width:auto!important;
+    border-radius:30px!important;
+  }
+
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel {
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    border-radius:30px 30px 0 0!important;
+  }
+
+  .mobile-sheet-panel>.panel-tools {
+    min-height:80px;
+    margin-bottom:10px;
+  }
+
+  .mobile-sheet-summary b {
+    font-size:1.12rem;
+    font-weight:760;
+  }
+
+  .mobile-sheet-summary small {
+    margin-top:2px;
+    font-size:.78rem;
+  }
+
+  .journey-mobile-overview {
+    margin:4px 0 22px;
+    padding:0;
+    border:0;
+    background:transparent;
+  }
+
+  .journey-mobile-route .journey-time-range {
+    font-size:clamp(1.8rem,8vw,2.45rem);
+    line-height:.96;
+    font-weight:800;
+    letter-spacing:-.055em;
+  }
+
+  .journey-mobile-route>small {
+    margin-top:8px;
+    font-size:.86rem;
+  }
+
+  .journey-mobile-overview>button {
+    align-self:flex-start;
+    min-height:42px;
+    padding:0 14px;
+    border-radius:14px;
+  }
+
+  .station-section-tabs {
+    position:sticky;
+    top:80px;
+    z-index:7;
+    padding:4px;
+    border-radius:16px;
+    background:color-mix(in srgb,var(--elevated) 88%,transparent);
+    -webkit-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
+  }
+}
+
+/* Desktop changes composition too: larger map, narrower instrument-like sidebars. */
+@media (min-width:1024px) {
+  .desktop-workspace {
+    --workspace-left:286px;
+    --workspace-right:360px;
+    --app-header:74px;
+  }
+
+  .desktop-workspace .topbar {
+    grid-template-columns:190px max-content minmax(280px,1fr) auto;
+    gap:18px;
+    padding:0 18px;
+  }
+
+  .desktop-workspace.desktop-search-mode .map-stage {
+    padding-left:calc(var(--workspace-left) + 34px);
+  }
+
+  .desktop-workspace.has-primary-panel .map-stage {
+    padding-right:calc(var(--workspace-right) + 34px);
+  }
+
+  .desktop-workspace .map-canvas {
+    border-radius:28px;
+  }
+
+  .desktop-workspace .floating-panel {
+    top:calc(var(--app-header) + 16px);
+    right:16px;
+    bottom:16px;
+    width:var(--workspace-right);
+    border-radius:28px;
+  }
+
+  .desktop-workspace.desktop-search-mode .explore-card {
+    left:16px;
+    width:var(--workspace-left);
+    padding:28px 22px;
+  }
+
+  .desktop-workspace.desktop-search-mode .route-discovery-head h1 {
+    margin:0 0 28px;
+    font-size:2.15rem;
+    line-height:.98;
+    letter-spacing:-.055em;
+  }
+
+  .desktop-workspace.desktop-search-mode .route-station-search {
+    min-height:58px;
+    border-radius:16px;
+  }
+
+  .desktop-workspace.desktop-search-mode .planner-time-row {
+    margin-top:18px;
+  }
+
+  .desktop-workspace .journey-card .panel-body {
+    padding-top:6px;
+  }
+
+  .desktop-workspace .journey-desktop-identity {
+    margin:0 0 24px;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--designer-hairline);
+  }
+
+  .desktop-workspace .journey-desktop-identity b {
+    display:block;
+    font-size:2rem;
+    line-height:.95;
+    font-weight:800;
+    letter-spacing:-.055em;
+  }
+
+  .desktop-workspace .journey-desktop-identity span {
+    display:block;
+    margin-top:10px;
+    font-size:.95rem;
+    line-height:1.35;
+    color:var(--muted);
+  }
+}
+
+@media (min-width:1440px) {
+  .desktop-workspace {
+    --workspace-left:300px;
+    --workspace-right:372px;
+  }
+}
