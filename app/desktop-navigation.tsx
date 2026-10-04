@@ -34,6 +34,5 @@ export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value:
     <button type="button" onClick={onMore} className={moreOpen ? "active" : ""} aria-expanded={moreOpen} aria-controls="more-menu">
       <span className="mobile-nav-icon"><UiIcon name="more" /></span><span className="mobile-nav-label">Mehr</span>
     </button>
-    <i className="mobile-navigation-indicator" aria-hidden="true" />
   </nav>;
 }
