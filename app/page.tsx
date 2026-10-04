@@ -1108,7 +1108,7 @@ export default function Home() {
     setExploreOpen(!desktopWorkspace && view === "connections" && !journey);
     if (view === "map" && !desktopWorkspace) { setMobileSheetState("collapsed"); return; }
     setMobileSheetHeight(null);
-    setMobileSheetState(view === "connections" && !journey ? "expanded" : "half");
+    setMobileSheetState(view === "connections" && !journey && !desktopWorkspace ? "half" : view === "connections" && !journey ? "expanded" : "half");
     if (view === "departures") {
       setSelectedLiveTrip(null); setStationPanel("live"); setSidebarCollapsed(false);
       if (!selected) selectStation(allStations.find(station => station.id === startId) ?? allStations[0]);
@@ -1162,6 +1162,12 @@ export default function Home() {
           <button className="round-button settings-trigger" onClick={()=>setSettingsOpen(true)} aria-label="Einstellungen und Profil">{profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
         </div>
       </header>
+
+      {!desktopWorkspace && !primaryPanelOpen && !liveFiltersOpen && !moreMenuOpen && !settingsOpen && !helpOpen && (
+        <div className="mobile-search-dock" aria-label="Schnellsuche">
+          <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} placeholder="Bahnhof, Ort oder Kürzel" submitLabel="Anzeigen" liveTransit />
+        </div>
+      )}
 
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
         <div ref={mapElementRef} className="map-canvas" />
