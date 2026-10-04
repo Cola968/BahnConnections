@@ -9,6 +9,7 @@ import "./styles/liquid-glass.css";
 import "./styles/profile.css";
 import "./styles/content-layout.css";
 import "./styles/designer-v48.css";
+import "./styles/v49-ui.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
