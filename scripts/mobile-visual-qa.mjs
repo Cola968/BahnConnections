@@ -240,7 +240,10 @@ try {
   await screenshot('390-menu');
   await pause(250);
   await tap(".map-menu-dismiss button");
+  const navLensBefore = await evaluate(`getComputedStyle(document.querySelector(".mobile-navigation"),"::after").transform`);
   await tap(".mobile-navigation button:nth-child(2)");
+  const navLensAfter = await evaluate(`getComputedStyle(document.querySelector(".mobile-navigation"),"::after").transform`);
+  if (!navLensBefore || !navLensAfter || navLensBefore === navLensAfter || navLensAfter === "none") throw new Error("Mobile Navigationslinse bewegt sich beim Ansichtswechsel nicht: "+JSON.stringify({navLensBefore,navLensAfter}));
   await pause(700);
   snapshots.push(await layoutSnapshot("390x844 planner"));
   await screenshot("390-planner");
