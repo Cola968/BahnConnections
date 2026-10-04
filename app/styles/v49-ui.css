@@ -197,8 +197,15 @@
   }
 
   .v49-shell .mobile-navigation::after {
+    content:"";
+    position:absolute;
+    z-index:1;
     top:4px!important;
     bottom:4px!important;
+    left:8px!important;
+    width:calc((100% - 16px) / 4)!important;
+    pointer-events:none;
+    transform:translateX(var(--mobile-nav-offset,0%));
     border-radius:19px!important;
     border-color:color-mix(in srgb,var(--glass-stroke) 76%,transparent)!important;
     background:
