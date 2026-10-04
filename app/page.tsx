@@ -1203,9 +1203,10 @@ export default function Home() {
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
             <div className="map-menu-dismiss"><strong>Mehr</strong><button type="button" onClick={() => setMoreMenuOpen(false)} aria-label="Mehr schließen"><UiIcon name="close" /></button></div>
             <div className="simple-more-list">
-              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><span>Einstellungen & Profil</span><small>Profil, Darstellung und Standort</small></button>
-              <a href="/install"><span>App & Updates</span><small>Installieren oder aktualisieren</small></a>
-              <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><span>Hilfe & Daten</span><small>Quellen, Datenschutz und Methodik</small></button>
+              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="settings"/><span><b>Einstellungen</b><small>Profil, Darstellung, Standort</small></span></button>
+              <button type="button" onClick={() => {navigate("stats");setMoreMenuOpen(false);}}><UiIcon name="network"/><span><b>Netzreport</b><small>Live- und Netzkennzahlen</small></span></button>
+              <a href="/install"><UiIcon name="arrow"/><span><b>App & Updates</b><small>Installieren und aktualisieren</small></span></a>
+              <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen und Datenschutz</small></span></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
           </div>}
