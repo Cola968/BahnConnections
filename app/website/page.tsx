@@ -240,7 +240,7 @@ export default function WebsitePage() {
           <div className={styles.browserFacts}>
             <div><strong>Desktop</strong><span>große Karte und Seitenpanel</span></div>
             <div><strong>Mobil</strong><span>kompakte Navigation und Bottom-Sheet</span></div>
-            <div><strong>PWA</strong><span>Installation ohne separaten App-Store</span></div>
+            <div><strong>Android</strong><span>Google-Play-Veröffentlichung in Vorbereitung</span></div>
             <div><strong>Accessibility</strong><span>Tastaturnavigation, System-Dark-Mode und Reduced Motion</span></div>
           </div>
         </section>
@@ -297,6 +297,9 @@ export default function WebsitePage() {
             <a href="#daten">Daten</a>
             <a href="#db">DB-Perspektive</a>
             <a href="#hilfe">Hilfe</a>
+            <Link href="/privacy">Datenschutz</Link>
+            <Link href="/terms">Nutzung</Link>
+            <Link href="/support">Support</Link>
             <a href="https://github.com/Cola968/BahnConnections" target="_blank" rel="noreferrer">GitHub <External /></a>
           </nav>
         </div>
