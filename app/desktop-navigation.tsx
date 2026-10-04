@@ -24,7 +24,7 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
 
 export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value: DesktopView; onChange: (view: DesktopView) => void; onMore: () => void; moreOpen: boolean }) {
   const selectedIndex = moreOpen ? 3 : Math.max(0,mobileDestinations.findIndex(item => item.view === value));
-  return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation" style={{ "--mobile-nav-index":selectedIndex } as CSSProperties}>
+  return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation" style={{ "--mobile-nav-index":selectedIndex, "--mobile-nav-offset":`${selectedIndex*100}%` } as CSSProperties}>
     {mobileDestinations.map(({ view, label, icon }) => {
       const active=!moreOpen && value===view;
       return <button key={view} type="button" className={active ? "active" : ""} aria-current={active ? "page" : undefined} aria-label={view === "connections" ? "Planen" : label} onClick={() => onChange(view)}>
