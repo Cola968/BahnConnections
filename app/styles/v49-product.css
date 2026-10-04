@@ -653,3 +653,28 @@ html[data-motion="reduced"] .v49-shell .board-row-detail {
     margin-top:12px!important;
   }
 }
+
+
+/* V49 planner: no overlay CTA. The 62dvh preset keeps the primary flow reachable. */
+@media (max-width:1023px) {
+  .v49-shell .explore-card .panel-body {
+    padding-bottom:18px!important;
+    scroll-padding-top:22px;
+    scroll-padding-bottom:22px;
+  }
+  .v49-shell .explore-card .plan-button,
+  .v49-shell .explore-card .panel-body:has(.route-options[open]) .plan-button {
+    position:relative!important;
+    bottom:auto!important;
+    z-index:1!important;
+    margin-top:12px!important;
+    margin-bottom:0!important;
+  }
+  .v49-shell .route-search-pair,
+  .v49-shell .swap-button,
+  .v49-shell .route-options,
+  .v49-shell .planner-types {
+    scroll-margin-top:28px;
+    scroll-margin-bottom:28px;
+  }
+}
