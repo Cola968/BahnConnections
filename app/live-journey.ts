@@ -315,7 +315,7 @@ async function fetchJsonWithTimeout<T>(url: URL, signal?: AbortSignal, timeout =
   else signal?.addEventListener("abort", abort, { once:true });
   const timer = setTimeout(abort, timeout);
   try {
-    const response = await fetch(url, { signal:controller.signal, headers:{ Accept:"application/json" } });
+    const response = await fetch(url, { signal:controller.signal, headers:transitousRequestHeaders() });
     if (!response.ok) throw new Error(`${url.hostname} ${response.status}`);
     return await response.json() as T;
   } finally {
@@ -484,7 +484,7 @@ async function fetchTransitousTripLegs(tripId: string, signal?: AbortSignal) {
     url.searchParams.set("detailedLegs", "true");
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
-    const response = await fetch(url, { signal, headers:transitousRequestHeaders() });
+    const response = await fetch(url, { signal:signal ? AbortSignal.any([signal, AbortSignal.timeout(5000)]) : AbortSignal.timeout(5000), headers:transitousRequestHeaders() });
     if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
     const payload = await response.json() as { legs?: ApiLeg[] };
     return (payload.legs ?? []).map(parseLeg).filter((item): item is LiveJourneyLeg => Boolean(item));
@@ -498,7 +498,7 @@ type CompletionStopTime = { tripId?: string; headsign?: string; tripTo?: { name?
 type CompletionContext = { stopId:string; stopName:string; readyAt:string; prefix:LiveJourneyLeg[] };
 
 async function completeMissingDirectTrips(request: LiveJourneyRequest, base: LiveJourney[]) {
-  if (request.arriveBy) return [];
+  if (request.arriveBy || base.length >= 6) return [];
   const contexts: CompletionContext[] = [];
   const originId = await resolveTransitousStopId(request.from, request.signal);
   if (originId) contexts.push({ stopId:originId, stopName:request.from.name, readyAt:request.departure, prefix:[] });
@@ -512,7 +512,7 @@ async function completeMissingDirectTrips(request: LiveJourneyRequest, base: Liv
   }
   const uniqueContexts = contexts.filter((item, index, items) => items.findIndex((candidate) => candidate.stopId === item.stopId && candidate.readyAt.slice(0,16) === item.readyAt.slice(0,16)) === index);
   const completed: LiveJourney[] = [];
-  await Promise.allSettled(uniqueContexts.map(async (context) => {
+  await Promise.allSettled(uniqueContexts.slice(0,3).map(async (context) => {
     const url = new URL("https://api.transitous.org/api/v6/stoptimes");
     url.searchParams.set("stopId", context.stopId);
     url.searchParams.set("time", context.readyAt);
@@ -522,7 +522,7 @@ async function completeMissingDirectTrips(request: LiveJourneyRequest, base: Liv
     url.searchParams.set("mode", RAIL_MODES);
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
-    const response = await fetch(url, { signal:request.signal, headers:transitousRequestHeaders() });
+    const response = await fetch(url, { signal:request.signal ? AbortSignal.any([request.signal, AbortSignal.timeout(6500)]) : AbortSignal.timeout(6500), headers:transitousRequestHeaders() });
     if (!response.ok) return;
     const payload = await response.json() as { stopTimes?: CompletionStopTime[] };
     const ready = new Date(context.readyAt).getTime() + request.minTransferMinutes * 60_000;
@@ -634,7 +634,7 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
   const transitousTask = (async () => {
     const [fromPlace, toPlace] = await Promise.all([transitousPlace(request.from, request.signal), transitousPlace(request.to, request.signal)]);
     const results = await Promise.allSettled([makeUrl(fromPlace, toPlace, false), makeUrl(fromPlace, toPlace, true)].map(async (url) => {
-      const response = await fetch(url, { signal:request.signal, headers:transitousRequestHeaders() });
+      const response = await fetch(url, { signal:request.signal ? AbortSignal.any([request.signal, AbortSignal.timeout(6500)]) : AbortSignal.timeout(6500), headers:transitousRequestHeaders() });
       if (!response.ok) throw new Error(`Verbindungssuche ${response.status}`);
       return await response.json() as { itineraries?: ApiItinerary[] };
     }));

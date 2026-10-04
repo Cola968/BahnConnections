@@ -197,7 +197,10 @@ try {
   await command('Page.navigate',{url});
   await waitFor(`document.querySelectorAll('.board-row-summary').length > 0`, 'Station fixture missing');
   await waitFor(`document.querySelectorAll('.station-line-row').length===18`, 'All 18 lines must load without filtering');
-  await waitFor(`document.querySelectorAll('path.station-trip-preview').length>0`, 'Lines must appear on the map automatically');
+  await waitFor(`Number(document.querySelector('[data-route-layers]')?.dataset.routeLayers)>0 && Boolean(document.querySelector('.leaflet-overlay-pane canvas'))`, 'Lines must appear on the map automatically');
+  await command('Input.synthesizePinchGesture',{x:190,y:260,scaleFactor:1.4,relativeSpeed:400,gestureSourceType:'touch'});
+  await pause(700);
+  if(await evaluate(`!document.querySelector('.station-card') || Number(document.querySelector('[data-route-layers]')?.dataset.routeLayers)===0`))throw new Error('Pinch zoom lost selected station or routes');
   async function inspect(label) {
     const result=await evaluate(`(() => {
       const panel=document.querySelector('.floating-panel'),head=panel?.querySelector('.panel-tools'),body=panel?.querySelector('.panel-body');
@@ -226,8 +229,21 @@ try {
       console.log("Checking "+width+"x"+height+" "+theme+" "+font);
       const label=width+'x'+height+' '+theme+' '+font;
       await inspect(label+' board');
+      if (width<1024 && height>520) {
+        const density=await evaluate(`(() => {const panel=document.querySelector('.floating-panel');return {height:panel.getBoundingClientRect().height,viewport:innerHeight,markers:document.querySelectorAll('path.station-point').length};})()`);
+        if(density.height>Math.min(height*.34,280)+2)throw new Error('Default panel obscures the map: '+JSON.stringify(density));
+      }
+      if ((width===390||width===1440) && theme==='light' && font==='normal') {
+        const shot=await command('Page.captureScreenshot',{format:'png'});
+        await writeFile(join(outputDirectory,width+'-map-first.png'),Buffer.from(shot.data,'base64'));
+      }
+
       await evaluate(`document.querySelector('.panel-body').scrollTop=160`);
       await inspect(label+' scrolled');
+      if(width===390 && theme==='light' && font==='normal') {
+        const shot=await command('Page.captureScreenshot',{format:'png'});
+        await writeFile(join(outputDirectory,'390-board-rows.png'),Buffer.from(shot.data,'base64'));
+      }
       await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
       await tap('.station-section-tabs button:nth-child(2)');
       await inspect(label+' lines');
@@ -238,11 +254,19 @@ try {
   await setViewport(390,844);
   await tap('.mobile-sheet-actions button:last-child');
   await pause(1200);
-  if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore,path.station-trip-preview'))`))throw new Error('Close left station state or map geometry behind');
+  if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore')) || Number(document.querySelector('[data-route-layers]')?.dataset.routeLayers)>0`))throw new Error('Close left station state or map geometry behind');
   // Exercise the planner, journey inspector and delayed response after closing.
   await tap('.mobile-navigation button:nth-child(2)');
+  const motion=await evaluate(`(() => {const nav=document.querySelector('.mobile-navigation'); const style=getComputedStyle(nav,'::before');return {tab:nav.style.getPropertyValue('--active-tab'),duration:style.transitionDuration};})()`);
+  if(motion.tab!=='1'||motion.duration==='0s')throw new Error('Tab indicator motion missing: '+JSON.stringify(motion));
+  await evaluate(`document.documentElement.dataset.motion='reduced'`);
+  if(await evaluate(`getComputedStyle(document.querySelector('.mobile-navigation'),'::before').transitionDuration!=='0s'`))throw new Error('Reduced motion ignored');
+  await evaluate(`document.documentElement.dataset.motion='full'`);
   await tap('.plan-button');
+  const clock=await evaluate(`getComputedStyle(document.querySelector('.plan-button .clock-hands')).animationName`);
+  if(clock!=='clock-turn')throw new Error('Loading clock missing: '+clock);
   await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Journey missing');
+  await waitFor(`Number(document.querySelector('[data-rail-points]')?.dataset.railPoints)>0`,'Rail worker must return surveyed route geometry');
   for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,600],[1440,900]]) {
     await setViewport(width,height);
     for(const font of ['normal','large']) {
@@ -262,7 +286,7 @@ try {
   await tap('.mobile-sheet-actions button:last-child');
   await pause(1400);
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.explore-card,.mobile-sheet-restore'))`))throw new Error('Late planner response resurrected the closed view');
-  await writeFile(join(outputDirectory,'content-layout-report.json'),JSON.stringify({fixture:true,realDevice:false,checks,closeResets:true,automaticLines:18},null,2));
+  await writeFile(join(outputDirectory,'content-layout-report.json'),JSON.stringify({fixture:true,realDevice:false,checks,closeResets:true,automaticLines:18,pinchPreservesRoutes:true,tabMotion:true,loadingClock:true,reducedMotion:true},null,2));
   console.log(JSON.stringify({passed:checks.length,closeResets:true,automaticLines:18,outputDirectory}));
 } finally {
   shuttingDown=true;

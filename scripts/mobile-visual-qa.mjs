@@ -43,6 +43,7 @@ let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
+  "--window-size=2560,1600",
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
@@ -129,7 +130,7 @@ try {
     const id = ++commandId;
     return new Promise((resolveCommand, rejectCommand) => {
       const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },20000);
-      pending.set(id, { timer, resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
+      pending.set(id, { timer, resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(new Error(`${method}: ${error.message} ${JSON.stringify(params)}`)); } });
       socket.send(JSON.stringify({ id, method, params }));
     });
   }

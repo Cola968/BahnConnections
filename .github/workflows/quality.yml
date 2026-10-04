@@ -26,6 +26,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm audit:realtime
       - run: pnpm audit:ui
+      - run: node scripts/map-geometry-audit.mjs
       - run: pnpm audit:billing
       - run: pnpm audit:board
       - run: pnpm build
@@ -43,6 +44,7 @@ jobs:
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
+          node scripts/content-layout-qa.mjs http://localhost:3000/?station=berlin work/mobile-qa/layout
       - name: Live network sources
         continue-on-error: true
         run: timeout 180 pnpm audit:network > work/network-audit.json 2>&1
