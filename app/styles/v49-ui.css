@@ -226,20 +226,49 @@ button:active:not(:disabled) {
   }
 
   .planner-time-mode {
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
     padding:3px!important;
     border:1px solid var(--v49-hairline)!important;
     border-radius:15px!important;
     background:color-mix(in srgb,var(--soft) 80%,transparent)!important;
   }
 
+  .planner-time-mode::after {
+    position:absolute;
+    z-index:0;
+    top:3px;
+    bottom:3px;
+    left:3px;
+    width:calc((100% - 6px)/2);
+    border:1px solid color-mix(in srgb,var(--glass-stroke) 58%,transparent);
+    border-radius:12px;
+    background:
+      linear-gradient(145deg,color-mix(in srgb,var(--glass-highlight) 70%,transparent),transparent 48%),
+      var(--v49-glass-strong);
+    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight-soft) 80%,transparent),0 4px 12px color-mix(in srgb,var(--glass-depth) 14%,transparent);
+    content:"";
+    pointer-events:none;
+    transform:translateX(0);
+    transition:transform var(--v49-lens) var(--v49-spring);
+  }
+
+  .planner-time-mode.arrive-by::after { transform:translateX(100%); }
+
   .planner-time-mode button {
+    position:relative;
+    z-index:1;
     border-radius:12px!important;
+    background:transparent!important;
+    box-shadow:none!important;
     transition:transform var(--v49-state) var(--v49-spring),background-color var(--v49-state),box-shadow var(--v49-state)!important;
   }
 
   .planner-time-mode button.active {
-    background:var(--v49-glass-strong)!important;
-    box-shadow:inset 0 1px 0 var(--glass-highlight-soft),0 4px 12px color-mix(in srgb,var(--glass-depth) 14%,transparent)!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:var(--ink)!important;
   }
 
   .plan-button {
@@ -552,6 +581,7 @@ html[data-theme="dark"] .planner-time-mode button.active {
   .app-shell.has-primary-panel .mobile-sheet-panel,
   .mobile-sheet-panel>.panel-body,
   .station-section-tabs::after,
+  .planner-time-mode::after,
   .station-section-tabs + div:not([hidden]),
   .station-info,
   .settings-dialog-v48,
@@ -567,6 +597,7 @@ html[data-theme="dark"] .planner-time-mode button.active {
 html[data-motion="reduced"] .mobile-sheet-panel,
 html[data-motion="reduced"] .mobile-sheet-panel>.panel-body,
 html[data-motion="reduced"] .station-section-tabs::after,
+html[data-motion="reduced"] .planner-time-mode::after,
 html[data-motion="reduced"] .station-section-tabs + div:not([hidden]),
 html[data-motion="reduced"] .station-info,
 html[data-motion="reduced"] .settings-dialog-v48,
