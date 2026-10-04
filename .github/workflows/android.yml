@@ -30,10 +30,18 @@ jobs:
           "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
       - name: Build debug APK
         run: gradle -p android :app:assembleDebug --stacktrace
+      - name: Validate signed release AAB with throwaway CI key
+        run: |
+          keytool -genkeypair -noprompt             -keystore "$RUNNER_TEMP/ci-upload.jks"             -storepass ci-test-only             -keypass ci-test-only             -alias ci-upload             -keyalg RSA             -keysize 2048             -validity 365             -dname "CN=BahnConnections CI, O=BahnConnections, C=DE"
+          ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/ci-upload.jks"           ANDROID_KEYSTORE_PASSWORD="ci-test-only"           ANDROID_KEY_ALIAS="ci-upload"           ANDROID_KEY_PASSWORD="ci-test-only"           gradle -p android :app:bundleRelease --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: bahnconnections-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bahnconnections-ci-validation-aab-not-for-play
+          path: android/app/build/outputs/bundle/release/app-release.aab
 
   release:
     if: github.event_name == 'workflow_dispatch'
