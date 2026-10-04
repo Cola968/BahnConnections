@@ -3,6 +3,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useId, useMemo, useState } from "react";
 import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
+import { compactStationLabel } from "./transit-style";
 
 function normalise(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de").replace(/[^a-z0-9]+/g, " ").trim();
@@ -151,7 +152,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
           {suggestions.map((station, index) => (
             <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
               <span className="station-symbol"><UiIcon name="train" /></span>
-              <span><b>{station.name}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
+              <span><b>{compactStationLabel(station.name) ?? station.name}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}

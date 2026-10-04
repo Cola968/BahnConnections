@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { SavedRoutesPanel } from "./saved-routes-panel";
@@ -36,19 +36,69 @@ export function SettingsDialog(p:Props) {
   function save(event:FormEvent) {
     event.preventDefault();
     const saved=p.onProfile(parseLocalProfile({name,homeStationId:home}));
-    setMessage(saved ? "Profil auf diesem Gerät gespeichert." : "Profil gilt für diese Sitzung. Der Browser erlaubt gerade keine Speicherung.");
+    setMessage(saved ? "Gespeichert." : "Für diese Sitzung übernommen.");
   }
   const homeStation=p.stations.find(station=>station.id===p.profile.homeStationId);
-  return <dialog ref={dialog} className="settings-dialog" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
-    <header className="settings-heading"><div><small>DEIN BAHNCONNECTIONS</small><h2 id="settings-title">Einstellungen</h2></div><button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button></header>
-    <nav className="settings-tabs" aria-label="Einstellungsbereiche">{([['profile','Profil'],['settings','Darstellung'],['plans','Abonnement']] as const).map(([id,label])=><button type="button" key={id} aria-pressed={tab===id} className={tab===id ? "active" : ""} onClick={()=>setTab(id)}>{label}</button>)}</nav>
+  const tabIndex=tab==="profile"?0:tab==="settings"?1:2;
+  const locationText=`${p.locationStatus}${p.locationAccuracy!==undefined ? ` · ±${Math.round(p.locationAccuracy)} m` : ""}`;
+
+  return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
+    <header className="settings-heading">
+      <div><h2 id="settings-title">Einstellungen</h2></div>
+      <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
+    </header>
+    <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex,"--settings-tab-offset":`${tabIndex*100}%`} as CSSProperties}>
+      {([["profile","Profil"],["settings","App"],["plans","Plus"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={tab===id} className={tab===id ? "active" : ""} onClick={()=>setTab(id)}>{label}</button>)}
+      <i className="settings-tab-indicator" aria-hidden="true"/>
+    </nav>
+
     <div className="settings-content" key={tab}>
-      {tab==="profile" && <><div className="profile-overview"><span className="profile-avatar" aria-hidden="true">{p.profile.initials||<UiIcon name="user"/>}</span><div><h3>{p.profile.name||"Dein Profil"}</h3><p>Free · {p.favoriteCount} Favoriten</p></div></div><form onSubmit={save} className="profile-form"><label>Dein Name<input autoComplete="nickname" maxLength={40} value={name} onChange={event=>setName(event.target.value)} placeholder="Wie heißt du?"/></label><label>Heimatbahnhof<select value={home} onChange={event=>setHome(event.target.value)}><option value="">Bahnhof auswählen</option>{p.stations.map(station=><option key={station.id} value={station.id}>{station.name}</option>)}</select></label><button type="submit" className="settings-primary">Profil speichern</button><p role="status" className="settings-message">{message}</p></form>{homeStation&&<button className="settings-link" onClick={()=>{p.onHomeStation(homeStation);p.onClose();}}>Abfahrten in {homeStation.name}</button>}<button className="settings-link" onClick={()=>{setName('');setHome('');p.onProfile(parseLocalProfile(null));setMessage('Lokales Profil gelöscht.');}}>Profil löschen</button><p className="settings-note">Dein Profil bleibt auf diesem Gerät. Es ist kein Online-Konto und wird nicht synchronisiert.</p><SavedRoutesPanel routes={p.savedRoutes} onOpen={p.onOpenRoute} onRemove={p.onRemoveRoute}/></>}
-      {tab==="settings" && <><section className="settings-group"><h3>Darstellung</h3><div className="theme-choice">{(['light','dark'] as const).map(theme=><button key={theme} aria-pressed={p.theme===theme} className={p.theme===theme ? 'active' : ''} onClick={()=>p.onTheme(theme)}><UiIcon name={theme==='light'?'sun':'moon'}/>{theme==='light'?'Hell':'Dunkel'}</button>)}</div><Toggle label="Größere Schrift" checked={p.largeFont} onChange={p.onLargeFont}/><Toggle label="Hoher Kontrast" checked={p.highContrast} onChange={p.onContrast}/><Toggle label="Animationen reduzieren" checked={p.reducedMotion} onChange={p.onReducedMotion}/></section><section className="settings-group"><h3>Standort</h3><Toggle label="Bei erteilter Freigabe automatisch aktivieren" checked={p.autoLocation} onChange={p.onAutoLocation}/><p className="settings-note">{p.locationStatus}{p.locationAccuracy!==undefined ? ` · Genauigkeit ca. ${Math.round(p.locationAccuracy)} m` : ''}</p><button className="settings-link" onClick={p.onRequestLocation}><UiIcon name="location"/>Standort freigeben oder erneut versuchen</button><p className="settings-note">Die Freigabe verwaltest du im Browser. Dein Standort wird nicht im Profil gespeichert.</p></section></>}
-      {tab==="plans" && <><h3>Dein Abonnement</h3><p className="settings-note">Die Basisfunktionen und lokale Pendelstrecken bleiben kostenlos. Plus ist in Vorbereitung: 3,99 € monatlich oder 29,99 € jährlich. Noch nicht buchbar.</p><div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={'plan-card '+plan.id} key={plan.id}><div><h3>{plan.name}</h3><span>{plan.availability==='available'?'Dein Tarif':'In Vorbereitung'}</span></div><ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul>{plan.availability==='planned'&&<><div className="billing-price-options"><span><strong>3,99 €</strong> / Monat</span><span><strong>29,99 €</strong> / Jahr<small>Spart 17,89 € gegenüber 12 Monatszahlungen</small></span></div><small>Geplante Funktionen · noch nicht buchbar</small><p className="settings-note">Stripe-Checkout und Abo-Verwaltung werden im Testmodus eingerichtet. Es werden noch keine Zahlungen angenommen.</p></>}</section>)}</div></>}
+      {tab==="profile" && <>
+        <div className="profile-overview">
+          <span className="profile-avatar" aria-hidden="true">{p.profile.initials||<UiIcon name="user"/>}</span>
+          <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{homeStation ? ` · ${homeStation.name}` : ""}</p></div>
+        </div>
+        <form onSubmit={save} className="profile-form">
+          <label><span>Name</span><input autoComplete="nickname" maxLength={40} value={name} onChange={event=>setName(event.target.value)} placeholder="Wie heißt du?"/></label>
+          <label><span>Heimatbahnhof</span><select value={home} onChange={event=>setHome(event.target.value)}><option value="">Nicht festgelegt</option>{p.stations.map(station=><option key={station.id} value={station.id}>{station.name}</option>)}</select></label>
+          <button type="submit" className="settings-primary">Speichern</button>
+          {message&&<p role="status" className="settings-message">{message}</p>}
+        </form>
+        {homeStation&&<button className="settings-link settings-quick-action" onClick={()=>{p.onHomeStation(homeStation);p.onClose();}}><UiIcon name="clock"/>Abfahrten am Heimatbahnhof</button>}
+        <SavedRoutesPanel routes={p.savedRoutes} onOpen={p.onOpenRoute} onRemove={p.onRemoveRoute}/>
+        <details className="settings-danger-zone">
+          <summary>Lokale Profildaten</summary>
+          <p>Profil und Heimatbahnhof liegen nur auf diesem Gerät.</p>
+          <button className="settings-link danger" onClick={()=>{setName("");setHome("");p.onProfile(parseLocalProfile(null));setMessage("Profil zurückgesetzt.");}}>Profil zurücksetzen</button>
+        </details>
+      </>}
+
+      {tab==="settings" && <>
+        <section className="settings-group">
+          <div className="settings-section-heading"><h3>Oberfläche</h3></div>
+          <div className="theme-choice" aria-label="Farbschema">{(["light","dark"] as const).map(theme=><button key={theme} aria-pressed={p.theme===theme} className={p.theme===theme ? "active" : ""} onClick={()=>p.onTheme(theme)}><UiIcon name={theme==="light"?"sun":"moon"}/><span>{theme==="light"?"Hell":"Dunkel"}</span></button>)}</div>
+          <Toggle label="Größere Schrift" description="Mehr Lesbarkeit in Tafeln und Verbindungen" checked={p.largeFont} onChange={p.onLargeFont}/>
+          <Toggle label="Hoher Kontrast" description="Stärkere Trennung von Text und Flächen" checked={p.highContrast} onChange={p.onContrast}/>
+          <Toggle label="Animationen reduzieren" description="Weniger Bewegung bei Sheets und Navigation" checked={p.reducedMotion} onChange={p.onReducedMotion}/>
+        </section>
+        <section className="settings-group">
+          <div className="settings-section-heading"><h3>Standort</h3></div>
+          <div className="settings-status-row"><span className={p.locationStatus.toLocaleLowerCase("de-DE").includes("aktiv") ? "status-dot active" : "status-dot"} aria-hidden="true"/><span><b>Standortstatus</b><small>{locationText}</small></span><button type="button" onClick={p.onRequestLocation}>Prüfen</button></div>
+          <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
+        </section>
+      </>}
+
+      {tab==="plans" && <>
+        <div className="settings-section-heading"><h3>BahnConnections Plus</h3><p>Komfortfunktionen für häufige Fahrten. Die Basis bleibt kostenlos.</p></div>
+        <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={"plan-card "+plan.id} key={plan.id}>
+          <div><h3>{plan.name}</h3><span>{plan.availability==="available"?"Aktiv":"noch nicht buchbar"}</span></div>
+          <ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul>
+          {plan.availability==="planned"&&<><div className="billing-price-options"><span><strong>3,99 €</strong><small>monatlich</small></span><span><strong>29,99 €</strong><small>jährlich</small></span></div></>}
+        </section>)}</div>
+      </>}
     </div>
   </dialog>;
 }
-function Toggle({label,checked,onChange}:{label:string;checked:boolean;onChange:(value:boolean)=>void}) {
-  return <label className="settings-toggle"><span>{label}</span><input type="checkbox" checked={checked} onChange={event=>onChange(event.target.checked)}/><i aria-hidden="true"/></label>;
+function Toggle({label,description,checked,onChange}:{label:string;description?:string;checked:boolean;onChange:(value:boolean)=>void}) {
+  return <label className="settings-toggle"><span><b>{label}</b>{description&&<small>{description}</small>}</span><input type="checkbox" checked={checked} onChange={event=>onChange(event.target.checked)}/><i aria-hidden="true"/></label>;
 }
