@@ -56,7 +56,7 @@ export function JourneySearch(props:JourneySearchProps) {
         <label className="planner-check"><input type="checkbox" checked={options.wheelchair} onChange={event => props.onOptions({wheelchair:event.target.checked})} /><span><b>Barrierearme Wege</b><small>Stufenarme Umstiege bevorzugen</small></span></label>
         <label className="planner-check"><input type="checkbox" checked={options.bike} onChange={event => props.onOptions({bike:event.target.checked})} /><span><b>Fahrrad mitnehmen</b><small>Nur Fahrten mit gemeldeter Mitnahme</small></span></label>
       </div>
+      <div className="explore-actions"><button type="button" onClick={props.onDiscover}>Ziel entdecken</button><button type="button" onClick={props.onReset}>Karte zurücksetzen</button></div>
     </details>
-    <div className="explore-actions"><button type="button" onClick={props.onDiscover}>Ziel entdecken</button><button type="button" onClick={props.onReset}>Karte zurücksetzen</button></div>
   </>;
 }
