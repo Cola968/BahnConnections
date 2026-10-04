@@ -47,7 +47,7 @@ export function SettingsDialog(p:Props) {
       <div><h2 id="settings-title">Einstellungen</h2><p>Profil, App und Plus</p></div>
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
     </header>
-    <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex} as CSSProperties}>
+    <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex,"--settings-tab-offset":`${tabIndex*100}%`} as CSSProperties}>
       {([["profile","Profil"],["settings","App"],["plans","Plus"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={tab===id} className={tab===id ? "active" : ""} onClick={()=>setTab(id)}>{label}</button>)}
       <i className="settings-tab-indicator" aria-hidden="true"/>
     </nav>
