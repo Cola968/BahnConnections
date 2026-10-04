@@ -1436,7 +1436,8 @@ html[data-theme="dark"] .settings-tab-indicator {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .mobile-navigation::after,\n  .settings-tab-indicator,
+  .mobile-navigation::after,
+  .settings-tab-indicator,
   .mobile-nav-icon,
   .mobile-nav-label,
   .settings-dialog-v48 .settings-content {
@@ -1456,7 +1457,8 @@ html[data-motion="reduced"] .settings-dialog-v48 .settings-content {
 
 @media (prefers-reduced-transparency:reduce) {
   .mobile-navigation,
-  .mobile-navigation::after,\n  .settings-dialog-v48,
+  .mobile-navigation::after,
+  .settings-dialog-v48,
   .settings-tab-indicator {
     background:var(--paper)!important;
     -webkit-backdrop-filter:none!important;
