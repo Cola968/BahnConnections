@@ -324,3 +324,59 @@ html[data-motion="reduced"] .v49-shell .mobile-navigation::after {
   }
   .v49-shell .mobile-navigation::after { border:2px solid Highlight!important; background:transparent!important; }
 }
+
+
+/* V49 More menu */
+.v49-shell .simple-more-popover {
+  padding:12px!important;
+}
+.v49-shell .simple-more-list {
+  display:grid;
+  gap:4px!important;
+}
+.v49-shell .simple-more-list :is(button,a) {
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  min-height:58px;
+  padding:8px 10px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:transparent!important;
+  color:var(--ink)!important;
+  text-decoration:none;
+  text-align:left;
+  transition:background-color var(--v49-motion-micro),transform var(--v49-motion-micro) var(--motion-press);
+}
+.v49-shell .simple-more-list :is(button,a):hover {
+  background:color-mix(in srgb,var(--ink) 5%,transparent)!important;
+}
+.v49-shell .simple-more-list :is(button,a):active { transform:scale(.985); }
+.v49-shell .simple-more-list :is(button,a)>svg {
+  width:22px;
+  height:22px;
+  color:var(--muted);
+  justify-self:center;
+}
+.v49-shell .simple-more-list :is(button,a)>span {
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:2px;
+}
+.v49-shell .simple-more-list b {
+  font-size:.91rem;
+  font-weight:680;
+  letter-spacing:-.01em;
+}
+.v49-shell .simple-more-list small {
+  color:var(--muted);
+  font-size:.75rem;
+}
+.v49-shell .more-version {
+  display:block;
+  padding:8px 10px 2px;
+  color:var(--muted);
+  font-size:.7rem;
+}
