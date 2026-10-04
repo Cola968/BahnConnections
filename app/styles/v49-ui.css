@@ -122,6 +122,21 @@
     background:color-mix(in srgb,var(--ink) 7%,transparent)!important;
   }
 
+  /* V49 owns half-sheet geometry: content-layout's legacy 48dvh no longer wins. */
+  .v49-shell[data-mobile-sheet="half"] .mobile-sheet-panel {
+    height:min(var(--mobile-sheet-height,var(--sheet-preset)),var(--sheet-limit))!important;
+  }
+  .v49-shell[data-primary-panel="planner"][data-mobile-sheet="half"] {
+    --sheet-preset:min(62dvh,var(--sheet-limit));
+  }
+  .v49-shell[data-primary-panel="journey"][data-mobile-sheet="half"] {
+    --sheet-preset:min(54dvh,var(--sheet-limit));
+  }
+  .v49-shell[data-primary-panel="station"][data-mobile-sheet="half"],
+  .v49-shell[data-primary-panel="trip"][data-mobile-sheet="half"] {
+    --sheet-preset:min(56dvh,var(--sheet-limit));
+  }
+
   /* Partial sheets stay floating, expanded state becomes calmer and more attached. */
   .v49-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
   .v49-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
