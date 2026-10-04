@@ -626,3 +626,19 @@ html[data-motion="reduced"] .v49-shell .board-row-detail {
     background:transparent;
   }
 }
+
+
+/* V49 planner sticky-action clearance */
+@media (max-width:1023px) {
+  .v49-shell .explore-card .panel-body {
+    padding-bottom:86px!important;
+    scroll-padding-bottom:86px;
+  }
+  .v49-shell .filter-drawer.route-options {
+    scroll-margin-block:16px 92px;
+  }
+  .v49-shell .explore-card .plan-button {
+    bottom:8px!important;
+    margin-bottom:4px;
+  }
+}
