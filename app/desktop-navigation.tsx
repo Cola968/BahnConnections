@@ -23,7 +23,8 @@ export function DesktopNavigation({ value, onChange }: { value: DesktopView; onC
 }
 
 export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value: DesktopView; onChange: (view: DesktopView) => void; onMore: () => void; moreOpen: boolean }) {
-  const selectedIndex = moreOpen ? 3 : Math.max(0,mobileDestinations.findIndex(item => item.view === value));
+  const secondaryActive = moreOpen || value === "stats" || value === "settings";
+  const selectedIndex = secondaryActive ? 3 : Math.max(0,mobileDestinations.findIndex(item => item.view === value));
   return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation" style={{ "--mobile-nav-index":selectedIndex, "--mobile-nav-offset":`${selectedIndex*100}%` } as CSSProperties}>
     {mobileDestinations.map(({ view, label, icon }) => {
       const active=!moreOpen && value===view;
@@ -31,7 +32,7 @@ export function MobileNavigation({ value, onChange, onMore, moreOpen }: { value:
         <span className="mobile-nav-icon"><UiIcon name={icon} /></span><span className="mobile-nav-label">{view === "connections" ? "Planen" : label}</span>
       </button>;
     })}
-    <button type="button" onClick={onMore} className={moreOpen ? "active" : ""} aria-expanded={moreOpen} aria-controls="more-menu">
+    <button type="button" onClick={onMore} className={secondaryActive ? "active" : ""} aria-current={!moreOpen && secondaryActive ? "page" : undefined} aria-expanded={moreOpen} aria-controls="more-menu">
       <span className="mobile-nav-icon"><UiIcon name="more" /></span><span className="mobile-nav-label">Mehr</span>
     </button>
   </nav>;
