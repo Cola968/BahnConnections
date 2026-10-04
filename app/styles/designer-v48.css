@@ -834,3 +834,28 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     padding-right:12px;
   }
 }
+
+
+/* Mobile polish: invisible scrollbars, visible primary planner action. */
+@media (max-width:1023px) {
+  .mobile-sheet-panel {
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .mobile-sheet-panel::-webkit-scrollbar { display:none; width:0; height:0; }
+
+  .explore-card .plan-button {
+    position:sticky;
+    z-index:6;
+    bottom:0;
+    width:100%;
+    margin-top:14px;
+    box-shadow:
+      0 -10px 24px color-mix(in srgb,var(--elevated) 90%,transparent),
+      0 8px 20px color-mix(in srgb,var(--glass-depth) 28%,transparent);
+  }
+
+  .explore-card .panel-body {
+    padding-bottom:10px;
+  }
+}
