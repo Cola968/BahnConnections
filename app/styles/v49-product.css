@@ -642,3 +642,14 @@ html[data-motion="reduced"] .v49-shell .board-row-detail {
     margin-bottom:4px;
   }
 }
+
+
+/* Expanded planner options own the scroll area; the CTA must never cover controls. */
+@media (max-width:1023px) {
+  .v49-shell .explore-card .panel-body:has(.route-options[open]) .plan-button {
+    position:relative!important;
+    bottom:auto!important;
+    z-index:1!important;
+    margin-top:12px!important;
+  }
+}
