@@ -240,6 +240,10 @@ try {
 
       await evaluate(`document.querySelector('.panel-body').scrollTop=160`);
       await inspect(label+' scrolled');
+      if(width===390 && theme==='light' && font==='normal') {
+        const shot=await command('Page.captureScreenshot',{format:'png'});
+        await writeFile(join(outputDirectory,'390-board-rows.png'),Buffer.from(shot.data,'base64'));
+      }
       await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
       await tap('.station-section-tabs button:nth-child(2)');
       await inspect(label+' lines');
@@ -262,6 +266,7 @@ try {
   const clock=await evaluate(`getComputedStyle(document.querySelector('.plan-button .clock-hands')).animationName`);
   if(clock!=='clock-turn')throw new Error('Loading clock missing: '+clock);
   await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Journey missing');
+  await waitFor(`Number(document.querySelector('[data-rail-points]')?.dataset.railPoints)>0`,'Rail worker must return surveyed route geometry');
   for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,600],[1440,900]]) {
     await setViewport(width,height);
     for(const font of ['normal','large']) {

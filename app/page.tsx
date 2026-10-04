@@ -37,7 +37,7 @@ import {
   type Station,
   type TrainType,
 } from "./network-data";
-import { TrackRouter, type RailNetwork } from "./track-routing";
+import { WorkerTrackRouter } from "./track-worker-client";
 import { distanceMeters, type WalkingRoute } from "./walking-route";
 
 type ExtraStationsPayload = { source: string; retrievedAt: string; totalOfficialPoints: number; curatedStates?: Record<string, string>; curatedAliases?: Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>; stations: Station[] };
@@ -189,6 +189,7 @@ export default function Home() {
   const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats">("live");
   const [helpOpen, setHelpOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [railGeometryRevision, setRailGeometryRevision] = useState(0);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
   const [liveSearchStations, setLiveSearchStations] = useState<Station[]>([]);
@@ -262,7 +263,7 @@ export default function Home() {
   const walkingLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileRef = useRef<import("leaflet").TileLayer | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
-  const trackRouterRef = useRef<TrackRouter | null>(null);
+  const trackRouterRef = useRef<WorkerTrackRouter | null>(null);
   const plannerRequestRef = useRef<AbortController | null>(null);
   const walkRequestRef = useRef<AbortController | null>(null);
   const geoWatchRef = useRef<number | null>(null);
@@ -435,15 +436,9 @@ export default function Home() {
   useEffect(() => {
     if (!railGeometryNeeded) return;
     if (trackRouterRef.current) return;
-    const controller = new AbortController();
-    fetch("/db-rail-network.json", { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`Streckennetz ${response.status}`);
-        return response.json() as Promise<RailNetwork>;
-      })
-      .then((network) => { trackRouterRef.current = new TrackRouter(network); setRailState("ready"); })
-      .catch((error) => { if ((error as Error).name !== "AbortError") setRailState("error"); });
-    return () => controller.abort();
+    const router = new WorkerTrackRouter(()=>setRailState("ready"),()=>setRailGeometryRevision(value=>value+1),()=>setRailState("error"));
+    trackRouterRef.current = router;
+    return () => { router.dispose();trackRouterRef.current = null; };
   }, [railGeometryNeeded]);
 
   useEffect(() => {
@@ -510,6 +505,7 @@ export default function Home() {
     walkRequestRef.current?.abort();
   }, []);
 
+  const routeLabelZoom = mapZoom >= 11 ? 11 : mapZoom >= 6 ? 6 : 0;
   useEffect(() => {
     const L = leafletRef.current;
     const map = mapRef.current;
@@ -536,7 +532,7 @@ export default function Home() {
         line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
       }
       const labelPoints = [...segments].sort((left, right) => right.length - left.length)[0];
-      if (showRouteLabels && !minimalMode && !muted && mapZoom >= 6 && labelPoints.length > 1) {
+      if (showRouteLabels && !minimalMode && !muted && routeLabelZoom >= 6 && labelPoints.length > 1) {
         const hash = [...route.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0);
         const ratio = .27 + (hash % 47) / 100;
         const anchor = labelPoints[Math.min(labelPoints.length - 1, Math.max(0, Math.round((labelPoints.length - 1) * ratio)))];
@@ -574,7 +570,7 @@ export default function Home() {
         }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const showPermanentStopLabel = mapZoom >= 11;
+        const showPermanentStopLabel = routeLabelZoom >= 11;
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:showPermanentStopLabel, className:showPermanentStopLabel ? "station-route-label live" : "" });
       });
     } else if (stationTrip && railMapGeometry(stationTrip.points, stationTrip.stops, ["fern","regional","sbahn"].includes(stationTrip.category), trackRouterRef.current, stationTrip.segments).segments.length) {
@@ -590,7 +586,7 @@ export default function Home() {
         const point = L.circleMarker([stop.lat, stop.lon], { radius:isEnd ? 6.8 : 4.2, color:"#fff", weight:isEnd ? 3 : 2, fillColor:color, fillOpacity:1, className:"live-journey-stop" }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const permanent = mapZoom >= 11;
+        const permanent = routeLabelZoom >= 11;
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
       });
     } else if (stationTrips.length) {
@@ -616,7 +612,8 @@ export default function Home() {
     }
 
     mapElementRef.current?.setAttribute("data-route-layers", String(layer.getLayers().length));
-  }, [filteredRoutes, journey, mapReady, mapZoom, minimalMode, overviewRoutesVisible, railState, routeInfo, selected, showRouteLabels, stationTrip, stationTrips, theme]);
+    mapElementRef.current?.setAttribute("data-rail-points", String(trackRouterRef.current?.completedPoints ?? 0));
+  }, [filteredRoutes, journey, mapReady, routeLabelZoom, railGeometryRevision, minimalMode, overviewRoutesVisible, railState, routeInfo, selected, showRouteLabels, stationTrip, stationTrips, theme]);
 
   useEffect(() => {
     const L = leafletRef.current, map = mapRef.current, layer = stationLayerRef.current;
@@ -648,9 +645,12 @@ export default function Home() {
     const occupied = new Map<string, { x:number; y:number; radius:number }[]>();
     const candidates = [...curatedMapStations, ...contextualStations, ...selectedExtra]
       .filter(station => bounds.contains([station.lat, station.lon]))
-      .filter((station,index,items) => items.findIndex(other => other.id === station.id) === index)
+      .filter((() => { const seen = new Set<string>(); return (item: Station) => !seen.has(item.id) && Boolean(seen.add(item.id)); })())
       .sort((a,b) => Number(b.id === selectedId) - Number(a.id === selectedId) || (stationPassengerInfo(b).daily ?? (b.hub ? 2000 : 0)) - (stationPassengerInfo(a).daily ?? (a.hub ? 2000 : 0)));
+    const markerLimit = window.innerWidth < 1024 ? 120 : 280;
+    let drawnMarkers = 0;
     for (const station of candidates) {
+      if (drawnMarkers >= markerLimit && station.id !== selectedId) break;
       if (station.country !== "DE" && !filteredStationIds.has(station.id)) continue;
       const isSelected = station.id === selectedId;
       const isDestination = false;
@@ -689,6 +689,7 @@ export default function Home() {
       const cellKey = `${cellX},${cellY}`;
       const bucket = occupied.get(cellKey) ?? [];
       bucket.push({x:pixel.x,y:pixel.y,radius:markerRadius}); occupied.set(cellKey,bucket);
+      drawnMarkers++;
       const marker = L.circleMarker([station.lat, station.lon], {
         radius:markerRadius,
         color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#d0b57e" : "#9a7233") : markerPalette.edge,
@@ -1176,7 +1177,7 @@ export default function Home() {
 
   return (
     <main className={`app-shell${desktopWorkspace ? " desktop-workspace" : ""}${desktopWorkspace && desktopView === "connections" ? " desktop-connections" : ""}${desktopSearchMode ? " desktop-search-mode" : ""}${desktopJourneyMode ? " desktop-journey-mode" : ""}${journey ? " has-journey" : ""}${boardOnly ? " board-only" : ""}${focusMode ? " focus-mode" : ""}${minimalMode ? " minimal-mode" : ""}${primaryPanelOpen ? " has-primary-panel" : ""}`} data-loading={plannerState === "loading" || Boolean(selected && liveVisible && liveState === "loading")} data-preferences-ready={preferencesReady} data-desktop-view={desktopView} data-mobile-sheet={mobileSheetState} data-primary-panel={activePrimaryPanel ?? "none"} style={mobileSheetHeight ? { "--mobile-sheet-height":`${mobileSheetHeight}px` } as CSSProperties : undefined}>
-      {(journey || stationTrip || stationTrips.length > 0) && <span className="map-geometry-note" role="status">{railState === "loading" ? "Streckendetails laden …" : "Quellgeometrie / DB-Netzverlauf · fehlende Abschnitte bleiben offen"}</span>}
+      {(journey || stationTrip || stationTrips.length > 0) && <details className="map-geometry-note"><summary aria-label="Information zum Streckenverlauf">ⓘ</summary><p>{railState === "loading" ? "Streckendetails laden …" : "Strecken aus der Quelle oder aus dem DB-Netz zwischen Halten. Echte Datenlücken bleiben offen; der Netzverlauf ist keine zuggenaue Trassenzusage."}</p></details>}
       <header className="topbar">
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
           <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">{APP_VERSION_LABEL}</span>

@@ -21,4 +21,14 @@ const restored=railMapGeometry(stops.map(stop=>[stop.lat,stop.lon]),stops,true,r
 assert.equal(restored.network,true);
 assert.ok(restored.segments.every(segment=>segment.slice(1).every((point,i)=>pointDistance(segment[i],point)<2000)));
 assert.equal(railMapGeometry(stops.map(stop=>[stop.lat,stop.lon]),stops,false,router).segments.length,0);
+// Simplification can leave a valid, long, straight surveyed section.
+// Distance alone must never chop such sections into dashed fragments.
+const longLine=[[13,52],[13.04,52],[13.08,52],[13.12,52]];
+const longRouter=new TrackRouter({source:'survey',retrievedAt:'2026-10-04',accuracy:'survey',lines:[{route:'straight track',coordinates:longLine}]});
+const longStops=[longLine[0],longLine.at(-1)].map(([lon,lat],i)=>({id:String(i),name:String(i),country:'DE',lat,lon}));
+const longShape=railMapGeometry(longStops.map(stop=>[stop.lat,stop.lon]),longStops,true,longRouter);
+assert.equal(longShape.segments.length,1);
+assert.equal(longShape.segments[0].length,4);
+assert.ok(pointDistance(longShape.segments[0][0],longShape.segments[0][1])>2000);
+assert.equal(longRouter.geometry([{id:'foreign',country:'DE',lat:0,lon:0},longStops[1]]).segments.length,0);
 console.log('Geometry gaps, source sections, surveyed same-line routing and reverse routing passed');

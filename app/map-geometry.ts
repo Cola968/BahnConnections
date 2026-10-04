@@ -23,13 +23,15 @@ export function continuousSegments(points: MapPoint[], maxGap = 2_000): MapPoint
 
 /** Sparse provider shapes are replaced only by surveyed DB rail sections.
  * This is a network path between reported stops, not proof of a train's track. */
-export function railMapGeometry(points: MapPoint[], stops: { lat?: number; lon?: number; name: string }[], rail: boolean, router: TrackRouter | null, sourceSegments: MapPoint[][] = [points]) {
+export function railMapGeometry(points: MapPoint[], stops: { lat?: number; lon?: number; name: string }[], rail: boolean, router: Pick<TrackRouter,'geometry'> | null, sourceSegments: MapPoint[][] = [points]) {
   const sparse = points.some((point, index) => index > 0 && pointDistance(points[index - 1], point) > 2_000);
   if (rail && router && (sparse || points.length < 2)) {
     const anchors = stops.filter((stop) => Number.isFinite(stop.lat) && Number.isFinite(stop.lon))
       .map((stop) => ({ id:`shape-${stop.lat}-${stop.lon}`, lat:stop.lat!, lon:stop.lon!, country:"DE" }));
     const geometry = router.geometry(anchors);
-    if (geometry.segments.length) return { segments:geometry.segments.flatMap((segment) => continuousSegments(segment)), network:true };
+    // Network sections are surveyed continuous lines. Long straight railway
+    // sections may legitimately have distant vertices after simplification.
+    if (geometry.segments.length) return { segments:geometry.segments.flatMap((segment) => continuousSegments(segment,Infinity)), network:true };
   }
   return { segments:sourceSegments.flatMap(segment => continuousSegments(segment)), network:false };
 }
