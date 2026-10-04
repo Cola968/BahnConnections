@@ -152,6 +152,17 @@ button:active:not(:disabled) {
 /* ---------- planner ---------- */
 
 @media (max-width:1023px) {
+  .map-menu-popover.detached {
+    width:auto!important;
+    max-width:min(520px,calc(100% - 20px))!important;
+  }
+  .simple-more-list>button,
+  .simple-more-list>a { min-width:0; }
+  .simple-more-list span,
+  .simple-more-list small { min-width:0; overflow-wrap:anywhere; }
+}
+
+@media (max-width:1023px) {
   .explore-card .panel-body {
     padding-top:4px!important;
   }

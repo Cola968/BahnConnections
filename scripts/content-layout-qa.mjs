@@ -297,6 +297,21 @@ try {
   await setViewport(390,844);
   await tap('.mobile-sheet-actions button:last-child');
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.mobile-sheet-restore,path.live-journey-stop'))`))throw new Error('Journey close left state behind');
+  await tap('.mobile-navigation button:last-child');
+  for(const [width,height] of [[320,568],[360,640],[768,1024]]) {
+    await setViewport(width,height);
+    for(const font of ['normal','large']) {
+      await evaluate(`document.documentElement.dataset.font=${JSON.stringify(font)}`);
+      const bounds=await evaluate(`(() => {
+        const menu=document.querySelector('.simple-more-popover'),rect=menu.getBoundingClientRect();
+        return {left:rect.left,right:rect.right,width:innerWidth,overflow:menu.scrollWidth>menu.clientWidth+1};
+      })()`);
+      if(bounds.left<0||bounds.right>bounds.width+1||bounds.overflow)throw new Error('More menu outside viewport: '+JSON.stringify(bounds));
+      checks.push({label:width+' '+font+' More menu fits',...bounds});
+    }
+  }
+  await setViewport(390,844);
+  await tap('.simple-more-popover .map-menu-dismiss button');
   await tap('.mobile-navigation button:nth-child(2)');
   await tap('.plan-button');
   await tap('.mobile-sheet-actions button:last-child');
