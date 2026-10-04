@@ -859,3 +859,33 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     padding-bottom:10px;
   }
 }
+
+
+/* Mobile scroll remains native, browser scrollbar chrome does not. */
+@media (max-width:1023px) {
+  .mobile-sheet-panel,
+  .mobile-sheet-panel>.panel-body,
+  .map-menu-popover.detached,
+  .search-suggestions,
+  .source-modal {
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .mobile-sheet-panel::-webkit-scrollbar,
+  .mobile-sheet-panel>.panel-body::-webkit-scrollbar,
+  .map-menu-popover.detached::-webkit-scrollbar,
+  .search-suggestions::-webkit-scrollbar,
+  .source-modal::-webkit-scrollbar {
+    display:none;
+    width:0;
+    height:0;
+  }
+}
+
+@media (max-width:600px) {
+  .settings-dialog {
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .settings-dialog::-webkit-scrollbar { display:none; width:0; height:0; }
+}
