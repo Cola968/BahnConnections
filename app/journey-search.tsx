@@ -44,7 +44,6 @@ export function JourneySearch(props:JourneySearchProps) {
       <div className="planner-time-mode" role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
       <div className="planner-departure"><label>{options.arriveBy ? "Ankommen am" : "Losfahren am"}<span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} tabIndex={-1} aria-hidden="true" /></span></label></div>
     </div>
-    <button type="button" className="plan-button" onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Suche läuft …" : "Verbindungen anzeigen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>
     <details className="filter-drawer route-options">
       <summary>Optionen</summary>
       <div className="planner-types" aria-label="Verkehrsmittel filtern">
@@ -56,7 +55,8 @@ export function JourneySearch(props:JourneySearchProps) {
         <label className="planner-check"><input type="checkbox" checked={options.wheelchair} onChange={event => props.onOptions({wheelchair:event.target.checked})} /><span><b>Barrierearme Wege</b><small>Stufenarme Umstiege bevorzugen</small></span></label>
         <label className="planner-check"><input type="checkbox" checked={options.bike} onChange={event => props.onOptions({bike:event.target.checked})} /><span><b>Fahrrad mitnehmen</b><small>Nur Fahrten mit gemeldeter Mitnahme</small></span></label>
       </div>
+      <div className="explore-actions"><button type="button" onClick={props.onDiscover}>Ziel entdecken</button><button type="button" onClick={props.onReset}>Karte zurücksetzen</button></div>
     </details>
-    <div className="explore-actions"><button type="button" onClick={props.onDiscover}>Ziel entdecken</button><button type="button" onClick={props.onReset}>Karte zurücksetzen</button></div>
+    <button type="button" className="plan-button" onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Suche läuft …" : "Verbindungen anzeigen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>
   </>;
 }
