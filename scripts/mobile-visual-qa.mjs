@@ -231,6 +231,8 @@ try {
   await pause(6500);
   const snapshots = [await layoutSnapshot("390x844 initial")];
   await screenshot("390-initial");
+  const mobileSearchDock = await evaluate(`(() => { const dock=document.querySelector(".mobile-search-dock .station-search")?.getBoundingClientRect(); const nav=document.querySelector(".mobile-navigation")?.getBoundingClientRect(); return {visible:Boolean(dock&&dock.width>200&&dock.height>=52),aboveNav:Boolean(dock&&nav&&dock.bottom<=nav.top-6),overflow:document.documentElement.scrollWidth>innerWidth+1}; })()`);
+  if (!mobileSearchDock.visible || !mobileSearchDock.aboveNav || mobileSearchDock.overflow) throw new Error("Mobile Schnellsuche fehlt oder kollidiert: "+JSON.stringify(mobileSearchDock));
   console.log('Responsive QA: initial layout loaded');
 
   await tap(".mobile-map-view-button");
@@ -271,6 +273,12 @@ try {
   await pause(900);
   snapshots.push(await layoutSnapshot(journeyLoaded ? "390x844 journey" : "390x844 planner result"));
   await screenshot(journeyLoaded ? "390-journey" : "390-planner-result");
+  if (journeyLoaded) {
+    const mobileJourneyText = await evaluate(`document.querySelector(".journey-card")?.textContent ?? ""`);
+    if (/Zugang\\s+(?:über|via)/i.test(mobileJourneyText)) throw new Error("Technischer Zugangszusatz ist in der mobilen Journey sichtbar");
+    const mobileOverflow = await evaluate(`Array.from(document.querySelectorAll(".journey-card,.live-journey-leg,.leg-route-line,.live-stop-list li")).some(el=>el.scrollWidth>el.clientWidth+1)`);
+    if (mobileOverflow) throw new Error("Mobile Journey hat horizontalen Overflow");
+  }
   if (useJourneyFixture) {
     await tap('.journey-alternatives summary');
     await tap('.journey-alternatives>div>button:first-child');
