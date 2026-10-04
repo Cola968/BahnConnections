@@ -3,6 +3,7 @@
 import type { LiveJourney } from "./live-journey";
 import { formatDuration } from "./network-data";
 import { UiIcon } from "./ui-icon";
+import { compactStationLabel } from "./transit-style";
 
 import { JourneyTimeRange } from "./journey-time-range";
 import { RealtimeTime } from "./realtime-time";
@@ -31,7 +32,7 @@ export function TransferNotice({ journey, index, minutes }: {journey:LiveJourney
   if (!next) return null;
   const walking = journey.legs.filter(leg => leg.category === "walk" && new Date(leg.startTime) >= new Date(previous.endTime) && new Date(leg.endTime) <= new Date(next.startTime)).reduce((seconds,leg) => seconds + leg.durationSeconds,0);
   return <div className={`transfer-step ${minutes < 7 ? "risk" : minutes < 12 ? "medium" : "good"}`}>
-    <span><b>{minutes < 0 ? "Anschluss voraussichtlich verpasst" : `${minutes} Min. Umstieg in ${previous.to.name}`}</b>
+    <span><b>{minutes < 0 ? "Anschluss voraussichtlich verpasst" : `${minutes} Min. Umstieg in ${compactStationLabel(previous.to.name) ?? previous.to.name}`}</b>
       <span className="transfer-times"><span>Ankunft <RealtimeTime scheduled={previous.scheduledEndTime} actual={previous.endTime} realtime={previous.realtime} cancelled={previous.cancelled || previous.to.cancelled} cancellationLabel={previous.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /> · <RealtimePlatform scheduled={previous.to.scheduledTrack} actual={previous.to.track} /></span><span>Abfahrt <RealtimeTime scheduled={next.scheduledStartTime} actual={next.startTime} realtime={next.realtime} cancelled={next.cancelled || next.from.cancelled} cancellationLabel={next.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /> · <RealtimePlatform scheduled={next.from.scheduledTrack} actual={next.from.track} /></span></span>
       <small>{next.name}{walking ? ` · ${Math.ceil(walking / 60)} Min. Fußweg enthalten` : ""}{minutes >= 0 && minutes < 7 ? " · Kurzer Anschluss, bitte prüfen" : ""}</small>
     </span>
