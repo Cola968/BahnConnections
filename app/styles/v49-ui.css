@@ -85,7 +85,7 @@
     overflow-y:auto!important;
     overscroll-behavior-y:contain;
     scrollbar-width:none;
-    scroll-behavior:smooth;
+    scroll-behavior:auto;
     animation:v49-panel-content-enter var(--v49-motion-view) var(--v49-spring-soft);
   }
   .v49-shell .mobile-sheet-panel>.panel-body::-webkit-scrollbar { display:none; }
