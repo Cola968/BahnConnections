@@ -181,7 +181,7 @@ export default function WebsitePage() {
               <strong>Transitous / MOTIS</strong>
               <span>Haltestellen, Fahrten und Echtzeit</span>
               <b>Hauptquelle</b>
-              <a href="https://transitous.org/" target="_blank" rel="noreferrer">Quelle <External /></a>
+              <a href="https://transitous.org/sources/" target="_blank" rel="noreferrer">Quellen & Lizenzen <External /></a>
             </div>
             <div>
               <strong>transport.rest</strong>
