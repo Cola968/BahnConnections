@@ -947,8 +947,8 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
       box-shadow 260ms ease,
       background-color 260ms ease;
     background:
-      linear-gradient(145deg,color-mix(in srgb,var(--glass-highlight) 88%,transparent) 0%,transparent 42%),
-      color-mix(in srgb,var(--glass-elevated) 74%,transparent);
+      linear-gradient(145deg,color-mix(in srgb,var(--glass-highlight) 82%,transparent) 0%,transparent 40%),
+      linear-gradient(180deg,color-mix(in srgb,var(--glass-clear) 56%,transparent),color-mix(in srgb,var(--glass-elevated) 42%,transparent));
     -webkit-backdrop-filter:blur(26px) saturate(170%);
     backdrop-filter:blur(26px) saturate(170%);
     box-shadow:
