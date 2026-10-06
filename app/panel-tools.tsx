@@ -161,10 +161,10 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
         onPointerCancel={finishMobileDrag}
         onClick={() => {
           if (suppressClickRef.current) { suppressClickRef.current = false; return; }
-          selectSize(mobileState === "collapsed" ? "half" : mobileState === "half" ? "expanded" : "collapsed");
+          selectSize(mobileState === "collapsed" ? "half" : "collapsed");
         }}
         aria-expanded={mobileState !== "collapsed" && mobileState !== "closed"}
-        aria-label={`${label} ${mobileState === "expanded" ? "minimieren" : "vergrößern"}`}
+        aria-label={`${label} ${mobileState === "collapsed" ? "vergrößern" : "minimieren"}`}
         title="Stufenlos hoch- oder runterschieben"
       ><i aria-hidden="true" /><span><b>{mobileTitle ?? label}</b>{mobileSummary && <small>{mobileSummary}</small>}</span><em aria-hidden="true">{mobileState === "expanded" ? "⌄" : "⌃"}</em></button>}
       <div className="desktop-panel-actions">
@@ -174,7 +174,6 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
         {onClose && <button type="button" onClick={(event) => { event.stopPropagation(); onClose(); }} aria-label={`${label} schließen`}><UiIcon name="close" /></button>}
       </div>
       {mobileState && onMobileStateChange && <div className="mobile-sheet-actions">
-        <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); selectSize(mobileState === "collapsed" ? "half" : "collapsed"); }} aria-label={`${label} ${mobileState === "collapsed" ? "vergrößern" : "minimieren"}`}><UiIcon name="chevron" style={mobileState === "collapsed" ? { transform:"rotate(180deg)" } : undefined} /></button>
         <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.preventDefault(); event.stopPropagation(); if (onClose) onClose(); else onMobileStateChange("closed"); }} aria-label={`${label} schließen`}><UiIcon name="close" /></button>
       </div>}
     </div>
