@@ -24,6 +24,7 @@ check("Station-trip realtime summary stays conservative",page.includes('function
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
 const realtimePlatform = await read("app/realtime-platform.tsx");
+const stationStats = await read("app/station-stats.tsx");
 const pwaRegister = await read("app/pwa-register.tsx");
 const appVersion = await read("app/app-version.ts");
 const versionMetadata = await read("public/version.json");
@@ -101,10 +102,11 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "48.0"') && versionMetadata.includes('"version": "48.0"') && versionMetadata.includes('/install?update=V48.0'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "48.1"') && versionMetadata.includes('"version": "48.1"') && versionMetadata.includes('/install?update=V48.1'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
 check("Mobile search controls cannot collapse into each other and zoom chrome is removed",css.includes('.topbar>.station-search .search-clear') && css.includes('flex:0 0 36px') && css.includes('.topbar>.station-search>button[type="submit"]') && css.includes('max-width:42%') && css.includes('.leaflet-control-zoom') && css.includes('display:none!important'));
 check("V48 mobile chrome is compact and location is automatic",!page.includes('className="location-tools"') && page.includes('startGrantedLocation();') && page.includes('useState<MobileSheetState>("half")') && css.includes('--sheet-preset:42dvh') && css.includes('.live-board.compact .board-search-row') && css.includes('min-height:62px'));
-check("V48 worker waits for explicit update activation",worker.includes("bahnconnections-static-v48-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V48.1 station info stays concise until requested",stationStats.includes('className="station-stats-details"') && stationStats.includes('Linien & Qualität') && !stationStats.includes('?? "–"') && !stationStats.includes('Keine erfundenen Vollständigkeitswerte'));
+check("V48.1 worker waits for explicit update activation",worker.includes("bahnconnections-static-v48-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
