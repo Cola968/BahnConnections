@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 const read = name => readFile(new URL("../"+name,import.meta.url),"utf8");
 const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJourney,transitous,panelTools,planner,navigation,alternatives,installPage,installClient,desktop,...styles] = await Promise.all([
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
-  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
+  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css","app/styles/mobile-cleanup.css",
 ].map(read));
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
@@ -101,9 +101,10 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "47.1"') && versionMetadata.includes('"version": "47.1"') && versionMetadata.includes('/install?update=V47.1'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "48.0"') && versionMetadata.includes('"version": "48.0"') && versionMetadata.includes('/install?update=V48.0'));
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
 check("Mobile search controls cannot collapse into each other and zoom chrome is removed",css.includes('.topbar>.station-search .search-clear') && css.includes('flex:0 0 36px') && css.includes('.topbar>.station-search>button[type="submit"]') && css.includes('max-width:42%') && css.includes('.leaflet-control-zoom') && css.includes('display:none!important'));
-check("V47.1 worker waits for explicit update activation",worker.includes("bahnconnections-static-v47-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("V48 mobile chrome is compact and location is automatic",!page.includes('className="location-tools"') && page.includes('startGrantedLocation();') && page.includes('useState<MobileSheetState>("half")') && css.includes('--sheet-preset:42dvh') && css.includes('.live-board.compact .board-search-row') && css.includes('min-height:62px') && css.includes('.mobile-sheet-actions button:first-child'));
+check("V48 worker waits for explicit update activation",worker.includes("bahnconnections-static-v48-0") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;
