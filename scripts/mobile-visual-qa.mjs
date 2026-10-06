@@ -389,6 +389,23 @@ try {
   if(await evaluate(`getComputedStyle(document.querySelector('.explore-card') || document.createElement('div')).display !== 'none' && Boolean(document.querySelector('.explore-card'))`)) throw new Error('Kartenansicht zeigt Planer');
   await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
+  await tap('.mobile-navigation button:nth-child(3)');
+  await waitFor(`Boolean(document.querySelector('.station-card'))`,'Mobile station board did not open');
+  const mobileBoard = await evaluate(`(() => {
+    const shell=document.querySelector('.app-shell');
+    const sheet=document.querySelector('.station-card')?.getBoundingClientRect();
+    const rows=[...document.querySelectorAll('.board-row-summary')].slice(0,5).map(el=>el.getBoundingClientRect().height);
+    return {
+      state:shell?.dataset.mobileSheet,
+      sheetHeight:sheet?.height ?? 0,
+      locationChrome:Boolean(document.querySelector('.location-tools')),
+      maxRow:rows.length ? Math.max(...rows) : 0,
+      tabs:document.querySelector('.station-section-tabs')?.getBoundingClientRect().height ?? 0,
+    };
+  })()`);
+  if (mobileBoard.locationChrome || mobileBoard.sheetHeight > innerHeight * .55 || mobileBoard.maxRow > 72 || mobileBoard.tabs > 46) throw new Error('Mobile Bahnhof bleibt zu groß oder unruhig: '+JSON.stringify(mobileBoard));
+  snapshots.push(await layoutSnapshot('390x844 compact station board'));
+  await screenshot('390-mobile-board');
   await tap('.mobile-navigation button:last-child');
   const simpleMore = await evaluate(`(() => {
     const menu=document.querySelector('.simple-more-popover');
