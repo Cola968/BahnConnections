@@ -1,0 +1,542 @@
+/* V48 · Mobile density and hierarchy
+   Loaded after the existing material layers. Liquid Glass stays intact;
+   this file only reduces chrome, spacing and information competition. */
+
+@media (max-width:1023px) {
+  .app-shell {
+    --app-header:calc(56px + env(safe-area-inset-top,0px));
+    --bottom-navigation:calc(66px + env(safe-area-inset-bottom,0px));
+    --sheet-limit:calc(min(100dvh,var(--viewport-height,100dvh)) - var(--app-header) - var(--bottom-navigation) - 6px);
+    --sheet-preset:42dvh;
+  }
+
+  /* One compact top row. Search appears only when the map has no active
+     primary sheet; otherwise the sheet already owns the current task. */
+  .topbar {
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:44px;
+    height:var(--app-header);
+    padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px;
+    gap:0 8px;
+  }
+
+  .brand {
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+    padding:5px;
+    border-radius:15px;
+    gap:0;
+  }
+
+  .brand-mark {
+    width:32px;
+    height:32px;
+    border-radius:9px;
+  }
+
+  .brand-name,
+  .beta {
+    display:none;
+  }
+
+  .header-actions,
+  .mobile-map-view-button {
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+  }
+
+  .mobile-map-view-button {
+    border-radius:15px;
+  }
+
+  .topbar>.station-search {
+    top:calc(100% + 6px);
+    right:10px;
+    left:10px;
+    height:44px;
+    padding:0 4px 0 11px;
+    border-radius:15px;
+  }
+
+  .topbar>.station-search .search-clear {
+    flex:0 0 34px;
+    width:34px;
+    min-width:34px;
+    height:38px;
+    min-height:38px;
+  }
+
+  .topbar>.station-search>button[type="submit"] {
+    height:38px;
+    min-height:38px;
+    padding:0 12px;
+    border-radius:11px;
+  }
+
+  .app-shell.has-primary-panel .topbar>.station-search {
+    display:none;
+  }
+
+  /* Always-on location has no map chrome. The position marker stays on the
+     map and walking remains available from station details. */
+  .location-tools {
+    display:none!important;
+  }
+
+  /* Bottom navigation keeps 44 px targets but loses unnecessary air. */
+  .mobile-navigation {
+    width:min(520px,calc(100% - 16px));
+    height:calc(58px + env(safe-area-inset-bottom,0px));
+    min-height:58px;
+    bottom:calc(6px + var(--keyboard-inset,0px));
+    padding:3px 6px calc(3px + env(safe-area-inset-bottom,0px));
+    border-radius:22px;
+  }
+
+  .mobile-navigation button {
+    min-height:44px;
+    margin:0 1px;
+    gap:1px;
+    border-radius:14px;
+    font-size:calc(.6875rem * var(--panel-scale,1));
+    line-height:1.15;
+  }
+
+  .mobile-navigation button svg {
+    width:19px;
+    height:19px;
+  }
+
+  /* Half sheets become the default working state. Expanded is still
+     available by dragging/tapping the handle. */
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel {
+    height:min(var(--mobile-sheet-height,42dvh),var(--sheet-limit));
+  }
+
+  .app-shell[data-mobile-sheet="half"][data-primary-panel="planner"] .mobile-sheet-panel {
+    height:min(var(--mobile-sheet-height,44dvh),var(--sheet-limit));
+  }
+
+  .app-shell[data-mobile-sheet="half"][data-primary-panel="journey"] .mobile-sheet-panel {
+    height:min(var(--mobile-sheet-height,46dvh),var(--sheet-limit));
+  }
+
+  .app-shell[data-mobile-sheet="half"][data-primary-panel="station"] .mobile-sheet-panel {
+    height:min(var(--mobile-sheet-height,43dvh),var(--sheet-limit));
+  }
+
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    height:72px;
+    max-height:72px;
+  }
+
+  .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    left:8px;
+    right:8px;
+    width:auto;
+    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 4px);
+    padding:0 12px 14px;
+    border-radius:26px;
+  }
+
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel {
+    padding:0 12px 14px;
+    border-radius:24px 24px 0 0;
+  }
+
+  /* The draggable title already collapses/expands the sheet, so a second
+     chevron button was redundant. Keep only Close. */
+  .mobile-sheet-panel>.panel-tools {
+    grid-template-columns:minmax(0,1fr) 42px;
+    min-height:56px;
+    margin:0 -12px 6px;
+    padding:11px 8px 4px 12px;
+    border-bottom:0;
+  }
+
+  .mobile-sheet-panel>.panel-tools::before {
+    top:6px;
+    width:34px;
+    height:3px;
+  }
+
+  .mobile-sheet-summary {
+    min-height:40px;
+    gap:6px;
+  }
+
+  .mobile-sheet-summary b {
+    font-size:calc(.94rem * var(--panel-scale,1));
+    line-height:1.18;
+    letter-spacing:-.02em;
+  }
+
+  .mobile-sheet-summary small {
+    margin-top:0;
+    font-size:calc(.7rem * var(--panel-scale,1));
+    line-height:1.2;
+  }
+
+  .mobile-sheet-actions {
+    width:42px;
+    justify-content:flex-end;
+  }
+
+  .mobile-sheet-actions button:first-child {
+    display:none;
+  }
+
+  .mobile-sheet-actions button {
+    width:40px;
+    height:40px;
+    min-height:40px;
+    border-radius:12px;
+  }
+
+  .mobile-sheet-panel .panel-body {
+    min-width:0;
+  }
+
+  /* Planner: remove the duplicate heading and compress the actual task. */
+  .explore-card {
+    padding-right:12px;
+    padding-left:12px;
+  }
+
+  .explore-card .route-discovery-head {
+    display:none;
+  }
+
+  .route-search-pair {
+    gap:7px;
+    margin-top:0;
+  }
+
+  .route-search-pair>div>span {
+    margin:0 0 3px 4px;
+    font-size:calc(.67rem * var(--panel-scale,1));
+    line-height:1.1;
+  }
+
+  .route-station-search {
+    min-height:44px;
+    height:44px;
+    border-radius:13px!important;
+  }
+
+  .route-station-search input {
+    font-size:max(16px,calc(.92rem * var(--panel-scale,1)))!important;
+  }
+
+  .swap-button {
+    top:48px;
+    right:7px;
+    width:38px;
+    height:38px;
+    min-width:38px;
+    min-height:38px;
+  }
+
+  .planner-time-row {
+    grid-template-columns:1fr;
+    gap:7px;
+    margin:10px 0 9px;
+  }
+
+  .planner-time-mode {
+    min-width:0!important;
+    width:100%;
+    padding:2px;
+    border-radius:11px;
+  }
+
+  .planner-time-mode button {
+    min-height:36px;
+    font-size:calc(.78rem * var(--panel-scale,1));
+  }
+
+  .planner-departure label {
+    gap:3px;
+    font-size:calc(.7rem * var(--panel-scale,1));
+  }
+
+  .planner-date-trigger {
+    min-height:42px!important;
+    padding:0 11px!important;
+    border-radius:11px!important;
+    font-size:calc(.82rem * var(--panel-scale,1))!important;
+  }
+
+  .plan-button {
+    min-height:44px;
+    padding:9px 13px;
+    border-radius:11px;
+    font-size:calc(.86rem * var(--panel-scale,1));
+  }
+
+  .filter-drawer {
+    margin-top:8px;
+  }
+
+  .filter-drawer>summary {
+    min-height:40px;
+    font-size:calc(.78rem * var(--panel-scale,1));
+  }
+
+  .explore-actions {
+    margin-top:5px;
+  }
+
+  .explore-actions button {
+    min-height:40px;
+    font-size:calc(.75rem * var(--panel-scale,1));
+  }
+
+  .planner-saved-routes {
+    padding:0 0 10px;
+  }
+
+  /* Station shell: title and tabs need one tight hierarchy. */
+  .station-card {
+    padding:0 12px 14px;
+  }
+
+  .station-card>.panel-tools,
+  .journey-card>.panel-tools {
+    margin:0 -12px 6px;
+  }
+
+  .station-section-tabs {
+    position:sticky;
+    top:56px;
+    z-index:6;
+    gap:0;
+    margin:0;
+    padding:0;
+    background:color-mix(in srgb,var(--glass-elevated) 86%,transparent);
+    -webkit-backdrop-filter:var(--glass-filter);
+    backdrop-filter:var(--glass-filter);
+  }
+
+  .station-section-tabs button {
+    flex:1 1 0;
+    min-height:40px;
+    padding:6px 4px;
+    font-size:calc(.79rem * var(--panel-scale,1));
+  }
+
+  .board-primary-bar {
+    padding:5px 0 0;
+  }
+
+  .board-mode-tabs {
+    gap:10px;
+  }
+
+  .board-mode-tabs button,
+  .board-actions button {
+    min-height:38px;
+    padding:6px 0;
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+
+  .board-product-tabs {
+    gap:12px;
+    padding:0;
+  }
+
+  .board-product-tabs button {
+    min-height:36px;
+    padding:5px 0;
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+
+  /* Search is secondary in compact board mode. "Erweitert" restores it. */
+  .live-board.compact .board-search-row {
+    display:none;
+  }
+
+  .board-search-row {
+    margin:5px 0 7px;
+  }
+
+  .board-search {
+    min-height:40px;
+    border-radius:11px;
+  }
+
+  .board-live-summary {
+    padding:4px 0 5px;
+    font-size:calc(.7rem * var(--panel-scale,1));
+  }
+
+  .board-row-summary,
+  .app-shell .board-row-summary {
+    grid-template-columns:3px 40px minmax(0,1fr) minmax(56px,78px);
+    grid-template-rows:auto auto;
+    min-height:62px;
+    column-gap:7px;
+    row-gap:1px;
+    padding:7px 0;
+    align-items:start;
+  }
+
+  .board-service {
+    max-width:40px;
+    gap:2px;
+  }
+
+  .board-service .service-logo {
+    min-width:32px;
+    max-width:40px;
+    height:21px;
+    padding:0 5px;
+    font-size:calc(.67rem * var(--panel-scale,1));
+  }
+
+  .board-service>b {
+    max-width:40px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:calc(.63rem * var(--panel-scale,1));
+  }
+
+  .board-destination {
+    gap:1px;
+  }
+
+  .board-destination b {
+    font-size:calc(.86rem * var(--panel-scale,1));
+    line-height:1.22;
+    -webkit-line-clamp:2;
+  }
+
+  .board-destination small {
+    font-size:calc(.66rem * var(--panel-scale,1));
+  }
+
+  .board-time .realtime-time {
+    font-size:calc(.98rem * var(--panel-scale,1));
+    line-height:1.15;
+    gap:1px;
+  }
+
+  .board-time .realtime-time__delta,
+  .board-platform .realtime-platform {
+    font-size:calc(.65rem * var(--panel-scale,1));
+    line-height:1.15;
+  }
+
+  .board-footer {
+    padding:7px 0;
+    font-size:calc(.66rem * var(--panel-scale,1));
+  }
+
+  /* Earlier realtime is positive and visibly green; on-time stays neutral. */
+  .realtime-time--early .realtime-time__actual,
+  .realtime-time--early .realtime-time__delta {
+    color:var(--status-early)!important;
+  }
+
+  /* Journey: tighter overview and stop rhythm. */
+  .journey-card {
+    padding:0 12px 14px;
+  }
+
+  .journey-mobile-overview {
+    gap:8px;
+    margin:0 0 7px;
+    padding:0 0 7px;
+  }
+
+  .journey-time-range .realtime-time {
+    font-size:clamp(1.1rem,5vw,1.45rem);
+  }
+
+  .journey-mobile-route>small {
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+
+  .journey-mobile-overview>button {
+    min-width:40px;
+    min-height:40px;
+    padding-left:6px;
+    font-size:calc(.72rem * var(--panel-scale,1));
+  }
+
+  .journey-alternatives>summary {
+    min-height:38px;
+    font-size:calc(.74rem * var(--panel-scale,1));
+  }
+
+  .live-stop-list li {
+    min-height:52px;
+    padding:7px 0;
+    gap:9px;
+  }
+
+  .live-stop-list b {
+    font-size:calc(.82rem * var(--panel-scale,1));
+  }
+
+  .live-stop-list small {
+    font-size:calc(.66rem * var(--panel-scale,1));
+  }
+
+  .live-stop-list li>.realtime-time {
+    font-size:calc(.78rem * var(--panel-scale,1));
+  }
+
+  /* Keep walking available, but only inside station Info where it belongs. */
+  .station-info .station-walk-action {
+    margin:0 0 8px!important;
+  }
+
+  .station-info .station-walk-action button {
+    min-height:40px;
+    font-size:calc(.76rem * var(--panel-scale,1));
+  }
+
+  /* Small phones: time moves below the destination instead of squeezing it. */
+  @media (max-width:370px) {
+    .board-row-summary,
+    .app-shell .board-row-summary {
+      grid-template-columns:3px 38px minmax(0,1fr);
+      grid-template-rows:auto auto auto;
+    }
+    .board-row-summary .board-destination { grid-column:3; grid-row:1; }
+    .board-row-summary .board-time { grid-column:3; grid-row:2; text-align:left; }
+    .board-row-summary .board-platform { grid-column:3; grid-row:3; text-align:left; }
+    .board-row-summary .board-service,
+    .board-row-summary .row-status { grid-row:1/4; }
+    .board-time>.realtime-time { align-items:flex-start; justify-content:flex-start; }
+  }
+}
+
+@media (max-width:1023px) and (max-height:520px) {
+  .app-shell {
+    --app-header:56px;
+    --bottom-navigation:52px;
+  }
+  .mobile-navigation {
+    height:46px;
+    min-height:46px;
+    border-radius:16px;
+  }
+  .mobile-sheet-panel {
+    padding-bottom:10px;
+  }
+}
+
+@media (prefers-reduced-transparency:reduce) {
+  @media (max-width:1023px) {
+    .station-section-tabs { background:var(--paper); -webkit-backdrop-filter:none; backdrop-filter:none; }
+  }
+}
