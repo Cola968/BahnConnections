@@ -308,9 +308,13 @@
     margin:0 -12px 6px;
   }
 
+  .station-card .panel-body {
+    padding-top:0;
+  }
+
   .station-section-tabs {
     position:sticky;
-    top:56px;
+    top:0;
     z-index:6;
     gap:0;
     margin:0;
