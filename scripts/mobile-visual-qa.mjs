@@ -593,30 +593,29 @@ try {
   await setViewport(1440,900);
   const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
   if(closedBilling.some(status=>status!==503))throw new Error('Unconfigured billing endpoint not closed');
-  // Permission already granted must activate location without an extra app click.
+  // Permission already granted must activate location without an extra app click
+  // and without reintroducing location chrome.
   await command('Browser.grantPermissions',{permissions:['geolocation'],origin:new URL(url).origin});
   await command('Emulation.setGeolocationOverride',{latitude:52.5251,longitude:13.3694,accuracy:3200});
-  await evaluate(`localStorage.setItem('bahnconnections-auto-location','1')`);
+  await evaluate(`localStorage.removeItem('bahnconnections-auto-location')`);
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
+  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Granted location did not auto-activate');
+  if(await evaluate(`Boolean(document.querySelector('.location-tools,.location-trigger,.location-stop,.location-nearest'))`)) throw new Error('Always-on location reintroduced map chrome');
   await tap('[aria-label="Einstellungen und Profil"]');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
+  if(!accuracy.includes('Automatisch aktiv')) throw new Error('Always-on location status is not explained in settings: '+accuracy);
   await tap('[aria-label="Einstellungen schließen"]');
-  await tap('.location-stop');
-  if(await evaluate(`localStorage.getItem('bahnconnections-auto-location')`) !== '0') throw new Error('Stopping location did not persist opt-out');
-  const stoppedOrigin=await evaluate(`performance.timeOrigin`);
+  const resumedOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger'))`,'Location control did not reload');
-  await new Promise(resolve=>setTimeout(resolve,800));
-  if(await evaluate(`Boolean(document.querySelector('.location-trigger.active'))`)) throw new Error('Opted-out location restarted');
+  await waitFor(`performance.timeOrigin > ${resumedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Always-on location did not resume after reload');
   await command('Browser.resetPermissions');
   await command('Emulation.clearGeolocationOverride');
   const subscription=await evaluate(`fetch('/api/subscription').then(r=>r.json())`);
   if(subscription.entitlements.plan!=='free'||subscription.entitlements.checkoutEnabled!==false||subscription.entitlements.accountSync!==false) throw new Error('Subscription endpoint granted unconfigured paid features');
-  profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
+  profileChecks.push({autoLocation:true,noLocationChrome:true,resumesAfterReload:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
   // Standalone marketing website: separate route, separate visual ownership.
