@@ -8,6 +8,7 @@ import "./desktop-workspace.css";
 import "./styles/liquid-glass.css";
 import "./styles/profile.css";
 import "./styles/content-layout.css";
+import "./styles/mobile-cleanup.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
