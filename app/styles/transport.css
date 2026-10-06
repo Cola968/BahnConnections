@@ -313,4 +313,18 @@
 .station-info .station-walk-action { padding:0; border:0; border-radius:0; background:transparent; }
 .station-info .station-walk-action button { background:transparent; padding:0; }
 .station-info .station-card-actions { flex-shrink:0; }
-@media (max-width:1023px) { .station-stats { padding:0 0 20px; } }
+.station-stats-details { margin:0 20px 18px; border-top:1px solid var(--line-subtle); }
+.station-stats-details>summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; color:var(--ink); font-size:calc(var(--type-secondary) * var(--panel-scale,1)); font-weight:650; list-style:none; }
+.station-stats-details>summary::-webkit-details-marker { display:none; }
+.station-stats-details>summary::after { content:"›"; color:var(--muted); font-size:1.1rem; transform:rotate(90deg); transition:transform var(--motion-fast); }
+.station-stats-details[open]>summary::after { transform:rotate(-90deg); }
+.station-stats-details>summary small { margin-left:auto; color:var(--muted); font-size:calc(var(--type-caption) * var(--panel-scale,1)); font-weight:500; }
+.station-stats-details>.station-stats { padding:0 0 10px; }
+.station-operators-inline { margin:0; padding:4px 0 10px!important; }
+@media (max-width:1023px) {
+  .station-stats { padding:0 0 12px; }
+  .station-stats-details { margin:0 0 8px; }
+  .station-stats-details>summary { min-height:42px; }
+  .station-stats .line-mode-grid { gap:4px; }
+  .station-stats .line-mode-grid span { padding:8px 0; }
+}
