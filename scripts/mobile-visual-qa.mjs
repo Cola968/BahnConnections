@@ -508,7 +508,7 @@ try {
         await matrixCapture('map');
         await tap(nav(3));
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
-        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
+        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await dragSheet(-600);
         await matrixCapture('board');
         await tap('.station-section-tabs button:nth-child(3)');
         await matrixCapture('station-info');
@@ -518,7 +518,7 @@ try {
         await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Matrix journey missing');
         if(mobile) {
           await matrixCapture('journey-half');
-          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await tap('.mobile-sheet-summary');
+          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await dragSheet(-600);
         }
         await matrixCapture('journey');
         // Sticky header must remain above the visible body after actual scrolling.
