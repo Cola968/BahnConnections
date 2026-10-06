@@ -25,7 +25,7 @@ import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileShe
 import { occupancyForecast } from "./occupancy";
 import { StationStats } from "./station-stats";
 import { StationLines, type StationLineSummary } from "./station-lines";
-import { serviceBadgeStyle, serviceColors } from "./transit-style";
+import { compactStationLabel, serviceBadgeStyle, serviceColors } from "./transit-style";
 import {
   estimateMinutes,
   formatDuration,
@@ -1272,7 +1272,7 @@ export default function Home() {
                 const wait=transferWaitMinutes(journey,index);
                 return <article className={`live-journey-leg ${serviceClass(leg.category)}${journey.transitLegs.length === 1 ? " single-leg" : ""}`} key={`${leg.tripId ?? leg.name}-${index}`}>
                   <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b>{leg.headsign ? <small>Richtung {leg.headsign}</small> : null}</span>{leg.cancelled ? <span className="leg-live-state cancel">Ausfall</span> : null}</header>
-                  <div className="leg-route-line"><span><b>{leg.from.name}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{leg.to.name}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
+                  <div className="leg-route-line"><span><b>{compactStationLabel(leg.from.name) ?? leg.from.name}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{compactStationLabel(leg.to.name) ?? leg.to.name}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span></div>
                   {forecast.level >= 3 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Hohe Auslastung erwartet</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div>}
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
@@ -1280,7 +1280,7 @@ export default function Home() {
                     const actual=stop.departure ?? stop.arrival;
                     const planned=stop.scheduledDeparture ?? stop.scheduledArrival;
                     return <li className={stop.cancelled || leg.cancelled ? "cancelled" : ""} key={`${stop.id ?? stop.name}-${stopIndex}`}>
-                      <i aria-hidden="true" /><span className="stop-description"><b>{stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span>
+                      <i aria-hidden="true" /><span className="stop-description"><b>{compactStationLabel(stop.name) ?? stop.name}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span>
                       <RealtimeTime scheduled={planned} actual={actual} realtime={leg.realtime} cancelled={stop.cancelled || leg.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact />
                     </li>;
                   })}</ol>
