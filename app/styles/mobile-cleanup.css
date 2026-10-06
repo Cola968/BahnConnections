@@ -526,8 +526,20 @@
     min-height:46px;
     border-radius:16px;
   }
-  .mobile-sheet-panel {
+  .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel {
+    left:auto;
+    right:0;
+    width:50%;
+    bottom:var(--bottom-navigation);
     padding-bottom:10px;
+    border-radius:18px 0 0 0;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    height:72px;
+    max-height:72px;
   }
 }
 
