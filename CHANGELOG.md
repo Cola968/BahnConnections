@@ -1,3 +1,17 @@
+# V48.0 · Mobile Cleanup
+
+- Mobile Oberfläche radikal verdichtet, ohne das bestehende Liquid-Glass-Materialsystem zurückzunehmen.
+- Standort läuft nach Browserfreigabe automatisch im Hintergrund; Standort-, Stop- und „Nächster Bahnhof“-Overlays von der Karte entfernt.
+- Reiseplaner nutzt bei leerem Start einmalig den nächstgelegenen Bahnhof und öffnet standardmäßig als kompaktes Half-Sheet.
+- Bottom-Sheets starten kompakt statt bildschirmfüllend; doppelter Minimieren-Button entfernt, Drag/Sheet-Titel bleibt als Größensteuerung erhalten.
+- Mobile Kopfzeile auf eine kleine Logo-/Ansicht-Zeile reduziert; die globale Suche wird ausgeblendet, sobald ein aktives Sheet den aktuellen Kontext übernimmt.
+- Bottom-Navigation niedriger und dichter, bei unveränderten großen Touch-Zielen.
+- Planer: doppelte Überschrift entfernt, Start/Ziel, Zeitmodus, Datum und Hauptaktion deutlich enger angeordnet.
+- Live-Tafel: Suchfeld im Kompaktmodus verborgen, Produktfilter und Tabs verdichtet, Zeilenhöhe reduziert und Ziel/Zeit/Gleis sauberer getrennt.
+- Frühere bestätigte Abfahrt/Ankunft bleibt explizit grün; pünktliche Echtzeit bleibt neutral.
+- Kleine Displays erhalten einen eigenen dreizeiligen Tafel-Fallback, damit Ziel, Zeit und Gleis nicht kollidieren.
+- PWA-Version und Cache auf V48.0 angehoben.
+
 # V47.1 · Mobile Header Fix
 
 - Mobiles Suchfeld stabilisiert: Clear-Button und „Anzeigen“-Button haben feste, kollisionsfreie Geometrie und können sich nicht mehr gegenseitig überdecken.
