@@ -296,7 +296,7 @@ try {
     await screenshot("390-free-height");
   }
 
-  await tap(".mobile-sheet-actions button:first-child");
+  await tap(".mobile-sheet-summary");
   await pause(300);
   snapshots.push(await layoutSnapshot("390x844 collapsed"));
   if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'collapsed') throw new Error('Minimieren reagiert nicht');
@@ -305,7 +305,7 @@ try {
   await pause(300);
 
   if (journeyLoaded) {
-    await tap(".mobile-sheet-actions button:last-child");
+    await tap(".mobile-sheet-actions button");
     await pause(250);
     const closed = await layoutSnapshot("390x844 closed by X");
     const journeyPreserved = await evaluate(`Boolean(document.querySelector(".journey-card"))`);
