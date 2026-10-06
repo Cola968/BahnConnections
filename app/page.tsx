@@ -267,6 +267,7 @@ export default function Home() {
   const walkRequestRef = useRef<AbortController | null>(null);
   const geoWatchRef = useRef<number | null>(null);
   const firstGeoFixRef = useRef(true);
+  const autoOriginAppliedRef = useRef(false);
   const pendingWalkTargetRef = useRef<Station | null>(null);
   const liveToolbarRef = useRef<HTMLDivElement>(null);
   const mapMenuRef = useRef<HTMLDivElement>(null);
@@ -1094,6 +1095,13 @@ export default function Home() {
   const plannerVisible = !statsOpen && (exploreOpen || desktopSearchMode);
   const activePrimaryPanel = plannerVisible ? "planner" : statsOpen ? "stats" : journey && !departuresView ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
   const primaryPanelOpen = Boolean(activePrimaryPanel);
+
+  useEffect(() => {
+    if (!plannerVisible || autoOriginAppliedRef.current || startId || startSearch || !nearestStation) return;
+    autoOriginAppliedRef.current = true;
+    setStartId(nearestStation.station.id);
+    setStartSearch(nearestStation.station.name);
+  }, [nearestStation, plannerVisible, startId, startSearch]);
   const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? selected?.name ?? "Bahnhof" : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Bahnhof";
   const mobileSheetSummary = journey && activePrimaryPanel === "journey"
     ? `${clock(journey.startTime)}–${clock(journey.endTime)} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`
