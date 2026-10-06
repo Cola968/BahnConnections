@@ -1234,9 +1234,9 @@ export default function Home() {
             <div className="panel-body">
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 780px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div className="station-section-tabs" role="tablist" aria-label="Bahnhofsinformationen">
-              <button role="tab" aria-selected={stationPanel === "live"} className={stationPanel === "live" ? "active" : ""} onClick={() => setStationPanel("live")}><i /> Tafel</button>
-              <button role="tab" aria-selected={stationPanel === "destinations"} className={stationPanel === "destinations" ? "active" : ""} onClick={() => setStationPanel("destinations")}>Linien</button>
-              <button role="tab" aria-selected={stationPanel === "stats"} className={stationPanel === "stats" ? "active" : ""} onClick={() => setStationPanel("stats")}>Info</button>
+              <button role="tab" aria-selected={stationPanel === "live"} className={stationPanel === "live" ? "active" : ""} onClick={(event) => { setStationPanel("live"); event.currentTarget.closest(".panel-body")?.scrollTo({top:0}); }}><i /> Tafel</button>
+              <button role="tab" aria-selected={stationPanel === "destinations"} className={stationPanel === "destinations" ? "active" : ""} onClick={(event) => { setStationPanel("destinations"); event.currentTarget.closest(".panel-body")?.scrollTo({top:0}); }}>Linien</button>
+              <button role="tab" aria-selected={stationPanel === "stats"} className={stationPanel === "stats" ? "active" : ""} onClick={(event) => { setStationPanel("stats"); event.currentTarget.closest(".panel-body")?.scrollTo({top:0}); }}>Info</button>
             </div>
             <div hidden={stationPanel !== "live"}><LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} /></div>
             <div hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
