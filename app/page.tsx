@@ -535,7 +535,7 @@ export default function Home() {
           opacity: featured ? .96 : muted ? .14 : minimalMode ? .28 : .84, lineCap: "round", lineJoin: "round",
         }).addTo(layer);
         line.bindTooltip(routeElement(route.id, `${route.operator} · ${coverage >= 90 ? "DB-Streckengeometrie" : `${coverage}% DB-Streckengeometrie`} · etwa ${route.frequency} Zugpaare/Tag`), { sticky: true });
-        line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("half"); });
       }
       const labelPoints = [...segments].sort((left, right) => right.length - left.length)[0];
       if (showRouteLabels && !minimalMode && !muted && mapZoom >= 6 && labelPoints.length > 1) {
@@ -546,7 +546,7 @@ export default function Home() {
           .setLatLng(anchor)
           .setContent(routeBadgeElement(route))
           .addTo(layer);
-        label.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        label.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("half"); });
       }
     };
 
@@ -760,7 +760,7 @@ export default function Home() {
         const className = `live-train-marker glyph ${trip.category} status-${presentation.tone} status-${presentation.kind}${trackedTripId === trip.tripId ? " tracked" : ""}`;
         const marker = L.marker(position, { zIndexOffset:900, icon:L.divIcon({ className:"live-train-wrap", html:`<div class="${className}"><i></i></div>`, iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(layer);
         marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`, { scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime }), { direction:"top", offset:[0,-11] });
-        marker.on("click", () => { setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded"); });
+        marker.on("click", () => { setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("half"); });
       }
     }
   }, [highContrast, liveState, liveTick, liveView, liveVisible, mapReady, mapZoom, showTrails, theme, trackedTripId, visibleLiveTrips]);
