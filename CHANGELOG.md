@@ -1,3 +1,14 @@
+# V48.1 · Mobile Polish
+
+- Planer-Kopf weiter entschlackt: redundante Unterzeile „Verbindung planen“ im mobilen Sheet entfernt.
+- Sheet-Interaktion korrigiert: Nach freiem Ziehen wird der nächste bewusste Tap auf den Sheet-Kopf nicht mehr verschluckt.
+- Bahnhof-Info deutlich aufgeräumt: Linien- und Qualitätsdaten liegen in einem kompakten aufklappbaren Bereich statt als lange Liste mit Platzhalter-Strichen.
+- Leere Statistikbereiche werden nicht mehr angezeigt; vorhandene Linien- und Live-Qualitätsdaten bleiben vollständig erreichbar.
+- Fußweg-Aktion im Bahnhof verkürzt und klarer an den automatisch laufenden Standort gekoppelt.
+- Öffentliche Bahnhofsnamen robuster bereinigt, auch bei weiteren Unicode-Strichvarianten vor technischen „Zugang über …“-Zusätzen.
+- Liquid Glass, Kartenhierarchie und mobile Größenbalance von V48.0 bleiben unverändert.
+- PWA-Version und Cache auf V48.1 angehoben.
+
 # V48.0 · Mobile Cleanup
 
 - Mobile Oberfläche radikal verdichtet, ohne das bestehende Liquid-Glass-Materialsystem zurückzunehmen.
