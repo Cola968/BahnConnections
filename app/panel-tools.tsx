@@ -138,6 +138,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
     if (drag.dragged) {
       announceSheetHeight(drag.lastHeight);
       onMobileStateChange(nextState);
+      window.setTimeout(() => { suppressClickRef.current = false; }, 120);
     }
     window.requestAnimationFrame(() => {
       drag.panel.removeAttribute("data-sheet-dragging");
