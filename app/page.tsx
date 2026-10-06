@@ -1209,7 +1209,7 @@ export default function Home() {
         </>}
 
         {plannerVisible && <aside className={`explore-card floating-panel mobile-sheet-panel${selected ? " condensed" : ""}`} style={exploreControls.style} onScroll={markPanelScroll}>
-          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={startSearch || targetSearch ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}` : "Neue Verbindung"} mobileSummary="Verbindung planen" />
+          <PanelTools controls={exploreControls} label="Verbindung planen" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={startSearch || targetSearch ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}` : "Neue Verbindung"} mobileSummary="" />
             <div className="panel-body">
           {journey && <button type="button" className="planner-return" onClick={() => setExploreOpen(false)}>← Zur ausgewählten Verbindung <span>{clock(journey.startTime)}–{clock(journey.endTime)}</span></button>}
           <JourneySearch
