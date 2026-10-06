@@ -257,7 +257,7 @@ try {
   const plannerReady = await evaluate(`!document.querySelector(".plan-button")?.disabled`);
   if (plannerReady) {
     await tap(".plan-button");
-    await tap('.mobile-sheet-actions button:first-child');
+    await tap('.mobile-sheet-summary');
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const finished = await evaluate(`Boolean(document.querySelector(".journey-card") || document.querySelector(".planner-message.error"))`);
       if (finished) break;
