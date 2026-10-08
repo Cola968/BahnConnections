@@ -279,6 +279,7 @@ try {
   if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore,.leaflet-rail-routes-pane canvas[data-route-count]:not([data-route-count="0"])'))`))throw new Error('Close left station state or map geometry behind');
   // Exercise the planner, journey inspector and delayed response after closing.
   await tap('.mobile-navigation button:nth-child(2)');
+  await waitFor(`Boolean(document.querySelector('.planner-date-trigger'))`,'Planner did not open after mobile navigation');
   await evaluate(`document.querySelector('.planner-date-trigger').scrollIntoView({block:'center'})`);
   await inspect('Planner date accessible');
   await tap('.plan-button');
