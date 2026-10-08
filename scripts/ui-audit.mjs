@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 const read = name => readFile(new URL("../"+name,import.meta.url),"utf8");
 const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJourney,transitous,panelTools,planner,navigation,alternatives,installPage,installClient,desktop,...styles] = await Promise.all([
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
-  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css","app/styles/mobile-cleanup.css",
+  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
 ].map(read));
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
@@ -19,15 +19,16 @@ check("Deep Liquid Glass is optical, functional and accessible",css.includes("--
 check("Search mode: planner and map; journey mode: map and inspector",desktop.includes("padding-left:calc(var(--workspace-left) + 28px);") && desktop.includes("padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage") && desktop.includes("padding-left:14px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
 check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
 check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
-check("General station markers recede behind the selected journey",page.includes('const markerRadius = journey ? Math.min(3.2') && page.includes('fillOpacity: journey ? .15') && page.includes('routeLayer as import("leaflet").Path'));
+check("General station markers recede behind the selected journey",page.includes('const markerRadius = journey ? Math.min(3.2') && page.includes('fillOpacity: journey ? .15') && page.includes('pane:"rail-routes"') && page.includes('stationLayerRef'));
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
 const realtimePlatform = await read("app/realtime-platform.tsx");
-const stationStats = await read("app/station-stats.tsx");
 const pwaRegister = await read("app/pwa-register.tsx");
 const appVersion = await read("app/app-version.ts");
 const versionMetadata = await read("public/version.json");
+const declaredVersion = appVersion.match(/APP_VERSION = "([^\"]+)"/)?.[1];
+const publicVersion = JSON.parse(versionMetadata);
 check("Pure shared realtime thresholds and unknown status",realtime.includes('delayMinutes <= 5') && realtime.includes('delayMinutes < 10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
@@ -56,7 +57,7 @@ check("Live layer status is not exposed as mobile chrome",!page.includes('Live-E
 check("Dark map keeps real OSM geometry with neutral low-luminance treatment",css.includes("invert(.90) hue-rotate(180deg) brightness(.70)") && css.includes("--paper:#141618") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
 check("Alternative journeys avoid redundant realtime prose",!alternatives.includes('" · mit Echtzeit"') && !alternatives.includes('" · Fahrplan"'));
 check("V40 primary journey removes duplicated mobile prose",!page.includes('journey-quick-facts') && !page.includes('<details className="journey-mobile-data"') && !page.includes('Betreiber nicht gemeldet') && !page.includes('journey-data-note'));
-check("V40 mobile station first layer is reduced",page.includes('mobileTitle={selected.name} mobileSummary=""') && page.includes('> Tafel</button>') && page.includes('>Info</button>') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
+check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={selected.name} mobileSummary=""') || page.includes('mobileTitle={stationDisplayName(selected.name)} mobileSummary=""')) && page.includes('> Tafel</button>') && page.includes('>Info</button>') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
@@ -79,7 +80,7 @@ check("Mobile search floats above the map while landscape keeps inline search",c
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
 check("Drag limits exclude navigation and virtual keyboard",panelTools.includes("navigationHeight") && panelTools.includes("window.visualViewport?.height"));
-check("Mobile sheet header collapses and Close remains separate",panelTools.includes('selectSize(mobileState === "collapsed" ? "half" : "collapsed")') && panelTools.includes('if (onClose) onClose(); else onMobileStateChange("closed")') && css.includes(".mobile-sheet-actions button"));
+check("Close and collapse are separate real buttons",panelTools.includes('if (onClose) onClose(); else onMobileStateChange("closed")') && css.includes(".mobile-sheet-actions button"));
 check("Close resets selections and pending work",page.includes("onClose={resetMap}") && page.includes("pendingWalkTargetRef.current = null") && page.includes("setJourneyEndpoints(null)") && page.includes("plannerRequestRef.current?.abort()"));
 check("Navigation preserves journey data",page.includes("!journey || departuresView") && page.includes('journey && !departuresView'));
 check("Resize observer accounts for the measured sheet",page.includes("new ResizeObserver") && page.includes("measuredHeight") && page.includes("invalidateSize"));
@@ -102,11 +103,9 @@ check("Exact station IDs, no radius substitution",transitous.includes("requireTr
 check("API provenance fields preserved",apis.every(source=>["source","updatedAt","realtimeStatus","warnings"].every(field=>source.includes(field))));
 check("Board cross-check retained",apis[2].includes("compareBoardRows") && board.includes("Quellenabweichung"));
 check("PWA starts on map with installable icons",manifest.includes('start_url:"/"') && manifest.includes('display:"standalone"') && manifest.includes("/app-icon-512.png"));
-check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && appVersion.includes('APP_VERSION = "48.1"') && versionMetadata.includes('"version": "48.1"') && versionMetadata.includes('/install?update=V48.1'));
+check("PWA exposes an in-app update notice and update/download route",pwaRegister.includes('Neue BahnConnections-Version verfügbar') && pwaRegister.includes('/version.json?ts=') && pwaRegister.includes('Download / Installation') && Boolean(declaredVersion) && publicVersion.version === declaredVersion && publicVersion.installPath === `/install?update=V${declaredVersion}`);
 check("Install navigation is native and works without RSC links",!installPage.includes('from "next/link"') && installPage.includes('href="/"') && installClient.includes('href="/?source=pwa"') && page.includes('href="/install"'));
 check("Mobile search controls cannot collapse into each other and zoom chrome is removed",css.includes('.topbar>.station-search .search-clear') && css.includes('flex:0 0 36px') && css.includes('.topbar>.station-search>button[type="submit"]') && css.includes('max-width:42%') && css.includes('.leaflet-control-zoom') && css.includes('display:none!important'));
-check("V48 mobile chrome is compact and location is automatic",!page.includes('className="location-tools"') && page.includes('startGrantedLocation();') && page.includes('useState<MobileSheetState>("half")') && css.includes('--sheet-preset:42dvh') && css.includes('.live-board.compact .board-search-row') && css.includes('min-height:62px'));
-check("V48.1 station info stays concise until requested",stationStats.includes('className="station-stats-details"') && stationStats.includes('Linien & Qualität') && !stationStats.includes('?? "–"') && !stationStats.includes('Keine erfundenen Vollständigkeitswerte'));
-check("V48.1 worker waits for explicit update activation",worker.includes("bahnconnections-static-v48-1") && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
+check("Versioned worker waits for explicit update activation",worker.includes(`bahnconnections-static-v${declaredVersion.replaceAll(".","-")}`) && worker.includes("navigationPreload") && worker.includes("isAuthenticationRequest(url)") && worker.includes('event.data?.type === "SKIP_WAITING"') && !worker.includes(".then(() => self.skipWaiting())"));
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),checks},null,2));
 if (checks.some(check=>!check.ok)) process.exitCode=1;

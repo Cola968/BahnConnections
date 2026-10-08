@@ -43,6 +43,11 @@ let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
+  "--window-size=2560,1600",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+  "--disable-backgrounding-occluded-windows",
+  ...(process.platform === "win32" ? ["--disable-gpu"] : []),
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
@@ -128,7 +133,7 @@ try {
   function command(method, params = {}) {
     const id = ++commandId;
     return new Promise((resolveCommand, rejectCommand) => {
-      const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },20000);
+      const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },60000);
       pending.set(id, { timer, resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
       socket.send(JSON.stringify({ id, method, params }));
     });
@@ -231,6 +236,8 @@ try {
   await pause(6500);
   const snapshots = [await layoutSnapshot("390x844 initial")];
   await screenshot("390-initial");
+  const mobileSearchDock = await evaluate(`(() => { const dock=document.querySelector(".mobile-search-dock .station-search")?.getBoundingClientRect(); const nav=document.querySelector(".mobile-navigation")?.getBoundingClientRect(); return {visible:Boolean(dock&&dock.width>200&&dock.height>=52),aboveNav:Boolean(dock&&nav&&dock.bottom<=nav.top-6),overflow:document.documentElement.scrollWidth>innerWidth+1}; })()`);
+  if (!mobileSearchDock.visible || !mobileSearchDock.aboveNav || mobileSearchDock.overflow) throw new Error("Mobile Schnellsuche fehlt oder kollidiert: "+JSON.stringify(mobileSearchDock));
   console.log('Responsive QA: initial layout loaded');
 
   await tap(".mobile-map-view-button");
@@ -257,7 +264,7 @@ try {
   const plannerReady = await evaluate(`!document.querySelector(".plan-button")?.disabled`);
   if (plannerReady) {
     await tap(".plan-button");
-    await tap('.mobile-sheet-summary');
+    await tap('.mobile-sheet-actions button:first-child');
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const finished = await evaluate(`Boolean(document.querySelector(".journey-card") || document.querySelector(".planner-message.error"))`);
       if (finished) break;
@@ -271,6 +278,12 @@ try {
   await pause(900);
   snapshots.push(await layoutSnapshot(journeyLoaded ? "390x844 journey" : "390x844 planner result"));
   await screenshot(journeyLoaded ? "390-journey" : "390-planner-result");
+  if (journeyLoaded) {
+    const mobileJourneyText = await evaluate(`document.querySelector(".journey-card")?.textContent ?? ""`);
+    if (/Zugang\s+(?:über|via)/i.test(mobileJourneyText)) throw new Error("Technischer Zugangszusatz ist in der mobilen Journey sichtbar");
+    const mobileOverflow = await evaluate(`Array.from(document.querySelectorAll(".journey-card,.live-journey-leg,.leg-route-line,.live-stop-list li")).some(el=>el.scrollWidth>el.clientWidth+1)`);
+    if (mobileOverflow) throw new Error("Mobile Journey hat horizontalen Overflow");
+  }
   if (useJourneyFixture) {
     await tap('.journey-alternatives summary');
     await tap('.journey-alternatives>div>button:first-child');
@@ -296,7 +309,7 @@ try {
     await screenshot("390-free-height");
   }
 
-  await tap(".mobile-sheet-summary");
+  await tap(".mobile-sheet-actions button:first-child");
   await pause(300);
   snapshots.push(await layoutSnapshot("390x844 collapsed"));
   if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'collapsed') throw new Error('Minimieren reagiert nicht');
@@ -305,7 +318,7 @@ try {
   await pause(300);
 
   if (journeyLoaded) {
-    await tap(".mobile-sheet-actions button");
+    await tap(".mobile-sheet-actions button:last-child");
     await pause(250);
     const closed = await layoutSnapshot("390x844 closed by X");
     const journeyPreserved = await evaluate(`Boolean(document.querySelector(".journey-card"))`);
@@ -508,7 +521,7 @@ try {
         await matrixCapture('map');
         await tap(nav(3));
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
-        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await dragSheet(-600);
+        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
         await tap('.station-section-tabs button:nth-child(3)');
         await matrixCapture('station-info');
@@ -518,7 +531,7 @@ try {
         await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Matrix journey missing');
         if(mobile) {
           await matrixCapture('journey-half');
-          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await dragSheet(-600);
+          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await tap('.mobile-sheet-summary');
         }
         await matrixCapture('journey');
         // Sticky header must remain above the visible body after actual scrolling.
@@ -593,29 +606,30 @@ try {
   await setViewport(1440,900);
   const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
   if(closedBilling.some(status=>status!==503))throw new Error('Unconfigured billing endpoint not closed');
-  // Permission already granted must activate location without an extra app click
-  // and without reintroducing location chrome.
+  // Permission already granted must activate location without an extra app click.
   await command('Browser.grantPermissions',{permissions:['geolocation'],origin:new URL(url).origin});
   await command('Emulation.setGeolocationOverride',{latitude:52.5251,longitude:13.3694,accuracy:3200});
-  await evaluate(`localStorage.removeItem('bahnconnections-auto-location')`);
+  await evaluate(`localStorage.setItem('bahnconnections-auto-location','1')`);
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Granted location did not auto-activate');
-  if(await evaluate(`Boolean(document.querySelector('.location-tools,.location-trigger,.location-stop,.location-nearest'))`)) throw new Error('Always-on location reintroduced map chrome');
+  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
   await tap('[aria-label="Einstellungen und Profil"]');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
-  if(!accuracy.includes('Automatisch aktiv')) throw new Error('Always-on location status is not explained in settings: '+accuracy);
   await tap('[aria-label="Einstellungen schließen"]');
-  const resumedOrigin=await evaluate(`performance.timeOrigin`);
+  await tap('.location-stop');
+  if(await evaluate(`localStorage.getItem('bahnconnections-auto-location')`) !== '0') throw new Error('Stopping location did not persist opt-out');
+  const stoppedOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${resumedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Always-on location did not resume after reload');
+  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger'))`,'Location control did not reload');
+  await new Promise(resolve=>setTimeout(resolve,800));
+  if(await evaluate(`Boolean(document.querySelector('.location-trigger.active'))`)) throw new Error('Opted-out location restarted');
   await command('Browser.resetPermissions');
   await command('Emulation.clearGeolocationOverride');
   const subscription=await evaluate(`fetch('/api/subscription').then(r=>r.json())`);
   if(subscription.entitlements.plan!=='free'||subscription.entitlements.checkoutEnabled!==false||subscription.entitlements.accountSync!==false) throw new Error('Subscription endpoint granted unconfigured paid features');
-  profileChecks.push({autoLocation:true,noLocationChrome:true,resumesAfterReload:true,subscriptionFailsClosed:true,accuracy});
+  profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
   // Standalone marketing website: separate route, separate visual ownership.

@@ -1,4 +1,5 @@
 type Coordinate = [number, number]; // [longitude, latitude]
+import { railGeometryLengthKm, splitRailGeometry } from "./rail-geometry.ts";
 
 export type RailNetwork = {
   source: string;
@@ -81,8 +82,16 @@ export class TrackRouter {
   private lineNodes: [number, number][] = [];
   private snapCache = new Map<string, Snap | null>();
   private pathCache = new Map<string, TrackGeometry>();
+  private network: RailNetwork;
+  private pointCells = new Map<string,{lineIndex:number;pointIndex:number}[]>();
 
-  constructor(private network: RailNetwork) {
+  constructor(network: RailNetwork) {
+    this.network = network;
+    network.lines.forEach((line,lineIndex)=>line.coordinates.forEach((point,pointIndex)=>{
+      const key=`${Math.floor(point[0]/.025)},${Math.floor(point[1]/.025)}`;
+      const bucket=this.pointCells.get(key) ?? [];
+      bucket.push({lineIndex,pointIndex});this.pointCells.set(key,bucket);
+    }));
     const nodeByKey = new Map<string, number>();
     const getNode = (point: Coordinate) => {
       const key = `${point[0].toFixed(4)},${point[1].toFixed(4)}`;
@@ -135,11 +144,10 @@ export class TrackRouter {
     let totalDistance = 0;
     for (let index = 1; index < stations.length; index += 1) {
       const segment = this.between(stations[index - 1], stations[index]);
-      const segmentDistance = lineDistance(segment.points.map(([lat, lon]) => [lon, lat]));
       const directDistance = distanceKm([stations[index - 1].lon, stations[index - 1].lat], [stations[index].lon, stations[index].lat]);
-      totalDistance += segmentDistance || directDistance;
-      weightedCoverage += segmentDistance * segment.coverage;
-      if (segment.points.length < 2 || segment.coverage < .55) continue;
+      totalDistance += directDistance;
+      weightedCoverage += directDistance * segment.coverage;
+      if (!segment.segments.length) continue;
       // Keep disconnected track sections separate: flattening reconnects gaps with air lines.
       segments.push(...segment.segments);
     }
@@ -151,10 +159,11 @@ export class TrackRouter {
     if (station.country !== "DE") { this.snapCache.set(station.id, null); return null; }
     const target: Coordinate = [station.lon, station.lat];
     let best: Snap | null = null;
-    for (let lineIndex = 0; lineIndex < this.network.lines.length; lineIndex += 1) {
-      const line = this.network.lines[lineIndex];
-      for (let pointIndex = 0; pointIndex < line.coordinates.length; pointIndex += 1) {
-        const distance = distanceKm(target, line.coordinates[pointIndex]);
+    const x=Math.floor(target[0]/.025),y=Math.floor(target[1]/.025);
+    // Five cells cover the 2.5 km snap radius throughout the German network.
+    for (let dx=-2;dx<=2;dx++) for(let dy=-2;dy<=2;dy++) {
+      for (const {lineIndex,pointIndex} of this.pointCells.get(`${x+dx},${y+dy}`) ?? []) {
+        const distance = distanceKm(target, this.network.lines[lineIndex].coordinates[pointIndex]);
         if (!best || distance < best.distance) best = { lineIndex, pointIndex, distance };
       }
     }
@@ -183,6 +192,18 @@ export class TrackRouter {
     const key = `${from.id}>${to.id}`;
     const cached = this.pathCache.get(key);
     if (cached) return cached;
+    const fromSnap = this.snap(from), toSnap = this.snap(to);
+    if (fromSnap && toSnap && fromSnap.lineIndex === toSnap.lineIndex) {
+      const line = this.network.lines[fromSnap.lineIndex].coordinates;
+      const low = Math.min(fromSnap.pointIndex,toSnap.pointIndex), high = Math.max(fromSnap.pointIndex,toSnap.pointIndex);
+      const section = line.slice(low,high + 1);
+      if (fromSnap.pointIndex > toSnap.pointIndex) section.reverse();
+      const points = section.map(([lon,lat]) => [lat,lon] as [number,number]);
+      const segments = splitRailGeometry(points);
+      const result = {points:segments.flat(),segments,coverage:lineDistance(section) ? Math.min(1,railGeometryLengthKm(segments)/lineDistance(section)) : 0};
+      this.pathCache.set(key,result);
+      return result;
+    }
     const reverseCached = this.pathCache.get(`${to.id}>${from.id}`);
     if (reverseCached) {
       const segments = [...reverseCached.segments].reverse().map((segment) => [...segment].reverse());
@@ -254,9 +275,8 @@ export class TrackRouter {
     }
     append(coordinates, targetOptions[bestTargetOption].coordinates);
     flush();
-    const trackDistance = trackDistances[bestTarget] + targetOptions[bestTargetOption].trackDistance;
-    const segments = trackSections.map((section) => section.map(([lon, lat]) => [lat, lon] as [number, number]));
-    const result: TrackGeometry = { points:segments.flat(), segments, coverage:Math.min(1, trackDistance / bestDistance) };
+    const segments = trackSections.flatMap((section) => splitRailGeometry(section.map(([lon, lat]) => [lat, lon] as [number, number])));
+    const result: TrackGeometry = { points:segments.flat(), segments, coverage:Math.min(1, railGeometryLengthKm(segments) / bestDistance) };
     this.pathCache.set(key, result);
     return result;
   }

@@ -1,4 +1,5 @@
 import type { Station } from "./network-data";
+import { compactStationLabel } from "./transit-style";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
 
@@ -150,7 +151,7 @@ export function categoryForMode(mode = ""): JourneyLegCategory {
 function stop(place: ApiPlace | undefined, fallback: string): LiveJourneyStop {
   return {
     id: place?.stopId,
-    name: place?.name?.replace(/^S\+U\s+/i, "").replace(/^S\s+(?=[A-ZÄÖÜ])/i, "") || fallback,
+    name: compactStationLabel(place?.name?.replace(/^S\+U\s+/i, "").replace(/^S\s+(?=[A-ZÄÖÜ])/i, "")) || fallback,
     lat: place?.lat ?? 0,
     lon: place?.lon ?? 0,
     arrival: place?.arrival,
@@ -194,7 +195,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
     category,
     name: category === "walk" ? "Fußweg" : leg.displayName || leg.tripShortName || leg.routeShortName || (category === "sbahn" ? "S-Bahn" : category === "ubahn" ? "U-Bahn" : category === "tram" ? "Straßenbahn" : category === "regional" ? "Regionalzug" : "Fernzug"),
     operator: leg.agencyName,
-    headsign: leg.headsign,
+    headsign: compactStationLabel(leg.headsign) ?? leg.headsign,
     routeColor:leg.routeColor,
     routeTextColor:leg.routeTextColor,
     tripId: leg.tripId,
@@ -359,7 +360,7 @@ export function dbCategory(product?: string): JourneyLegCategory {
 function dbStop(place: DbLocation | undefined, values: Partial<DbStopover>, fallback: string): LiveJourneyStop {
   return {
     id:place?.id,
-    name:place?.name ?? fallback,
+    name:compactStationLabel(place?.name) ?? fallback,
     lat:place?.location?.latitude ?? 0,
     lon:place?.location?.longitude ?? 0,
     arrival:values.arrival,
@@ -384,7 +385,7 @@ function parseDbJourney(item: DbJourney, index: number): LiveJourney | null {
     return {
       mode:leg.line?.product ?? (leg.walking ? "WALK" : "TRANSIT"), category,
       name:category === "walk" ? "Fußweg" : leg.line?.name ?? "Bahn",
-      operator:leg.line?.operator?.name, headsign:leg.direction, tripId:leg.tripId,
+      operator:leg.line?.operator?.name, headsign:compactStationLabel(leg.direction) ?? leg.direction, tripId:leg.tripId,
       from, to, stops:uniqueStops(stops.length ? stops : [from, to]), points:points.length > 1 ? points : [],
       startTime:leg.departure, endTime:leg.arrival, scheduledStartTime:leg.plannedDeparture ?? leg.departure, scheduledEndTime:leg.plannedArrival ?? leg.arrival,
       durationSeconds:Math.max(0, (new Date(leg.arrival).getTime() - new Date(leg.departure).getTime()) / 1000),

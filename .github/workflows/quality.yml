@@ -28,20 +28,23 @@ jobs:
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
+      - run: pnpm audit:transport
+      - run: pnpm audit:map
       - run: pnpm build
       - name: Responsive interaction and realtime screenshots
         env:
           EDGE_PATH: /usr/bin/google-chrome
         run: |
           mkdir -p work/mobile-qa
-          pnpm dev > work/bahnconnections-dev.log 2>&1 &
+          node node_modules/vinext/dist/cli.js dev > work/bahnconnections-dev.log 2>&1 &
           server_pid=$!
-          trap 'kill "$server_pid"' EXIT
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
             sleep 2
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
+          pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
       - name: Live network sources
         continue-on-error: true
@@ -49,9 +52,9 @@ jobs:
       - name: Live API smoke
         continue-on-error: true
         run: |
-          pnpm dev > work/api-dev.log 2>&1 &
+          node node_modules/vinext/dist/cli.js dev > work/api-dev.log 2>&1 &
           server_pid=$!
-          trap 'kill "$server_pid"' EXIT
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
             sleep 2
@@ -63,6 +66,7 @@ jobs:
           name: responsive-qa
           path: |
             work/mobile-qa/
+            work/layout-qa/
             work/bahnconnections-dev.log
             work/network-audit.json
             work/api-smoke.json

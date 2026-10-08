@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@glass-sdk/liquid-glass/styles.css";
 import "./globals.css";
 import "./styles/tokens.css";
 import "./styles/controls.css";
@@ -8,7 +9,9 @@ import "./desktop-workspace.css";
 import "./styles/liquid-glass.css";
 import "./styles/profile.css";
 import "./styles/content-layout.css";
-import "./styles/mobile-cleanup.css";
+import "./styles/designer-v48.css";
+import "./styles/v49-ui.css";
+import "./styles/v50-ui.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
