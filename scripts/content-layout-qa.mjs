@@ -161,7 +161,7 @@ try {
       await pause(250);
     }
     await screenshot('failed-wait');
-    const diagnostic = await evaluate(`({boardRows:document.querySelectorAll('.board-time .realtime-time').length,panel:document.querySelector('.station-card')?.innerText})`);
+    const diagnostic = await evaluate(`({boardRows:document.querySelectorAll('.board-time .realtime-time').length,panel:document.querySelector('.station-card')?.innerText,primary:document.querySelector('.floating-panel')?.className,nav:[...document.querySelectorAll('.mobile-navigation button')].map(button=>({text:button.textContent,active:button.classList.contains('active')})),dateButtons:[...document.querySelectorAll('button')].filter(button=>button.textContent?.includes('Abfahrt ändern')).map(button=>button.className),app:document.querySelector('.app-shell')?.outerHTML.slice(0,450)})`);
     throw new Error(message+': '+JSON.stringify(diagnostic));
   }
 
