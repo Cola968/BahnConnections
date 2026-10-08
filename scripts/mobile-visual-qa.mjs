@@ -245,7 +245,7 @@ try {
   await screenshot('390-menu');
   await pause(250);
   await tap(".map-menu-dismiss button");
-  await tap(".mobile-navigation button:nth-child(2)");
+  await tap(".mobile-navigation button:nth-of-type(2)");
   await pause(700);
   snapshots.push(await layoutSnapshot("390x844 planner"));
   await screenshot("390-planner");
@@ -325,7 +325,7 @@ try {
     if (closed.sheetState !== "closed" || journeyPreserved || closed.elements[".mobile-sheet-restore"]) throw new Error("X schließt das Sheet nicht zuverlässig oder verliert die Verbindung");
     snapshots.push(closed);
     await screenshot("390-closed");
-    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+    await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     await pause(300);
   }
 
@@ -336,7 +336,7 @@ try {
     await setViewport(width,844);
     await tap('.mobile-sheet-actions button:last-child');
     if (await evaluate(`Boolean(document.querySelector('.mobile-sheet-panel'))`)) throw new Error(`X bei ${width}px reagiert nicht`);
-    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+    await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     snapshots.push(await layoutSnapshot(`${width} restored`));
   }
   await setViewport(844, 390);
@@ -355,7 +355,7 @@ try {
 
   await tap(".mobile-sheet-actions button:last-child");
   if (await evaluate(`Boolean(document.querySelector(".mobile-sheet-panel"))`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
-  await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+  await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
   await setViewport(1440, 900);
   for (const width of [1024,1280,1440,1920]) {
     await setViewport(width,900);
@@ -402,7 +402,7 @@ try {
   if(await evaluate(`getComputedStyle(document.querySelector('.explore-card') || document.createElement('div')).display !== 'none' && Boolean(document.querySelector('.explore-card'))`)) throw new Error('Kartenansicht zeigt Planer');
   await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
-  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-of-type');
   const simpleMore = await evaluate(`(() => {
     const menu=document.querySelector('.simple-more-popover');
     if (!menu) return null;
@@ -417,7 +417,7 @@ try {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
-  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
   const realtimeChecks = [];
   if (useJourneyFixture) {
@@ -430,7 +430,7 @@ try {
       await setViewport(320,740);
       for (const scenario of realtimeScenarios) {
         activeJourneys = [journeyFixture(fixtureJourney,scenario),alternativeJourney];
-        await tap('.mobile-navigation button:nth-child(2)');
+        await tap('.mobile-navigation button:nth-of-type(2)');
         if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) {
           // The previous stop screenshot scrolled the header beneath the sticky sheet controls.
           await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
@@ -458,7 +458,7 @@ try {
       }
     }
     activeJourneys=[fixtureJourney,alternativeJourney];
-    await tap('.mobile-navigation button:nth-child(3)');
+    await tap('.mobile-navigation button:nth-of-type(3)');
     await waitFor(`document.querySelectorAll('.board-time .realtime-time').length >= ${realtimeScenarios.length}`, 'Mobile Board-Fixture wurde nicht geladen');
     const boardTimes = await evaluate(`Array.from(document.querySelectorAll('.board-time .realtime-time')).map(time => ({tone:time.dataset.tone,kind:time.className,planned:Boolean(time.querySelector('del')),actual:Boolean(time.querySelector('.realtime-time__actual')),overflow:time.scrollWidth>time.clientWidth+1}))`);
     if(boardTimes.length < realtimeScenarios.length || boardTimes.some(time=>time.overflow)) throw new Error('Board-Echtzeit-Fixtures fehlen/überlaufen: '+JSON.stringify(boardTimes));
@@ -489,7 +489,7 @@ try {
         await evaluate(`delete document.documentElement.dataset.contrast;delete document.documentElement.dataset.font`);
         await setViewport(width,height);
         const mobile=width<1024;
-        const nav = index => mobile ? '.mobile-navigation button:nth-child('+index+')' : '.desktop-navigation button:nth-child('+({1:2,2:1,3:3}[index])+')';
+        const nav = index => mobile ? '.mobile-navigation button:nth-of-type('+index+')' : '.desktop-navigation button:nth-child('+({1:2,2:1,3:3}[index])+')';
         async function matrixCapture(view) {
           await pause(300);
           const state=await evaluate(`(() => {
@@ -552,7 +552,7 @@ try {
   const profileChecks=[];
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
-    if(width<1024) {await tap('.mobile-navigation button:last-child');await tap('.simple-more-list>button:first-child');}
+    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
@@ -581,7 +581,7 @@ try {
     const oldOrigin=await evaluate(`performance.timeOrigin`);
     await command('Page.reload');
     await waitFor(`performance.timeOrigin>${oldOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell[data-preferences-ready="true"]'))`,'Route reload failed');
-    if(width<1024){await tap('.mobile-navigation button:last-child');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
+    if(width<1024){await tap('.mobile-navigation button:last-of-type');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog .saved-routes li'))`,'Saved route not restored');
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);

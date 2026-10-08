@@ -278,7 +278,7 @@ try {
   await pause(1200);
   if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore,.leaflet-rail-routes-pane canvas[data-route-count]:not([data-route-count="0"])'))`))throw new Error('Close left station state or map geometry behind');
   // Exercise the planner, journey inspector and delayed response after closing.
-  await tap('.mobile-navigation button:nth-child(2)');
+  await tap('.mobile-navigation button:nth-of-type(2)');
   await waitFor(`Boolean(document.querySelector('.planner-date-trigger'))`,'Planner did not open after mobile navigation');
   await evaluate(`document.querySelector('.planner-date-trigger').scrollIntoView({block:'center'})`);
   await inspect('Planner date accessible');
@@ -298,7 +298,7 @@ try {
   await setViewport(390,844);
   await tap('.mobile-sheet-actions button:last-child');
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.mobile-sheet-restore,path.live-journey-stop'))`))throw new Error('Journey close left state behind');
-  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-of-type');
   for(const [width,height] of [[320,568],[360,640],[768,1024]]) {
     await setViewport(width,height);
     for(const font of ['normal','large']) {
@@ -313,7 +313,7 @@ try {
   }
   await setViewport(390,844);
   await tap('.simple-more-popover .map-menu-dismiss button');
-  await tap('.mobile-navigation button:nth-child(2)');
+  await tap('.mobile-navigation button:nth-of-type(2)');
   await tap('.plan-button');
   await tap('.mobile-sheet-actions button:last-child');
   await pause(1400);
