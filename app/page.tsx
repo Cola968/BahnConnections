@@ -1120,7 +1120,7 @@ export default function Home() {
     setDesktopView(view); setMobileView(view); setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
     setStatsOpen(view === "stats");
 
-    setExploreOpen(!desktopWorkspace && view === "connections" && !journey);
+    setExploreOpen(view === "connections" && !journey);
     if (view === "map" && !desktopWorkspace) { setMobileSheetState("collapsed"); return; }
     setMobileSheetHeight(null);
     setMobileSheetState(view === "connections" && !journey && !desktopWorkspace ? "half" : view === "connections" && !journey ? "expanded" : "half");
