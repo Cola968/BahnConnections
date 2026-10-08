@@ -43,6 +43,11 @@ let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
+  "--window-size=2560,1600",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+  "--disable-backgrounding-occluded-windows",
+  ...(process.platform === "win32" ? ["--disable-gpu"] : []),
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
@@ -128,7 +133,7 @@ try {
   function command(method, params = {}) {
     const id = ++commandId;
     return new Promise((resolveCommand, rejectCommand) => {
-      const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },20000);
+      const timer = setTimeout(() => { pending.delete(id); rejectCommand(new Error(`DevTools-Timeout: ${method} ${params.type ?? ''}`)); },60000);
       pending.set(id, { timer, resolveCommand:(value) => { clearTimeout(timer); resolveCommand(value); }, rejectCommand:(error) => { clearTimeout(timer); rejectCommand(error); } });
       socket.send(JSON.stringify({ id, method, params }));
     });
@@ -231,6 +236,8 @@ try {
   await pause(6500);
   const snapshots = [await layoutSnapshot("390x844 initial")];
   await screenshot("390-initial");
+  const mobileSearchDock = await evaluate(`(() => { const dock=document.querySelector(".mobile-search-dock .station-search")?.getBoundingClientRect(); const nav=document.querySelector(".mobile-navigation")?.getBoundingClientRect(); return {visible:Boolean(dock&&dock.width>200&&dock.height>=52),aboveNav:Boolean(dock&&nav&&dock.bottom<=nav.top-6),overflow:document.documentElement.scrollWidth>innerWidth+1}; })()`);
+  if (!mobileSearchDock.visible || !mobileSearchDock.aboveNav || mobileSearchDock.overflow) throw new Error("Mobile Schnellsuche fehlt oder kollidiert: "+JSON.stringify(mobileSearchDock));
   console.log('Responsive QA: initial layout loaded');
 
   await tap(".mobile-map-view-button");
@@ -238,7 +245,7 @@ try {
   await screenshot('390-menu');
   await pause(250);
   await tap(".map-menu-dismiss button");
-  await tap(".mobile-navigation button:nth-child(2)");
+  await tap(".mobile-navigation button:nth-of-type(2)");
   await pause(700);
   snapshots.push(await layoutSnapshot("390x844 planner"));
   await screenshot("390-planner");
@@ -257,7 +264,7 @@ try {
   const plannerReady = await evaluate(`!document.querySelector(".plan-button")?.disabled`);
   if (plannerReady) {
     await tap(".plan-button");
-    await tap('.mobile-sheet-summary');
+    await tap('.mobile-sheet-actions button:first-child');
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const finished = await evaluate(`Boolean(document.querySelector(".journey-card") || document.querySelector(".planner-message.error"))`);
       if (finished) break;
@@ -271,6 +278,12 @@ try {
   await pause(900);
   snapshots.push(await layoutSnapshot(journeyLoaded ? "390x844 journey" : "390x844 planner result"));
   await screenshot(journeyLoaded ? "390-journey" : "390-planner-result");
+  if (journeyLoaded) {
+    const mobileJourneyText = await evaluate(`document.querySelector(".journey-card")?.textContent ?? ""`);
+    if (/Zugang\s+(?:über|via)/i.test(mobileJourneyText)) throw new Error("Technischer Zugangszusatz ist in der mobilen Journey sichtbar");
+    const mobileOverflow = await evaluate(`Array.from(document.querySelectorAll(".journey-card,.live-journey-leg,.leg-route-line,.live-stop-list li")).some(el=>el.scrollWidth>el.clientWidth+1)`);
+    if (mobileOverflow) throw new Error("Mobile Journey hat horizontalen Overflow");
+  }
   if (useJourneyFixture) {
     await tap('.journey-alternatives summary');
     await tap('.journey-alternatives>div>button:first-child');
@@ -296,7 +309,7 @@ try {
     await screenshot("390-free-height");
   }
 
-  await tap(".mobile-sheet-summary");
+  await tap(".mobile-sheet-actions button:first-child");
   await pause(300);
   snapshots.push(await layoutSnapshot("390x844 collapsed"));
   if (await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'collapsed') throw new Error('Minimieren reagiert nicht');
@@ -305,14 +318,14 @@ try {
   await pause(300);
 
   if (journeyLoaded) {
-    await tap(".mobile-sheet-actions button");
+    await tap(".mobile-sheet-actions button:last-child");
     await pause(250);
     const closed = await layoutSnapshot("390x844 closed by X");
     const journeyPreserved = await evaluate(`Boolean(document.querySelector(".journey-card"))`);
     if (closed.sheetState !== "closed" || journeyPreserved || closed.elements[".mobile-sheet-restore"]) throw new Error("X schließt das Sheet nicht zuverlässig oder verliert die Verbindung");
     snapshots.push(closed);
     await screenshot("390-closed");
-    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+    await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     await pause(300);
   }
 
@@ -323,7 +336,7 @@ try {
     await setViewport(width,844);
     await tap('.mobile-sheet-actions button:last-child');
     if (await evaluate(`Boolean(document.querySelector('.mobile-sheet-panel'))`)) throw new Error(`X bei ${width}px reagiert nicht`);
-    await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+    await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
     snapshots.push(await layoutSnapshot(`${width} restored`));
   }
   await setViewport(844, 390);
@@ -342,7 +355,7 @@ try {
 
   await tap(".mobile-sheet-actions button:last-child");
   if (await evaluate(`Boolean(document.querySelector(".mobile-sheet-panel"))`)) throw new Error("Sheet bleibt im Querformat trotz X sichtbar");
-  await tap(".mobile-navigation button:nth-child(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
+  await tap(".mobile-navigation button:nth-of-type(2)"); await tap(".plan-button"); await waitFor(`Boolean(document.querySelector(".journey-card"))`,"New journey missing");
   await setViewport(1440, 900);
   for (const width of [1024,1280,1440,1920]) {
     await setViewport(width,900);
@@ -389,7 +402,7 @@ try {
   if(await evaluate(`getComputedStyle(document.querySelector('.explore-card') || document.createElement('div')).display !== 'none' && Boolean(document.querySelector('.explore-card'))`)) throw new Error('Kartenansicht zeigt Planer');
   await tap('.desktop-navigation button:first-child',true);
   await setViewport(390,844);
-  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-of-type');
   const simpleMore = await evaluate(`(() => {
     const menu=document.querySelector('.simple-more-popover');
     if (!menu) return null;
@@ -404,7 +417,7 @@ try {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
-  await tap('.mobile-navigation button:last-child');
+  await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
   const realtimeChecks = [];
   if (useJourneyFixture) {
@@ -417,7 +430,7 @@ try {
       await setViewport(320,740);
       for (const scenario of realtimeScenarios) {
         activeJourneys = [journeyFixture(fixtureJourney,scenario),alternativeJourney];
-        await tap('.mobile-navigation button:nth-child(2)');
+        await tap('.mobile-navigation button:nth-of-type(2)');
         if (await evaluate(`Boolean(document.querySelector('.journey-card'))`)) {
           // The previous stop screenshot scrolled the header beneath the sticky sheet controls.
           await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
@@ -445,7 +458,7 @@ try {
       }
     }
     activeJourneys=[fixtureJourney,alternativeJourney];
-    await tap('.mobile-navigation button:nth-child(3)');
+    await tap('.mobile-navigation button:nth-of-type(3)');
     await waitFor(`document.querySelectorAll('.board-time .realtime-time').length >= ${realtimeScenarios.length}`, 'Mobile Board-Fixture wurde nicht geladen');
     const boardTimes = await evaluate(`Array.from(document.querySelectorAll('.board-time .realtime-time')).map(time => ({tone:time.dataset.tone,kind:time.className,planned:Boolean(time.querySelector('del')),actual:Boolean(time.querySelector('.realtime-time__actual')),overflow:time.scrollWidth>time.clientWidth+1}))`);
     if(boardTimes.length < realtimeScenarios.length || boardTimes.some(time=>time.overflow)) throw new Error('Board-Echtzeit-Fixtures fehlen/überlaufen: '+JSON.stringify(boardTimes));
@@ -476,7 +489,7 @@ try {
         await evaluate(`delete document.documentElement.dataset.contrast;delete document.documentElement.dataset.font`);
         await setViewport(width,height);
         const mobile=width<1024;
-        const nav = index => mobile ? '.mobile-navigation button:nth-child('+index+')' : '.desktop-navigation button:nth-child('+({1:2,2:1,3:3}[index])+')';
+        const nav = index => mobile ? '.mobile-navigation button:nth-of-type('+index+')' : '.desktop-navigation button:nth-child('+({1:2,2:1,3:3}[index])+')';
         async function matrixCapture(view) {
           await pause(300);
           const state=await evaluate(`(() => {
@@ -508,7 +521,7 @@ try {
         await matrixCapture('map');
         await tap(nav(3));
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
-        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await dragSheet(-600);
+        if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
         await tap('.station-section-tabs button:nth-child(3)');
         await matrixCapture('station-info');
@@ -518,7 +531,7 @@ try {
         await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Matrix journey missing');
         if(mobile) {
           await matrixCapture('journey-half');
-          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await dragSheet(-600);
+          if(await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) !== 'expanded') await tap('.mobile-sheet-summary');
         }
         await matrixCapture('journey');
         // Sticky header must remain above the visible body after actual scrolling.
@@ -539,7 +552,7 @@ try {
   const profileChecks=[];
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
-    if(width<1024) {await tap('.mobile-navigation button:last-child');await tap('.simple-more-list>button:first-child');}
+    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
@@ -568,7 +581,7 @@ try {
     const oldOrigin=await evaluate(`performance.timeOrigin`);
     await command('Page.reload');
     await waitFor(`performance.timeOrigin>${oldOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell[data-preferences-ready="true"]'))`,'Route reload failed');
-    if(width<1024){await tap('.mobile-navigation button:last-child');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
+    if(width<1024){await tap('.mobile-navigation button:last-of-type');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog .saved-routes li'))`,'Saved route not restored');
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
@@ -593,29 +606,30 @@ try {
   await setViewport(1440,900);
   const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
   if(closedBilling.some(status=>status!==503))throw new Error('Unconfigured billing endpoint not closed');
-  // Permission already granted must activate location without an extra app click
-  // and without reintroducing location chrome.
+  // Permission already granted must activate location without an extra app click.
   await command('Browser.grantPermissions',{permissions:['geolocation'],origin:new URL(url).origin});
   await command('Emulation.setGeolocationOverride',{latitude:52.5251,longitude:13.3694,accuracy:3200});
-  await evaluate(`localStorage.removeItem('bahnconnections-auto-location')`);
+  await evaluate(`localStorage.setItem('bahnconnections-auto-location','1')`);
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Granted location did not auto-activate');
-  if(await evaluate(`Boolean(document.querySelector('.location-tools,.location-trigger,.location-stop,.location-nearest'))`)) throw new Error('Always-on location reintroduced map chrome');
+  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
   await tap('[aria-label="Einstellungen und Profil"]');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
-  if(!accuracy.includes('Automatisch aktiv')) throw new Error('Always-on location status is not explained in settings: '+accuracy);
   await tap('[aria-label="Einstellungen schließen"]');
-  const resumedOrigin=await evaluate(`performance.timeOrigin`);
+  await tap('.location-stop');
+  if(await evaluate(`localStorage.getItem('bahnconnections-auto-location')`) !== '0') throw new Error('Stopping location did not persist opt-out');
+  const stoppedOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${resumedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Always-on location did not resume after reload');
+  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger'))`,'Location control did not reload');
+  await new Promise(resolve=>setTimeout(resolve,800));
+  if(await evaluate(`Boolean(document.querySelector('.location-trigger.active'))`)) throw new Error('Opted-out location restarted');
   await command('Browser.resetPermissions');
   await command('Emulation.clearGeolocationOverride');
   const subscription=await evaluate(`fetch('/api/subscription').then(r=>r.json())`);
   if(subscription.entitlements.plan!=='free'||subscription.entitlements.checkoutEnabled!==false||subscription.entitlements.accountSync!==false) throw new Error('Subscription endpoint granted unconfigured paid features');
-  profileChecks.push({autoLocation:true,noLocationChrome:true,resumesAfterReload:true,subscriptionFailsClosed:true,accuracy});
+  profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
   // Standalone marketing website: separate route, separate visual ownership.

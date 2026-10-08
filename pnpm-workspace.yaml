@@ -1,5 +1,9 @@
 allowBuilds:
-  esbuild: set this to true or false
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
-  workerd: set this to true or false
+  '@vgpu/adapter-node': false
+  esbuild: true
+  sharp: false
+  unrs-resolver: false
+  webgpu: false
+  workerd: true
+minimumReleaseAgeExclude:
+  - '@glass-sdk/liquid-glass@0.0.1'

@@ -40,10 +40,23 @@ const laterTime = time => time ? new Date(new Date(time).getTime() + 30 * 60_000
 const alternativeLeg = { ...fixtureLeg,name:'ICE 1207',tripId:'qa-ice-1207',startTime:laterTime(fixtureLeg.startTime),endTime:laterTime(fixtureLeg.endTime),stops:fixtureStops.map(stop => ({...stop,arrival:laterTime(stop.arrival),departure:laterTime(stop.departure)})) };
 const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alternativeLeg.startTime,endTime:alternativeLeg.endTime,legs:[alternativeLeg],transitLegs:[alternativeLeg] };
 
+function encodeGeometry(points, precision=6) {
+  let result='',lat=0,lon=0;
+  const encode=value=>{let encoded=value<0?~(value<<1):value<<1,part='';while(encoded>=32){part+=String.fromCharCode((32|(encoded&31))+63);encoded>>=5;}return part+String.fromCharCode(encoded+63);};
+  for(const point of points){const a=Math.round(point[0]*10**precision),b=Math.round(point[1]*10**precision);result+=encode(a-lat)+encode(b-lon);lat=a;lon=b;}
+  return result;
+}
+const denseGeometry=encodeGeometry(Array.from({length:1500},(_,i)=>[52.5251+Math.sin(i/1499*Math.PI*4)*.04,13.3694+(i/1499)*.4]));
+const tripRequests=new Map();
 let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
+  "--window-size=2560,1600",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+  "--disable-backgrounding-occluded-windows",
+  ...(process.platform === "win32" ? ["--disable-gpu"] : []),
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
   "--no-first-run",
   "--disable-default-apps",
@@ -99,13 +112,14 @@ try {
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
       const requestUrl = new URL(message.params.request.url);
       console.log("Fixture: "+requestUrl.pathname);
+      if (requestUrl.pathname.includes("/api/trips/")) tripRequests.set(requestUrl.pathname,(tripRequests.get(requestUrl.pathname)??0)+1);
       const tripIndex=Number(requestUrl.pathname.match(/qa-board-(\d+)/)?.[1] ?? 0);
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/services') ? serviceFixture : requestUrl.pathname.endsWith('/board') ? boardFixture()
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
         : requestUrl.pathname.endsWith('/map/trips') ? []
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
-        : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled,legGeometry:{points:'_p~iF~ps|U_ulLnnqC_mqNvxq`@',precision:5}}]}}
+        : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled,legGeometry:{points:denseGeometry,precision:6}}]}}
         : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
       const body = Buffer.from(JSON.stringify(payload)).toString("base64");
       const fixtureTimer = setTimeout(() => {
@@ -147,7 +161,7 @@ try {
       await pause(250);
     }
     await screenshot('failed-wait');
-    const diagnostic = await evaluate(`({boardRows:document.querySelectorAll('.board-time .realtime-time').length,panel:document.querySelector('.station-card')?.innerText})`);
+    const diagnostic = await evaluate(`({boardRows:document.querySelectorAll('.board-time .realtime-time').length,panel:document.querySelector('.station-card')?.innerText,primary:document.querySelector('.floating-panel')?.className,nav:[...document.querySelectorAll('.mobile-navigation button')].map(button=>({text:button.textContent,active:button.classList.contains('active')})),dateButtons:[...document.querySelectorAll('button')].filter(button=>button.textContent?.includes('Abfahrt ändern')).map(button=>button.className),app:document.querySelector('.app-shell')?.outerHTML.slice(0,450)})`);
     throw new Error(message+': '+JSON.stringify(diagnostic));
   }
 
@@ -159,6 +173,7 @@ try {
   }
 
   async function screenshot(name) {
+    if (process.env.BAHNCONNECTIONS_QA_SCREENSHOTS === "0") return;
     const result = await command("Page.captureScreenshot", { format:"png", fromSurface:true, captureBeyondViewport:false });
     await writeFile(join(outputDirectory, `${name}.png`), Buffer.from(result.data, "base64"));
   }
@@ -197,7 +212,28 @@ try {
   await command('Page.navigate',{url});
   await waitFor(`document.querySelectorAll('.board-row-summary').length > 0`, 'Station fixture missing');
   await waitFor(`document.querySelectorAll('.station-line-row').length===18`, 'All 18 lines must load without filtering');
-  await waitFor(`document.querySelectorAll('path.station-trip-preview').length>0`, 'Lines must appear on the map automatically');
+  await waitFor(`Number(document.querySelector('.leaflet-rail-routes-pane canvas')?.dataset.routeCount)===18`, 'Lines must appear on the map automatically');
+  // Pointer gestures under a four-times slower CPU must reuse the route layer.
+  await pause(1200);
+  await command('Emulation.setCPUThrottlingRate',{rate:4});
+  await screenshot('pan-before');
+  const beforePan=await evaluate(`({revision:Number(document.querySelector('.leaflet-rail-routes-pane canvas').dataset.routeRevision),transform:document.querySelector('.leaflet-map-pane').style.transform})`);
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',x:180,y:220,button:'left',buttons:1,clickCount:1});
+  for(let step=1;step<=8;step++){await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:180+step*8,y:220+step*4,button:'left',buttons:1});await pause(35);}
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:244,y:252,button:'left',buttons:0,clickCount:1});
+  await pause(500);
+  const afterPan=await evaluate(`({revision:Number(document.querySelector('.leaflet-rail-routes-pane canvas').dataset.routeRevision),transform:document.querySelector('.leaflet-map-pane').style.transform,markers:document.querySelectorAll('path.station-point').length,routes:Number(document.querySelector('.leaflet-rail-routes-pane canvas').dataset.routeCount)})`);
+  if(beforePan.transform===afterPan.transform || beforePan.revision!==afterPan.revision || afterPan.routes!==18 || afterPan.markers>120)throw new Error('Map pan regression: '+JSON.stringify({beforePan,afterPan}));
+  await command('Emulation.setCPUThrottlingRate',{rate:1});
+  checks.push({label:'4x CPU: pointer pan preserves all 18 dense routes',...afterPan});
+  await tap('.station-section-tabs button:nth-child(2)');
+  const requestCount=[...tripRequests.values()].reduce((a,b)=>a+b,0);
+  await tap('.station-line-row');
+  await waitFor(`Boolean(document.querySelector('.line-route-detail'))`,'Line detail missing');
+  if([...tripRequests.values()].reduce((a,b)=>a+b,0)!==requestCount)throw new Error('Opening line details duplicated the loaded trip request');
+  await tap('.station-line-row');
+  await tap('.station-section-tabs button:first-child');
+  checks.push({label:'Line details reuse the fetched trip',requests:requestCount});
   async function inspect(label) {
     const result=await evaluate(`(() => {
       const panel=document.querySelector('.floating-panel'),head=panel?.querySelector('.panel-tools'),body=panel?.querySelector('.panel-body');
@@ -218,7 +254,7 @@ try {
     if(result.overflow.length||result.overlaps.length||!result.headerSeparate||result.horizontal)throw new Error(label+': '+JSON.stringify(result));
     checks.push({label,...result});
   }
-  for(const [width,height] of [[320,568],[360,640],[390,844],[768,1024],[844,390],[568,320],[1024,400],[1024,600],[1440,900],[2560,1440]]) {
+  for(const [width,height] of [[320,568],[360,640],[390,844],[430,932],[768,1024],[844,390],[568,320],[1024,400],[1024,600],[1440,900],[1920,1080]]) {
     await setViewport(width,height);
     for(const theme of ['light','dark'])for(const font of ['normal','large']) {
       await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)};document.documentElement.dataset.font=${JSON.stringify(font)}`);
@@ -226,11 +262,13 @@ try {
       console.log("Checking "+width+"x"+height+" "+theme+" "+font);
       const label=width+'x'+height+' '+theme+' '+font;
       await inspect(label+' board');
+      if(font==='normal')await screenshot(width+'-'+theme+'-board');
       await evaluate(`document.querySelector('.panel-body').scrollTop=160`);
       await inspect(label+' scrolled');
       await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
       await tap('.station-section-tabs button:nth-child(2)');
       await inspect(label+' lines');
+      if(font==='normal')await screenshot(width+'-'+theme+'-lines');
       
       await tap('.station-section-tabs button:first-child');
     }
@@ -238,9 +276,12 @@ try {
   await setViewport(390,844);
   await tap('.mobile-sheet-actions button:last-child');
   await pause(1200);
-  if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore,path.station-trip-preview'))`))throw new Error('Close left station state or map geometry behind');
+  if(await evaluate(`Boolean(document.querySelector('.station-card,.mobile-sheet-restore,.leaflet-rail-routes-pane canvas[data-route-count]:not([data-route-count="0"])'))`))throw new Error('Close left station state or map geometry behind');
   // Exercise the planner, journey inspector and delayed response after closing.
-  await tap('.mobile-navigation button:nth-child(2)');
+  await tap('.mobile-navigation button:nth-of-type(2)');
+  await waitFor(`Boolean(document.querySelector('.planner-date-trigger'))`,'Planner did not open after mobile navigation');
+  await evaluate(`document.querySelector('.planner-date-trigger').scrollIntoView({block:'center'})`);
+  await inspect('Planner date accessible');
   await tap('.plan-button');
   await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Journey missing');
   for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,600],[1440,900]]) {
@@ -257,7 +298,22 @@ try {
   await setViewport(390,844);
   await tap('.mobile-sheet-actions button:last-child');
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.mobile-sheet-restore,path.live-journey-stop'))`))throw new Error('Journey close left state behind');
-  await tap('.mobile-navigation button:nth-child(2)');
+  await tap('.mobile-navigation button:last-of-type');
+  for(const [width,height] of [[320,568],[360,640],[768,1024]]) {
+    await setViewport(width,height);
+    for(const font of ['normal','large']) {
+      await evaluate(`document.documentElement.dataset.font=${JSON.stringify(font)}`);
+      const bounds=await evaluate(`(() => {
+        const menu=document.querySelector('.simple-more-popover'),rect=menu.getBoundingClientRect();
+        return {left:rect.left,right:rect.right,width:innerWidth,overflow:menu.scrollWidth>menu.clientWidth+1};
+      })()`);
+      if(bounds.left<0||bounds.right>bounds.width+1||bounds.overflow)throw new Error('More menu outside viewport: '+JSON.stringify(bounds));
+      checks.push({label:width+' '+font+' More menu fits',...bounds});
+    }
+  }
+  await setViewport(390,844);
+  await tap('.simple-more-popover .map-menu-dismiss button');
+  await tap('.mobile-navigation button:nth-of-type(2)');
   await tap('.plan-button');
   await tap('.mobile-sheet-actions button:last-child');
   await pause(1400);
