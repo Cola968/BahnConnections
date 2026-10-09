@@ -37,7 +37,7 @@ BahnConnections verkauft keine Tickets und bietet keine bestätigten Buchungen. 
 - Separater Live-Netzwerk-Audit: Stations- und Linienprüfungen erfolgreich; die fest erwartete S42-Zubringerverbindung fehlte in der Referenzsuche. Die Prüfung wurde nicht abgeschwächt.
 - Produktions-Browser-QA: geteilte Suche, sichtbare Suchaktion, Suchabbruch, Offline-Hinweis, Offline-Navigation, sichere Darstellung gespeicherter Namen, Wiederherstellung, Free-Abonnement-API und Version `51.0`.
 
-Belege liegen lokal in `work/release-qa/report.json`, `work/release-layout/content-layout-report.json` , `work/release-api-production.json`, `work/release-network-proxy.json` und `work/release-browser/report.json` sowie den daneben gespeicherten Screenshots. Diese generierten Dateien sind absichtlich nicht Teil des Git-Commits. CI lädt dieselben Prüfberichte und Bilder als Artefakte hoch.
+Belege liegen lokal in `work/release-qa/report.json`, `work/release-layout/content-layout-report.json`, `work/release-api-production.json`, `work/release-network-proxy.json` und `work/release-browser/report.json` sowie den daneben gespeicherten Screenshots. Diese generierten Dateien sind absichtlich nicht Teil des Git-Commits. Der CI-Workflow enthält diese Prüftypen und lädt seine eigenen Prüfberichte und Bilder als Artefakte hoch; ein erfolgreicher GitHub-Actions-Lauf wurde hier nicht bestätigt.
 
 ```bash
 pnpm install --frozen-lockfile

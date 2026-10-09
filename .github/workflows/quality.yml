@@ -67,14 +67,14 @@ jobs:
       - name: Live API smoke
         continue-on-error: true
         run: |
-          node node_modules/vinext/dist/cli.js dev > work/api-dev.log 2>&1 &
+          node node_modules/vinext/dist/cli.js start --port 3001 > work/api-production.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            if curl --fail --silent http://localhost:3001/ > /dev/null; then break; fi
             sleep 2
           done
-          BAHNCONNECTIONS_BASE_URL=http://localhost:3000 timeout 180 pnpm audit:api > work/api-smoke.json 2>&1
+          BAHNCONNECTIONS_BASE_URL=http://localhost:3001 timeout 180 pnpm audit:api > work/api-smoke.json 2>&1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -87,7 +87,7 @@ jobs:
             work/bahnconnections-dev.log
             work/network-audit.json
             work/api-smoke.json
-            work/api-dev.log
+            work/api-production.log
 
       # Smaller evidence bundles can be inspected in tools with a 32 MiB transfer limit.
       - uses: actions/upload-artifact@v4
