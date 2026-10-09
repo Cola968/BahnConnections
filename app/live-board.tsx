@@ -2,6 +2,8 @@
 
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
+import { BoardToolbar } from "./board-toolbar";
+import { UiIcon } from "./ui-icon";
 import { deriveRealtimePresentation } from "./realtime-presentation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
@@ -268,6 +270,14 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [query, setQuery] = useState("");
   const [compact, setCompact] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest('.board-filter-panel,.board-filter-toggle')) setFiltersOpen(false);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [filtersOpen]);
   const [entries, setEntries] = useState<BoardEntry[]>([]);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [tripDetails, setTripDetails] = useState<Record<string, TripDetail>>({});
@@ -382,12 +392,6 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     const timer = window.setTimeout(() => setDisplayLimit(compact ? 50 : 100), 0);
     return () => window.clearTimeout(timer);
   }, [compact, delayFilter, mode, platformFilter, productFilter, query, sortMode, station.id, windowMinutes]);
-
-  const boardStats = useMemo(() => ({
-    realtime: visibleEntries.filter((entry) => entry.realtime).length,
-    delayed: visibleEntries.filter((entry) => !entry.canceled && delayMinutes(entry) >= 6).length,
-    canceled: visibleEntries.filter((entry) => entry.canceled).length,
-  }), [visibleEntries]);
 
   const summary = useMemo((): BoardSummary => {
     const scoped = entries.filter((entry) => {
@@ -527,41 +531,35 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
 
   return (
     <section className={`live-board realistic${compact ? " compact" : " expanded-detail"}`} aria-live="polite">
-      <div className="board-primary-bar">
-        <div className="board-mode-tabs" role="tablist" aria-label="Live-Tafel">
-          <button role="tab" aria-selected={mode === "departures"} className={mode === "departures" ? "active" : ""} onClick={() => setMode("departures")}>Abfahrt</button>
-          <button role="tab" aria-selected={mode === "arrivals"} className={mode === "arrivals" ? "active" : ""} onClick={() => setMode("arrivals")}>Ankunft</button>
+      <BoardToolbar mode={mode} onMode={setMode} filtersOpen={filtersOpen}
+        filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 240}
+        onFilters={() => setFiltersOpen(value => !value)} compact={compact} onCompact={() => setCompact(value => !value)} onWindow={openBoardWindow} />
+
+      {status === "ready" && (stale || verificationStatus === "different") && <p className="board-quality-notice" role="status">{stale ? "Datenstand veraltet" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
+
+      {filtersOpen && <div className="board-filter-panel" id="board-filters" onKeyDown={event => { if(event.key === "Escape") {event.stopPropagation();setFiltersOpen(false);event.currentTarget.closest('.live-board')?.querySelector<HTMLButtonElement>('.board-filter-toggle')?.focus();} }}>
+        <div className="board-filter-heading"><b>Tafel filtern</b><button type="button" className="board-filter-close" onClick={() => {setFiltersOpen(false);document.querySelector<HTMLButtonElement>('.board-filter-toggle')?.focus();}} aria-label="Filter schließen"><UiIcon name="close" /></button></div>
+        <div className="board-product-tabs" aria-label="Verkehrsmittel">
+          <button aria-pressed={productFilter === "fern"} className={productFilter === "fern" ? "active" : ""} onClick={() => setProductFilter("fern")}>Fern</button>
+          {productCounts.regional > 0 && <button aria-pressed={productFilter === "regional"} className={productFilter === "regional" ? "active" : ""} onClick={() => setProductFilter("regional")}>Regio</button>}
+          {productCounts.sbahn > 0 && <button aria-pressed={productFilter === "sbahn"} className={productFilter === "sbahn" ? "active" : ""} onClick={() => setProductFilter("sbahn")}>S-Bahn</button>}
+          {productCounts.tram > 0 && <button aria-pressed={productFilter === "tram"} className={productFilter === "tram" ? "active" : ""} onClick={() => setProductFilter("tram")}>Straßenbahn</button>}
+          {productCounts.ubahn > 0 && <button aria-pressed={productFilter === "ubahn"} className={productFilter === "ubahn" ? "active" : ""} onClick={() => setProductFilter("ubahn")}>U-Bahn</button>}
+          <button aria-pressed={productFilter === "all"} className={productFilter === "all" ? "active" : ""} onClick={() => setProductFilter("all")}>Alle</button>
         </div>
-        <div className="board-actions">
-          <button className={filtersOpen ? "active" : ""} onClick={() => setFiltersOpen((value) => !value)} aria-expanded={filtersOpen}>Filter</button>
-          <button onClick={() => setCompact((value) => !value)} aria-pressed={!compact}>{compact ? "Erweitert" : "Kompakt"}</button>
-          <button onClick={openBoardWindow} title="In eigenem Fenster öffnen" aria-label="Live-Tafel in eigenem Fenster öffnen">↗</button>
+
+        <div className="board-search-row">
+          <label className="board-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis" aria-label="Innerhalb der Bahnhofstafel suchen" />{query && <button onClick={() => setQuery("")} aria-label="Tafelsuche leeren">×</button>}</label>
         </div>
-      </div>
 
-      <div className="board-product-tabs" aria-label="Verkehrsmittel">
-        <button className={productFilter === "fern" ? "active" : ""} onClick={() => setProductFilter("fern")}>Fern</button>
-        {productCounts.regional > 0 && <button className={productFilter === "regional" ? "active" : ""} onClick={() => setProductFilter("regional")}>Regio</button>}
-        {productCounts.sbahn > 0 && <button className={productFilter === "sbahn" ? "active" : ""} onClick={() => setProductFilter("sbahn")}>S-Bahn</button>}
-        {productCounts.tram > 0 && <button className={productFilter === "tram" ? "active" : ""} onClick={() => setProductFilter("tram")}>Straßenbahn</button>}
-        {productCounts.ubahn > 0 && <button className={productFilter === "ubahn" ? "active" : ""} onClick={() => setProductFilter("ubahn")}>U-Bahn</button>}
-        <button className={productFilter === "all" ? "active" : ""} onClick={() => setProductFilter("all")}>Alle</button>
-      </div>
-
-      <div className="board-search-row">
-        <label className="board-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis" aria-label="Innerhalb der Bahnhofstafel suchen" />{query && <button onClick={() => setQuery("")} aria-label="Tafelsuche leeren">×</button>}</label>
-      </div>
-
-      {filtersOpen && (
-        <div className="board-filter-panel">
+        <div className="board-filter-fields">
           <label>Status<select value={delayFilter} onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}><option value="all">Alle Lagen</option><option value="ontime">Pünktlich</option><option value="delayed">Ab +6 Min.</option><option value="canceled">Nur Ausfälle</option></select></label>
           <label>Gleis<select value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select></label>
           <label>Zeitraum<select value={windowMinutes} onChange={(event) => setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">60 Minuten</option><option value="120">120 Minuten</option><option value="180">180 Minuten</option><option value="240">240 Minuten</option><option value="500">500 Minuten</option></select></label>
           <label>Sortierung<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}><option value="time">Abfahrtszeit</option><option value="delay">Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
-      )}
-
-      {status === "ready" && (boardStats.delayed > 0 || boardStats.canceled > 0) && <div className="board-live-summary">{boardStats.delayed > 0 && <span className="late">{boardStats.delayed} verspätet</span>}{boardStats.canceled > 0 && <span className="cancel">{boardStats.canceled} Ausfälle</span>}</div>}
+        <button type="button" className="board-filter-reset" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Filter zurücksetzen</button>
+      </div>}
 
       <div className="board-table">
         <div className="board-table-head"><span /><span>Zug / Bus</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
@@ -586,7 +584,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                     <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : brand.className === "tram" ? "tram" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
                     <span className="board-time"><RealtimeTime scheduled={entry.plannedWhen} actual={entry.when} realtime={entry.realtime} cancelled={entry.canceled} cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} compact /></span>
                     <span className="board-destination" title={destination}><b>{destination}</b>{!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null}</span>
-                    <span className="board-platform"><RealtimePlatform scheduled={entry.plannedPlatform} actual={entry.platform} compact /></span>
+                    <span className="board-platform">{/^\d/.test(entry.platform ?? entry.plannedPlatform ?? "") && <span className="board-platform-label" aria-hidden="true">Gl. </span>}<RealtimePlatform scheduled={entry.plannedPlatform} actual={entry.platform} compact /></span>
                   </button>
                   {rowOpen && <div className="board-row-detail">
                     <div className="trip-detail-summary"><div>{entry.canceled ? <b>Fahrt entfällt</b> : null}{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>{alert}</small>)}</div><div className={`occupancy-forecast level-${forecast.level}`}><b>Auslastung {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
@@ -600,7 +598,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           </div>
         )}
       </div>
-      <footer className="board-footer"><a className={`verification-${verificationStatus}`} href="https://transitous.org/sources/" target="_blank" rel="noreferrer" title={verificationMessage || sourceWarnings.join(" · ")}><i /> {stale ? "Live-Daten unvollständig · letzter Stand" : verificationStatus === "matched" ? "Transitous · DB-geprüft" : verificationStatus === "different" ? "Transitous · Quellenabweichung" : entries.some((entry) => entry.realtime) ? `${sourceLabel} · DB-Prüfung offen` : "Nur Fahrplandaten verfügbar"}</a><button onClick={() => setRefreshToken((value) => value + 1)} aria-label="Live-Tafel aktualisieren">↻ {updatedAt ? berlinTimestamp(updatedAt) : "Aktualisieren"}</button></footer>
+      <details className="board-data-details"><summary>Quelle & Aktualisierung{stale || verificationStatus === "different" ? <span> · Datenhinweis</span> : null}</summary><footer className="board-footer"><a className={`verification-${verificationStatus}`} href="https://transitous.org/sources/" target="_blank" rel="noreferrer" title={verificationMessage || sourceWarnings.join(" · ")}><i /> {stale ? "Live-Daten unvollständig · letzter Stand" : verificationStatus === "matched" ? "Transitous · DB-geprüft" : verificationStatus === "different" ? "Transitous · Quellenabweichung" : entries.some((entry) => entry.realtime) ? `${sourceLabel} · DB-Prüfung offen` : "Nur Fahrplandaten verfügbar"}</a><button onClick={() => setRefreshToken((value) => value + 1)} aria-label="Live-Tafel aktualisieren">↻ {updatedAt ? berlinTimestamp(updatedAt) : "Aktualisieren"}</button></footer>{sourceWarnings.map((warning,index) => <p key={index}>{warning}</p>)}</details>
     </section>
   );
 }

@@ -14,8 +14,8 @@
 .station-walk-action { margin:0 20px 16px; }.station-walk-action small { font-size:calc(0.75rem * var(--panel-scale,1)); }.station-walk-action button { border:0; color:var(--accent); background:var(--soft); width:100%; }
 .station-line-kpis { display:flex; gap:16px; padding:12px 20px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow-x:auto; }
 .station-line-kpis>span { display:flex; flex-direction:column; gap:2px; min-width:40px; }.station-line-kpis b { font-size:calc(1.125rem * var(--panel-scale,1)); font-weight:600; }.station-line-kpis small { color:var(--muted); font-size:calc(0.75rem * var(--panel-scale,1)); }
-.station-section-tabs { display:flex; gap:16px; margin:0 20px; border-bottom:1px solid var(--line); }
-.station-section-tabs button { flex:1; min-height:48px; padding:10px 0; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--muted); font-size:calc(0.875rem * var(--panel-scale,1)); font-weight:500; white-space:nowrap; }
+.station-section-tabs { display:flex; gap:0; margin:0; border-bottom:1px solid var(--line-subtle); }
+.station-section-tabs button { flex:1; min-height:36px; padding:6px 0; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--muted); font-size:calc(0.875rem * var(--panel-scale,1)); font-weight:500; white-space:nowrap; }
 .station-section-tabs button.active { color:var(--ink); border-bottom-color:var(--accent); background:none; box-shadow:none; }.station-section-tabs button span { font-size:calc(0.75rem * var(--panel-scale,1)); margin-left:4px; }.station-section-tabs button i { display:none; }
 .station-panel-content { padding:0; }.station-panel-content[hidden] { display:none!important; }
 .live-board { margin:0; color:var(--ink); border:0; border-radius:0; background:var(--paper); }
@@ -314,3 +314,7 @@
 .station-info .station-walk-action button { background:transparent; padding:0; }
 .station-info .station-card-actions { flex-shrink:0; }
 @media (max-width:1023px) { .station-stats { padding:0 0 20px; } }
+
+/* Preserved from v41.1-liquid-polish: an explicit compact platform change. */
+.realtime-platform__arrow { color:var(--muted); font-style:normal; font-size:.82em; }
+.board-platform .realtime-platform[data-changed="true"]>span { gap:2px; }

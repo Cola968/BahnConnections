@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { serviceColors } from '../app/transit-style.ts';
+import { serviceColors, compactStationLabel } from '../app/transit-style.ts';
 import { resolveTransitousStopId } from '../app/transitous.ts';
 
 const categories=['fern','regional','sbahn','ubahn','tram'];
@@ -13,6 +13,10 @@ assert.equal(serviceColors('ubahn',undefined,undefined,'U8','BVG').background,'#
 assert.equal(serviceColors('ubahn',undefined,undefined,'U4','Berlin').text,'#172b35');
 assert.deepEqual(serviceColors('tram','ab1234','ffffff'),{background:'#ab1234',text:'#ffffff'});
 assert.equal(serviceColors('regional','invalid').background,'#1455a0');
+assert.equal(compactStationLabel('Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz'),'Halle (Saale) Hbf');
+assert.equal(compactStationLabel('S+U Warschauer Str.'),'Warschauer Str.');
+assert.equal(compactStationLabel('S Erkner Hbf'),'Erkner Hbf');
+assert.equal(compactStationLabel('U Hönow (Berlin)'),'Hönow (Berlin)');
 
 // Cancelled and failed lookups must remain retryable, including a concurrent caller.
 const originalFetch=globalThis.fetch;
