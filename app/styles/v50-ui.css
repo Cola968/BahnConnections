@@ -159,3 +159,92 @@
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
   .app-shell :is(.mobile-sheet-panel,.topbar,.mobile-search-dock .station-search,.search-suggestions,.map-menu-popover.detached,.settings-dialog,.app-update-notice,.mobile-sheet-restore,.mobile-navigation,.board-filter-panel) { background:var(--paper)!important; }
 }
+
+/* V50.2 — transit hierarchy: quiet navigation, strong time anchors, one surface. */
+.app-shell .station-section-tabs button { position:relative; border-bottom-color:transparent!important; font-weight:550; }
+.app-shell .station-section-tabs button::after { position:absolute; bottom:0; left:50%; width:22px; height:2px; border-radius:2px; background:var(--action); content:""; transform:translateX(-50%); opacity:0; }
+.app-shell .station-section-tabs button.active::after { opacity:1; }
+.app-shell .station-section-tabs button { font-weight:450!important; }
+.app-shell .station-section-tabs button.active { font-weight:650!important; }
+.app-shell .station-sheet-header .panel-drag-label { font-size:1.25rem; font-weight:650; letter-spacing:-.025em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.app-shell .station-sheet-header .mobile-sheet-summary b { font-weight:650; letter-spacing:-.025em; }
+.app-shell .board-mode-tabs { gap:18px; }
+.app-shell .board-mode-tabs button { font-weight:550; }
+.app-shell .board-mode-tabs button.active { font-weight:650; }
+.app-shell .board-mode-tabs button { font-weight:450!important; }
+.app-shell .board-mode-tabs button.active { font-weight:650!important; }
+.app-shell .board-filter-toggle { border-radius:10px; font-size:.8125rem; }
+.app-shell .board-row-summary .board-destination b { font-weight:600; letter-spacing:-.012em; }
+.app-shell .board-row-summary .board-time { letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+.app-shell .board-row-summary .board-platform { letter-spacing:0; font-variant-numeric:tabular-nums; }
+.app-shell .board-row-summary .service-logo { border-radius:7px; font-weight:750; letter-spacing:-.025em; }
+.app-shell .board-row-summary .service-logo.sbahn { border-radius:999px; }
+.app-shell .station-lines { position:relative; padding-top:0; }
+.station-lines-toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:44px; border-bottom:1px solid var(--line-subtle); }
+.station-lines-toolbar>span:first-child { display:flex; align-items:baseline; gap:8px; min-width:0; }
+.station-lines-toolbar b { font-size:.8125rem; font-weight:650; }
+.station-lines-toolbar small { color:var(--muted); font-size:.6875rem; }
+.station-map-status { display:inline-flex; align-items:center; gap:5px; font-size:.6875rem; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.station-map-status svg { width:16px; height:16px; }
+.station-map-progress { position:absolute; top:42px; left:0; width:100%; height:2px; border:0; appearance:none; accent-color:var(--action); background:var(--line-subtle); }
+.station-map-progress::-webkit-progress-bar { background:var(--line-subtle); }
+.station-map-progress::-webkit-progress-value { background:var(--action); border-radius:2px; }
+.station-map-progress::-moz-progress-bar { background:var(--action); }
+.app-shell .station-line-item { border-bottom:1px solid var(--line-subtle); background:transparent; }
+.app-shell .station-line-row { display:grid; grid-template-columns:38px minmax(0,1fr) 52px; column-gap:12px; align-items:center; min-height:72px; padding:12px 0; border:0; background:transparent; text-align:left; }
+.app-shell .station-line-row>.service-logo { min-width:32px; width:32px; height:26px; align-self:start; margin-top:2px; font-size:.75rem; border-radius:7px; }
+.app-shell .station-line-row>.service-logo.sbahn { border-radius:999px; }
+.app-shell .station-line-row>span:nth-child(2) { display:flex; flex-direction:column; gap:4px; }
+.app-shell .station-line-row b { font-weight:650; font-size:.9375rem; letter-spacing:-.012em; }
+.app-shell .station-line-row small { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:var(--muted); font-size:.75rem; line-height:1.4; }
+.app-shell .station-line-row>.station-line-next { grid-column:3; grid-row:1; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; align-self:stretch; gap:8px; color:var(--ink); }
+.station-line-next time { font-size:.875rem; font-weight:600; font-variant-numeric:tabular-nums; }
+.station-line-next svg { width:16px; height:16px; color:var(--muted); }
+.app-shell .line-route-detail { background:transparent; border-radius:0; box-shadow:none; }
+.app-shell .line-stop-list button { background:transparent; }
+.app-shell .board-skeleton { padding:0; gap:0; }
+.app-shell .board-skeleton>div { display:grid; grid-template-columns:36px minmax(0,1fr) 64px; gap:14px; align-items:start; min-height:72px; padding:14px 0; border-bottom:1px solid var(--line-subtle); }
+.app-shell .board-skeleton i { display:block; height:12px; border-radius:4px; background:color-mix(in srgb,var(--ink) 8%,transparent); }
+.app-shell .board-skeleton>div>i { height:26px; border-radius:8px; }
+.app-shell .board-skeleton span { display:grid; gap:10px; padding-top:4px; }
+.app-shell .board-skeleton span i:last-child { width:55%; height:8px; opacity:.6; }
+.app-shell .board-skeleton span:last-child i:last-child { justify-self:end; }
+@media (max-width:1023px) {
+  /* The existing search becomes a compact station switcher in the top header. */
+  .app-shell[data-primary-panel="station"] .topbar>.station-search {
+    display:flex!important; position:fixed!important; grid-area:auto!important; top:calc(10px + env(safe-area-inset-top,0px))!important; bottom:auto!important;
+    left:64px!important; right:64px!important; width:auto!important; height:44px!important;
+    min-height:44px; padding:0 10px; gap:7px; border-radius:16px;
+    opacity:1; transform:none; pointer-events:auto;
+    background:linear-gradient(145deg,var(--glass-highlight-soft),transparent 44%),var(--glass-regular)!important;
+    transition:none;
+  }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search input { min-width:0; font-size:.875rem; font-weight:550; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search>svg { width:16px; height:16px; flex:0 0 16px; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search:not(:focus-within)>button { display:none; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search:focus-within { left:12px!important; right:12px!important; }
+  .app-shell[data-primary-panel="station"]:has(.topbar>.station-search:focus-within) :is(.topbar>.brand,.topbar>.header-actions,.location-tools) { visibility:hidden; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search:focus-within>button { display:grid; min-width:44px; width:44px; height:44px; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search .search-suggestions {
+    top:calc(100% + 8px); bottom:auto; left:0; right:0; max-height:min(48dvh,400px);
+    border-radius:20px; background:var(--glass-scroll-edge)!important;
+  }
+  .app-shell .board-row-summary { padding-block:12px; }
+  .app-shell .board-row-summary .board-destination b { font-size:1rem; line-height:1.3; }
+  .app-shell .board-row-summary .board-time .realtime-time { font-size:1.375rem; }
+  .app-shell .board-row-summary .service-logo { min-width:34px; height:26px; font-size:.8125rem; padding-inline:5px; }
+  .app-shell .board-row { border:0; }
+  .app-shell .board-row-summary::after { position:absolute; right:0; bottom:0; left:59px; height:1px; background:var(--line-subtle); content:""; }
+  .app-shell .mobile-navigation button { font-size:.6875rem; font-weight:550; }
+  .app-shell .mobile-navigation button.active { font-weight:650; }
+  .app-shell .station-lines { padding-bottom:12px; }
+  .app-shell .board-filter-panel { border-radius:20px; }
+}
+@media (max-width:359px) {
+  .app-shell .board-row-summary .board-destination b { font-size:.9375rem; }
+  .app-shell .board-row-summary .board-time .realtime-time { font-size:1.25rem; }
+  .app-shell .board-row-summary .service-logo { min-width:30px; height:24px; font-size:.75rem; }
+  .app-shell .board-row-summary::after { left:49px; }
+  .app-shell .station-line-row { grid-template-columns:32px minmax(0,1fr) 46px; gap:8px; }
+  .station-lines-toolbar small { font-size:.625rem; }
+}

@@ -62,6 +62,7 @@ export type BoardMapTrip = {
   textColor?: string;
   points: [number, number][];
   segments: [number, number][][];
+  previewSegments?: [number, number][][];
   stops: { name: string; lat?: number; lon?: number; arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; scheduledTrack?: string; cancelled?: boolean; realtime?: boolean }[];
 };
 
@@ -563,7 +564,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
 
       <div className="board-table">
         <div className="board-table-head"><span /><span>Zug / Bus</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
-        {status === "loading" && <div className="board-skeleton" aria-label="Live-Daten werden geladen">{[1,2,3,4,5].map((item) => <i key={item} />)}</div>}
+        {status === "loading" && <div className="board-skeleton" aria-label="Live-Daten werden geladen">{[1,2,3,4,5].map((item) => <div key={item}><i /><span><i /><i /></span><span><i /><i /></span></div>)}</div>}
         {status === "error" && <div className="board-state error"><b>Live-Tafel gerade nicht erreichbar.</b><span>{statusMessage.startsWith("Keine eindeutige Haltestellen-ID") ? statusMessage : "Live-Daten derzeit unvollständig. Karte und Fahrplanmodell bleiben verfügbar."}</span><button onClick={() => setRefreshToken((value) => value + 1)}>Erneut laden</button></div>}
         {status === "ready" && (
           <div className="board-list">

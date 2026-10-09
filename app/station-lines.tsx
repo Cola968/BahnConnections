@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BoardMapTrip } from "./live-board";
-import { decodePolyline } from "./live-trains";
+import { StationTripProcessor, yieldToBrowser } from "./station-trip-client";
+import type { StationTripInput } from "./station-trip-geometry";
+import { UiIcon } from "./ui-icon";
 import type { Station } from "./network-data";
 import { cleanDestination, compactStationLabel, serviceBadgeStyle, serviceColors } from "./transit-style";
 import { inBatches, requireTransitousStopId } from "./transitous";
-import { trimRepeatedStationLoop } from "./trip-trimming";
 
 export type StationLineCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 
@@ -61,26 +62,6 @@ type StationLine = ApiRoute & {
   reportedTrips: number;
   realtimeTrips: number;
   nextTime?: string;
-};
-
-type TripPlace = {
-  name?: string;
-  lat?: number;
-  lon?: number;
-  arrival?: string;
-  departure?: string;
-  track?: string;
-  cancelled?: boolean;
-};
-
-type TripLeg = {
-  realTime?: boolean;
-  from?: TripPlace;
-  to?: TripPlace;
-  intermediateStops?: TripPlace[];
-  routeColor?: string;
-  routeTextColor?: string;
-  legGeometry?: { points?: string; precision?: number };
 };
 
 const RAIL_MODES = new Map<string, StationLineCategory>([
@@ -160,41 +141,14 @@ export function normaliseRoutes(routes: ApiRoute[], stopTimes: StopTime[]) {
     .sort((left, right) => order[left.category] - order[right.category] || left.shortName.localeCompare(right.shortName, "de", { numeric:true }) || left.operator.localeCompare(right.operator, "de"));
 }
 
-async function loadFullTrip(line: StationLine, sample: LineSample, station: Station, signal: AbortSignal): Promise<BoardMapTrip> {
+async function loadFullTrip(line: StationLine, sample: LineSample, station: Station, signal: AbortSignal, processor:StationTripProcessor): Promise<BoardMapTrip> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(sample.tripId)}`, window.location.origin);
   const response = await fetch(url, { signal:AbortSignal.any([signal, AbortSignal.timeout(20_000)]) });
   if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
-  const envelope = await response.json() as { trip?: { legs?: TripLeg[] } };
-  const payload = envelope.trip ?? {};
-  const stops: BoardMapTrip["stops"] = [];
-  const segments: [number, number][][] = [];
-  const legs = payload.legs ?? [];
-  for (const leg of legs) {
-    if (leg.legGeometry?.points) {
-      const legPoints = decodePolyline(leg.legGeometry.points, leg.legGeometry.precision ?? 6);
-      if (legPoints.length > 1) segments.push(legPoints);
-    }
-    for (const stop of [leg.from, ...(leg.intermediateStops ?? []), leg.to]) {
-      if (!stop?.name) continue;
-      const previous = stops.at(-1);
-      if (previous?.name === stop.name && (previous.departure ?? previous.arrival) === (stop.departure ?? stop.arrival)) continue;
-      stops.push({ name:stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, track:stop.track, cancelled:stop.cancelled });
-    }
-  }
-  const points = segments.flat();
-  const selected = trimRepeatedStationLoop(stops, points, station, sample.time);
-  const selectedSegments = selected.trimmed && segments.length === 1 && selected.points.length > 1 ? [selected.points] : segments;
-  return {
-    tripId:sample.tripId,
-    name:line.shortName,
-    category:line.category,
-    realtime:sample.realtime || legs.some((leg) => leg.realTime),
-    color:line.routeColor ?? legs.find((leg) => leg.routeColor)?.routeColor,
-    textColor:line.routeTextColor ?? legs.find((leg) => leg.routeTextColor)?.routeTextColor,
-    points:selected.points,
-    segments:selectedSegments,
-    stops:selected.stops,
-  };
+  const envelope = await response.json() as { trip?: { legs?: StationTripInput['legs'] } };
+  signal.throwIfAborted();
+  return processor.prepare({tripId:sample.tripId,name:line.shortName,category:line.category,realtime:sample.realtime,
+    color:line.routeColor,textColor:line.routeTextColor,time:sample.time,station:{name:station.name,lat:station.lat,lon:station.lon},legs:envelope.trip?.legs??[]},signal);
 }
 
 function tripDirection(trip: BoardMapTrip) {
@@ -213,6 +167,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   const [routeDetails, setRouteDetails] = useState<Record<string, BoardMapTrip[]>>({});
   const [routeStates, setRouteStates] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [bulk, setBulk] = useState<{ state:"idle" | "loading" | "ready"; completed:number; total:number; failed:number }>({ state:"idle", completed:0, total:0, failed:0 });
+  const processorRef = useRef<StationTripProcessor | null>(null);
   const bulkControllerRef = useRef<AbortController | null>(null);
   const detailControllerRef = useRef<AbortController | null>(null);
   const loadedStationRef = useRef<string|null>(null);
@@ -223,15 +178,17 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     const existing = tripCacheRef.current.get(key);
     if (existing) return existing;
     const cache = tripCacheRef.current;
-    const request = loadFullTrip(line, sample, station, signal).catch(error => { cache.delete(key); throw error; });
+    const request = loadFullTrip(line, sample, station, signal, processorRef.current!).catch(error => { cache.delete(key); throw error; });
     cache.set(key, request);
     return request;
   }
   useEffect(() => {
     const controller = new AbortController();
+    const processor = new StationTripProcessor();
+    processorRef.current = processor;
     detailControllerRef.current = controller;
     tripCacheRef.current = new Map();
-    return () => controller.abort();
+    return () => { controller.abort(); processor.dispose(); };
   }, [station]);
 
   useEffect(() => {
@@ -246,6 +203,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
       setBulk({ state:"idle", completed:0, total:0, failed:0 });
       bulkControllerRef.current?.abort();
       try {
+        await yieldToBrowser(controller.signal);
         const stopId = await requireTransitousStopId(station, controller.signal);
         const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/services`, window.location.origin);
         url.searchParams.set("n", "4000");
@@ -313,8 +271,10 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   useEffect(() => {
     if (status !== "ready" || loadedStationRef.current !== station.id) return;
     const controller = new AbortController();
-    const detailSignal = detailControllerRef.current?.signal ?? controller.signal;
+    const detailSignal = AbortSignal.any([controller.signal,detailControllerRef.current?.signal??controller.signal]);
     async function loadMapLines() {
+      // Let the station sheet paint before geometry requests and worker creation.
+      await yieldToBrowser(controller.signal);
       const chosen: { line:StationLine; sample:LineSample }[] = [];
       const seen = new Set<string>();
       for (const line of lines) {
@@ -331,27 +291,32 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
       let failed = 0;
       let lastPublished = -Infinity;
       setBulk({ state:"loading", completed:0, total:chosen.length, failed:0 });
-      await inBatches(chosen, 5, ({ line, sample }) => cachedTrip(line, sample, detailSignal), (results, completed) => {
+      await inBatches(chosen, 5, ({ line, sample }) => cachedTrip(line, sample, detailSignal), async (results, completed) => {
         if (controller.signal.aborted) return;
-        collected.push(...results.filter((result): result is PromiseFulfilledResult<BoardMapTrip> => result.status === "fulfilled" && result.value.points.length > 1).map((result) => result.value));
-        failed += results.filter((result) => result.status === "rejected").length;
+        collected.push(...results.filter((result): result is PromiseFulfilledResult<BoardMapTrip> => result.status === "fulfilled" && result.value.segments.length > 0).map((result) => result.value));
+        failed += results.filter((result) => result.status === "rejected" || !result.value.segments.length).length;
         if (performance.now() - lastPublished >= 300 || completed === chosen.length) {
           onMapTrips?.([...collected]);
           setBulk({ state:"loading", completed, total:chosen.length, failed });
           lastPublished = performance.now();
         }
+        await yieldToBrowser(controller.signal);
       });
       if (!controller.signal.aborted) setBulk({ state:"ready", completed:chosen.length, total:chosen.length, failed });
     }
-    void loadMapLines();
+    void loadMapLines().catch(() => { if(!controller.signal.aborted)setBulk(current=>({...current,state:"ready",failed:Math.max(1,current.failed)})); });
     return () => controller.abort();
   // The per-station cache is reset and aborted before any new lines can load.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lines, station, status, onMapTrips]);
 
   return (
-    <section className="station-lines">
-      {bulk.state === "loading" && <p className="station-lines-progress" role="status">Linienverläufe laden … {bulk.completed}/{bulk.total}</p>}
+    <section className="station-lines" aria-busy={status === "loading"}>
+      <div className="station-lines-toolbar">
+        <span><b>Alle Linien</b>{status === "ready" && <small>{lines.length} am Bahnhof</small>}</span>
+        <span className="station-map-status" role="status"><UiIcon name="map" />{bulk.state === "loading" ? `${bulk.completed}/${bulk.total}` : bulk.state === "ready" ? bulk.failed >= bulk.total ? "Keine Karte" : bulk.failed ? "Teilweise" : "Auf Karte" : "Linienkarte"}</span>
+      </div>
+      {bulk.state === "loading" && <progress className="station-map-progress" aria-label="Linienkarte laden" max={bulk.total || 1} value={bulk.completed} />}
       {bulk.failed > 0 && bulk.state === "ready" && <p className="station-lines-progress">{bulk.failed} Linienverläufe derzeit nicht verfügbar. Alle gemeldeten Linien bleiben in der Liste sichtbar.</p>}
       {status === "loading" && <div className="station-line-state"><i />Linien und Fahrtziele werden live geprüft …</div>}
       {status === "error" && <div className="station-line-state error"><b>Linienauskunft gerade nicht erreichbar.</b><span>{statusMessage.startsWith("Keine eindeutige Haltestellen-ID") ? statusMessage : "Live-Daten derzeit unvollständig. Es wird bewusst keine statische Ersatzliste als vollständig ausgegeben."}</span></div>}
@@ -360,19 +325,23 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
           const details = routeDetails[line.key] ?? [];
           const detailState = routeStates[line.key];
           const expanded = expandedKey === line.key;
+          const destinations=line.destinations.map(destination=>compactStationLabel(destination)??destination);
+          const numberedRail=line.category === "fern" || line.category === "regional";
+          const primary=numberedRail ? line.shortName : destinations[0] ?? line.shortName;
+          const secondary=numberedRail ? destinations.join(" · ") : destinations.slice(1).join(" · ");
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
-            <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded}>
+            <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded} aria-label={`${line.shortName}${line.destinations.length ? ": " + line.destinations.join(" · ") : ""}`}>
               <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${station.name} ${line.operator}`)}>{lineBadge(line)}</span>
-              <span><b>{line.shortName}</b><small>{line.destinations.length ? `Richtung ${line.destinations.join(" · ")}` : line.longName || "Heute keine weitere Fahrt gemeldet"}</small></span>
-              <span>{expanded ? "Schließen" : line.nextTime ? `${lineTime(line.nextTime)} · ${line.realtimeTrips ? "Live" : "Plan"}` : "keine weitere"}</span>
+              <span><b>{primary}</b><small title={line.destinations.join(" · ")}>{secondary || (destinations.length ? {fern:"Fernverkehr",regional:"Regionalverkehr",sbahn:"S-Bahn",ubahn:"U-Bahn",tram:"Tram"}[line.category] : line.longName || "Keine weitere Fahrt")}</small></span>
+              <span className="station-line-next">{line.nextTime && <time>{lineTime(line.nextTime)}</time>}<UiIcon name="chevron" style={expanded ? {transform:"rotate(180deg)"} : undefined} /></span>
             </button>
             {expanded && <div className="station-line-routes">
               {detailState === "loading" && <div className="station-line-state"><i />Vollständige Fahrtverläufe werden verglichen …</div>}
               {detailState === "error" && <div className="station-line-state error"><b>Kein abrufbarer Fahrtverlauf im aktuellen Zeitfenster.</b><span>Die Linie und ihre gemeldeten Ziele bleiben sichtbar.</span></div>}
               {detailState === "ready" && details.map((trip) => <section className="line-route-detail" style={{ borderTopColor:serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background }} key={trip.tripId}>
-                <header><span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${line.operator}`)}>{lineBadge(line)}</span><span><b>{tripDirection(trip)}</b><small>{trip.realtime ? "Aktuelle Fahrt mit Echtzeit" : "Aktueller Fahrplan"}</small></span>{trip.points.length ? <button onClick={() => onMapTrip?.(trip)} aria-label={`${line.shortName} auf Karte zeigen`}>◎</button> : null}</header>
-                {trip.points.length ? <div className="line-route-actions"><button onClick={() => onMapTrip?.(trip)}>Exakten Verlauf auf Karte</button></div> : <p className="geometry-missing">Die Quelle liefert aktuell keine belastbare Streckengeometrie. Die Halte bleiben sichtbar; eine Luftlinie wird bewusst nicht gezeichnet.</p>}
-                <div className="line-stop-heading"><b>Vollständige Haltefolge</b><span>{trip.stops.length} Stationen</span></div>
+                <header><span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${line.operator}`)}>{lineBadge(line)}</span><span><b>{tripDirection(trip)}</b><small>{trip.realtime ? "Live" : "Fahrplan"}</small></span>{trip.points.length ? <button onClick={() => onMapTrip?.(trip)} aria-label={`${line.shortName} auf Karte zeigen`}>◎</button> : null}</header>
+                {trip.points.length ? <div className="line-route-actions"><button onClick={() => onMapTrip?.(trip)}>Auf Karte ansehen</button></div> : <p className="geometry-missing">Die Quelle liefert aktuell keine belastbare Streckengeometrie. Die Halte bleiben sichtbar; eine Luftlinie wird bewusst nicht gezeichnet.</p>}
+                <div className="line-stop-heading"><b>Halte</b><span>{trip.stops.length} Stationen</span></div>
                 <ol className="line-stop-list">{trip.stops.map((stop, index) => <li key={`${stop.name}-${index}`}><button onClick={() => onMapTrip?.(trip)}><i style={{ backgroundColor:serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background, boxShadow:`0 0 0 1px ${serviceColors(line.category, trip.color, trip.textColor, line.shortName, `${station.state ?? ""} ${station.name}`).background}` }} /><span><b>{compactStationLabel(stop.name) ?? stop.name}</b><small>{index === 0 ? "Start" : index === trip.stops.length - 1 ? "Endstation" : stop.track ? `Gleis ${stop.track}` : "Zwischenhalt"}</small></span><time>{stop.departure || stop.arrival ? lineTime(stop.departure ?? stop.arrival) : "–"}</time></button></li>)}</ol>
               </section>)}
             </div>}
