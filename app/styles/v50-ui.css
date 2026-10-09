@@ -221,10 +221,10 @@
   }
   .app-shell[data-primary-panel="station"] .topbar>.station-search input { min-width:0; font-size:.875rem; font-weight:550; }
   .app-shell[data-primary-panel="station"] .topbar>.station-search>svg { width:16px; height:16px; flex:0 0 16px; }
-  .app-shell[data-primary-panel="station"] .topbar>.station-search:not(:focus-within)>button { display:none; }
-  .app-shell[data-primary-panel="station"] .topbar>.station-search:focus-within { left:12px!important; right:12px!important; }
-  .app-shell[data-primary-panel="station"]:has(.topbar>.station-search:focus-within) :is(.topbar>.brand,.topbar>.header-actions,.location-tools) { visibility:hidden; }
-  .app-shell[data-primary-panel="station"] .topbar>.station-search:focus-within>button { display:grid; min-width:44px; width:44px; height:44px; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search:not([data-search-open="true"])>button { display:none; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search[data-search-open="true"] { left:12px!important; right:12px!important; }
+  .app-shell[data-primary-panel="station"]:has(.topbar>.station-search[data-search-open="true"]) :is(.topbar>.brand,.topbar>.header-actions,.location-tools) { visibility:hidden; }
+  .app-shell[data-primary-panel="station"] .topbar>.station-search[data-search-open="true"]>button { display:grid; min-width:44px; width:44px; height:44px; }
   .app-shell[data-primary-panel="station"] .topbar>.station-search .search-suggestions {
     top:calc(100% + 8px); bottom:auto; left:0; right:0; max-height:min(48dvh,400px);
     border-radius:20px; background:var(--glass-scroll-edge)!important;

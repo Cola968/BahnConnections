@@ -138,7 +138,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   }
 
   return (
-    <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
+    <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} data-search-open={open} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
       <UiIcon name="search" />
       <input
         ref={inputRef}

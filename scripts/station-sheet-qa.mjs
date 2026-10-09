@@ -154,6 +154,7 @@ try {
     await pause(800);
     assert.equal(await evaluate("document.activeElement===document.querySelector('.topbar>.station-search input')"),false,'Selection must release the mobile keyboard');
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.topbar>.brand')).visibility"),'visible','Compact header must return after selection');
+    assert.equal(await evaluate(`(() => {const search=document.querySelector('.topbar>.station-search'),r=search.getBoundingClientRect();return r.left>=60&&r.right<=innerWidth-60&&Array.from(search.querySelectorAll(':scope>button')).every(button=>getComputedStyle(button).display==='none');})()`),true,'Selected station must restore compact switcher bounds');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').textContent"),'Halle (Saale) Hbf');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').title"),'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz');
     await screenshot(`${width}-long-station-name`);
