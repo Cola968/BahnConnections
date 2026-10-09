@@ -1,3 +1,12 @@
+# V50.2 · Responsive Station UI & Lines
+
+- Klarere Typografie, feine Tab-Indikatoren und ruhige Abfahrtszeilen auf der gemeinsamen Liquid-Glass-Fläche.
+- Bahnhofssuche bleibt im mobilen Header erreichbar. Die Linienansicht zeigt kompakte Ziele, nächste Fahrtzeiten und Fortschritt der automatischen Linienkarte.
+- Geschlossene Suche berechnet keine unscharfen Treffer; Tippfehlersuche bricht aussichtslose Vergleiche früh ab.
+- Fahrtgeometrie wird im Worker aufbereitet. Karten-Vorschauen folgen der Quelle innerhalb von fünf Metern; vollständige Geometrie und getrennte Segmente bleiben erhalten.
+- Neue Linien werden in kurzen Frames ergänzt, statt alle vorherigen Linien erneut zu zeichnen. Bahnhofsmarker erhalten ein eigenes Zeitbudget nach dem Öffnen des Sheets.
+- Echter Chromium-Stresstest mit 4× CPU-Drosselung und 18 Linien à 12.000 Geometriepunkten in CI.
+
 # V50.1 · Compact Station Sheet & Liquid Glass
 
 - Bahnhofstitel und Tafel/Linien/Info bilden einen gemeinsamen, festen Header außerhalb des Inhalts-Scrollbereichs. Keine konkurrierenden Sticky-Layer mehr.

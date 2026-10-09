@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useEffect, useId, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { compactStationLabel } from "./transit-style";
@@ -9,16 +9,20 @@ function normalise(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function distance(a: string, b: string) {
+function distance(a: string, b: string, maximum:number) {
+  if(Math.abs(a.length-b.length)>maximum)return maximum+1;
   const rows = new Array(b.length + 1).fill(0).map((_, index) => index);
   for (let i = 1; i <= a.length; i += 1) {
+    let minimum=i;
     let previous = rows[0];
     rows[0] = i;
     for (let j = 1; j <= b.length; j += 1) {
       const current = rows[j];
       rows[j] = Math.min(rows[j] + 1, rows[j - 1] + 1, previous + (a[i - 1] === b[j - 1] ? 0 : 1));
+      minimum=Math.min(minimum,rows[j]);
       previous = current;
     }
+    if(minimum>maximum)return maximum+1;
   }
   return rows[b.length];
 }
@@ -34,8 +38,9 @@ function score(station: Station, query: string) {
   if (tokens.length > 1 && tokens.every((token) => words.some((word) => word.startsWith(token)) || name.includes(token) || code.includes(token))) return 2.5;
   if (name.includes(query) || code.includes(query)) return 3;
   const first = name.split(" ")[0] ?? name;
-  const typo = distance(first.slice(0, Math.max(query.length, first.length)), query);
-  return typo <= Math.max(1, Math.floor(query.length / 4)) ? 4 + typo / 10 : 99;
+  const maximum=Math.max(1,Math.floor(query.length/4));
+  const typo = distance(first, query, maximum);
+  return typo <= maximum ? 4 + typo / 10 : 99;
 }
 
 export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, variant = "header", placeholder, submitLabel = "Anzeigen", ariaLabel = "Bahnhof oder Betriebsstelle suchen", liveTransit = false }: {
@@ -60,8 +65,11 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     try { return JSON.parse(localStorage.getItem("bahnconnections-recent-stations") ?? "[]"); } catch { return []; }
   });
 
+  const searchValue=useDeferredValue(value);
   const localSuggestions = useMemo(() => {
-    const query = normalise(value);
+    // A map selection updates the label; a closed search must not rank every station.
+    if(!open)return [];
+    const query = normalise(searchValue);
     if (!query) {
       const preferred = [...favoriteIds, ...recentIds, ...stations.filter((station) => station.hub).map((station) => station.id)];
       return [...new Set(preferred)].map((id) => stations.find((station) => station.id === id)).filter((station): station is Station => Boolean(station)).slice(0, 9);
@@ -72,10 +80,10 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       .sort((a, b) => a.score - b.score || Number(Boolean(b.station.hub)) - Number(Boolean(a.station.hub)) || a.station.name.localeCompare(b.station.name, "de"))
       .slice(0, 9)
       .map((item) => item.station);
-  }, [favoriteIds, recentIds, stations, value]);
+  }, [favoriteIds, recentIds, stations, searchValue, open]);
 
   useEffect(() => {
-    if (!liveTransit || value.trim().length < 2) {
+    if (!open || !liveTransit || value.trim().length < 2) {
       const timer = window.setTimeout(() => { setLiveSuggestions([]); setLiveSearching(false); }, 0);
       return () => window.clearTimeout(timer);
     }
@@ -94,7 +102,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       } finally { if (!controller.signal.aborted) setLiveSearching(false); }
     }, 220);
     return () => { controller.abort(); window.clearTimeout(timer); };
-  }, [liveTransit, value]);
+  }, [liveTransit, value, open]);
 
   const suggestions = useMemo(() => {
     const unique = new Map<string, Station>();
@@ -105,6 +113,8 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     return [...unique.values()].slice(0, 10);
   }, [liveSuggestions, localSuggestions]);
 
+  const inputRef=useRef<HTMLInputElement>(null);
+
   function select(station: Station) {
     const nextRecent = [station.id, ...recentIds.filter((id) => id !== station.id)].slice(0, 6);
     setRecentIds(nextRecent);
@@ -112,11 +122,13 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     onSelect(station);
     setOpen(false);
     setActiveIndex(0);
+    if(variant === "header")inputRef.current?.blur();
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (suggestions[activeIndex] ?? suggestions[0]) select(suggestions[activeIndex] ?? suggestions[0]);
+    const match=suggestions[activeIndex]??suggestions[0]??stations.find(station=>station.name===value);
+    if(match)select(match);else setOpen(true);
   }
 
   function keydown(event: KeyboardEvent<HTMLInputElement>) {
@@ -126,9 +138,10 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   }
 
   return (
-    <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
+    <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} data-search-open={open} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
       <UiIcon name="search" />
       <input
+        ref={inputRef}
         role="combobox"
         aria-label={ariaLabel}
         aria-autocomplete="list"
@@ -138,8 +151,8 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
-        value={value}
-        onFocus={() => setOpen(true)}
+        value={variant === "header" && !open ? compactStationLabel(value) ?? value : value}
+        onFocus={(event) => { const input=event.currentTarget;setOpen(true);if(variant === "header")requestAnimationFrame(()=>input.isConnected&&input.select()); }}
         onChange={(event) => { onChange(event.target.value); setOpen(true); setActiveIndex(0); }}
         onKeyDown={keydown}
         placeholder={placeholder ?? "Bahnhof suchen"}

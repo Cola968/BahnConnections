@@ -79,12 +79,12 @@ export function berlinTimestamp(value = new Date()) {
   }).format(value);
 }
 
-export async function inBatches<T, R>(items: T[], size: number, worker: (item: T) => Promise<R>, onBatch?: (results: PromiseSettledResult<R>[], completed: number) => void) {
+export async function inBatches<T, R>(items: T[], size: number, worker: (item: T) => Promise<R>, onBatch?: (results: PromiseSettledResult<R>[], completed: number) => void | Promise<void>) {
   const all: PromiseSettledResult<R>[] = [];
   for (let index = 0; index < items.length; index += size) {
     const results = await Promise.allSettled(items.slice(index, index + size).map(worker));
     all.push(...results);
-    onBatch?.(results, Math.min(items.length, index + size));
+    await onBatch?.(results, Math.min(items.length, index + size));
   }
   return all;
 }

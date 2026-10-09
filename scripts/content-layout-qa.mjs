@@ -10,6 +10,7 @@ const outputDirectory = resolve(argumentsWithoutSeparator[1] ?? join(tmpdir(), "
 const edgePath = process.env.EDGE_PATH ?? (process.platform === "linux" ? "/usr/bin/chromium" : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
 const debugPort = 9300 + Math.floor(Math.random() * 500);
 const profileDirectory = join(tmpdir(), `bahnconnections-edge-${process.pid}-${Date.now()}`);
+const stationLoadingOnly = argumentsWithoutSeparator.includes("--station-loading-only");
 const useJourneyFixture = process.env.BAHNCONNECTIONS_MOBILE_QA_LIVE !== "1";
 
 const fixtureStops = [
@@ -46,7 +47,8 @@ function encodeGeometry(points, precision=6) {
   for(const point of points){const a=Math.round(point[0]*10**precision),b=Math.round(point[1]*10**precision);result+=encode(a-lat)+encode(b-lon);lat=a;lon=b;}
   return result;
 }
-const denseGeometry=encodeGeometry(Array.from({length:1500},(_,i)=>[52.5251+Math.sin(i/1499*Math.PI*4)*.04,13.3694+(i/1499)*.4]));
+const geometryPoints=stationLoadingOnly?12000:1500;
+const denseGeometry=encodeGeometry(Array.from({length:geometryPoints},(_,i)=>[52.5251+Math.sin(i/(geometryPoints-1)*Math.PI*4)*.04,13.3694+(i/(geometryPoints-1))*.4]));
 const tripRequests=new Map();
 let activeJourneys = [fixtureJourney,alternativeJourney];
 await mkdir(outputDirectory, { recursive:true });
@@ -209,10 +211,39 @@ try {
   if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/stations/*/services*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   const checks=[];
   await setViewport(390,844);
-  await command('Page.navigate',{url});
+  await command('Page.navigate',{url:stationLoadingOnly?new URL('/',url).href:url});
+  if(stationLoadingOnly) {
+    await waitFor(`Boolean(document.querySelector('path.station-point[aria-label^="Berlin Hbf"]'))`,'Berlin marker missing');
+    await pause(800);
+    await command('Emulation.setCPUThrottlingRate',{rate:4});
+    await evaluate(`(() => {
+      window.stationPerf={tasks:[],gaps:[],started:0,sheetFrame:null};
+      new PerformanceObserver(list=>window.stationPerf.tasks.push(...list.getEntries().map(e=>({start:e.startTime,duration:e.duration})))).observe({type:'longtask',buffered:false});
+      let previous=performance.now();
+      function frame(now){if(window.stationPerf.started)window.stationPerf.gaps.push(now-previous);previous=now;requestAnimationFrame(frame);}requestAnimationFrame(frame);
+      document.addEventListener('click',()=>{window.stationPerf.started=performance.now();const observer=new MutationObserver(()=>{if(document.querySelector('.station-sheet-header')){observer.disconnect();requestAnimationFrame(()=>{window.stationPerf.sheetFrame=performance.now()-window.stationPerf.started;});}});observer.observe(document.body,{childList:true,subtree:true});},{once:true,capture:true});
+    })()`);
+    await tap('path.station-point[aria-label^="Berlin Hbf"]');
+  }
   await waitFor(`document.querySelectorAll('.board-row-summary').length > 0`, 'Station fixture missing');
   await waitFor(`document.querySelectorAll('.station-line-row').length===18`, 'All 18 lines must load without filtering');
   await waitFor(`Number(document.querySelector('.leaflet-rail-routes-pane canvas')?.dataset.routeCount)===18`, 'Lines must appear on the map automatically');
+  if(stationLoadingOnly) {
+    await pause(400);
+    const metrics=await evaluate(`(() => {const p=window.stationPerf,c=document.querySelector('.leaflet-rail-routes-pane canvas');return {sheetFrame:p.sheetFrame,maxTask:Math.max(0,...p.tasks.map(t=>t.duration)),blockingTime:p.tasks.reduce((n,t)=>n+Math.max(0,t.duration-50),0),longTasks:p.tasks.length,maxFrameGap:Math.max(0,...p.gaps),routes:Number(c?.dataset.routeCount),added:Number(c?.dataset.routeAdded??0),requests:${JSON.stringify([...tripRequests.values()].reduce((a,b)=>a+b,0))}};})()`);
+    await tap('.station-section-tabs button:nth-child(2)');await screenshot('390-lines-loaded');
+    await writeFile(join(outputDirectory,'station-loading-report.json'),JSON.stringify({fixture:true,cpuSlowdown:4,geometryPoints,lines:18,...metrics},null,2));
+    console.log(JSON.stringify(metrics));
+    await command('Emulation.setCPUThrottlingRate',{rate:1});
+    await tap('.topbar>.station-search input');
+    await command('Input.insertText',{text:'Halle (Saale)'});
+    await waitFor(`Boolean(document.querySelector('.topbar .search-suggestions button:has(b[title^="Halle (Saale)"])'))`,'Station switch suggestion missing');
+    await tap('.topbar .search-suggestions button:has(b[title^="Halle (Saale)"])');
+    await waitFor(`Boolean(document.querySelector('.station-map-progress'))`,'Next station must start loading');
+    await tap('.mobile-sheet-actions button:last-child');await pause(1400);
+    if(await evaluate(`Boolean(document.querySelector('.station-card')) || Number(document.querySelector('.leaflet-rail-routes-pane canvas')?.dataset.routeCount)>0`))throw new Error('Cancelled station load resurrected a sheet or old map lines');
+    if(!argumentsWithoutSeparator.includes('--baseline')&&(metrics.sheetFrame>350||metrics.maxTask>250||metrics.routes!==18||metrics.added!==18))throw new Error('Station loading performance regression: '+JSON.stringify(metrics));
+  } else {
   // Pointer gestures under a four-times slower CPU must reuse the route layer.
   await pause(1200);
   await command('Emulation.setCPUThrottlingRate',{rate:4});
@@ -320,6 +351,7 @@ try {
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.explore-card,.mobile-sheet-restore'))`))throw new Error('Late planner response resurrected the closed view');
   await writeFile(join(outputDirectory,'content-layout-report.json'),JSON.stringify({fixture:true,realDevice:false,checks,closeResets:true,automaticLines:18},null,2));
   console.log(JSON.stringify({passed:checks.length,closeResets:true,automaticLines:18,outputDirectory}));
+  }
 } finally {
   shuttingDown=true;
   for(const timer of fixtureTimers)clearTimeout(timer);

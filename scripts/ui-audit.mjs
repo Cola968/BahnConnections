@@ -101,7 +101,7 @@ check("One canonical glass material contract",!styles.at(-1).includes("--glass-c
 check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
 check("Destination has a visible dedicated grid column",css.includes(".board-row-summary .board-destination { grid-column:3") && css.includes("minmax(0,1fr)"));
 check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("void loadMapLines()") && !stationLines.includes("station-line-filters"));
-check("Ring lines retain the selected loop",tripTrimming.includes("trimRepeatedStationLoop") && board.includes("trimRepeatedStationLoop(stops, points, station, referenceTime)") && stationLines.includes("trimRepeatedStationLoop(stops, points, station, sample.time)"));
+check("Ring lines retain the selected loop",tripTrimming.includes("trimRepeatedStationLoop") && board.includes("trimRepeatedStationLoop(stops, points, station, referenceTime)") && stationLines.includes("processor.prepare"));
 check("No invented straight rail geometry",trackRouting.includes("points:[], segments:[], coverage:0") && !trackRouting.includes("[[from.lat, from.lon], [to.lat, to.lon]]") && !liveJourney.includes("[[from.lat, from.lon], [to.lat, to.lon]]"));
 check("Disconnected geometry segments remain separate",page.includes("for (const segment of exactTripSegments(stationTrip))") && page.includes("for (const points of segments)"));
 check("Line number occurs once",board.includes("{brand.number ? <b>{brand.number}</b> : null}") && !board.includes("brand.number || entry.line?.name"));

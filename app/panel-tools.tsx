@@ -153,7 +153,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
     <div className={`panel-tools${subNavigation ? " station-sheet-header" : ""}`} ref={toolsRef}
       onPointerDown={(event) => { if (!(event.target instanceof Element && event.target.closest('button'))) startMobileDrag(event); }}
       onPointerMove={moveMobileDrag} onPointerUp={finishMobileDrag} onPointerCancel={finishMobileDrag}>
-      <span className="panel-drag-label" title="Feste Detailspalte"><i />{label}</span>
+      <span className="panel-drag-label" title="Feste Detailspalte"><i />{subNavigation ? mobileTitle ?? label : label}</span>
       {mobileState && onMobileStateChange && <button
         type="button"
         className="mobile-sheet-summary"

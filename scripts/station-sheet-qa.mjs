@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = [[320,844],[360,844],[390,844],[430,932],[768,1024],[1024,900],[1440,900],[1920,1080]];
+const sizes = args.includes('--probe') ? [[390,844]] : [[320,844],[360,844],[390,844],[430,932],[768,1024],[1024,900],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -105,12 +105,12 @@ try {
         const rect=e=>({top:r(e).top,bottom:r(e).bottom,height:r(e).height});
         const contentTop=Math.max(r(body).top,r(tabs).bottom,r(bar).bottom);
         const visible=rows.filter(e=>r(e).top>=contentTop-1&&r(e).bottom<=Math.min(r(body).bottom,r(panel).bottom)+1);
-        return {actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
+        const search=document.querySelector('.topbar>.station-search'),ss=getComputedStyle(search),topbar=document.querySelector('.topbar');return {search:{...rect(search),left:r(search).left,right:r(search).right,position:ss.position,computedTop:ss.top,transform:ss.transform,translate:ss.translate},topbar:{...rect(topbar),left:r(topbar).left,transform:getComputedStyle(topbar).transform,translate:getComputedStyle(topbar).translate},actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
       })()`);
       const name=`${width}-${theme}-${state}`;
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=130,name+' chrome');if(state==='half')assert.ok(measure.visibleRows>=4,name+' visible rows');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=130,name+' chrome');if(state==='half')assert.ok(measure.visibleRows>=4,name+' visible rows');}}
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
         const occlusion=await evaluate(`(() => {const tabs=document.querySelector('.station-section-tabs'),r=tabs.getBoundingClientRect();const h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {tabsHit:tabs.contains(h),position:getComputedStyle(tabs).position};})()`);
@@ -143,13 +143,18 @@ try {
   }
   if(!baseline)for(const width of [320,390]) {
     await command('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:true});
-    await command('Page.navigate',{url:new URL('/',base).href});
-    for(let i=0;i<100;i++){if(await evaluate("Boolean(document.querySelector('.mobile-search-dock input'))"))break;await pause(100);}
-    await click('.mobile-search-dock input');
+    await command('Page.navigate',{url:new URL('/?station=berlin',base).href});
+    for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(100);}
+    await click('.topbar>.station-search input');
+    assert.equal(await evaluate("Array.from(document.querySelectorAll('.topbar>.brand,.topbar>.header-actions,.location-tools')).every(element=>getComputedStyle(element).visibility==='hidden')"),true,'Focused search must not expose underlying controls');
     await command('Input.insertText',{text:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz'});
     for(let i=0;i<100;i++){if(await evaluate(`Boolean(document.querySelector('.search-suggestions [title="Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz"]'))`))break;await pause(100);}
+    await screenshot(`${width}-station-switcher`);
     await click('.search-suggestions button[role="option"]:has([title="Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz"])');
     await pause(800);
+    assert.equal(await evaluate("document.activeElement===document.querySelector('.topbar>.station-search input')"),false,'Selection must release the mobile keyboard');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.topbar>.brand')).visibility"),'visible','Compact header must return after selection');
+    assert.equal(await evaluate(`(() => {const search=document.querySelector('.topbar>.station-search'),r=search.getBoundingClientRect();return r.left>=60&&r.right<=innerWidth-60&&Array.from(search.querySelectorAll(':scope>button')).every(button=>getComputedStyle(button).display==='none');})()`),true,'Selected station must restore compact switcher bounds');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').textContent"),'Halle (Saale) Hbf');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').title"),'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz');
     await screenshot(`${width}-long-station-name`);

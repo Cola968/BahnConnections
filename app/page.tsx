@@ -25,6 +25,7 @@ import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileShe
 import { occupancyForecast } from "./occupancy";
 import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
+import { StationMapRenderer } from "./station-map-renderer";
 import { StationLines, type StationLineSummary } from "./station-lines";
 import { compactStationLabel, serviceBadgeStyle, serviceColors } from "./transit-style";
 import {
@@ -264,6 +265,7 @@ export default function Home() {
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const overlayRef = useRef<import("leaflet").LayerGroup | null>(null);
   const stationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const stationPreviewRef = useRef<StationMapRenderer | null>(null);
   const routeRendererRef = useRef<import("leaflet").Canvas | null>(null);
   const [railRevision, setRailRevision] = useState(0);
   const liveLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
@@ -598,17 +600,7 @@ export default function Home() {
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
       });
     } else if (stationTrips.length) {
-      for (const trip of stationTrips) {
-        const tripSegments = exactTripSegments(trip);
-        if (!tripSegments.length) continue;
-        const color = serviceColors(trip.category, trip.color, trip.textColor, trip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
-        for (const segment of tripSegments) {
-          L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:4.6, opacity:.62, lineCap:"round", lineJoin:"round" }).addTo(layer);
-          const previewLine = L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color, weight:2.4, opacity:.72, lineCap:"round", lineJoin:"round", className:"station-trip-preview" }).addTo(layer);
-          previewLine.bindTooltip(routeElement(trip.name, `${tripRealtimeLabel(trip)} · klicken für ${trip.stops.length} Halte`), { sticky:true });
-          previewLine.on("click", () => setStationTrip(trip));
-        }
-      }
+      // StationMapRenderer owns these layers and appends only new previews.
     } else if (overviewRoutesVisible) {
       const orderedRoutes = routeInfo ? [...filteredRoutes].sort((a, b) => Number(a.id === routeInfo) - Number(b.id === routeInfo)) : filteredRoutes;
       for (const route of orderedRoutes) {
@@ -621,15 +613,31 @@ export default function Home() {
 
     const canvas = map.getPane("rail-routes")?.querySelector("canvas");
     if (canvas) {
-      canvas.dataset.routeCount = String(journey ? journey.transitLegs.length : stationTrip ? 1 : stationTrips.filter(trip => exactTripSegments(trip).length).length);
+      canvas.dataset.routeCount = String(journey ? journey.transitLegs.length : stationTrip ? 1 : stationPreviewRef.current?.count ?? 0);
       canvas.dataset.routeRevision = String(Number(canvas.dataset.routeRevision ?? 0) + 1);
       canvas.dataset.workerPoints = String(trackRouterRef.current?.completedPoints ?? 0);
     }
   }, [filteredRoutes, journey, mapReady, minimalMode, overviewRoutesVisible, railState, railRevision, routeInfo, routeZoom, selected, showRouteLabels, stationTrip, stationTrips, theme]);
 
   useEffect(() => {
+    const L=leafletRef.current,map=mapRef.current,canvas=routeRendererRef.current;
+    if(!mapReady||!L||!map||!canvas||!selected||journey||stationTrip)return;
+    const renderer=new StationMapRenderer(L,map,canvas,`${selected.state??""} ${selected.name}`,setStationTrip);
+    stationPreviewRef.current=renderer;
+    return ()=>{renderer.dispose();stationPreviewRef.current=null;};
+  },[mapReady,selected,theme,journey,stationTrip]);
+
+  useEffect(()=>{stationPreviewRef.current?.sync(stationTrips);},[stationTrips,mapReady,selected,theme,journey,stationTrip]);
+
+  useEffect(() => {
     const L = leafletRef.current, map = mapRef.current, layer = stationLayerRef.current;
     if (!mapReady || !L || !map || !layer) return;
+    let cancelled=false,frame:number|null=null;
+    const begin=requestAnimationFrame(()=>{
+      frame=requestAnimationFrame(draw);
+    });
+    const draw=()=>{
+    if(cancelled)return;
     layer.clearLayers();
     const connectedIds = overviewRoutesVisible ? new Set(connections.map((connection) => connection.station.id)) : new Set<string>();
     const filteredStationIds = new Set(filteredRoutes.flatMap((route) => route.stops));
@@ -662,7 +670,12 @@ export default function Home() {
       return mapZoom >= minimum && (station.country === "DE" || filteredStationIds.has(station.id));
     });
     const visibleStations = declutterStations(candidates, station => map.latLngToContainerPoint([station.lat, station.lon]), selectedId, window.innerWidth < 1024 ? 120 : 280);
-    for (const station of visibleStations) {
+    let cursor=0;
+    const drawBatch=()=>{
+    if(cancelled)return;
+    const started=performance.now();
+    while(cursor<visibleStations.length){
+      const station=visibleStations[cursor++];
       if (station.country !== "DE" && !filteredStationIds.has(station.id)) continue;
       const isSelected = station.id === selectedId;
       const isDestination = false;
@@ -715,7 +728,13 @@ export default function Home() {
           if (key === "Enter" || key === " ") marker.fire("click");
         });
       }
+      if(performance.now()-started>=4)break;
     }
+    if(cursor<visibleStations.length)frame=requestAnimationFrame(drawBatch);
+    };
+    drawBatch();
+    };
+    return ()=>{cancelled=true;cancelAnimationFrame(begin);if(frame!==null)cancelAnimationFrame(frame);};
   }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme]);
 
   useEffect(() => {
