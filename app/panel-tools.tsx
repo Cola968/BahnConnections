@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { UiIcon } from "./ui-icon";
 
 export type PanelControls = {
@@ -45,7 +45,7 @@ export function usePanelControls(id: string): PanelControls {
   };
 }
 
-export function PanelTools({ controls, label, onClose, mobileState, onMobileStateChange, mobileTitle, mobileSummary }: {
+export function PanelTools({ controls, label, onClose, mobileState, onMobileStateChange, mobileTitle, mobileSummary, subNavigation, fullTitle }: {
   controls: PanelControls;
   label: string;
   onClose?: () => void;
@@ -53,6 +53,8 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
   onMobileStateChange?: (state: MobileSheetState) => void;
   mobileTitle?: string;
   mobileSummary?: string;
+  subNavigation?: ReactNode;
+  fullTitle?: string;
 }) {
   const dragRef = useRef<{
     pointerId: number;
@@ -148,7 +150,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
   }
 
   return (
-    <div className="panel-tools" ref={toolsRef}
+    <div className={`panel-tools${subNavigation ? " station-sheet-header" : ""}`} ref={toolsRef}
       onPointerDown={(event) => { if (!(event.target instanceof Element && event.target.closest('button'))) startMobileDrag(event); }}
       onPointerMove={moveMobileDrag} onPointerUp={finishMobileDrag} onPointerCancel={finishMobileDrag}>
       <span className="panel-drag-label" title="Feste Detailspalte"><i />{label}</span>
@@ -164,9 +166,9 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
           selectSize(mobileState === "collapsed" ? "half" : mobileState === "half" ? "expanded" : "collapsed");
         }}
         aria-expanded={mobileState !== "collapsed" && mobileState !== "closed"}
-        aria-label={`${label} ${mobileState === "expanded" ? "minimieren" : "vergrößern"}`}
+        aria-label={`${fullTitle ?? mobileTitle ?? label} ${mobileState === "expanded" ? "minimieren" : "vergrößern"}`}
         title="Stufenlos hoch- oder runterschieben"
-      ><i aria-hidden="true" /><span><b>{mobileTitle ?? label}</b>{mobileSummary && <small>{mobileSummary}</small>}</span><em aria-hidden="true">{mobileState === "expanded" ? "⌄" : "⌃"}</em></button>}
+      ><i aria-hidden="true" /><span><b title={fullTitle}>{mobileTitle ?? label}</b>{mobileSummary && <small>{mobileSummary}</small>}</span><em aria-hidden="true">{mobileState === "expanded" ? "⌄" : "⌃"}</em></button>}
       <div className="desktop-panel-actions">
         <button onClick={controls.smaller} disabled={controls.scale <= .85} aria-label={`${label}: Schrift kleiner`}>A−</button>
         <button onClick={controls.larger} disabled={controls.scale >= 1.25} aria-label={`${label}: Schrift größer`}>A+</button>
@@ -177,6 +179,7 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
         <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); selectSize(mobileState === "collapsed" ? "half" : "collapsed"); }} aria-label={`${label} ${mobileState === "collapsed" ? "vergrößern" : "minimieren"}`}><UiIcon name="chevron" style={mobileState === "collapsed" ? { transform:"rotate(180deg)" } : undefined} /></button>
         <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.preventDefault(); event.stopPropagation(); if (onClose) onClose(); else onMobileStateChange("closed"); }} aria-label={`${label} schließen`}><UiIcon name="close" /></button>
       </div>}
+      {subNavigation}
     </div>
   );
 }

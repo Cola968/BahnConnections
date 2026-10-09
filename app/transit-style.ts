@@ -65,6 +65,7 @@ export function compactStationLabel(value?: string) {
     .replace(/,\s*Zugang\s+(?:über|via)\b.*$/i, "")
     .replace(/\s+Zugang\s+(?:über|via)\b.*$/i, "");
   const compact = withoutAccess
+    .replace(/^(?:S\+U|S|U)\s+(?=\S)/, "")
     .replace(/\bHauptbahnhof\b/g, "Hbf")
     .replace(/\s+/g, " ")
     .trim();

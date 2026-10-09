@@ -7,6 +7,9 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
   "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
 ].map(read));
+const stationSubNavigation = await read("app/station-sub-navigation.tsx");
+const boardToolbar = await read("app/board-toolbar.tsx");
+const stationSheetCss = await read("app/styles/v50-ui.css");
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
 const css = styles.join("\n");
@@ -54,10 +57,10 @@ check("High contrast overrides dark glass after theme calibration",css.lastIndex
 check("Journey has one identity and accessible secondary information",page.includes('single-leg') && css.includes('.live-journey-leg.single-leg>header,.live-journey-leg.single-leg>.leg-route-line { display:none; }') && page.includes('<details className="journey-secondary-info">') && page.includes('journey.sourceLabel'));
 check("Normal board times are quiet; early arrivals are explicitly green",!board.includes('cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} showStatus') && realtimeTime.includes('accessibleLabel') && css.includes('--status-on-time:var(--ink)') && css.includes('--status-early:var(--success)') && css.includes('.realtime-time--early'));
 check("Live layer status is not exposed as mobile chrome",!page.includes('Live-Ebene aus') && page.includes('Live-Daten nicht aktiv') && page.includes('Keine Echtzeitdaten'));
-check("Dark map keeps real OSM geometry with neutral low-luminance treatment",css.includes("invert(.90) hue-rotate(180deg) brightness(.70)") && css.includes("--paper:#141618") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
+check("Dark map keeps real OSM geometry with blue-charcoal glass",css.includes("invert(.90) hue-rotate(180deg) brightness(.70)") && css.includes("--paper:#18232d") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
 check("Alternative journeys avoid redundant realtime prose",!alternatives.includes('" · mit Echtzeit"') && !alternatives.includes('" · Fahrplan"'));
 check("V40 primary journey removes duplicated mobile prose",!page.includes('journey-quick-facts') && !page.includes('<details className="journey-mobile-data"') && !page.includes('Betreiber nicht gemeldet') && !page.includes('journey-data-note'));
-check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={selected.name} mobileSummary=""') || page.includes('mobileTitle={stationDisplayName(selected.name)} mobileSummary=""')) && page.includes('> Tafel</button>') && page.includes('>Info</button>') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
+check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={selected.name} mobileSummary=""') || page.includes('mobileTitle={stationDisplayName(selected.name)} mobileSummary=""')) && stationSubNavigation.includes('label:"Tafel"') && stationSubNavigation.includes('label:"Info"') && css.includes(".station-line-kpis") && css.includes("display:none!important"));
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
@@ -92,6 +95,9 @@ check("All five modes and five transfers retained",["fern","regional","sbahn","u
 check("Autocomplete has active descendant and Escape handling",(await read("app/smart-search.tsx")).includes("aria-activedescendant"));
 check("Alternative selection and pagination retained",alternatives.includes("onSelect(journey)") && alternatives.includes("alternatives.slice(0,limit)") && alternatives.includes("onMore"));
 check("Transfer displays concrete times, platforms and walks",alternatives.includes("previous.to.track") && alternatives.includes("next.from.track") && alternatives.includes("Fußweg enthalten") && !page.includes("{journeyQuality.score}"));
+check("Station subnavigation is owned by the stationary header",page.includes("subNavigation={<StationSubNavigation") && panelTools.includes("{subNavigation}") && !page.includes('className="station-section-tabs"') && stationSheetCss.includes("position:static"));
+check("Board controls use progressive disclosure",board.includes("<BoardToolbar") && board.includes("{filtersOpen &&") && boardToolbar.includes("aria-expanded={filtersOpen}") && board.includes("board-data-details"));
+check("One canonical glass material contract",!styles.at(-1).includes("--glass-clear:color-mix") && styles[0].includes("--glass-sheet-half:") && stationSheetCss.includes("background:transparent!important"));
 check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
 check("Destination has a visible dedicated grid column",css.includes(".board-row-summary .board-destination { grid-column:3") && css.includes("minmax(0,1fr)"));
 check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("void loadMapLines()") && !stationLines.includes("station-line-filters"));

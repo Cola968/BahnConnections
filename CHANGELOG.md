@@ -1,3 +1,12 @@
+# V50.1 · Compact Station Sheet & Liquid Glass
+
+- Bahnhofstitel und Tafel/Linien/Info bilden einen gemeinsamen, festen Header außerhalb des Inhalts-Scrollbereichs. Keine konkurrierenden Sticky-Layer mehr.
+- Standard-Tafel auf Abfahrt/Ankunft und Filter reduziert; Produktfilter und Suche öffnen sich bei Bedarf. Zeiten, Ziele und Gleise bleiben sofort erfassbar.
+- Vier vollständig sichtbare Abfahrten im halben Sheet bei 390 px; 130 statt 269 px Oberfläche vor der ersten Zeile (deterministische Browser-QA).
+- Liquid-Glass-Materialien in tokens.css konsolidiert; transparente gemeinsame Sheet-Fläche, native Untertabs und eine Bottom-Navigation ohne einzelne aktive Glaskarte.
+- Relevante Änderungen aus v41.1-liquid-polish übernommen: kompakte Suchaktion, ruhige Vorschläge, transparente Half-Sheets und eindeutiger Gleiswechsel-Pfeil.
+- PWA-Version und Cache auf V50.1 angehoben.
+
 # V47.1 · Mobile Header Fix
 
 - Mobiles Suchfeld stabilisiert: Clear-Button und „Anzeigen“-Button haben feste, kollisionsfreie Geometrie und können sich nicht mehr gegenseitig überdecken.

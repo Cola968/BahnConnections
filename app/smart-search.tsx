@@ -145,14 +145,16 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
         placeholder={placeholder ?? "Bahnhof suchen"}
       />
       {value && <button className="search-clear" type="button" onClick={() => { onChange(""); setOpen(true); }} aria-label="Suche leeren"><UiIcon name="close" width="18" height="18" /></button>}
-      <button type="submit">{submitLabel}</button>
+      {variant === "header"
+        ? <button className="search-submit-icon" type="submit" aria-label="Ersten Treffer öffnen" title="Öffnen"><UiIcon name="arrow" /></button>
+        : <button type="submit">{submitLabel}</button>}
       {open && (
         <div className="search-suggestions" id={suggestionsId} role="listbox">
-          <div className="suggestion-heading"><span>{value ? "Passende Stationen" : favoriteIds.length ? "Favoriten & zuletzt gesucht" : "Beliebte Stationen"}</span><small>{liveSearching ? "Haltestellen werden geprüft …" : liveTransit ? "Deutschlandweit · Transitous" : `${stations.length.toLocaleString("de-DE")} verfügbar`}</small></div>
+          <div className="suggestion-heading"><span>{value ? "Vorschläge" : favoriteIds.length ? "Favoriten & zuletzt" : "Beliebte Stationen"}</span>{liveSearching && <small>Suche läuft …</small>}</div>
           {suggestions.map((station, index) => (
             <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
               <span className="station-symbol"><UiIcon name="train" /></span>
-              <span><b>{compactStationLabel(station.name) ?? station.name}</b><small>{station.state ?? station.country}{station.id.startsWith("motis:") ? " · Fahrplan-Haltestelle" : station.source === "db" ? ` · ${station.kind ?? "Bahnhof"}` : " · Fernverkehr"}</small></span>
+              <span><b title={station.name}>{compactStationLabel(station.name) ?? station.name}</b><small>{station.state ?? station.country}</small></span>
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}
