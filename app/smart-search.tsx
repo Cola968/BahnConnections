@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useDeferredValue, useEffect, useId, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { compactStationLabel } from "./transit-style";
@@ -113,6 +113,8 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     return [...unique.values()].slice(0, 10);
   }, [liveSuggestions, localSuggestions]);
 
+  const inputRef=useRef<HTMLInputElement>(null);
+
   function select(station: Station) {
     const nextRecent = [station.id, ...recentIds.filter((id) => id !== station.id)].slice(0, 6);
     setRecentIds(nextRecent);
@@ -120,6 +122,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     onSelect(station);
     setOpen(false);
     setActiveIndex(0);
+    if(variant === "header")inputRef.current?.blur();
   }
 
   function submit(event: FormEvent) {
@@ -138,6 +141,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
       <UiIcon name="search" />
       <input
+        ref={inputRef}
         role="combobox"
         aria-label={ariaLabel}
         aria-autocomplete="list"

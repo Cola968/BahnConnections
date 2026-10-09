@@ -152,6 +152,8 @@ try {
     await screenshot(`${width}-station-switcher`);
     await click('.search-suggestions button[role="option"]:has([title="Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz"])');
     await pause(800);
+    assert.equal(await evaluate("document.activeElement===document.querySelector('.topbar>.station-search input')"),false,'Selection must release the mobile keyboard');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.topbar>.brand')).visibility"),'visible','Compact header must return after selection');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').textContent"),'Halle (Saale) Hbf');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').title"),'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz');
     await screenshot(`${width}-long-station-name`);

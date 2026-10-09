@@ -16,7 +16,7 @@ Direct Apple HIG and web.dev website requests were denied by the cloud network p
 
 ## Changes
 
-The top header becomes a compact station switcher on mobile when a station is open. Closed labels use the existing station normalization. Focus selects the input, suggestions and Enter open a real station. Destinations and times form a clear scan hierarchy; badges are smaller, dividers are inset, and inactive tabs are quieter. Line rows use the same shared glass surface, compact destinations, a right time anchor and details on tap. The line toolbar reports partial/missing geometry honestly and shows determinate progress.
+The top header becomes a compact station switcher on mobile when a station is open. Closed labels use the existing station normalization. Focus selects the input, suggestions and Enter open a real station. Header selection releases input focus to dismiss the mobile keyboard and restore the compact header. Destinations and times form a clear scan hierarchy; badges are smaller, dividers are inset, and inactive tabs are quieter. Line rows use the same shared glass surface, compact destinations, a right time anchor and details on tap. The line toolbar reports partial/missing geometry honestly and shows determinate progress.
 
 The joint station header and clipped sibling scroller from V50.1 remain intact. The budget before the first departure is still 130 px: 52 px title/drag, 36 px subnavigation, 40 px board controls and 2 px boundaries. V50 before the structural sheet fix used 269 px. At 390 x 844 the half sheet shows four complete departures and the expanded sheet seven. Normal rows are approximately 73.4 px (70.8 px at 320); title, navigation and toolbar share one material instead of separate cards.
 
