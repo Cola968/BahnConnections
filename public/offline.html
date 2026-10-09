@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ec0016">
+  <title>Offline · BahnConnections</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f1f5f9;color:#162434;font:16px/1.6 system-ui,sans-serif}
+    main{max-width:600px;margin:8vh auto;padding:28px;background:white;border-radius:20px;border:1px solid #d7e0e8}
+    h1{font-size:1.8rem;line-height:1.2;margin:8px 0 16px}h2{font-size:1.1rem;margin-top:28px}p{color:#4e6072}
+    .brand{font-weight:700;color:#b50017}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+    button,a{font:inherit;min-height:48px;border-radius:10px;padding:10px 16px}button{border:0;background:#c90020;color:white;cursor:pointer}a{color:#162434;border:1px solid #8799ab;text-decoration:none}
+    button:focus-visible,a:focus-visible{outline:3px solid #1769bb;outline-offset:3px}ul{list-style:none;padding:0}li{padding:12px 0;border-bottom:1px solid #d7e0e8}li span{display:block;color:#4e6072;font-size:.875rem}
+    @media(max-width:640px){main{margin:16px;padding:24px}}
+    @media(prefers-color-scheme:dark){body{background:#0e1622;color:#f4f7fb}main{background:#182230;border-color:#425269}p,li span{color:#bdcadb}.brand{color:#ff8e9c}a{color:#f4f7fb}li{border-color:#425269}}
+  </style>
+</head>
+<body><main>
+  <div class="brand">BahnConnections</div>
+  <h1>Gerade keine Verbindung</h1>
+  <p>Deine gespeicherten Pendelstrecken bleiben auf diesem Gerät verfügbar. Neue Verbindungen, Abfahrten und Live-Daten benötigen Internet.</p>
+  <div class="actions"><button id="retry" type="button">App erneut öffnen</button><a href="/website">Über BahnConnections</a></div>
+  <section aria-labelledby="routes-heading"><h2 id="routes-heading">Deine Pendelstrecken</h2><ul id="routes"></ul><p id="empty">Auf diesem Gerät sind keine Pendelstrecken gespeichert.</p></section>
+  <p id="connection" role="status">Sobald die Verbindung zurück ist, kannst du die App erneut öffnen.</p>
+</main>
+<script>
+  document.getElementById('retry').addEventListener('click',()=>location.assign('/'));
+  const update=()=>{document.getElementById('connection').textContent=navigator.onLine?'Das Gerät meldet eine Verbindung. Öffne die App, um die Fahrplandienste erneut zu prüfen.':'Das Gerät ist offline. Gespeicherte Strecken werden ohne Live-Daten angezeigt.'};
+  window.addEventListener('online',update);window.addEventListener('offline',update);update();
+  try {
+    const data=JSON.parse(localStorage.getItem('bahnconnections-saved-routes')||'[]');
+    if(Array.isArray(data)) for(const route of data.slice(0,20)) {
+      if(typeof route?.from?.name!=='string'||typeof route?.to?.name!=='string')continue;
+      const item=document.createElement('li');
+      item.textContent=route.from.name.slice(0,160)+' → '+route.to.name.slice(0,160);
+      const note=document.createElement('span');note.textContent='Lokal gespeichert · kein aktueller Fahrplan';item.append(note);
+      document.getElementById('routes').append(item);
+    }
+    document.getElementById('empty').hidden=document.getElementById('routes').children.length>0;
+  } catch {document.getElementById('empty').textContent='Die gespeicherten Strecken konnten nicht gelesen werden.'}
+</script></body>
+</html>

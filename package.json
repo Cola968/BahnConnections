@@ -16,6 +16,8 @@
     "audit:ui": "node scripts/ui-audit.mjs",
     "audit:mobile": "node scripts/mobile-visual-qa.mjs",
     "audit:map": "node scripts/map-audit.mjs",
+    "audit:release": "node scripts/release-regression.mjs",
+    "audit:release-browser": "node scripts/release-browser-qa.mjs",
     "audit:layout": "node scripts/content-layout-qa.mjs",
     "audit:transport": "node scripts/transport-style-audit.mjs",
     "audit:api": "node scripts/api-smoke.mjs",

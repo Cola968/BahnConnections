@@ -4,7 +4,13 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V44.0 · Simpler More & Cleaner Board
+## V51.0 · Release-Kandidat
+
+V51.0 stellt die Lesbarkeit und zuverlässige Bedienung in den Mittelpunkt: sichtbare Suchaktion, abbrechbare Suche, teilbare Suchlinks und lokal verfügbare Pendelstrecken bei Verbindungsproblemen. Fahrplandaten werden weiterhin nur aus den ausgewiesenen Quellen angezeigt; fehlende Schienengeometrie wird nicht überbrückt.
+
+Testnachweise, Vergleichskriterien und noch offene Produktionsprüfungen stehen in [V51 Release-Bericht](docs/V51-RELEASE.md). Die Vorbereitung dieses Release-Kandidaten bestätigt noch keine Veröffentlichung auf der Live-Site.
+
+## Frühere Oberfläche · V44.0
 
 V44.0 reduziert die sichtbare Bedienoberfläche weiter. Der mobile Tab „Mehr“ ist jetzt ein eigenes, kurzes Menü mit nur drei Kernpunkten: Darstellung, App & Updates sowie Hilfe & Daten. Technische Kartenfilter und Netzoptionen liegen nicht mehr im allgemeinen Mehr-Menü, sondern ausschließlich hinter der Kartenansicht; seltene Kartenoptionen sind dort zusätzlich eingeklappt.
 
@@ -42,6 +48,8 @@ Produktionsbuild:
 ```bash
 pnpm lint
 pnpm audit:ui
+pnpm audit:map
+pnpm audit:release
 pnpm build
 pnpm start
 ```

@@ -1,7 +1,7 @@
 import { billingRuntime,billingUnavailable } from '../../../billing/runtime';
 import { verifiedEvent } from '../../../billing/core';
 export async function POST(request:Request) {
-  const r=billingRuntime();if(!r)return billingUnavailable();
+  const r=await billingRuntime();if(!r)return billingUnavailable();
   const signature=request.headers.get('stripe-signature');if(!signature)return Response.json({error:'Signatur fehlt.'},{status:400});
   const raw=await request.text();if(raw.length>1_000_000)return new Response(null,{status:413});
   let event;

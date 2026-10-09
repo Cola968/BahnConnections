@@ -12,6 +12,7 @@ import "./styles/content-layout.css";
 import "./styles/designer-v48.css";
 import "./styles/v49-ui.css";
 import "./styles/v50-ui.css";
+import "./styles/release-ui.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {

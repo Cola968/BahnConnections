@@ -1,3 +1,14 @@
+# V51.0 · Lesbare Reiseplanung und verlässliche Zustände
+
+- Feste Suchaktion außerhalb des scrollenden Planerinhalts, mit verständlichen Auswahlhinweisen und abbrechbarer Suche.
+- Ruhige, deckende Textflächen, größere Tafeltexte, klarere Abstände und Unterstützung für hohen Kontrast.
+- Suchlinks zum Teilen von Start, Ziel und Uhrzeit; Ergebnisse werden niemals als gespeicherte Live-Verbindung ausgegeben.
+- Offline-Hinweis und eigenständige Offline-Seite mit lokal gespeicherten Pendelstrecken und Wiederöffnen der App.
+- Keine API-, Authentifizierungs- oder RSC-Antworten aus dem Service-Worker-Cache; personalisierte Seiten werden nicht mehr vorab gespeichert.
+- Fehlerhafte Polylines werden verworfen. Zugmarker und Spuren überbrücken keine fehlenden Schienenabschnitte; ältere Radar-Daten werden ausgeblendet.
+- Öffentliche Abonnement-Abfragen funktionieren im Node-Produktionsserver ohne Cloudflare-Bindings; Zahlungsaktionen bleiben gesperrt.
+- Release-Regressionsprüfungen und Produktions-/Offline-Browsertests in der CI.
+
 # V47.1 · Mobile Header Fix
 
 - Mobiles Suchfeld stabilisiert: Clear-Button und „Anzeigen“-Button haben feste, kollisionsfreie Geometrie und können sich nicht mehr gegenseitig überdecken.

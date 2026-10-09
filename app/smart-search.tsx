@@ -55,6 +55,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   const [activeIndex, setActiveIndex] = useState(0);
   const [liveSuggestions, setLiveSuggestions] = useState<Station[]>([]);
   const [liveSearching, setLiveSearching] = useState(false);
+  const [liveSearchUnavailable, setLiveSearchUnavailable] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try { return JSON.parse(localStorage.getItem("bahnconnections-recent-stations") ?? "[]"); } catch { return []; }
@@ -76,21 +77,23 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
 
   useEffect(() => {
     if (!liveTransit || value.trim().length < 2) {
-      const timer = window.setTimeout(() => { setLiveSuggestions([]); setLiveSearching(false); }, 0);
+      const timer = window.setTimeout(() => { setLiveSuggestions([]); setLiveSearching(false); setLiveSearchUnavailable(false); }, 0);
       return () => window.clearTimeout(timer);
     }
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setLiveSearching(true);
+      setLiveSuggestions([]);
+      setLiveSearchUnavailable(false);
       try {
         const url = new URL("/api/stations/search", window.location.origin);
         url.searchParams.set("q", value.trim());
-        const response = await fetch(url, { signal:controller.signal });
+        const response = await fetch(url, { signal:AbortSignal.any([controller.signal, AbortSignal.timeout(8_000)]) });
         if (!response.ok) throw new Error(`Haltestellensuche ${response.status}`);
         const payload = await response.json() as { stations?:Station[] };
-        setLiveSuggestions(payload.stations ?? []);
+        if (!controller.signal.aborted) setLiveSuggestions(payload.stations ?? []);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setLiveSuggestions([]);
+        if (!controller.signal.aborted && (error as Error).name !== "AbortError") { setLiveSuggestions([]); setLiveSearchUnavailable(true); }
       } finally { if (!controller.signal.aborted) setLiveSearching(false); }
     }, 220);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -148,7 +151,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       <button type="submit">{submitLabel}</button>
       {open && (
         <div className="search-suggestions" id={suggestionsId} role="listbox">
-          <div className="suggestion-heading"><span>{value ? "Passende Stationen" : favoriteIds.length ? "Favoriten & zuletzt gesucht" : "Beliebte Stationen"}</span><small>{liveSearching ? "Haltestellen werden geprüft …" : liveTransit ? "Deutschlandweit · Transitous" : `${stations.length.toLocaleString("de-DE")} verfügbar`}</small></div>
+          <div className="suggestion-heading"><span>{value ? "Passende Stationen" : favoriteIds.length ? "Favoriten & zuletzt gesucht" : "Beliebte Stationen"}</span><small>{liveSearching ? "Haltestellen werden geprüft …" : liveSearchUnavailable ? "Gespeicherte Bahnhofsdaten" : liveTransit ? "Deutschlandweit · Transitous" : `${stations.length.toLocaleString("de-DE")} verfügbar`}</small></div>
           {suggestions.map((station, index) => (
             <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
               <span className="station-symbol"><UiIcon name="train" /></span>
@@ -156,6 +159,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}
+          {liveSearchUnavailable && <p className="search-source-note" role="status">Online-Suche nicht erreichbar. Die Vorschläge stammen aus den gespeicherten Bahnhofsdaten.</p>}
           {!suggestions.length && <p>Kein exakter Treffer. Probiere einen Ortsnamen oder ein DB-Kürzel.</p>}
         </div>
       )}

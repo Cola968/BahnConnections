@@ -314,6 +314,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       try {
         const kind: BoardKind = mode === "arrivals" ? "arrival" : "departure";
         const board = await loadBoard(station, kind, controller.signal);
+        if (controller.signal.aborted) return;
         setEntries(deduplicate(board.entries));
         setSourceLabel(board.source);
         setSourceWarnings(board.warnings);
@@ -331,6 +332,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           setStatus(entries.length ? "ready" : "error");
         }
       }
+      if (controller.signal.aborted) return;
       timer = setTimeout(() => setRefreshToken((value) => value + 1), 75_000);
     }
     load();

@@ -1,7 +1,10 @@
-import { env } from 'cloudflare:workers';
 import { billingConfig } from './core';
-export function billingRuntime() {
-  const e=env as unknown as Record<string,unknown>;
+export async function billingRuntime() {
+  // The Node production runner has no Cloudflare bindings. Public reads remain
+  // usable there and all billing mutations fail closed rather than crashing.
+  let e: Record<string,unknown>;
+  try { e=(await import('cloudflare:workers')).env as unknown as Record<string,unknown>; }
+  catch { return null; }
   const config=billingConfig(Object.fromEntries(Object.entries(e).filter((entry):entry is [string,string]=>typeof entry[1]==='string')));
   const db=e.BILLING_DB as D1Database|undefined;
   return config&&db ? {config,db}:null;

@@ -5,7 +5,7 @@ import { approvedSubscription,stripeClient } from '../../billing/core';
 /** Anonymous read-only preparation. No billing or paid grants. */
 export async function GET(request:Request) {
   const base={plans:SUBSCRIPTION_PLANS,pricing:PLUS_PRICING,entitlements:currentEntitlements(),billing:{mode:'test',configured:false,authenticated:false}};
-  const r=billingRuntime();
+  const r=await billingRuntime();
   if(r)try {
     const account=await billingAccount(request,r.db);
     if(account){

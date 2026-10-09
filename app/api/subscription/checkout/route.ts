@@ -2,7 +2,7 @@ import { billingAccount,billingRuntime,billingUnavailable } from '../../../billi
 import { sameOrigin,stripeClient } from '../../../billing/core';
 import { PLUS_PRICING } from '../../../subscription-plans';
 export async function POST(request:Request) {
-  const r=billingRuntime();if(!r)return billingUnavailable();
+  const r=await billingRuntime();if(!r)return billingUnavailable();
   if(!sameOrigin(request,r.config))return Response.json({error:'Anfrage nicht erlaubt.'},{status:403});
   try {
     const account=await billingAccount(request,r.db);if(!account)return Response.json({error:'Ein bestätigtes Online-Konto ist erforderlich.'},{status:401});

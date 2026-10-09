@@ -1,5 +1,5 @@
-const CACHE_NAME = "bahnconnections-static-v50-0";
-const STATIC_ASSETS = ["/", "/install", "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
+const CACHE_NAME = "bahnconnections-static-v51-0";
+const STATIC_ASSETS = [ "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
 const AUTH_PATHS = ["/signin-with-chatgpt", "/auth", "/api/auth", "/oauth", "/cdn-cgi/"];
 
 function isAuthenticationRequest(url) {
@@ -7,7 +7,7 @@ function isAuthenticationRequest(url) {
 }
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(STATIC_ASSETS.map((asset) => cache.add(asset)))));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.all([cache.add("/offline.html"), Promise.allSettled(STATIC_ASSETS.map((asset) => cache.add(asset)))])));
 });
 
 self.addEventListener("message", (event) => {
@@ -16,7 +16,7 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(Promise.all([
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))),
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith("bahnconnections-static-") && key !== CACHE_NAME).map((key) => caches.delete(key)))),
     self.registration.navigationPreload?.enable(),
   ]).then(() => self.clients.claim()));
 });
@@ -26,15 +26,14 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
   // Authentication redirects must be handled by the browser itself. Following
   // them inside a service worker can fail CORS and incorrectly show "offline".
-  if (event.request.mode === "navigate" && isAuthenticationRequest(url)) return;
+  if (isAuthenticationRequest(url) || url.pathname.startsWith("/api/") || url.pathname === "/version.json" || event.request.headers.get("RSC") === "1" || event.request.headers.get("Accept")?.includes("text/x-component")) return;
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
       try {
-        const response = await event.preloadResponse || await fetch(event.request);
-        if (response?.ok) void caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-        return response;
+        // Never cache personalized documents or authentication redirects.
+        return await event.preloadResponse || await fetch(event.request);
       } catch {
-        return await caches.match(event.request) || await caches.match("/") || new Response(`<!doctype html><html lang="de"><meta name="viewport" content="width=device-width"><title>BahnConnections offline</title><style>body{font:16px Arial;margin:0;padding:28px;color:#27313a;background:#f3f4f5}main{max-width:520px;margin:auto;background:#fff;border-top:5px solid #ec0016;padding:24px}button{border:0;background:#ec0016;color:#fff;padding:12px 18px;font-weight:700;margin:8px 8px 0 0}.secondary{background:#fff;color:#27313a;border:1px solid #87929d}</style><main><h1>Gerade keine Verbindung</h1><p>Die App benötigt für Fahrplan und Live-Daten eine Internetverbindung.</p><button onclick="location.reload()">Erneut versuchen</button><button class="secondary" onclick="Promise.all([navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))),caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k))))]).then(()=>location.replace('/'))">App-Verbindung reparieren</button></main></html>`, { headers:{ "Content-Type":"text/html; charset=utf-8" } });
+        return await caches.match("/offline.html") || new Response("BahnConnections: Keine Verbindung. Bitte die App bei bestehender Internetverbindung erneut öffnen.", { status:503, headers:{ "Content-Type":"text/plain; charset=utf-8" } });
       }
     })());
     return;
