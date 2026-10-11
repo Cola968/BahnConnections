@@ -12,6 +12,8 @@ const plannerPanel = await read("app/planner-panel.tsx");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
 const boardToolbar = await read("app/board-toolbar.tsx");
 const stationSheetCss = await read("app/styles/station-sheet.css");
+const settingsDialog = await read("app/settings-dialog.tsx");
+const v54Styles = await read("app/styles/v54-mobile-refine.css");
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
 const css = styles.join("\n");
@@ -66,7 +68,9 @@ check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={s
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
-check("V53 mobile More has three core actions; map controls are separate",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
+check("V54 mobile More keeps three core actions while advanced map controls live in Settings",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && !page.includes("Weitere Kartenoptionen") && settingsDialog.includes("Kartendarstellung") && settingsDialog.includes("onShowTrails") && settingsDialog.includes("onOverviewRoutesVisible"));
+check("V54 remembers compact font with an accessible size selector",page.includes('useState<"compact" | "normal" | "large">("compact")') && settingsDialog.includes("Kompakt (Standard)") && v54Styles.includes(".settings-scale-choice"));
+check("V54 compact rows keep touch target semantics",v54Styles.includes("min-height:44px") && v54Styles.includes(".mobile-navigation") && v54Styles.includes("safe-area-inset-bottom"));
 check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
 check("Standalone website is professional, transparent and service-first",
   website.includes('APP_VERSION_LABEL') &&
