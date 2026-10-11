@@ -190,3 +190,13 @@ html[data-motion="reduced"] .train-inspector .train-stop-list li,
 html[data-motion="reduced"] .train-inspector .train-follow-state,
 html[data-motion="reduced"] .train-inspector .train-heading-pill svg,
 html[data-motion="reduced"] .train-tracking-map-hud {animation:none!important;transition:none!important;}
+
+/* Stale tracking must not look like a live, measured vehicle pulse. */
+.train-tracking-map-pulse.is-stale,
+.train-follow-state.is-paused .train-follow-dot {
+  background:var(--warning);box-shadow:none;animation:none!important;
+}
+.train-follow-state.is-paused {
+  background:color-mix(in srgb,var(--warning) 9%,var(--glass-elevated));
+  border-color:color-mix(in srgb,var(--warning) 32%,var(--glass-stroke));
+}
