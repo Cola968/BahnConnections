@@ -26,6 +26,8 @@ const halfway=Date.parse('2026-10-11T12:02:30Z');
 assert.ok(realtimeModelSpeed(trip,halfway)>0,'Valid realtime polyline permits a modelled current speed');
 assert.equal(realtimeModelSpeed({...trip,realTime:false},halfway),null,'Scheduled journeys must not show a realtime speed');
 assert.equal(realtimeModelSpeed({...trip,points:[[52,13],[55,14]]},halfway),null,'Disconnected geometry must not yield a model speed');
+assert.equal(realtimeModelSpeed({...trip,points:[[52,13],[52.001,13.001],[53,14]]},halfway),null,'Distant jumps elsewhere on route cannot inflate model speed');
+assert.equal(realtimeModelSpeed(trip,Date.parse('2026-10-11T12:00:10Z')),null,'Do not show cruise speeds just after departure');
 assert.equal(realtimeModelSpeed(trip,halfway+3_600_000),null,'Completed journeys have no current speed');
 assert.equal(realtimeModelSpeed({...trip,departure:'invalid'},halfway),null,'Broken timestamps cannot produce speeds');
 assert.equal(realtimeModelSpeed({...trip,arrival:'2026-10-11T12:00:01Z'},halfway),null,'Implausible durations cannot yield attractive false speeds');
