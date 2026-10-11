@@ -151,8 +151,25 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     const dialog=dialogRef.current;
     if (!dialog) return;
     if (!dialog.open) dialog.showModal();
+    // Mobile keyboard changes the visual, not necessarily the layout, viewport.
+    // A body-portal cannot inherit the sheet's viewport-height CSS variable.
+    const visible=window.visualViewport;
+    const syncViewport=()=>{
+      dialog.style.setProperty("--picker-visible-height",Math.max(180,Math.floor(visible?.height??window.innerHeight))+"px");
+      dialog.style.setProperty("--picker-viewport-top",Math.max(0,Math.floor(visible?.offsetTop??0))+"px");
+    };
+    syncViewport();
+    visible?.addEventListener("resize",syncViewport);
+    visible?.addEventListener("scroll",syncViewport);
+    window.addEventListener("resize",syncViewport);
     const frame=requestAnimationFrame(()=>dialogInputRef.current?.focus());
-    return ()=>{cancelAnimationFrame(frame);if(dialog.open)dialog.close();};
+    return ()=>{
+      cancelAnimationFrame(frame);
+      visible?.removeEventListener("resize",syncViewport);
+      visible?.removeEventListener("scroll",syncViewport);
+      window.removeEventListener("resize",syncViewport);
+      if(dialog.open)dialog.close();
+    };
   },[mobilePickerOpen]);
   function closeMobilePicker(){
     setMobilePickerOpen(false);setOpen(false);setActiveIndex(0);inputRef.current?.blur();
