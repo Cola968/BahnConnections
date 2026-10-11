@@ -55,7 +55,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   },[trip.tripId]);
 
   const progress=liveTripProgress(trip,now);
-  const position=pointOnTrip(trip,progress);
+  const position=activeEstimatedPosition(trip,now);
   const speed=segmentAverageSpeed(trip);
   const future=pointOnTrip(trip,Math.min(1,progress+.006));
   const past=pointOnTrip(trip,Math.max(0,progress-.006));
@@ -74,7 +74,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const from=stationName(trip.from.name),to=stationName(trip.to.name);
 
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
-    <PanelTools controls={controls} label="Zugdetails" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
+    <PanelTools controls={controls} label="Zugradar" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
     <div className="panel-body">
       <div className="train-header">
         <div className="train-heading-row">
@@ -86,8 +86,24 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       </div>
 
       {tracked&&<div className={canStartTracking?"train-follow-state":"train-follow-state is-paused"} role="status"><span className="train-follow-dot" aria-hidden="true"/> {canStartTracking?`Kartenkamera folgt ${trip.name}`:"Verfolgung pausiert: keine aktuelle Positionsprognose"} <small>{canStartTracking?"Manuell verschieben beendet die Verfolgung":"Erneute Radardaten abwarten oder Verfolgung beenden"}</small></div>}
+      
+      <section className="train-cockpit" aria-label="Zugradar und Geschwindigkeit">
+        <div className="train-cockpit-eyebrow"><span><UiIcon name="train"/> ZUGRADAR</span><span className={canStartTracking?"train-cockpit-feed active":"train-cockpit-feed"}><i aria-hidden="true"/>{canStartTracking?"Aktuelle Prognose":"Keine aktuellen Positionsdaten"}</span></div>
+        <div className="train-cockpit-route">
+          <div><small>Von</small><b>{from}</b></div>
+          <div className="train-cockpit-track" aria-hidden="true"><i/><UiIcon name="train"/><i/></div>
+          <div><small>Nach</small><b>{to}</b></div>
+        </div>
+        <div className="train-cockpit-bottom">
+          <div className="train-cockpit-speed"><small>Geschwindigkeit · Modell</small><strong>{modelSpeed===null?"—":modelSpeed}<em>km/h</em></strong><span>{modelSpeed===null?"Kein gültiger Echtzeit-Schätzwert":"Aus Streckenlänge und prognostizierter Fahrzeit"}</span></div>
+          <div className="train-cockpit-provenance"><b>{modelSpeed===null?"Keine Messung":"Modellschätzung"}</b><small>Kein GPS / Tacho</small><small>{radarUpdatedAt&&freshness==="current"?`Datenstand ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt)}`:"Keine frischen Radar-Daten"}</small></div>
+        </div>
+      </section>
+      <div className="train-action-row">
+        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={!tracked&&!canStartTracking} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Auf Karte verfolgen"}</button>
+        <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
+      </div>
       <div className="train-hero-stats">
-        <div className="train-metric train-metric-primary"><small>Aktuell · geschätzt</small><strong>{modelSpeed===null?"—":modelSpeed} <em>km/h</em></strong><span>{modelSpeed===null?"Keine belastbare Echtzeit-Schätzung":"Aus Echtzeit-Haltezeiten · kein GPS"}</span></div>
         <div className="train-metric"><small>Ø Abschnitt</small><strong>{speed===null?"—":speed} <em>km/h</em></strong><span>{speed===null?"Keine Distanzangabe":"Aus Distanz und Fahrzeit berechnet"}</span></div>
         <div className="train-metric"><small>Ankunft Abschnitt</small><strong>{clock(trip.arrival)}</strong><span>{etaMinutes===null?"Keine Zeitangabe":etaMinutes===0?"Fahrzeit abgelaufen":`in etwa ${etaMinutes} Min.`}</span></div>
         <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${realtime.tone}`}>{realtime.delayMinutes===null?"—":realtime.delayMinutes>0?`+${realtime.delayMinutes} Min.`:`${realtime.delayMinutes} Min.`}</strong><span>{realtime.delayMinutes===null?"Keine bestätigte Prognose":trip.realTime?"Prognose der Ankunft":"Fahrplanangabe"}</span></div>
@@ -98,11 +114,6 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <div className="train-progress-line" role="progressbar" aria-valuenow={position?Math.round(progress*100):undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Geschätzter Fortschritt zwischen zwei Halten"><i style={{width:`${position?progress*100:0}%`}}/>{position&&<span style={{left:`${progress*100}%`}}><UiIcon name="train"/></span>}</div>
         <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime} compact/></div></div>
       </section>
-
-      <div className="train-action-row">
-        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={!tracked&&!canStartTracking} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Zug verfolgen"}</button>
-        <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
-      </div>
 
       <section className="train-stops-section">
         <div className="train-stops-header"><div><b>Fahrtverlauf</b><small>{detailState==="loading"?"Wird geladen …":detailState==="ready"?`${stops.length} gemeldete Halte`:"Fahrtverlauf nicht verfügbar"}</small></div>{detailState==="ready"&&stops.length>6&&<button onClick={()=>setShowAllStops(x=>!x)} type="button">{showAllStops?"Weniger":"Alle Halte"}</button>}</div>
