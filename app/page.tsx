@@ -22,7 +22,7 @@ import { LiveTripInspector } from "./live-trip-inspector";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
-import { matchesLiveStatus, liveTripProgress, pointOnTrip, type LiveTrainCategory, type LiveTrip } from "./live-trains";
+import { activeEstimatedPosition, matchesLiveStatus, type LiveTrainCategory, type LiveTrip } from "./live-trains";
 import { SmartSearch } from "./smart-search";
 import { buildStationImportance, NetworkStats } from "./network-stats";
 import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileSheetState } from "./panel-tools";
@@ -323,7 +323,7 @@ export default function Home() {
     if(!trackedTripId||!selected||!selectedLiveTrip)return;
     const update=()=>{
       if(document.hidden)return;
-      const point=pointOnTrip(selectedLiveTrip,liveTripProgress(selectedLiveTrip));
+      const point=activeEstimatedPosition(selectedLiveTrip);
       if(!point)return;
       setTrackedRadarAnchor(current=>{
         if(current&&current.id===selected.id&&Math.abs(current.lat-point[0])<.012&&Math.abs(current.lon-point[1])<.018)return current;
@@ -346,7 +346,8 @@ export default function Home() {
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
   }, []);
-  const trackedRadarFresh = liveState==="ready" && liveUpdatedAt !== null && Date.now()-liveUpdatedAt.getTime()<=90_000 && liveTrips.some(trip=>trip.tripId===trackedTripId);
+  const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
+  const trackedRadarFresh = liveState==="ready" && liveUpdatedAt !== null && Date.now()-liveUpdatedAt.getTime()<=90_000 && currentTrackedTrip!==undefined && activeEstimatedPosition(currentTrackedTrip)!==null;
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
     if (!liveCategories.includes(trip.category)) return false;
     return matchesLiveStatus(trip, liveStatusFilter);
@@ -738,7 +739,7 @@ export default function Home() {
       if(liveState!=="ready"||!liveUpdatedAt||Date.now()-liveUpdatedAt.getTime()>90_000)return;
       const trip=liveTrips.find(candidate=>candidate.tripId===trackedTripId);
       if(!trip)return;
-      const position=pointOnTrip(trip,liveTripProgress(trip,Date.now()));
+      const position=activeEstimatedPosition(trip,Date.now());
       if(!position)return;
       const zoom=Math.max(map.getZoom(),12);
       const shift=window.matchMedia("(max-width:1023px)").matches?Math.min(170,Math.round(map.getSize().y*.16)):0;

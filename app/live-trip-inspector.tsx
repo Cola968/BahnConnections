@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PanelTools, type MobileSheetState, type PanelControls } from "./panel-tools";
 import { RealtimeTime } from "./realtime-time";
 import { deriveRealtimePresentation } from "./realtime-presentation";
-import { liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
+import { activeEstimatedPosition, liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
 import { compactStationLabel } from "./transit-style";
 import { cardinalDirection, headingDegrees, nextTrainStopIndex, normaliseTrainStops, sourceFreshness, type TrainStop } from "./train-inspector-data";
 import { UiIcon } from "./ui-icon";
@@ -64,6 +64,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const realtime=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
   const freshness=sourceFreshness(radarUpdatedAt,now,inRadar);
   const modelSpeed = freshness==="current" && radarStatus==="ready" ? realtimeModelSpeed(trip,now) : null;
+  const canStartTracking = freshness==="current" && radarStatus==="ready" && activeEstimatedPosition(trip,now)!==null;
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
   const remaining=validDate(trip.arrival);
   const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
@@ -84,7 +85,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <p>{position?"Position anhand der Haltezeiten geschätzt":"Keine belastbare Position verfügbar"}</p>
       </div>
 
-      {tracked&&<div className="train-follow-state" role="status"><span className="train-follow-dot" aria-hidden="true"/> Kartenkamera folgt {trip.name} <small>Manuell verschieben beendet die Verfolgung</small></div>}
+      {tracked&&<div className="train-follow-state" role="status"><span className="train-follow-dot" aria-hidden="true"/> {canStartTracking?`Kartenkamera folgt ${trip.name}`:"Verfolgung pausiert: keine aktuelle Positionsprognose"} <small>{canStartTracking?"Manuell verschieben beendet die Verfolgung":"Erneute Radardaten abwarten oder Verfolgung beenden"}</small></div>}
       <div className="train-hero-stats">
         <div className="train-metric train-metric-primary"><small>Aktuell · geschätzt</small><strong>{modelSpeed===null?"—":modelSpeed} <em>km/h</em></strong><span>{modelSpeed===null?"Keine belastbare Echtzeit-Schätzung":"Aus Echtzeit-Haltezeiten · kein GPS"}</span></div>
         <div className="train-metric"><small>Ø Abschnitt</small><strong>{speed===null?"—":speed} <em>km/h</em></strong><span>{speed===null?"Keine Distanzangabe":"Aus Distanz und Fahrzeit berechnet"}</span></div>
@@ -99,7 +100,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       </section>
 
       <div className="train-action-row">
-        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={!position||!inRadar} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Zug verfolgen"}</button>
+        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={!tracked&&!canStartTracking} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Zug verfolgen"}</button>
         <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
       </div>
 

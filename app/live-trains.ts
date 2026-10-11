@@ -110,6 +110,15 @@ export function pointOnTrip(trip:LiveTrip,progress=liveTripProgress(trip)):[numb
   const ratio=length?(selected.target-index.cumulative[selected.end-1])/length:0;
   return [a[0]+(b[0]-a[0])*ratio,a[1]+(b[1]-a[1])*ratio];
 }
+/** Only follow an estimated vehicle while its reported stop-to-stop interval is active.
+ * pointOnTrip deliberately clamps progress for other views; that endpoint is
+ * not evidence of a vehicle staying there after arrival or before departure.
+ */
+export function activeEstimatedPosition(trip:LiveTrip,at=Date.now()):[number,number]|null {
+  const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
+  if(!Number.isFinite(at)||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||at<start||at>end)return null;
+  return pointOnTrip(trip,liveTripProgress(trip,at));
+}
 export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
   const position=pointOnTrip(trip,progress);if(!position)return [];
   const index=geometryIndex(trip.points),{end}=segmentAt(index,progress);
