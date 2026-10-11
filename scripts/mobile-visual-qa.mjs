@@ -413,7 +413,7 @@ try {
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Einstellungen & Profil','App & Updates','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
