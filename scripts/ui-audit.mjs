@@ -7,9 +7,10 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
   "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
 ].map(read));
+const mapLifecycle = await read("app/use-leaflet-map.ts");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
 const boardToolbar = await read("app/board-toolbar.tsx");
-const stationSheetCss = await read("app/styles/v50-ui.css");
+const stationSheetCss = await read("app/styles/station-sheet.css");
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
 const css = styles.join("\n");
@@ -22,7 +23,7 @@ check("Deep Liquid Glass is optical, functional and accessible",css.includes("--
 check("Search mode: planner and map; journey mode: map and inspector",desktop.includes("padding-left:calc(var(--workspace-left) + 28px);") && desktop.includes("padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage") && desktop.includes("padding-left:14px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
 check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
 check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
-check("General station markers recede behind the selected journey",page.includes('const markerRadius = journey ? Math.min(3.2') && page.includes('fillOpacity: journey ? .15') && page.includes('pane:"rail-routes"') && page.includes('stationLayerRef'));
+check("General station markers recede behind the selected journey",page.includes('const markerRadius = journey ? Math.min(3.2') && page.includes('fillOpacity: journey ? .15') && mapLifecycle.includes('pane:"rail-routes"') && page.includes('stationLayerRef'));
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
@@ -57,7 +58,7 @@ check("High contrast overrides dark glass after theme calibration",css.lastIndex
 check("Journey has one identity and accessible secondary information",page.includes('single-leg') && css.includes('.live-journey-leg.single-leg>header,.live-journey-leg.single-leg>.leg-route-line { display:none; }') && page.includes('<details className="journey-secondary-info">') && page.includes('journey.sourceLabel'));
 check("Normal board times are quiet; early arrivals are explicitly green",!board.includes('cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} showStatus') && realtimeTime.includes('accessibleLabel') && css.includes('--status-on-time:var(--success)') && css.includes('--status-early:var(--success)') && css.includes('.realtime-time--early'));
 check("Live layer status is not exposed as mobile chrome",!page.includes('Live-Ebene aus') && page.includes('Live-Daten nicht aktiv') && page.includes('Keine Echtzeitdaten'));
-check("Dark map keeps real OSM geometry with blue-charcoal glass",css.includes("invert(.90) hue-rotate(180deg) brightness(.70)") && css.includes("--paper:#18232d") && page.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
+check("Dark map keeps real OSM geometry with blue-charcoal glass",css.includes("invert(.90) hue-rotate(180deg) brightness(.70)") && css.includes("--paper:#18232d") && mapLifecycle.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
 check("Alternative journeys avoid redundant realtime prose",!alternatives.includes('" · mit Echtzeit"') && !alternatives.includes('" · Fahrplan"'));
 check("V40 primary journey removes duplicated mobile prose",!page.includes('journey-quick-facts') && !page.includes('<details className="journey-mobile-data"') && !page.includes('Betreiber nicht gemeldet') && !page.includes('journey-data-note'));
 check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={selected.name} mobileSummary=""') || page.includes('mobileTitle={stationDisplayName(selected.name)} mobileSummary=""')) && stationSubNavigation.includes('label:"Tafel"') && stationSubNavigation.includes('label:"Info"') && css.includes(".station-line-kpis") && css.includes("display:none!important"));

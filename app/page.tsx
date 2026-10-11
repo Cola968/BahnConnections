@@ -14,11 +14,15 @@ import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
 import { realtimeTooltip } from "./realtime-tooltip";
-import { deriveRealtimePresentation } from "./realtime-presentation";
+import { readPreference, readPreferenceJson, readPreferenceIds } from "./local-preferences";
+import { useLeafletMap } from "./use-leaflet-map";
+import { useLiveRadar } from "./use-live-radar";
+import { useLiveMap } from "./use-live-map";
+import { LiveTripInspector } from "./live-trip-inspector";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
-import { fetchLiveTrips, liveTripProgress, pointOnTrip, trailForTrip, type LiveTrainCategory, type LiveTrip } from "./live-trains";
+import { matchesLiveStatus, type LiveTrainCategory, type LiveTrip } from "./live-trains";
 import { SmartSearch } from "./smart-search";
 import { buildStationImportance, NetworkStats } from "./network-stats";
 import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileSheetState } from "./panel-tools";
@@ -196,14 +200,11 @@ export default function Home() {
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
   const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats">("live");
   const [helpOpen, setHelpOpen] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
   const [liveSearchStations, setLiveSearchStations] = useState<Station[]>([]);
   const [curatedStates, setCuratedStates] = useState<Record<string, string>>({});
   const [curatedAliases, setCuratedAliases] = useState<Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>>({});
-  const [mapZoom, setMapZoom] = useState(6);
-  const [mapViewportToken, setMapViewportToken] = useState(0);
   const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>([]);
   const [routeSaveMessage,setRouteSaveMessage]=useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -212,16 +213,12 @@ export default function Home() {
   const [highContrast, setHighContrast] = useState(false);
   const [fontScale, setFontScale] = useState<"normal" | "large">("normal");
   const [liveVisible, setLiveVisible] = useState(false);
-  const [liveTrips, setLiveTrips] = useState<LiveTrip[]>([]);
-  const [liveState, setLiveState] = useState<"loading" | "ready" | "error">("loading");
-  const [liveUpdatedAt, setLiveUpdatedAt] = useState<Date | null>(null);
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
   const [selectedLiveTrip, setSelectedLiveTrip] = useState<LiveTrip | null>(null);
   const [trackedTripId, setTrackedTripId] = useState<string | null>(null);
-  const [liveTick, setLiveTick] = useState(0);
   const [statsOpen, setStatsOpen] = useState(false);
   const [liveFiltersOpen, setLiveFiltersOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -261,20 +258,12 @@ export default function Home() {
   const handleStationLineSummary = useCallback((summary: StationLineSummary) => setStationLineSummary(summary), []);
   const handleStationTrips = useCallback((trips: BoardMapTrip[]) => setStationTrips(trips), []);
 
-  const mapElementRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<import("leaflet").Map | null>(null);
-  const overlayRef = useRef<import("leaflet").LayerGroup | null>(null);
-  const stationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const {mapReady,mapZoom,mapViewportToken,mapElementRef,mapRef,overlayRef,stationLayerRef,routeRendererRef,liveLayerRef,locationLayerRef,walkingLayerRef,leafletRef} = useLeafletMap();
   const stationPreviewRef = useRef<StationMapRenderer | null>(null);
-  const routeRendererRef = useRef<import("leaflet").Canvas | null>(null);
   const [railRevision, setRailRevision] = useState(0);
-  const liveLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
-  const locationLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
-  const walkingLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
-  const tileRef = useRef<import("leaflet").TileLayer | null>(null);
-  const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const trackRouterRef = useRef<WorkerTrackRouter | null>(null);
   const plannerRequestRef = useRef<AbortController | null>(null);
+  useEffect(() => () => { plannerRequestRef.current?.abort(); }, []);
   const walkRequestRef = useRef<AbortController | null>(null);
   const geoWatchRef = useRef<number | null>(null);
   const firstGeoFixRef = useRef(true);
@@ -332,11 +321,16 @@ export default function Home() {
     for (const item of routes) for (const station of routePath(item.route, item.from, item.to)) ids.add(station.id);
     return ids;
   }, [activeStationRoutes, routeInfo]);
+  const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(selected,liveVisible,trips => {
+    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? null : null);
+  });
+  const selectLiveTrip = useCallback((trip:LiveTrip) => {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
+    setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded");
+  }, []);
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
     if (!liveCategories.includes(trip.category)) return false;
-    if (liveStatusFilter === "delayed" && (!trip.realTime || trip.delay < 6)) return false;
-    if (liveStatusFilter === "ontime" && (!trip.realTime || trip.delay < 0 || trip.delay >= 6)) return false;
-    return true;
+    return matchesLiveStatus(trip, liveStatusFilter);
   }), [liveCategories, liveStatusFilter, liveTrips]);
 
   useEffect(() => {
@@ -370,15 +364,15 @@ export default function Home() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        setFavoriteIds(JSON.parse(localStorage.getItem("bahnconnections-favorite-stations") ?? "[]"));
-        setTheme(localStorage.getItem("bahnconnections-theme") === "dark" ? "dark" : "light");
-        setHighContrast(localStorage.getItem("bahnconnections-contrast") === "high");
-        setFontScale(localStorage.getItem("bahnconnections-font") === "large" ? "large" : "normal");
-        setMinimalMode(localStorage.getItem("bahnconnections-minimal") === "1");
-        setSavedRoutes(parseSavedRoutes(JSON.parse(localStorage.getItem(SAVED_ROUTES_KEY) ?? "[]")));
-        setProfile(parseLocalProfile(JSON.parse(localStorage.getItem("bahnconnections-profile") ?? "null")));
-        setAutoLocation(localStorage.getItem("bahnconnections-auto-location") !== "0");
-        setReducedMotion(localStorage.getItem("bahnconnections-motion") === "reduced");
+        setFavoriteIds(readPreferenceIds(localStorage,"bahnconnections-favorite-stations"));
+        setTheme(readPreference(localStorage,"bahnconnections-theme") === "dark" ? "dark" : "light");
+        setHighContrast(readPreference(localStorage,"bahnconnections-contrast") === "high");
+        setFontScale(readPreference(localStorage,"bahnconnections-font") === "large" ? "large" : "normal");
+        setMinimalMode(readPreference(localStorage,"bahnconnections-minimal") === "1");
+        setSavedRoutes(parseSavedRoutes(readPreferenceJson(localStorage,SAVED_ROUTES_KEY)));
+        setProfile(parseLocalProfile(readPreferenceJson(localStorage,"bahnconnections-profile")));
+        setAutoLocation(readPreference(localStorage,"bahnconnections-auto-location") !== "0");
+        setReducedMotion(readPreference(localStorage,"bahnconnections-motion") === "reduced");
       } catch { /* Local preferences are optional. */ }
       const params = new URLSearchParams(window.location.search);
       setBoardOnly(params.get("board") === "1");
@@ -427,13 +421,13 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [stationById]);
 
-  useEffect(() => {
-    const firstTick = window.setTimeout(() => setLiveTick(Date.now()), 0);
-    if (!liveVisible) return;
-    const timer = window.setInterval(() => { if (!document.hidden) setLiveTick(Date.now()); }, 4_000);
-    return () => { window.clearTimeout(firstTick); window.clearInterval(timer); };
-  }, [liveVisible]);
-
+  const escapePanel = useEffectEvent(() => {
+    if(settingsOpen)return;
+    if(helpOpen){setHelpOpen(false);return;}
+    if(liveFiltersOpen){setLiveFiltersOpen(false);mobileViewTriggerRef.current?.focus();return;}
+    if(moreMenuOpen){setMoreMenuOpen(false);return;}
+    resetMap();
+  });
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -441,7 +435,7 @@ export default function Home() {
       if (event.key.toLocaleLowerCase() === "l") setLiveVisible((value) => !value);
       if (event.key.toLocaleLowerCase() === "s") { event.preventDefault(); document.querySelector<HTMLInputElement>(".station-search input")?.focus(); }
       if (event.key.toLocaleLowerCase() === "f") { const drawer = document.querySelector<HTMLDetailsElement>(".filter-drawer"); if (drawer) drawer.open = !drawer.open; }
-      if (event.key === "Escape") { setHelpOpen(false); setStatsOpen(false); setExploreOpen(false); setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false); setSelectedLiveTrip(null); setTrackedTripId(null); }
+      if (event.key === "Escape" && !event.defaultPrevented) escapePanel();
     };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
@@ -453,37 +447,7 @@ export default function Home() {
     return () => { router.dispose(); trackRouterRef.current = null; };
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    async function initialiseMap() {
-      if (!mapElementRef.current || mapRef.current) return;
-      const L = await import("leaflet");
-      if (!active || !mapElementRef.current) return;
-      leafletRef.current = L;
-      const map = L.map(mapElementRef.current, { zoomControl: false, minZoom: 4, maxBoundsViscosity: 0.35 }).setView([51.15, 10.35], 6);
-      L.control.zoom({ position: "bottomright" }).addTo(map);
-      tileRef.current = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18, updateWhenIdle:true, updateWhenZooming:false, attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
-      map.createPane("rail-routes").style.zIndex = "390";
-      routeRendererRef.current = L.canvas({ pane:"rail-routes", padding:.2 });
-      overlayRef.current = L.layerGroup().addTo(map);
-      stationLayerRef.current = L.layerGroup().addTo(map);
-      liveLayerRef.current = L.layerGroup().addTo(map);
-      walkingLayerRef.current = L.layerGroup().addTo(map);
-      locationLayerRef.current = L.layerGroup().addTo(map);
-      const syncViewport = () => {
-        setMapZoom(map.getZoom());
-        setMapViewportToken((value) => value + 1);
-      };
-      map.on("movestart", () => mapElementRef.current?.closest(".app-shell")?.classList.add("map-moving"));
-      map.on("moveend", () => { syncViewport(); mapElementRef.current?.closest(".app-shell")?.classList.remove("map-moving"); });
-      mapRef.current = map;
-      setMapReady(true);
-    }
-    initialiseMap();
-    return () => { active = false; mapRef.current?.remove(); mapRef.current = null; };
-  }, []);
+
 
 
   useEffect(() => {
@@ -496,7 +460,7 @@ export default function Home() {
     L.circleMarker([geoPosition.lat, geoPosition.lon], { radius:7, color:"#fff", weight:3, fillColor:"#1769bb", fillOpacity:1, className:"my-location-point" })
       .bindTooltip(`Dein Standort · Genauigkeit etwa ${Math.round(geoPosition.accuracy)} m`)
       .addTo(layer);
-  }, [geoPosition, mapReady]);
+  }, [geoPosition, mapReady, leafletRef, locationLayerRef]);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -508,7 +472,7 @@ export default function Home() {
     L.polyline(walkRoute.points, { color:"#1769bb", weight:4.5, opacity:.98, lineCap:"round", lineJoin:"round" })
       .bindTooltip(`Fußweg · ${Math.ceil(walkRoute.durationSeconds / 60)} Min. · ${(walkRoute.distanceMeters / 1000).toLocaleString("de-DE", { maximumFractionDigits:1 })} km`)
       .addTo(layer);
-  }, [mapReady, walkRoute]);
+  }, [mapReady, walkRoute, leafletRef, walkingLayerRef]);
 
   useEffect(() => () => {
     if (geoWatchRef.current !== null) navigator.geolocation?.clearWatch(geoWatchRef.current);
@@ -617,7 +581,7 @@ export default function Home() {
       canvas.dataset.routeRevision = String(Number(canvas.dataset.routeRevision ?? 0) + 1);
       canvas.dataset.workerPoints = String(trackRouterRef.current?.completedPoints ?? 0);
     }
-  }, [filteredRoutes, journey, mapReady, minimalMode, overviewRoutesVisible, railState, railRevision, routeInfo, routeZoom, selected, showRouteLabels, stationTrip, stationTrips, theme]);
+  }, [filteredRoutes, journey, mapReady, minimalMode, overviewRoutesVisible, railState, railRevision, routeInfo, routeZoom, selected, showRouteLabels, stationTrip, stationTrips, theme, leafletRef, mapRef, overlayRef, routeRendererRef]);
 
   useEffect(() => {
     const L=leafletRef.current,map=mapRef.current,canvas=routeRendererRef.current;
@@ -625,7 +589,7 @@ export default function Home() {
     const renderer=new StationMapRenderer(L,map,canvas,`${selected.state??""} ${selected.name}`,setStationTrip);
     stationPreviewRef.current=renderer;
     return ()=>{renderer.dispose();stationPreviewRef.current=null;};
-  },[mapReady,selected,theme,journey,stationTrip]);
+  },[mapReady,selected,theme,journey,stationTrip,leafletRef,mapRef,routeRendererRef]);
 
   useEffect(()=>{stationPreviewRef.current?.sync(stationTrips);},[stationTrips,mapReady,selected,theme,journey,stationTrip]);
 
@@ -716,6 +680,7 @@ export default function Home() {
       marker.bindTooltip(permanentLabel ? station.name : routeElement(station.name, `${passengers.label} · ${passengers.detail} · ${station.source === "db" ? dbDetail : curatedDetail}`), { direction:"top", offset:[0,-7], permanent:permanentLabel, className:permanentLabel ? "station-route-label" : "" });
       if (isMajorHub || station.hub || isSelected) marker.bringToFront();
       marker.on("click", () => {
+        plannerRequestRef.current?.abort(); setPlannerState("idle");
         setSelectedId(station.id); setSearch(station.name); setJourney(null); setJourneyMessage(""); setRouteInfo(null); setStationPanel("live");
         setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null);
         setMobileView("departures");  setSidebarCollapsed(false); setMobileSheetState("half");
@@ -735,91 +700,13 @@ export default function Home() {
     drawBatch();
     };
     return ()=>{cancelled=true;cancelAnimationFrame(begin);if(frame!==null)cancelAnimationFrame(frame);};
-  }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme]);
+  }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme, leafletRef, mapRef, stationLayerRef]);
 
-  useEffect(() => {
-    if (!selected || !liveVisible) {
-      const timer = window.setTimeout(() => { setLiveTrips([]); setLiveUpdatedAt(null); }, 0);
-      return () => window.clearTimeout(timer);
-    }
-    const liveStation = selected;
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let hasLoaded = false;
-    // A station switch must never show radar vehicles from the previous location.
-    const reset = window.setTimeout(() => {
-      if (!controller.signal.aborted) {
-        setLiveTrips([]);
-        setLiveUpdatedAt(null);
-        setLiveState("loading");
-      }
-    }, 0);
-    async function load() {
-      if (controller.signal.aborted) return;
-      try {
-        const trips = await fetchLiveTrips(liveStation, controller.signal);
-        if (controller.signal.aborted) return;
-        hasLoaded = true;
-        setLiveTrips(trips);
-        setLiveUpdatedAt(new Date());
-        setLiveState("ready");
-        setSelectedLiveTrip((current) => current ? trips.find((trip) => trip.tripId === current.tripId) ?? null : null);
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        if ((error as Error).name !== "AbortError") setLiveState(hasLoaded ? "ready" : "error");
-      }
-      // Never reschedule an aborted request: otherwise switching stations leaks pollers.
-      if (!controller.signal.aborted) timer = setTimeout(() => void load(), 45_000);
-    }
-    void load();
-    return () => { controller.abort(); clearTimeout(reset); if (timer) clearTimeout(timer); };
-  }, [liveVisible, selected]);
-
-  useEffect(() => {
-    const L = leafletRef.current;
-    const map = mapRef.current;
-    const layer = liveLayerRef.current;
-    if (!mapReady || !L || !map || !layer) return;
-    layer.clearLayers();
-    if (!liveVisible || liveState === "error") return;
-
-    const grouped = new Map<string, LiveTrip[]>();
-    for (const trip of visibleLiveTrips) {
-      const [lat, lon] = pointOnTrip(trip, liveTripProgress(trip, liveTick));
-      const key = `${(Math.round(lat * 18) / 18).toFixed(3)}|${(Math.round(lon * 18) / 18).toFixed(3)}`;
-      grouped.set(key, [...(grouped.get(key) ?? []), trip]);
-    }
-
-    for (const trips of grouped.values()) {
-      if (mapZoom < 10 || liveView === "stress") {
-        const positions = trips.map((trip) => pointOnTrip(trip, liveTripProgress(trip, liveTick)));
-        const position: [number, number] = [positions.reduce((sum, point) => sum + point[0], 0) / positions.length, positions.reduce((sum, point) => sum + point[1], 0) / positions.length];
-        const average = trips.reduce((sum, trip) => sum + trip.delay, 0) / trips.length;
-        const tone = average >= 11 ? "severe" : average >= 5 ? "late" : "calm";
-        L.marker(position, { icon:L.divIcon({ className:"live-cluster-wrap", html:`<div class="live-cluster ${tone}">${trips.length}<small>Züge</small></div>`, iconSize:[42,42], iconAnchor:[21,21] }) }).bindTooltip(`${trips.length} Live-Züge · Ø ${average.toLocaleString("de-DE", { maximumFractionDigits:1 })} Min. · ab Zoom 10 einzeln`).addTo(layer);
-        continue;
-      }
-      for (const trip of trips) {
-        const progress = liveTripProgress(trip, liveTick);
-        const position = pointOnTrip(trip, progress);
-        const presentation = deriveRealtimePresentation({ scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime });
-        const statusToken = presentation.kind === "early" ? "--status-early" : { neutral:"--status-schedule", success:"--status-on-time", warning:"--status-delay", danger:"--status-disruption" }[presentation.tone];
-        if (showTrails) for (const segment of splitRailGeometry(trailForTrip(trip, progress))) L.polyline(segment, { color:getComputedStyle(document.documentElement).getPropertyValue(statusToken).trim(), weight:1.6, opacity:.24, dashArray:"2 7", lineCap:"round" }).addTo(layer);
-        const className = `live-train-marker glyph ${trip.category} status-${presentation.tone} status-${presentation.kind}${trackedTripId === trip.tripId ? " tracked" : ""}`;
-        const marker = L.marker(position, { zIndexOffset:900, icon:L.divIcon({ className:"live-train-wrap", html:`<div class="${className}"><i></i></div>`, iconSize:[22,22], iconAnchor:[11,11] }) }).addTo(layer);
-        marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`, { scheduled:trip.scheduledArrival, actual:trip.arrival, realtime:trip.realTime }), { direction:"top", offset:[0,-11] });
-        marker.on("click", () => { setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded"); });
-      }
-    }
-  }, [highContrast, liveState, liveTick, liveView, liveVisible, mapReady, mapZoom, showTrails, theme, trackedTripId, visibleLiveTrips]);
-
-  useEffect(() => {
-    if (!trackedTripId || !mapRef.current) return;
-    const trip = liveTrips.find((candidate) => candidate.tripId === trackedTripId);
-    if (trip) mapRef.current.panTo(pointOnTrip(trip, liveTripProgress(trip, liveTick)), { animate:!prefersReducedMotion(), duration:.8 });
-  }, [liveTick, liveTrips, trackedTripId]);
+  useLiveMap(mapReady,leafletRef,mapRef,liveLayerRef,visibleLiveTrips,liveVisible,
+    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,appearance:`${theme}:${highContrast}`},selectLiveTrip);
 
   function selectStation(match: Station) {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
     if (match.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((station) => station.id === match.id) ? current : [...current, match]);
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
@@ -954,6 +841,7 @@ export default function Home() {
   }, [selectedId, walkTargetId]);
 
   function showBoardTripOnMap(trip: BoardMapTrip) {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
     setStationTrip(trip);
     setJourney(null);
     setSelectedLiveTrip(null);
@@ -977,6 +865,7 @@ export default function Home() {
   }
 
   function togglePlannerCategory(category: PlannerCategory) {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
     setPlannerCategories((current) => current.includes(category) ? (current.length === 1 ? current : current.filter((item) => item !== category)) : [...current, category]);
     setJourney(null);
     setJourneyMessage("");
@@ -1036,7 +925,7 @@ export default function Home() {
       setJourneyMessage(result ? "" : "Für diese Uhrzeit und die gewählten Verkehrsmittel wurde keine Verbindung gefunden. Aktiviere ggf. Regio, S- oder U-Bahn oder erhöhe die Zahl der Umstiege.");
       if (result) { setDesktopView("connections"); setMobileView("connections"); setMobileSheetState(current => current === "expanded" ? "half" : current); }
     } catch (error) {
-      if ((error as Error).name === "AbortError") return;
+      if (controller.signal.aborted || (error as Error).name === "AbortError") return;
       setPlannerState("error");
       setJourneyMessage("Verbindungssuche derzeit nicht erreichbar. Bitte erneut versuchen.");
     }
@@ -1055,6 +944,7 @@ export default function Home() {
     storeRoutes(next);
   }
   function openSavedRoute(route:SavedRoute,reverse:boolean) {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
     const from=reverse?route.to:route.from,to=reverse?route.from:route.to;
     setLiveSearchStations(current=>[...current.filter(s=>s.id!==from.id&&s.id!==to.id),from,to]);
     setStartId(from.id);setStartSearch(from.name);setTargetId(to.id);setTargetSearch(to.name);
@@ -1129,16 +1019,13 @@ export default function Home() {
   const selectedJourneyTarget = journeyEndpoints?.target ?? planTarget;
   const journeyQuality = journey ? liveJourneyQuality(journey) : null;
   const primaryJourneyLeg = journey?.transitLegs[0] ?? null;
-  const selectedTripProgress = selectedLiveTrip ? liveTripProgress(selectedLiveTrip, liveTick) : 0;
-  const selectedTripDurationHours = selectedLiveTrip ? Math.max(1 / 60, (new Date(selectedLiveTrip.arrival).getTime() - new Date(selectedLiveTrip.departure).getTime()) / 3_600_000) : 1;
-  const selectedTripSpeed = selectedLiveTrip ? Math.round(selectedLiveTrip.distance / 1000 / selectedTripDurationHours) : 0;
   const departuresView = desktopWorkspace ? desktopView === "departures" : mobileView === "departures";
   const desktopSearchMode = desktopWorkspace && desktopView === "connections" && (!journey || exploreOpen);
   const desktopJourneyMode = desktopWorkspace && desktopView === "connections" && Boolean(journey) && !exploreOpen;
   const plannerVisible = !statsOpen && (exploreOpen || desktopSearchMode);
   const activePrimaryPanel = plannerVisible ? "planner" : statsOpen ? "stats" : journey && !departuresView ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
   const primaryPanelOpen = Boolean(activePrimaryPanel);
-  const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? selected?.name ?? "Bahnhof" : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Bahnhof";
+  const mobileSheetTitle = activePrimaryPanel === "planner" ? "Verbindung planen" : activePrimaryPanel === "journey" ? "Verbindung" : activePrimaryPanel === "station" ? stationDisplayName(selected?.name) || "Bahnhof" : activePrimaryPanel === "trip" ? selectedLiveTrip?.name ?? "Zugdetails" : activePrimaryPanel === "stats" ? "Netzreport" : "Bahnhof";
   const mobileSheetSummary = journey && activePrimaryPanel === "journey"
     ? `${clock(journey.startTime)}–${clock(journey.endTime)} · ${journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "direkt"}`
     : activePrimaryPanel === "planner" ? `${startSearch || "Start"} → ${targetSearch || "Ziel"}`
@@ -1147,6 +1034,7 @@ export default function Home() {
     : activePrimaryPanel === "stats" ? "Netz und Qualität" : "Karte";
 
   function navigate(view: DesktopView) {
+    plannerRequestRef.current?.abort(); setPlannerState("idle");
     if(view === "settings") {setSettingsOpen(true);setMoreMenuOpen(false);return;}
     setDesktopView(view); setMobileView(view); setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
     setStatsOpen(view === "stats");
@@ -1235,6 +1123,7 @@ export default function Home() {
             {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}
             <span className="sr-only" aria-live="polite">{!liveVisible ? "Live-Daten nicht aktiv" : liveState === "loading" ? "Live-Daten werden geladen" : liveState === "error" ? "Live-Daten nicht erreichbar" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live-Daten · ${visibleLiveTrips.length} Züge`}</span>
           </div>
+          {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – letzter bekannter Stand" : "Radar derzeit nicht erreichbar"}</p>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
             <div className="map-menu-dismiss"><strong>Kartenansicht</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
@@ -1341,16 +1230,7 @@ export default function Home() {
         )}
 
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <section className="live-trip-card floating-panel mobile-sheet-panel" style={tripControls.style} aria-live="polite">
-            <PanelTools controls={tripControls} label="Zugdetails" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${stationDisplayName(selectedLiveTrip.from.name)} → ${stationDisplayName(selectedLiveTrip.to.name)}`} />
-            <div className="panel-body">
-            <div className="live-trip-title"><span className={`service-pill ${selectedLiveTrip.category === "fern" ? "ice" : selectedLiveTrip.category === "sbahn" ? "sbahn" : selectedLiveTrip.category === "ubahn" ? "ubahn" : selectedLiveTrip.category === "tram" ? "tram" : "regional"}`}>{selectedLiveTrip.name}</span><div><b>{stationDisplayName(selectedLiveTrip.from.name)} → {stationDisplayName(selectedLiveTrip.to.name)}</b><small>{selectedLiveTrip.realTime ? "Geschätzte Position aus Echtzeit-Haltezeiten, keine GPS-Ortung" : "Geschätzte Position aus Fahrplan, keine GPS-Ortung"}</small></div></div>
-            <div className="trip-progress"><i style={{ width:`${Math.round(selectedTripProgress * 100)}%` }} /><span style={{ left:`${Math.round(selectedTripProgress * 100)}%` }} /></div>
-            <div className="live-trip-stops"><span><small>Letzter Halt</small><b>{stationDisplayName(selectedLiveTrip.from.name)}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledDeparture} actual={selectedLiveTrip.departure} realtime={selectedLiveTrip.realTime} showStatus compact /></span><span><small>Nächster Halt</small><b>{stationDisplayName(selectedLiveTrip.to.name)}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledArrival} actual={selectedLiveTrip.arrival} realtime={selectedLiveTrip.realTime} showStatus compact /></span></div>
-            <div className="live-trip-stats"><span><b>{selectedTripSpeed}</b> km/h Ø Segment</span><span><b>{Math.round(selectedTripProgress * 100)}%</b> des Abschnitts</span></div>
-            <button className={trackedTripId === selectedLiveTrip.tripId ? "track-button active" : "track-button"} onClick={() => setTrackedTripId((current) => current === selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)}>{trackedTripId === selectedLiveTrip.tripId ? "Kamerafolge beenden" : "Zug auf Karte verfolgen"}</button>
-          </div>
-          </section>
+          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} />
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}

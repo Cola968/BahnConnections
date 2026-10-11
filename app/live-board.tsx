@@ -1,5 +1,8 @@
 "use client";
 
+import { readPreferenceIds } from "./local-preferences";
+import { readBoardStream } from "./board-stream";
+import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { BoardToolbar } from "./board-toolbar";
@@ -19,7 +22,7 @@ type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 type DelayFilter = "all" | "ontime" | "delayed" | "canceled";
 type SortMode = "time" | "delay" | "platform" | "product";
 type BoardWindow = 60 | 120 | 180 | 240 | 500;
-type BoardVerificationStatus = "matched" | "different" | "inconclusive" | "unavailable";
+type BoardVerificationStatus = "matched" | "different" | "inconclusive" | "unavailable" | "pending";
 
 type BoardEntry = {
   tripId?: string;
@@ -179,15 +182,26 @@ function deduplicate(entries: BoardEntry[]) {
   return [...unique.values()];
 }
 
-async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal) {
-  const arrivals = kind === "arrival";
+type BoardPayload = { type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
+async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal, onPrimary:(board:ReturnType<typeof boardResult>)=>void, onVerification:(payload:BoardPayload)=>void) {
   const stopId = await requireTransitousStopId(station, signal);
   const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/board`, window.location.origin);
   url.searchParams.set("n", "1400");
   url.searchParams.set("kind", kind);
+  url.searchParams.set("stream","1");
   const response = await fetch(url, { signal });
-  const payload = await response.json() as { stopTimes?: TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{ status?:BoardVerificationStatus; message?:string } };
-  if (!response.ok) throw new Error(payload.warnings?.[0] ?? `Live-Dienst ${response.status}`);
+  if(!response.ok)throw new Error(`Live-Dienst ${response.status}`);
+  if(response.headers.get("Content-Type")?.includes("application/x-ndjson")) {
+    let received=false;
+    await readBoardStream<BoardPayload>(response,signal,payload=>{
+      if(payload.type==="board"){received=true;onPrimary(boardResult(payload,kind));}
+      else if(payload.type==="verification")onVerification(payload);
+    });
+    if(!received)throw new Error("Keine Tafelzeilen empfangen");
+  } else {const payload=await response.json() as BoardPayload;signal.throwIfAborted();onPrimary(boardResult(payload,kind));}
+}
+function boardResult(payload:BoardPayload,kind:BoardKind) {
+  const arrivals=kind==="arrival";
   const entries = (payload.stopTimes ?? []).map((entry): BoardEntry => ({
     tripId: entry.tripId,
     kind,
@@ -306,7 +320,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      try { setPinned(JSON.parse(localStorage.getItem("bahnconnections-pinned-trips") ?? "[]")); } catch { setPinned([]); }
+      try { setPinned(readPreferenceIds(localStorage,"bahnconnections-pinned-trips")); } catch { setPinned([]); }
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -317,38 +331,34 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     return () => { window.clearTimeout(firstTick); window.clearInterval(timer); };
   }, []);
 
+  const boardScope=useRef("");
+  const boardHasRows=useRef(false);
   useEffect(() => {
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    async function load() {
-      if (!entries.length) setStatus("loading");
+    let hasRows=boardHasRows.current;
+    const kind:BoardKind=mode==="arrivals"?"arrival":"departure";
+    const scope=`${station.id}:${kind}`;
+    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
+    if(boardScope.current!==scope){hasRows=false;boardHasRows.current=false;boardScope.current=scope;}
+    const poller=new VisibilityPoller(async signal=>{
       try {
-        const kind: BoardKind = mode === "arrivals" ? "arrival" : "departure";
-        const board = await loadBoard(station, kind, controller.signal);
-        setEntries(deduplicate(board.entries));
-        setSourceLabel(board.source);
-        setSourceWarnings(board.warnings);
-        setVerificationStatus(board.verificationStatus);
-        setVerificationMessage(board.verificationMessage ?? "");
-        setExpandedRows([]);
-        setUpdatedAt(board.updatedAt ? new Date(board.updatedAt) : new Date());
-        setStale(false);
-        setStatusMessage("");
-        setStatus("ready");
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          setStale(entries.length > 0);
-          setStatusMessage((error as Error).message);
-          setStatus(entries.length ? "ready" : "error");
-        }
+        await loadBoard(station,kind,signal,board=>{
+          if(signal.aborted)return;clearTimeout(reset);hasRows=board.entries.length>0;boardHasRows.current=hasRows;
+          setEntries(deduplicate(board.entries));setSourceLabel(board.source);setSourceWarnings(board.warnings);
+          setVerificationStatus(board.verificationStatus);setVerificationMessage(board.verificationMessage??"");
+          setUpdatedAt(board.updatedAt?new Date(board.updatedAt):new Date());setStale(false);setStatusMessage("");setStatus("ready");
+        },payload=>{
+          if(signal.aborted)return;
+          setSourceLabel(payload.source??"Transitous / MOTIS");setSourceWarnings(payload.warnings??[]);
+          setVerificationStatus(payload.verification?.status??"unavailable");setVerificationMessage(payload.verification?.message??"");
+        });
+      } catch(error) {
+        if(signal.aborted)return;
+        setStale(hasRows);setStatusMessage(error instanceof Error?error.message:"Tafel nicht erreichbar");setStatus(hasRows?"ready":"error");
+        setVerificationStatus("unavailable");
       }
-      timer = setTimeout(() => setRefreshToken((value) => value + 1), 75_000);
-    }
-    load();
-    return () => { controller.abort(); if (timer) clearTimeout(timer); };
-    // Cached rows intentionally stay available when a refresh fails.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, refreshToken, station]);
+    },75_000,document);
+    return()=>{clearTimeout(reset);poller.dispose();};
+  },[mode,refreshToken,station]);
 
   const platformOptions = useMemo(() => [...new Set(entries.map((entry) => entry.platform ?? entry.plannedPlatform).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, "de", { numeric:true })), [entries]);
   const productCounts = useMemo(() => ({
@@ -368,9 +378,10 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if (productFilter === "sbahn" && productName !== "sbahn") return false;
       if (productFilter === "ubahn" && productName !== "ubahn") return false;
       if (productFilter === "tram" && productName !== "tram") return false;
-      const delay = delayMinutes(entry);
-      if (delayFilter === "ontime" && (entry.canceled || !entry.realtime || !entry.when || !entry.plannedWhen || new Date(entry.when) < new Date(entry.plannedWhen) || delay >= 6)) return false;
-      if (delayFilter === "delayed" && (entry.canceled || delay < 6)) return false;
+      const delayState=deriveRealtimePresentation({scheduled:entry.plannedWhen,actual:entry.when,realtime:entry.realtime,cancelled:entry.canceled});
+      const delay=delayState.delayMinutes;
+      if(delayFilter==="ontime"&&(entry.canceled||delay===null||delay<0||delay>4))return false;
+      if(delayFilter==="delayed"&&(entry.canceled||delay===null||delay<5))return false;
       if (delayFilter === "canceled" && !entry.canceled) return false;
       const platform = entry.platform ?? entry.plannedPlatform ?? "";
       if (platformFilter !== "all" && platform !== platformFilter) return false;
@@ -534,7 +545,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     <section className={`live-board realistic${compact ? " compact" : " expanded-detail"}`} aria-live="polite">
       <BoardToolbar mode={mode} onMode={setMode} filtersOpen={filtersOpen}
         filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 240}
-        onFilters={() => setFiltersOpen(value => !value)} compact={compact} onCompact={() => setCompact(value => !value)} onWindow={openBoardWindow} />
+        onFilters={() => setFiltersOpen(value => !value)} />
 
       {status === "ready" && (stale || verificationStatus === "different") && <p className="board-quality-notice" role="status">{stale ? "Datenstand veraltet" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
 
@@ -554,11 +565,12 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
         </div>
 
         <div className="board-filter-fields">
-          <label>Status<select value={delayFilter} onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}><option value="all">Alle Lagen</option><option value="ontime">Pünktlich</option><option value="delayed">Ab +6 Min.</option><option value="canceled">Nur Ausfälle</option></select></label>
+          <label>Status<select value={delayFilter} onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}><option value="all">Alle Lagen</option><option value="ontime">Pünktlich</option><option value="delayed">Ab +5 Min.</option><option value="canceled">Nur Ausfälle</option></select></label>
           <label>Gleis<select value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select></label>
           <label>Zeitraum<select value={windowMinutes} onChange={(event) => setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">60 Minuten</option><option value="120">120 Minuten</option><option value="180">180 Minuten</option><option value="240">240 Minuten</option><option value="500">500 Minuten</option></select></label>
           <label>Sortierung<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}><option value="time">Abfahrtszeit</option><option value="delay">Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
+        <div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div>
         <button type="button" className="board-filter-reset" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Filter zurücksetzen</button>
       </div>}
 

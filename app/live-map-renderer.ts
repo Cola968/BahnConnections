@@ -1,0 +1,80 @@
+import type * as Leaflet from 'leaflet';
+import { liveTripProgress, pointOnTrip, trailForTrip, type LiveTrip } from './live-trains';
+import { deriveRealtimePresentation, realtimeAccessibleLabel } from './realtime-presentation';
+import { realtimeTooltip } from './realtime-tooltip';
+
+export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;appearance?:string};
+type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
+type Desired={id:string;position:[number,number];trip:LiveTrip|null;members:LiveTrip[]};
+
+/** Marker identity belongs to a trip, not a React render or animation tick. */
+export class LiveMapRenderer {
+  private entries=new Map<string,MarkerEntry>();
+  private frame:number|null=null;
+  private generation=0;
+  private canvas:Leaflet.Canvas;
+  constructor(private L:typeof Leaflet,private map:Leaflet.Map,private layer:Leaflet.LayerGroup,
+    private select:(trip:LiveTrip)=>void){this.canvas=L.canvas({pane:'rail-routes',padding:.2});}
+  sync(trips:LiveTrip[],options:LiveMapOptions,at=Date.now()){
+    const generation=++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);
+    const desired:Desired[]=[];
+    const groups=new Map<string,Desired>();
+    for(const trip of trips){
+      const position=pointOnTrip(trip,liveTripProgress(trip,at));if(!position)continue;
+      if(options.zoom<10||options.view==='stress'){
+        const id=`cluster:${Math.round(position[0]*18)}:${Math.round(position[1]*18)}`;
+        const group=groups.get(id);if(group){group.members.push(trip);group.position[0]+=position[0];group.position[1]+=position[1];}
+        else groups.set(id,{id,position:[...position],trip:null,members:[trip]});
+      }else desired.push({id:trip.tripId,position,trip,members:[trip]});
+    }
+    for(const group of groups.values()){group.position[0]/=group.members.length;group.position[1]/=group.members.length;desired.push(group);}
+    const ids=new Set(desired.map(item=>item.id));
+    for(const [id,entry]of this.entries)if(!ids.has(id)){this.layer.removeLayer(entry.marker);if(entry.trail)this.layer.removeLayer(entry.trail);this.entries.delete(id);}
+    const styles=options.trails?getComputedStyle(document.documentElement):null;
+    let cursor=0;
+    const draw=()=>{
+      if(generation!==this.generation)return;this.frame=null;const start=performance.now();
+      do {
+        const item=desired[cursor++];if(!item)break;
+        let entry=this.entries.get(item.id);
+        if(!entry){
+          const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?'<div class="live-train-marker glyph"><i></i></div>':'<div class="live-cluster"><b></b><small>Züge</small></div>',iconSize:item.trip?[22,22]:[42,42],iconAnchor:item.trip?[11,11]:[21,21]})}).addTo(this.layer);
+          entry={marker,trip:null,signature:'',trail:null};this.entries.set(item.id,entry);
+          const current=entry;
+          const activate=()=>{if(current.trip)this.select(current.trip);else this.map.setView(current.marker.getLatLng(),10,{animate:false});};
+          marker.on('click',activate);
+          marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
+          const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
+        }
+        const old=entry.marker.getLatLng();if(old.lat!==item.position[0]||old.lng!==item.position[1])entry.marker.setLatLng(item.position);
+        const element=entry.marker.getElement(),glyph=element?.firstElementChild;
+        if(item.trip){
+          const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
+          const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}`;
+          if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}`;
+          if(entry.trip!==trip){
+            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11]});
+            element?.setAttribute('aria-label',`${trip.name}. Position geschätzt, keine GPS-Ortung. ${realtimeAccessibleLabel(state)} Details öffnen.`);
+          }
+          entry.signature=signature;entry.trip=trip;
+          if(options.trails){
+            const token=state.kind==='early'?'--status-early':{neutral:'--status-schedule',success:'--status-on-time',warning:'--status-delay',danger:'--status-disruption'}[state.tone];
+            const points=trailForTrip(trip,liveTripProgress(trip,at)),color=styles!.getPropertyValue(token).trim();
+            if(entry.trail)entry.trail.setLatLngs(points).setStyle({color});
+            else entry.trail=this.L.polyline(points,{renderer:this.canvas,color,weight:1.6,opacity:.24,dashArray:'2 7',interactive:false}).addTo(this.layer);
+          }else if(entry.trail){this.layer.removeLayer(entry.trail);entry.trail=null;}
+        }else {
+          const known=item.members.map(trip=>deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}).delayMinutes).filter((delay):delay is number=>delay!==null);
+          const average=known.length?known.reduce((sum,value)=>sum+value,0)/known.length:null;
+          const tone=average===null?'unknown':average>=11?'severe':average>=5?'late':'calm';
+          if(glyph){glyph.className=`live-cluster ${tone}`;const count=glyph.querySelector('b');if(count)count.textContent=String(item.members.length);}
+          const label=`${item.members.length} geschätzte Zugpositionen · ${known.length} mit bestätigten Zeitprognosen${average===null?'':` · Ø ${average.toLocaleString('de-DE',{maximumFractionDigits:1})} Min.`} · zum Vergrößern öffnen`;
+          if(label!==entry.signature){const tooltip=document.createElement('span');tooltip.textContent=label;entry.marker.bindTooltip(tooltip);element?.setAttribute('aria-label',label);entry.signature=label;}
+        }
+      }while(cursor<desired.length&&performance.now()-start<4);
+      if(cursor<desired.length)this.frame=requestAnimationFrame(draw);
+    };
+    if(desired.length)this.frame=requestAnimationFrame(draw);
+  }
+  dispose(){++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);for(const entry of this.entries.values()){this.layer.removeLayer(entry.marker);if(entry.trail)this.layer.removeLayer(entry.trail);}this.entries.clear();this.canvas.remove();}
+}

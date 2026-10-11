@@ -49,16 +49,17 @@ async function resolveDbStop(place: TransitousPlace, signal:AbortSignal) {
   return match.item;
 }
 
-async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival:boolean, startTime:Date): Promise<BoardCrossCheck> {
+async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival:boolean, startTime:Date, requestSignal:AbortSignal): Promise<BoardCrossCheck> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 2_800);
+  const signal = AbortSignal.any([controller.signal, requestSignal]);
   const checkedAt = new Date().toISOString();
   try {
     const stopUrl = new URL("https://api.transitous.org/api/v6/stop");
     stopUrl.searchParams.set("stopId", stopId);
     stopUrl.searchParams.set("language", "de");
-    const stopPayload = await json<{ place?:TransitousPlace }>(stopUrl, controller.signal);
-    const dbStop = await resolveDbStop(stopPayload.place ?? {}, controller.signal);
+    const stopPayload = await json<{ place?:TransitousPlace }>(stopUrl, signal);
+    const dbStop = await resolveDbStop(stopPayload.place ?? {}, signal);
     const boardUrl = new URL(`https://v6.db.transport.rest/stops/${encodeURIComponent(dbStop.id)}/${arrival ? "arrivals" : "departures"}`);
     boardUrl.searchParams.set("when", startTime.toISOString());
     boardUrl.searchParams.set("duration", "500");
@@ -77,7 +78,7 @@ async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival
     boardUrl.searchParams.set("tram", "true");
     boardUrl.searchParams.set("ferry", "false");
     boardUrl.searchParams.set("taxi", "false");
-    const dbPayload = await json<DbBoardRow[] | { departures?:DbBoardRow[]; arrivals?:DbBoardRow[] }>(boardUrl, controller.signal);
+    const dbPayload = await json<DbBoardRow[] | { departures?:DbBoardRow[]; arrivals?:DbBoardRow[] }>(boardUrl, signal);
     const dbRows = Array.isArray(dbPayload)
       ? dbPayload
       : (arrival ? dbPayload.arrivals : dbPayload.departures) ?? [];
@@ -97,7 +98,8 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
   try {
     const url = new URL("https://api.transitous.org/api/v6/stoptimes");
     url.searchParams.set("stopId", stopId);
-    url.searchParams.set("n", String(Math.min(5000, Math.max(50, Number(query.get("n") ?? 1400)))));
+    const requestedCount=Number(query.get("n")??1400);
+    url.searchParams.set("n",String(Number.isFinite(requestedCount)?Math.min(5000,Math.max(50,Math.floor(requestedCount))):1400));
     const arrival = query.get("kind") === "arrival";
     url.searchParams.set("arriveBy", arrival ? "true" : "false");
     url.searchParams.set("direction", "LATER");
@@ -106,17 +108,31 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
     if (query.get("time")) url.searchParams.set("time", query.get("time")!);
-    const response = await fetch(url, { headers:transitousRequestHeaders() });
+    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const stopTimes = ((await response.json()) as { stopTimes?:TransitousBoardRow[] }).stopTimes ?? [];
     const hasRealtime = stopTimes.some((item) => Boolean(item.realTime));
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
-    const verification = await crossCheck(stopId, stopTimes, arrival, Number.isNaN(startTime.getTime()) ? new Date() : startTime);
-    const warnings = [
-      ...(hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."]),
-      ...(verification.status === "matched" ? [] : [verification.message]),
-    ];
-    return Response.json({ stopTimes, verification, source:verification.status === "matched" ? "Transitous / MOTIS · DB-Gegenprüfung" : "Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings });
+    const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    const verificationController=new AbortController();
+    const verificationSignal=AbortSignal.any([request.signal,verificationController.signal]);
+    const verify = async () => {
+      const verification = await crossCheck(stopId,stopTimes,arrival,Number.isNaN(startTime.getTime()) ? new Date() : startTime,verificationSignal);
+      return { verification, source:verification.status === "matched" ? "Transitous / MOTIS · DB-Gegenprüfung" : primary.source,
+        warnings:[...primary.warnings,...(verification.status === "matched" ? [] : [verification.message])] };
+    };
+    if(query.get("stream") === "1") {
+      const encoder=new TextEncoder();let cancelled=false;
+      const body=new ReadableStream<Uint8Array>({
+        async start(controller) {
+          controller.enqueue(encoder.encode(JSON.stringify({type:"board",...primary,verification:{status:"pending",message:"DB-Gegenprüfung läuft"}})+"\n"));
+          try {const checked=await verify();if(!cancelled&&!request.signal.aborted)controller.enqueue(encoder.encode(JSON.stringify({type:"verification",...checked})+"\n"));}
+          finally {if(!cancelled)controller.close();}
+        },cancel(){cancelled=true;verificationController.abort();}
+      });
+      return new Response(body,{headers:{"Content-Type":"application/x-ndjson; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
+    }
+    return Response.json({...primary,...await verify()});
   } catch (error) {
     return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:502 });
   }
