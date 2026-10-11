@@ -22,7 +22,7 @@ import { LiveTripInspector } from "./live-trip-inspector";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
-import { matchesLiveStatus, type LiveTrainCategory, type LiveTrip } from "./live-trains";
+import { matchesLiveStatus, liveTripProgress, pointOnTrip, type LiveTrainCategory, type LiveTrip } from "./live-trains";
 import { SmartSearch } from "./smart-search";
 import { buildStationImportance, NetworkStats } from "./network-stats";
 import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileSheetState } from "./panel-tools";
