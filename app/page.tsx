@@ -1138,8 +1138,7 @@ export default function Home() {
           {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
             <div className="map-menu-dismiss"><strong>Mehr</strong><button type="button" onClick={() => setMoreMenuOpen(false)} aria-label="Mehr schließen"><UiIcon name="close" /></button></div>
-            <p className="v53-more-kicker">DEINE BAHNCONNECTIONS</p>
-            <div className="v53-more-intro"><UiIcon name="train"/><span><strong>Schnell, einfach, unterwegs.</strong><small>Routen, Live-Daten und deine Einstellungen.</small></span></div>
+            
             <div className="simple-more-list">
               <button type="button" onClick={() => { setMoreMenuOpen(false);setLiveFiltersOpen(true); }}><UiIcon name="layers"/><span><b>Kartenansicht</b><small>Linien, Live-Züge und Filter</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
