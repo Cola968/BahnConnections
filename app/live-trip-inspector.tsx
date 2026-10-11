@@ -98,7 +98,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       </section>
 
       <div className="train-action-row">
-        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={!position||!inRadar} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Zug verfolgen"}</button>
+        <button type="button" className={tracked?"track-button active":"track-button"} onClick={onTrack} disabled={(!position||!inRadar)&&!tracked} aria-pressed={tracked}><UiIcon name="location"/>{tracked?"Verfolgung beenden":"Zug verfolgen"}</button>
         <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
       </div>
 
