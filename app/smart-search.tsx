@@ -2,6 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
+import { createPortal } from "react-dom";
 import { UiIcon } from "./ui-icon";
 import { compactStationLabel } from "./transit-style";
 
@@ -142,6 +143,21 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   }, [liveSuggestions, liveQuery, localSuggestions, value]);
 
   const inputRef=useRef<HTMLInputElement>(null);
+  const dialogRef=useRef<HTMLDialogElement>(null);
+  const dialogInputRef=useRef<HTMLInputElement>(null);
+  const [mobilePickerOpen,setMobilePickerOpen]=useState(false);
+  useEffect(()=>{
+    if (!mobilePickerOpen) return;
+    const dialog=dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    const frame=requestAnimationFrame(()=>dialogInputRef.current?.focus());
+    return ()=>{cancelAnimationFrame(frame);if(dialog.open)dialog.close();};
+  },[mobilePickerOpen]);
+  function closeMobilePicker(){
+    setMobilePickerOpen(false);setOpen(false);setActiveIndex(0);inputRef.current?.blur();
+  }
+
 
   function select(station: Station) {
     const nextRecent = [station.id, ...recentIds.filter((id) => id !== station.id)].slice(0, 6);
@@ -150,11 +166,13 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
     onSelect(station);
     setOpen(false);
     setActiveIndex(0);
-    if(variant === "header")inputRef.current?.blur();
+    setMobilePickerOpen(false);
+    inputRef.current?.blur();
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
+    event.stopPropagation();
     const match=suggestions[activeIndex]??suggestions[0]??stations.find(station=>station.name===value);
     if(match)select(match);else setOpen(true);
   }
@@ -162,46 +180,79 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   function keydown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); setActiveIndex((index) => Math.max(0, Math.min(suggestions.length - 1, index + 1))); }
     if (event.key === "ArrowUp") { event.preventDefault(); setActiveIndex((index) => Math.max(0, index - 1)); }
-    if (event.key === "Escape") { event.stopPropagation(); setOpen(false); }
+    if (event.key === "Escape") { event.stopPropagation(); closeMobilePicker(); }
   }
 
-  return (
-    <form className={`station-search${variant === "route" ? " route-station-search" : ""}`} data-search-open={open} onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} role="search">
+  const suggestionRows = <>
+    <div className="suggestion-heading">
+      <span>{value ? "Vorschläge" : favoriteIds.length ? "Favoriten & zuletzt" : "Beliebte Stationen"}</span>
+      {liveSearching && <small>Suche läuft …</small>}
+    </div>
+    {suggestions.map((station,index)=>(
+      <button key={station.id} id={suggestionsId+"-"+index} type="button" role="option"
+        aria-selected={index===activeIndex} className={index===activeIndex?"active":""}
+        onMouseDown={event=>event.preventDefault()} onMouseEnter={()=>setActiveIndex(index)}
+        onClick={()=>select(station)}>
+        <span className="station-symbol"><UiIcon name="train" /></span>
+        <span><b title={station.name}>{compactStationLabel(station.name) ?? station.name}</b><small>{station.state ?? station.country}</small></span>
+        {favoriteIds.includes(station.id)&&<em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
+      </button>
+    ))}
+    {!suggestions.length && <p role="status">{liveTransit && liveErrorQuery === value.trim()
+      ? "Online-Suche nicht erreichbar. Lokale Bahnhöfe bleiben durchsuchbar."
+      : liveSearching || (liveTransit && value.trim().length>=2 && liveQuery!==value.trim())
+        ? "Weitere Bahnhöfe werden gesucht …"
+        : "Kein passender Bahnhof gefunden. Probiere einen Ortsnamen oder ein DB-Kürzel."}</p>}
+  </>;
+
+  return (<>
+    <form className={"station-search"+(variant==="route"?" route-station-search":"")}
+      data-search-open={open} onSubmit={submit}
+      onBlur={event=>{if(!mobilePickerOpen&&!event.currentTarget.contains(event.relatedTarget))setOpen(false);}}
+      role="search">
       <UiIcon name="search" />
-      <input
-        ref={inputRef}
-        role="combobox"
-        aria-label={ariaLabel}
-        aria-autocomplete="list"
-        aria-expanded={open}
-        aria-controls={suggestionsId}
-        aria-activedescendant={open && suggestions[activeIndex] ? `${suggestionsId}-${activeIndex}` : undefined}
-        autoComplete="off"
-        autoCorrect="off"
-        spellCheck={false}
-        value={variant === "header" && !open ? compactStationLabel(value) ?? value : value}
-        onFocus={(event) => { const input=event.currentTarget;setOpen(true);if(variant === "header")requestAnimationFrame(()=>input.isConnected&&input.select()); }}
-        onChange={(event) => { onChange(event.target.value); setOpen(true); setActiveIndex(0); }}
-        onKeyDown={keydown}
-        placeholder={placeholder ?? "Bahnhof suchen"}
-      />
-      {value && <button className="search-clear" type="button" onClick={() => { onChange(""); setOpen(true); }} aria-label="Suche leeren"><UiIcon name="close" width="18" height="18" /></button>}
-      {variant === "header"
+      <input ref={inputRef} role="combobox" aria-label={ariaLabel}
+        aria-autocomplete="list" aria-expanded={open&&!mobilePickerOpen} aria-controls={suggestionsId}
+        aria-activedescendant={open&&!mobilePickerOpen&&suggestions[activeIndex]?suggestionsId+"-"+activeIndex:undefined}
+        autoComplete="off" autoCorrect="off" spellCheck={false}
+        value={variant==="header"&&!open?compactStationLabel(value)??value:value}
+        onFocus={event=>{
+          const input=event.currentTarget;setOpen(true);
+          if(variant==="route"&&window.matchMedia("(max-width:1023px)").matches)setMobilePickerOpen(true);
+          if(variant==="header")requestAnimationFrame(()=>input.isConnected&&input.select());
+        }}
+        onChange={event=>{onChange(event.target.value);setOpen(true);setActiveIndex(0);}}
+        onKeyDown={keydown} placeholder={placeholder??"Bahnhof suchen"} />
+      {value&&<button className="search-clear" type="button"
+        onClick={()=>{onChange("");setOpen(true);}}
+        aria-label="Suche leeren"><UiIcon name="close" width="18" height="18" /></button>}
+      {variant==="header"
         ? <button className="search-submit-icon" type="submit" aria-label="Ersten Treffer öffnen" title="Öffnen"><UiIcon name="arrow" /></button>
         : <button type="submit">{submitLabel}</button>}
-      {open && (
-        <div className="search-suggestions" id={suggestionsId} role="listbox">
-          <div className="suggestion-heading"><span>{value ? "Vorschläge" : favoriteIds.length ? "Favoriten & zuletzt" : "Beliebte Stationen"}</span>{liveSearching && <small>Suche läuft …</small>}</div>
-          {suggestions.map((station, index) => (
-            <button key={station.id} id={`${suggestionsId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setActiveIndex(index)} onClick={() => select(station)}>
-              <span className="station-symbol"><UiIcon name="train" /></span>
-              <span><b title={station.name}>{compactStationLabel(station.name) ?? station.name}</b><small>{station.state ?? station.country}</small></span>
-              {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
-            </button>
-          ))}
-          {!suggestions.length && <p role="status">{liveTransit && liveErrorQuery === value.trim() ? "Online-Suche nicht erreichbar. Lokale Bahnhöfe bleiben durchsuchbar." : liveSearching || (liveTransit && value.trim().length >= 2 && liveQuery !== value.trim()) ? "Weitere Bahnhöfe werden gesucht …" : "Kein passender Bahnhof gefunden. Probiere einen Ortsnamen oder ein DB-Kürzel."}</p>}
-        </div>
-      )}
+      {open&&!mobilePickerOpen&&<div className="search-suggestions" id={suggestionsId} role="listbox">{suggestionRows}</div>}
     </form>
-  );
+    {mobilePickerOpen&&typeof document!=="undefined"&&createPortal(
+      <dialog ref={dialogRef} className="planner-station-picker" aria-label={ariaLabel}
+        onCancel={event=>{event.preventDefault();closeMobilePicker();}}
+        onKeyDown={event=>{if(event.key==="Escape")event.stopPropagation();}}>
+        <div className="planner-station-picker-header">
+          <strong>{ariaLabel}</strong>
+          <button type="button" aria-label="Bahnhofssuche schließen" onClick={closeMobilePicker}><UiIcon name="close" width="20" height="20" /></button>
+        </div>
+        <form className="planner-station-picker-form" onSubmit={submit} role="search">
+          <UiIcon name="search" />
+          <input ref={dialogInputRef} role="combobox" aria-label={ariaLabel}
+            aria-autocomplete="list" aria-expanded={true} aria-controls={suggestionsId}
+            aria-activedescendant={suggestions[activeIndex]?suggestionsId+"-"+activeIndex:undefined}
+            autoComplete="off" autoCorrect="off" spellCheck={false} value={value}
+            onChange={event=>{onChange(event.target.value);setOpen(true);setActiveIndex(0);}}
+            onKeyDown={keydown} placeholder={placeholder??"Bahnhof suchen"} />
+          {value&&<button type="button" aria-label="Suche leeren"
+            onClick={()=>{onChange("");setActiveIndex(0);dialogInputRef.current?.focus();}}>
+            <UiIcon name="close" width="18" height="18" />
+          </button>}
+        </form>
+        <div className="search-suggestions" id={suggestionsId} role="listbox">{suggestionRows}</div>
+      </dialog>,document.body)}
+  </>);
 }
