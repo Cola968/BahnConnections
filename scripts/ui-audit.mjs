@@ -34,7 +34,7 @@ const appVersion = await read("app/app-version.ts");
 const versionMetadata = await read("public/version.json");
 const declaredVersion = appVersion.match(/APP_VERSION = "([^\"]+)"/)?.[1];
 const publicVersion = JSON.parse(versionMetadata);
-check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:4') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
+check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:0') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
