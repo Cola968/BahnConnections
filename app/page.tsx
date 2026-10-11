@@ -316,7 +316,9 @@ export default function Home() {
     return ids;
   }, [activeStationRoutes, routeInfo]);
   const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(selected,liveVisible,trips => {
-    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? null : null);
+    // Keep a selected journey visible if it leaves this station-centred radar scan;
+    // the inspector marks it as not currently verified rather than silently closing.
+    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
   });
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
@@ -1230,7 +1232,7 @@ export default function Home() {
         )}
 
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} />
+          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
