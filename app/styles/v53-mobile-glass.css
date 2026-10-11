@@ -159,3 +159,20 @@ html[data-contrast="high"] .app-shell .walking-card {background:var(--paper)!imp
   .settings-dialog-v48[open],.settings-dialog-v48[open] *,
   .app-shell .walking-card,.app-shell .simple-more-popover {animation:none!important;transition:none!important;}
 }
+
+
+.v53-more-kicker {margin:12px 12px 6px;font-size:.68rem;font-weight:750;letter-spacing:.1em;color:var(--muted);}
+.v53-more-intro {display:flex;align-items:center;gap:12px;margin:0 8px 10px;padding:14px 12px;border-radius:16px;border:1px solid var(--glass-stroke);background:var(--glass-clear);}
+.v53-more-intro>svg {width:26px;height:26px;flex:0 0 26px;color:var(--action);}
+.v53-more-intro>span {display:flex;flex-direction:column;min-width:0;gap:3px;}
+.v53-more-intro strong {font-size:.875rem;line-height:1.3;}
+.v53-more-intro small {font-size:.75rem;color:var(--muted);line-height:1.35;}
+@media (max-width:1023px) {
+  .app-shell .simple-more-popover {padding:12px;}
+  .app-shell .simple-more-list {gap:5px;}
+  .app-shell .simple-more-list>button,.app-shell .simple-more-list>a {min-height:56px;padding:10px 11px;}
+  .app-shell .simple-more-list>button:active,.app-shell .simple-more-list>a:active {transform:scale(.985);}
+}
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .simple-more-list>button,.app-shell .simple-more-list>a {transform:none!important;}
+}
