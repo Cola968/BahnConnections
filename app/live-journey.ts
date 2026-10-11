@@ -652,7 +652,13 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
   const [transitousResult, dbResult] = await Promise.allSettled([transitousTask, fetchDbJourneys(request)]);
   const transitousJourneys = transitousResult.status === "fulfilled" ? transitousResult.value : [];
   const dbJourneys = dbResult.status === "fulfilled" ? dbResult.value : [];
-  if (!transitousJourneys.length && !dbJourneys.length) throw new Error("Keine Fahrplanquelle erreichbar");
+  // An empty but valid response from a provider is not a network outage.
+  if (!transitousJourneys.length && !dbJourneys.length) {
+    if (transitousResult.status === "fulfilled" || dbResult.status === "fulfilled") return [];
+    const transitousReason=transitousResult.reason instanceof Error ? transitousResult.reason.message : "Transitous nicht erreichbar";
+    const dbReason=dbResult.reason instanceof Error ? dbResult.reason.message : "DB-Gegenprüfung nicht erreichbar";
+    throw new Error(`Beide Fahrplanquellen sind derzeit nicht erreichbar (${transitousReason}; ${dbReason}). Bitte erneut versuchen.`);
+  }
 
   const completed = transitousJourneys.length ? await completeMissingDirectTrips(request, transitousJourneys) : [];
   const journeys = mergeJourneys([...transitousJourneys, ...completed, ...dbJourneys], dbResult.status === "rejected");

@@ -1,0 +1,53 @@
+/* V52.1 final component overrides. Loaded after historical V48/V49 styles. */
+/* Keep the settings content fluid and the scroll frame independent of the pinned tabs. */
+.settings-dialog-v48[open] { width:min(620px,calc(100vw - 12px)); }
+.settings-dialog-v48[open] .settings-tabs { margin-inline:clamp(10px,3vw,18px); }
+.settings-dialog-v48[open] .settings-content { padding-inline:clamp(12px,4vw,24px); }
+.settings-dialog-v48[open] .plan-list { display:grid;gap:10px;margin-top:10px; }
+.settings-dialog-v48[open] .plan-card,
+.settings-dialog-v48[open] .plan-card:first-child {
+  padding:16px 14px;
+  border:1px solid var(--glass-stroke);
+  border-radius:16px;
+  background:var(--glass-clear);
+}
+.settings-dialog-v48[open] .plan-card.plus {
+  border-color:color-mix(in srgb,var(--action) 30%,var(--glass-stroke));
+  background:color-mix(in srgb,var(--action) 4%,var(--glass-clear));
+}
+.settings-dialog-v48 .plan-feature-list li>span {color:var(--ink);font-size:.875rem;line-height:1.45;}
+.settings-dialog-v48[open] .settings-section-heading h3 {min-width:0;}
+.settings-dialog-v48[open] .profile-quick-stats>span {min-height:90px;}
+.settings-dialog-v48[open] .profile-quick-stats strong {line-height:1.15;}
+@media (max-width:400px) {
+  .settings-dialog-v48[open] .settings-heading {padding-inline:clamp(12px,4vw,16px);}
+  .settings-dialog-v48[open] .settings-tabs {margin-inline:10px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] :is(.settings-tabs button svg,.profile-quick-stats>span) {transition:none;}
+}
+
+
+/* The Plus price/feature grid must shrink below 320px without creating horizontal scroll. */
+.settings-dialog-v48[open],
+.settings-dialog-v48[open] .settings-heading,
+.settings-dialog-v48[open] .settings-content,
+.settings-dialog-v48[open] .settings-tabs,
+.settings-dialog-v48[open] .plan-list,
+.settings-dialog-v48[open] .plan-card,
+.settings-dialog-v48[open] .billing-price-options,
+.settings-dialog-v48[open] .billing-price-options>span {
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+.settings-dialog-v48[open] .billing-price-options {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.settings-dialog-v48[open] .plan-card>div {min-width:0;flex-wrap:wrap;}
+.settings-dialog-v48[open] .plan-card :is(h3,small,strong,li,span) {
+  min-width:0;overflow-wrap:anywhere;word-break:normal;
+}
+.settings-dialog-v48[open] .plan-feature-list li {min-width:0;max-width:100%;}
+@media (max-width:359px) {
+  .settings-dialog-v48[open] .billing-price-options>span {padding:8px;}
+  .settings-dialog-v48[open] .billing-price-options strong {font-size:1rem;}
+}

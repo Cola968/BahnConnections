@@ -1137,9 +1137,9 @@ export default function Home() {
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
             <div className="map-menu-dismiss"><strong>Mehr</strong><button type="button" onClick={() => setMoreMenuOpen(false)} aria-label="Mehr schließen"><UiIcon name="close" /></button></div>
             <div className="simple-more-list">
-              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><span>Einstellungen & Profil</span><small>Profil, Darstellung und Standort</small></button>
-              <a href="/install"><span>App & Updates</span><small>Installieren oder aktualisieren</small></a>
-              <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><span>Hilfe & Daten</span><small>Quellen, Datenschutz und Methodik</small></button>
+              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
+              <a href="/install"><UiIcon name="layers"/><span><b>App & Updates</b><small>Installieren, Version und Aktualisierung</small></span><UiIcon name="arrow"/></a>
+              <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
           </div>}
