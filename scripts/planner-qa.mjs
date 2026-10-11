@@ -284,7 +284,8 @@ try {
     await waitFor(`Boolean(document.querySelector('.planner-station-picker[open] .search-suggestions'))`,'Short-height station picker missing');
     await verifyPicker('390x480 short-height target picker');
     await screenshot('390-keyboard-height-picker');
-    await tap('.planner-station-picker-header button');
+    await tap('.planner-station-picker .search-suggestions button:has(b[title="München Hbf"])');
+    await waitFor(`!document.querySelector('.planner-station-picker') && !document.querySelector('.plan-button').disabled`,'Station selection did not restore planner action');
     await evaluate(`document.querySelector('.plan-button').scrollIntoView({block:'center'})`);
     const short=await inspect('keyboard-height-simulation');
     if(!short.actionVisible)throw new Error('Action inaccessible in short viewport');
