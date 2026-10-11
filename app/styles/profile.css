@@ -85,3 +85,9 @@ html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-mo
 .billing-price-options { display:grid!important; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
 .billing-price-options>span { display:flex; flex-direction:column; gap:4px; padding:12px; border:1px solid var(--glass-stroke); border-radius:14px; }
 .billing-price-options strong { color:var(--ink); font-size:1.25rem; }.billing-price-options small { line-height:1.5; }
+
+/* The settings header and tabs stay outside the single, opaque scrolling content region. */
+.settings-dialog[open] { display:flex; flex-direction:column; height:min(720px,calc(100dvh - 24px)); max-height:calc(100dvh - 24px); overflow:hidden; }
+.settings-dialog[open] .settings-heading,.settings-dialog[open] .settings-tabs { position:relative; top:auto; z-index:1; flex:0 0 auto; background:var(--paper); }
+.settings-dialog[open] .settings-content { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-width:thin; background:var(--paper); }
+@media (max-width:600px) { .settings-dialog[open] { height:calc(100dvh - 18px); } .settings-dialog[open] .settings-heading { padding-block:12px 8px; } .settings-dialog[open] .settings-heading h2 { font-size:1.35rem; } .settings-dialog[open] .settings-tabs { margin-bottom:0; } }
