@@ -74,7 +74,7 @@ export function DesktopPanelResizer() {
     const shell=handleRef.current?.closest<HTMLElement>(".app-shell");
     commit(parseFloat(shell?.style.getPropertyValue("--workspace-right")??"")||width);
   };
-  const {min,max}=typeof window==="undefined"?{min:MIN_WIDTH,max:820}:limits();
+  const {min,max}=ready?limits():{min:MIN_WIDTH,max:820};
   return <div ref={handleRef} className="desktop-panel-resizer" role="separator" aria-label="Breite der rechten Seitenleiste einstellen" aria-orientation="vertical"
     aria-valuenow={width} aria-valuemin={min} aria-valuemax={max} aria-valuetext={width+" Pixel"} tabIndex={0}
     data-ready={ready} title="Ziehen: Seitenleiste breiter oder schmaler · Doppelklick: zurücksetzen"
