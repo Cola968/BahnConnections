@@ -88,7 +88,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       {tracked&&<div className={canStartTracking?"train-follow-state":"train-follow-state is-paused"} role="status"><span className="train-follow-dot" aria-hidden="true"/> {canStartTracking?`Kartenkamera folgt ${trip.name}`:"Verfolgung pausiert: keine aktuelle Positionsprognose"} <small>{canStartTracking?"Manuell verschieben beendet die Verfolgung":"Erneute Radardaten abwarten oder Verfolgung beenden"}</small></div>}
       
       <section className="train-cockpit" aria-label="Zugradar und Geschwindigkeit">
-        <div className="train-cockpit-eyebrow"><span><UiIcon name="train"/> ZUGRADAR</span><span className={canStartTracking?"train-cockpit-feed active":"train-cockpit-feed"}><i aria-hidden="true"/>{canStartTracking?"Aktuelle Prognose":"Keine aktuellen Positionsdaten"}</span></div>
+        <div className="train-cockpit-eyebrow"><span><UiIcon name="train"/> ZUGRADAR</span><span className={canStartTracking&&trip.realTime?"train-cockpit-feed active":"train-cockpit-feed"}><i aria-hidden="true"/>{canStartTracking?(trip.realTime?"Echtzeitprognose":"Fahrplanmodell"):"Keine aktuellen Positionsdaten"}</span></div>
         <div className="train-cockpit-route">
           <div><small>Von</small><b>{from}</b></div>
           <div className="train-cockpit-track" aria-hidden="true"><i/><UiIcon name="train"/><i/></div>
@@ -96,7 +96,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         </div>
         <div className="train-cockpit-bottom">
           <div className="train-cockpit-speed"><small>Geschwindigkeit · Modell</small><strong>{modelSpeed===null?"—":modelSpeed}<em>km/h</em></strong><span>{modelSpeed===null?"Kein gültiger Echtzeit-Schätzwert":"Aus Streckenlänge und prognostizierter Fahrzeit"}</span></div>
-          <div className="train-cockpit-provenance"><b>{modelSpeed===null?"Keine Messung":"Modellschätzung"}</b><small>Kein GPS / Tacho</small><small>{radarUpdatedAt&&freshness==="current"?`Datenstand ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt)}`:"Keine frischen Radar-Daten"}</small></div>
+          <div className="train-cockpit-provenance"><b>{modelSpeed===null?"Keine Messung":"Modellschätzung"}</b><small>Kein GPS / Tacho</small><small>{radarUpdatedAt&&radarStatus==="ready"&&freshness==="current"?`Datenstand ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt)}`:"Keine frischen Radar-Daten"}</small></div>
         </div>
       </section>
       <div className="train-action-row">
