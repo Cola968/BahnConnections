@@ -17,7 +17,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       <div className="live-trip-title"><span className={`service-pill ${product}`} title={trip.name}>{trip.name}</span><div><b>{from} → {to}</b><small>{position ? `Position aus ${trip.realTime?'Echtzeit-Haltezeiten':'Fahrplan'} geschätzt · keine GPS-Ortung` : 'Keine belastbare Positionsschätzung verfügbar'}</small></div></div>
       {position && <div className="trip-progress" aria-label={`Geschätzt ${Math.round(progress*100)} Prozent des Abschnitts`}><i style={{width:`${progress*100}%`}}/><span style={{left:`${progress*100}%`}}/></div>}
       <div className="live-trip-stops"><span><small>Abschnittsbeginn</small><b title={trip.from.name}>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime} showStatus compact/></span><span><small>Abschnittsende</small><b title={trip.to.name}>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime} showStatus compact/></span></div>
-      <div className="live-trip-stats"><span><b>{speed??'—'}</b> {speed===null?'Geschwindigkeit unbekannt':'km/h Ø Abschnitt'}</span>{position&&<span><b>{Math.round(progress*100)}%</b> geschätzt</span>}</div>
+      <div className="live-trip-stats"><span><b>{speed===null?"—":`${speed} km/h`}</b> {speed===null?"Keine Geschwindigkeitsmessung":"Durchschnitt im Abschnitt · nicht live gemessen"}</span>{position&&<span><b>{Math.round(progress*100)}%</b> Fahrfortschritt geschätzt</span>}</div>
       <button type="button" disabled={!position} className={tracked?'track-button active':'track-button'} onClick={onTrack}>{tracked?'Kamerafolge beenden':'Zug auf Karte verfolgen'}</button>
     </div>
   </section>;
