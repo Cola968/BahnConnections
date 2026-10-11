@@ -29,6 +29,7 @@ jobs:
       - run: pnpm audit:billing
       - run: pnpm audit:board
       - run: pnpm audit:transport
+      - run: pnpm audit:radar
       - run: pnpm audit:map
       - run: pnpm build
       - name: Responsive interaction and realtime screenshots
@@ -48,6 +49,8 @@ jobs:
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
           pnpm audit:layout -- 'http://localhost:3000/?station=berlin' work/station-loading-qa --station-loading-only
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
+          node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
       - name: Live network sources
         continue-on-error: true
         run: timeout 180 pnpm audit:network > work/network-audit.json 2>&1
@@ -70,6 +73,8 @@ jobs:
             work/mobile-qa/
             work/layout-qa/
             work/station-sheet-qa/
+            work/live-map-qa/
+            work/board-stream-qa/
             work/station-loading-qa/
             work/bahnconnections-dev.log
             work/network-audit.json

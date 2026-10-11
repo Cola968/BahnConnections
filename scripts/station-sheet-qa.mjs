@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe') ? [[390,844]] : [[320,844],[360,844],[390,844],[430,932],[768,1024],[1024,900],[1440,900],[1920,1080]];
+const sizes = args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -85,6 +85,18 @@ try {
   await command('Network.setBypassServiceWorker',{bypass:true});
   await command('Page.addScriptToEvaluateOnNewDocument',{source:"navigator.serviceWorker.register=()=>Promise.reject(new Error('UI fixture QA'));"});
   await command('Fetch.enable',{patterns:[{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
+  if(args.includes('--stream'))await command('Page.addScriptToEvaluateOnNewDocument',{source:`
+    const originalFetch=window.fetch;
+    window.fetch=async (...args)=>{
+      const response=await originalFetch(...args);
+      if(!String(args[0]).includes('/board?')||!response.ok)return response;
+      const data=await response.json(),encoder=new TextEncoder();
+      return new Response(new ReadableStream({start(controller){
+        controller.enqueue(encoder.encode(JSON.stringify({type:'board',...data,verification:{status:'pending'}})+'\\n'));
+        setTimeout(()=>{try{controller.enqueue(encoder.encode(JSON.stringify({type:'verification',source:data.source,warnings:[],verification:{status:'inconclusive'}})+'\\n'));controller.close();}catch{}},1800);
+      }}),{headers:{'Content-Type':'application/x-ndjson'}});
+    };
+  `});
   const results=[];
   for(const [width,height] of sizes)for(const theme of ['light','dark']) {
     await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<1024});
@@ -93,6 +105,13 @@ try {
     await command('Page.navigate',{url:new URL('/?station=berlin',base).href});
     for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(150);}
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
+    if(args.includes('--stream')){
+      assert.equal(await evaluate("Boolean(document.querySelector('.verification-pending'))"),true,'Rows must display while DB verification is pending');
+      await click('.board-row-summary');await pause(1900);
+      assert.equal(await evaluate("Boolean(document.querySelector('.verification-inconclusive'))"),true,'Late verification must remain conservative');
+      assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','Verification must preserve expanded row');
+      await click('.board-row-summary');
+    }
     await pause(600);
     await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:themeScript.identifier});
     assert.equal(await evaluate('document.documentElement.dataset.theme'),theme,'Actual theme differs from screenshot label');
@@ -158,6 +177,11 @@ try {
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').textContent"),'Halle (Saale) Hbf');
     assert.equal(await evaluate("document.querySelector('.station-sheet-header .mobile-sheet-summary b').title"),'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz');
     await screenshot(`${width}-long-station-name`);
+  }
+  if(!baseline){
+    await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'},{name:'prefers-reduced-motion',value:'reduce'}]});
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.station-card')).backdropFilter"),'none','Reduced transparency removes glass blur');
+    await screenshot('320-reduced-transparency');
   }
   await writeFile(join(output,'report.json'),JSON.stringify({checkedAt:new Date().toISOString(),fixture:true,baseline,results},null,2));
 }finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}

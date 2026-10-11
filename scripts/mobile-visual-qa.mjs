@@ -438,7 +438,8 @@ try {
           await tap('.journey-mobile-overview>button');
         }
         await tap('.plan-button');
-        await pause(1600);
+        await waitFor("Boolean(document.querySelector('.live-stop-list .realtime-time'))", "Realtime scenario did not load: "+scenario.name);
+        await pause(200);
         await tap('.mobile-sheet-summary');
         const state = await evaluate(`(() => {
           const row=document.querySelector('.live-stop-list li'), time=row?.querySelector('.realtime-time'), actual=time?.querySelector('.realtime-time__actual'), planned=time?.querySelector('del'), platform=row?.querySelector('.realtime-platform');
@@ -479,7 +480,7 @@ try {
     // Full product matrix supplements (and does not replace) the interaction/realtime checks above.
     activeJourneys = [fixtureJourney,alternativeJourney];
     await command('Emulation.setEmulatedMedia',{features:[]});
-    for (const [width,height] of [[320,740],[360,844],[390,844],[430,932],[768,1024],[1024,900],[1440,900],[1920,1080]]) {
+    for (const [width,height] of [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]]) {
       for (const theme of ['light','dark']) {
         await setViewport(1280,900);
         await command('Page.navigate',{url});
@@ -684,6 +685,9 @@ try {
   const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
+} catch(error) {
+  try{await screenshot("failure");await writeFile(join(outputDirectory,"failure.json"),JSON.stringify(await evaluate("({panel:document.querySelector('.app-shell')?.dataset.primaryPanel,message:document.querySelector('.planner-message')?.textContent,journey:!!document.querySelector('.journey-card'),stops:document.querySelectorAll('.live-stop-list li').length})"),null,2));}catch{}
+  throw error;
 } finally {
   shuttingDown = true;
   for (const timer of fixtureTimers) clearTimeout(timer);
