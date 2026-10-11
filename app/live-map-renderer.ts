@@ -50,6 +50,17 @@ export class LiveMapRenderer {
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
+          // Derive north-relative train heading from consecutive valid interpolated
+          // track positions. Both the icon and the underlying position remain estimates.
+          if(glyph){const progress=liveTripProgress(trip,at);
+            const before=pointOnTrip(trip,Math.max(0,progress-.004));
+            const after=pointOnTrip(trip,Math.min(1,progress+.004));
+            if(before&&after&&(Math.abs(after[0]-before[0])+Math.abs(after[1]-before[1])>1e-7)){
+              const east=(after[1]-before[1])*Math.cos((after[0]+before[0])*Math.PI/360);
+              const north=after[0]-before[0];
+              glyph.setAttribute("style",`--train-heading:${Math.atan2(east,north)*180/Math.PI}deg`);
+            }else glyph.removeAttribute("style");
+          }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}`;
           if(entry.trip!==trip){
