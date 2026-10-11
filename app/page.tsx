@@ -976,7 +976,7 @@ export default function Home() {
     const sheet = document.querySelector<HTMLElement>('.mobile-sheet-panel');
     const sheetRect = sheet?.getBoundingClientRect();
     const measuredHeight = sheetRect?.height ?? 0;
-    const sideSheet = mobile && window.matchMedia("(max-height:520px)").matches && sheetState !== "closed";
+    const sideSheet = mobile && window.matchMedia("(min-width:700px) and (max-width:1023px) and (max-height:520px) and (orientation:landscape)").matches && sheetState !== "closed";
     // Landscape reserves the right half in CSS, so Leaflet already sees the usable map.
     const rightPadding = 28;
     const bottomPadding = !mobile ? 64 : sideSheet ? 28 : Math.min(Math.max(0, mapHeight - 140), (sheetState === "closed" ? 82 : measuredHeight || 100) + 16);
@@ -991,6 +991,9 @@ export default function Home() {
   function resetMap() {
     plannerRequestRef.current?.abort(); walkRequestRef.current?.abort(); pendingWalkTargetRef.current = null;
     setPlannerState("idle"); setJourneyEndpoints(null); setJourneyOptionLimit(8);
+    setStartId("berlin"); setStartSearch("Berlin Hbf");
+    setTargetId("muenchen"); setTargetSearch("München Hbf");
+    setRouteSaveMessage("");
     setMobileSheetHeight(null); setStationPanel("live"); setSidebarCollapsed(false);
     setActiveView("map");
     setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
