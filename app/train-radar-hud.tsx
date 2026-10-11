@@ -26,7 +26,7 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
   return <div className="train-tracking-map-hud train-radar-hud" role="region" aria-label="Zugverfolgung">
     <span className={`train-tracking-map-pulse${fresh?"":" is-stale"}`} aria-hidden="true"/>
     <span className="train-hud-copy"><b>{trip.name} · {fresh?"Kamera folgt":"Tracking pausiert"}</b><small>{fresh?`Positionsmodell · Daten ${stamp}`:"Kein aktueller Zugstandort"}</small></span>
-    <span className="train-hud-speed" aria-label={speed===null?"Geschwindigkeitsschätzung nicht verfügbar":`Geschätzt ${speed} Kilometer pro Stunde`}><strong>{speed===null?"—":speed}</strong><small>km/h*</small></span>
+    <span className="train-hud-speed" aria-label={speed===null?"Geschwindigkeitsschätzung nicht verfügbar":`Geschätzt ${speed} Kilometer pro Stunde`}><strong>{speed===null?"—":speed}</strong><small>km/h · Modell</small></span>
     <button type="button" onClick={onEnd} aria-label="Zugverfolgung beenden">Beenden</button>
   </div>;
 }
