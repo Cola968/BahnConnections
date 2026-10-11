@@ -235,6 +235,25 @@ try {
       await pause(160);
       const m=await inspect(`${width}x${height}-${theme}`);
       if(!baseline&&!m.actionVisible)throw new Error('Primary action requires scrolling '+JSON.stringify(m));
+      if(!baseline && width<=430) {
+        const originalFont=await evaluate(`document.documentElement.dataset.font`);
+        await evaluate(`document.documentElement.dataset.font='large'`);
+        const proportionCheck=await evaluate(`(() => {
+          const modes=[...document.querySelectorAll('.planner-time-mode button')];
+          const date=document.querySelector('.planner-date-trigger>span');
+          const row=document.querySelector('.planner-time-row');
+          const r=row?.getBoundingClientRect();
+          return {buttons:modes.map(el=>({text:el.textContent,width:el.clientWidth,height:el.clientHeight,scrollWidth:el.scrollWidth,scrollHeight:el.scrollHeight})),
+            date:date&&{text:date.textContent,width:date.clientWidth,scrollWidth:date.scrollWidth},
+            rowWidth:r?.width,parentWidth:row?.parentElement?.clientWidth};
+        })()`);
+        if(proportionCheck.buttons.length!==2||proportionCheck.buttons.some(b=>b.scrollWidth>b.width+2 || b.scrollHeight>b.height+2)||
+           !proportionCheck.date||proportionCheck.date.scrollWidth>proportionCheck.date.width+2||
+           proportionCheck.rowWidth>proportionCheck.parentWidth+2)
+          throw new Error('Planner date or Abfahrt/Ankunft clipped at '+width+'px with large font: '+JSON.stringify(proportionCheck));
+        checks.push({label:`${width}x${height}-large-font-date-modes`,...proportionCheck});
+        await evaluate(`document.documentElement.dataset.font=${JSON.stringify(originalFont)}`);
+      }
       await screenshot(`${width}x${height}-${theme}-planner`);
     }
   }
