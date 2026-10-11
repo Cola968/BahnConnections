@@ -5,6 +5,7 @@ import { UiIcon } from "./ui-icon";
 import { SavedRoutesPanel } from "./saved-routes-panel";
 import type { SavedRoute } from "./saved-routes";
 import { SUBSCRIPTION_PLANS } from "./subscription-plans";
+import { APP_VERSION_LABEL } from "./app-version";
 
 export type LocalProfile={name:string;homeStationId:string;initials:string};
 export function parseLocalProfile(value:unknown):LocalProfile {
@@ -88,6 +89,11 @@ export function SettingsDialog(p:Props) {
           <div className="settings-section-heading"><h3><UiIcon name="location"/> Standort & Umgebung</h3><p>Bahnhöfe in deiner Nähe schneller finden.</p></div>
           <div className="settings-status-row"><span className={p.locationStatus.toLocaleLowerCase("de-DE").includes("aktiv") ? "status-dot active" : "status-dot"} aria-hidden="true"/><span><b>Standortstatus</b><small>{locationText}</small></span><button type="button" onClick={p.onRequestLocation}>Prüfen</button></div>
           <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
+        </section>
+        <section className="settings-group v53-app-info">
+          <div className="settings-section-heading"><h3><UiIcon name="layers"/> App & Updates</h3><p>Version, Installation und Aktualisierungen.</p></div>
+          <div className="v53-version-row"><span><b>Webversion</b><small>Updates werden über die Website bereitgestellt.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
+          <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>Installation und Updates öffnen</span></a>
         </section>
       </>}
 
