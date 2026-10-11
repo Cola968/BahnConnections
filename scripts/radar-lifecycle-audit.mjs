@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { VisibilityPoller } from '../app/visibility-poller.ts';
 import { readBoardStream } from '../app/board-stream.ts';
 import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.ts';
-import { pointOnTrip,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
+import { pointOnTrip,activeEstimatedPosition,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
 import { normaliseTrainStops,nextTrainStopIndex,headingDegrees,cardinalDirection,sourceFreshness } from '../app/train-inspector-data.ts';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 class Visibility extends EventTarget {hidden=false;}
@@ -23,6 +23,11 @@ assert.equal(pointOnTrip({...trip,points:[]},.5),null);assert.equal(pointOnTrip(
 assert.equal(pointOnTrip({...trip,arrival:'invalid'},.5),null);assert.deepEqual(trailForTrip({...trip,points:[]},.5),[]);
 assert.deepEqual(trailForTrip(trip,.5).at(-1),pointOnTrip(trip,.5));
 const halfway=Date.parse('2026-10-11T12:02:30Z');
+assert.deepEqual(activeEstimatedPosition(trip,halfway),pointOnTrip(trip,.5),'Tracking must use source geometry inside the active section');
+assert.equal(activeEstimatedPosition(trip,Date.parse('2026-10-11T11:59:59Z')),null,'No camera tracking before reported departure');
+assert.equal(activeEstimatedPosition(trip,Date.parse('2026-10-11T12:05:01Z')),null,'No frozen camera at the last stop after arrival');
+assert.equal(activeEstimatedPosition({...trip,points:[[52,13],[53,14]]},halfway),null,'Never track through a missing railway section');
+assert.equal(activeEstimatedPosition({...trip,arrival:'invalid'},halfway),null,'Invalid predictions are not trackable');
 assert.ok(realtimeModelSpeed(trip,halfway)>0,'Valid realtime polyline permits a modelled current speed');
 assert.equal(realtimeModelSpeed({...trip,realTime:false},halfway),null,'Scheduled journeys must not show a realtime speed');
 assert.equal(realtimeModelSpeed({...trip,points:[[52,13],[55,14]]},halfway),null,'Disconnected geometry must not yield a model speed');

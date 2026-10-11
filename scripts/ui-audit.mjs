@@ -8,6 +8,8 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
   "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css","app/styles/planner.css","app/styles/navigation.css",
 ].map(read));
 const mapLifecycle = await read("app/use-leaflet-map.ts");
+const liveMapHook = await read("app/use-live-map.ts");
+const inspector = await read("app/live-trip-inspector.tsx");
 const plannerPanel = await read("app/planner-panel.tsx");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
 const boardToolbar = await read("app/board-toolbar.tsx");
@@ -70,6 +72,8 @@ check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 102
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
 check("V54 mobile More keeps three core actions while advanced map controls live in Settings",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && !page.includes("Weitere Kartenoptionen") && settingsDialog.includes("Kartendarstellung") && settingsDialog.includes("onShowTrails") && settingsDialog.includes("onOverviewRoutesVisible"));
 check("V54 remembers compact font with an accessible size selector",page.includes('useState<"compact" | "normal" | "large">("compact")') && settingsDialog.includes("Kompakt (Standard)") && v54Styles.includes(".settings-scale-choice"));
+check("V54 has a single camera-follow owner, preserving mobile offset",!liveMapHook.includes("mapRef.current?.panTo(") && page.includes("const centre=map.unproject(") && page.includes("map.panTo(centre,"));
+check("Expired or stale trips cannot be newly followed; stop remains possible",page.includes("activeEstimatedPosition(trip,Date.now())") && inspector.includes('disabled={!tracked&&!canStartTracking}') && inspector.includes("Verfolgung pausiert"));
 check("V54 station tab buttons stay at least 44px despite inherited !important rules",stationSheetCss.includes("min-height:44px!important; height:44px;") && stationSheetCss.includes("grid-template-rows:44px 44px;"));
 check("V54 compact rows keep touch target semantics",v54Styles.includes("min-height:44px") && v54Styles.includes(".mobile-navigation") && v54Styles.includes("safe-area-inset-bottom"));
 check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
