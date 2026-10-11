@@ -34,7 +34,7 @@
   transform:rotate(var(--train-heading,0deg));transform-origin:center 55%;
   transition:transform 220ms ease-out;
 }
-@media (max-width:1023px) {
+@media (max-width:699px) {
   .app-shell .mobile-sheet-panel {left:6px!important;right:6px!important;width:calc(100% - 12px)!important;max-width:none!important;border-radius:24px!important;padding-inline:12px!important;}
   .app-shell .mobile-sheet-panel>.panel-tools {margin-inline:-12px!important;padding-inline:12px!important;}
   .mobile-navigation {left:6px!important;right:6px!important;width:calc(100% - 12px)!important;max-width:none!important;transform:none!important;bottom:calc(4px + env(safe-area-inset-bottom,0px));}
