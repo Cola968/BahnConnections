@@ -9,6 +9,7 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
 ].map(read));
 const mapLifecycle = await read("app/use-leaflet-map.ts");
 const liveMapHook = await read("app/use-live-map.ts");
+const liveRadarHook = await read("app/use-live-radar.ts");
 const inspector = await read("app/live-trip-inspector.tsx");
 const plannerPanel = await read("app/planner-panel.tsx");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
@@ -72,6 +73,7 @@ check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 102
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
 check("V54 mobile More keeps three core actions while advanced map controls live in Settings",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && !page.includes("Weitere Kartenoptionen") && settingsDialog.includes("Kartendarstellung") && settingsDialog.includes("onShowTrails") && settingsDialog.includes("onOverviewRoutesVisible"));
 check("V54 remembers compact font with an accessible size selector",page.includes('useState<"compact" | "normal" | "large">("compact")') && settingsDialog.includes("Kompakt (Standard)") && v54Styles.includes(".settings-scale-choice"));
+check("Moving radar windows invalidate cached data even with unchanged station IDs",liveRadarHook.includes("data.coverageKey===key") && liveRadarHook.includes("radarCoverageKey(station)"));
 check("V54 has a single camera-follow owner, preserving mobile offset",!liveMapHook.includes("mapRef.current?.panTo(") && page.includes("const centre=map.unproject(") && page.includes("map.panTo(centre,"));
 check("Expired or stale trips cannot be newly followed; stop remains possible",page.includes("activeEstimatedPosition(trip,Date.now())") && inspector.includes('disabled={!tracked&&!canStartTracking}') && inspector.includes("Verfolgung pausiert"));
 check("V54 station tab buttons stay at least 44px despite inherited !important rules",stationSheetCss.includes("min-height:44px!important; height:44px;") && stationSheetCss.includes("grid-template-rows:44px 44px;"));

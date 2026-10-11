@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { VisibilityPoller } from '../app/visibility-poller.ts';
+import { radarCoverageKey } from '../app/radar-coverage.ts';
 import { readBoardStream } from '../app/board-stream.ts';
 import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.ts';
 import { pointOnTrip,activeEstimatedPosition,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
 import { normaliseTrainStops,nextTrainStopIndex,headingDegrees,cardinalDirection,sourceFreshness } from '../app/train-inspector-data.ts';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 class Visibility extends EventTarget {hidden=false;}
+assert.equal(radarCoverageKey({id:'berlin',lat:52.00004,lon:13}),radarCoverageKey({id:'berlin',lat:52,lon:13}), 'Same rounded radar viewport keeps identity');
+assert.notEqual(radarCoverageKey({id:'berlin',lat:52,lon:13}),radarCoverageKey({id:'berlin',lat:52.015,lon:13}), 'Moving radar anchor invalidates same-station cached data');
+assert.notEqual(radarCoverageKey({id:'berlin',lat:52,lon:13}),radarCoverageKey({id:'hamburg',lat:52,lon:13}), 'Station changes invalidate cached data');
 const visibility=new Visibility(),signals=[];
 const poller=new VisibilityPoller(async signal=>{signals.push(signal);await new Promise(resolve=>signal.addEventListener('abort',resolve,{once:true}));},10,visibility);
 assert.equal(signals.length,1);
