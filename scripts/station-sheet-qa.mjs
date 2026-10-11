@@ -140,8 +140,15 @@ try {
       if(!baseline&&width===390&&state==='half') {
         await click('.board-filter-toggle');await pause(350);
         await screenshot(`${width}-${theme}-half-filters`);
-        const bounds=await evaluate(`(() => {const p=document.querySelector('.board-filter-panel').getBoundingClientRect(),b=document.querySelector('.station-card .panel-body').getBoundingClientRect();return {bottom:p.bottom,limit:b.bottom};})()`);
-        assert.ok(bounds.bottom<=bounds.limit+1,'Filter popover must fit the half sheet');
+        const filterPosition=await evaluate(`(() => {
+          const filter=document.querySelector('.board-filter-panel'),body=document.querySelector('.station-card .panel-body'),toolbar=document.querySelector('.board-primary-bar');
+          const style=getComputedStyle(filter),b=filter.getBoundingClientRect(),t=toolbar.getBoundingClientRect();
+          return {position:style.position,overflow:style.overflowY,startsBelowToolbar:b.top>=t.bottom-1,
+            inBody:body.contains(filter),bodyScroll:getComputedStyle(body).overflowY};
+        })()`);
+        assert.ok(filterPosition.inBody&&filterPosition.startsBelowToolbar&&filterPosition.position!=='absolute'&&
+          filterPosition.overflow==='visible'&&filterPosition.bodyScroll==='auto',
+          'Filter must remain in the station pane single scroller: '+JSON.stringify(filterPosition));
         assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'hidden','Filter surface must have only one readable text plane');
         await click('.board-filter-close');
         assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'visible','Closing filters restores departures');
