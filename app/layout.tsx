@@ -19,6 +19,8 @@ import "./styles/navigation.css";
 import "./styles/v52-polish.css";
 import "./styles/v53-mobile-glass.css";
 import "./styles/v53-desktop-usability.css";
+import "./styles/v54-mobile-refine.css";
+import "./styles/v54-train-inspector.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
@@ -47,7 +49,7 @@ export const viewport: Viewport = {
   width:"device-width",
   initialScale:1,
   viewportFit:"cover",
-  themeColor:"#ec0016",
+  themeColor:"#e7eff0",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

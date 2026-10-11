@@ -586,7 +586,7 @@ try {
     if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
-    await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+    await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const home=document.querySelector('.profile-form input[list="home-station-suggestions"]');if(!home)throw new Error('Typed home-station input is missing');setter.call(home,'Berlin Hbf');home.dispatchEvent(new Event('input',{bubbles:true}));})()`);
     await tap('.profile-form button[type="submit"]');
     const profile=await evaluate(`JSON.parse(localStorage.getItem('bahnconnections-profile'))`);
     if(profile?.name!=='Alex Bahn'||profile?.homeStationId!=='berlin') throw new Error('Profile was not saved');

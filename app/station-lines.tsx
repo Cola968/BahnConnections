@@ -77,7 +77,10 @@ const RAIL_MODES = new Map<string, StationLineCategory>([
 
 function lineBadge(line: StationLine) {
   if (line.category === "sbahn" || line.category === "ubahn" || line.category === "tram") return line.shortName.replace(/\s+/g, "");
-  if (line.category === "regional") return line.shortName.match(/^(RE|RB|MEX|IRE)/i)?.[0]?.toUpperCase() ?? "R";
+  if (line.category === "regional") {
+    const publicName=line.shortName.match(/^(RE|RB|MEX|IRE)\s*(\d{1,3}[A-Z]?)(?=\b|\s|\()/i);
+    return publicName ? `${publicName[1].toUpperCase()}${publicName[2].toUpperCase()}` : (line.shortName.match(/^(RE|RB|MEX|IRE)/i)?.[0]?.toUpperCase() ?? line.shortName.slice(0,10));
+  }
   return line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)/i)?.[0]?.toUpperCase() ?? (line.mode === "HIGHSPEED_RAIL" ? "ICE" : "FV");
 }
 
@@ -327,8 +330,8 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
           const expanded = expandedKey === line.key;
           const destinations=line.destinations.map(destination=>compactStationLabel(destination)??destination);
           const numberedRail=line.category === "fern" || line.category === "regional";
-          const primary=numberedRail ? line.shortName : destinations[0] ?? line.shortName;
-          const secondary=numberedRail ? destinations.join(" · ") : destinations.slice(1).join(" · ");
+          const primary=destinations[0] ?? (numberedRail ? line.shortName : line.longName || line.shortName);
+          const secondary=destinations.slice(1,3).join(" · ") + (destinations.length>3 ? ` · +${destinations.length-3} weitere` : "");
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
             <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded} aria-label={`${line.shortName}${line.destinations.length ? ": " + line.destinations.join(" · ") : ""}`}>
               <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${station.name} ${line.operator}`)}>{lineBadge(line)}</span>

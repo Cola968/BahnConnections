@@ -2,6 +2,7 @@ import type * as Leaflet from 'leaflet';
 import { liveTripProgress, pointOnTrip, trailForTrip, type LiveTrip } from './live-trains';
 import { deriveRealtimePresentation, realtimeAccessibleLabel } from './realtime-presentation';
 import { realtimeTooltip } from './realtime-tooltip';
+import { headingDegrees } from './train-inspector-data';
 
 export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;appearance?:string};
 type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
@@ -50,6 +51,15 @@ export class LiveMapRenderer {
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
+          // Derive north-relative train heading from consecutive valid interpolated
+          // track positions. Both the icon and the underlying position remain estimates.
+          if(glyph){const progress=liveTripProgress(trip,at);
+            const before=pointOnTrip(trip,Math.max(0,progress-.004));
+            const after=pointOnTrip(trip,Math.min(1,progress+.004));
+            const heading=headingDegrees(before,after);
+            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg`);
+            else glyph.removeAttribute("style");
+          }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}`;
           if(entry.trip!==trip){

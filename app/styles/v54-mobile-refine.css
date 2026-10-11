@@ -1,0 +1,113 @@
+/* V54 mobile density: extend usable width without sacrificing safe areas or hit targets. */
+.header-actions .header-avatar {width:100%;height:100%;max-width:38px;max-height:38px;object-fit:cover;border-radius:50%;}
+.profile-avatar {overflow:hidden;}
+.profile-avatar img {width:100%;height:100%;object-fit:cover;display:block;}
+.profile-photo-picker input[type="file"] {font-size:.8rem;padding:9px 10px;min-height:44px;}
+.profile-form label>small {color:var(--muted);font-size:.75rem;line-height:1.35;}
+.settings-scale-choice {display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;}
+.settings-scale-choice>span {display:flex;flex-direction:column;gap:3px;min-width:0;}
+.settings-scale-choice b {font-size:.875rem;}
+.settings-scale-choice small {font-size:.75rem;color:var(--muted);line-height:1.3;}
+.settings-scale-choice select {min-height:44px;max-width:53%;padding:8px;border:1px solid var(--glass-stroke);border-radius:12px;background:var(--glass-elevated);color:var(--ink);font-size:.8125rem;}
+/* RE4, RB23 and S7 are single unit identifiers. Do not split them into two visual blocks. */
+.app-shell .board-row-summary .board-service {min-width:0;align-self:center;display:flex;align-items:center;gap:0;}
+.app-shell .board-row-summary .board-service>.service-logo.regional {width:auto;max-width:100%;min-width:42px;padding-inline:7px;white-space:nowrap;letter-spacing:-.02em;}
+/* Map filter stays a quick control, advanced overlays now live in Settings. */
+.app-shell .live-filter-popover.map-menu-popover.detached {gap:10px;padding:14px;max-width:min(380px,calc(100vw - 12px));}
+.app-shell .live-filter-popover .map-menu-dismiss {margin-bottom:0;}
+.app-shell .live-filter-popover .popover-buttons {gap:5px;display:flex;flex-wrap:wrap;}
+.app-shell .live-filter-popover .popover-buttons button {flex:1 1 auto;min-height:44px;padding:7px 9px;}
+/* Train detail: operational data hierarchy in place of giant uniform copy. */
+.app-shell .live-trip-card .panel-body {padding-bottom:18px;}
+.app-shell .live-trip-card .live-trip-title {margin:4px 0 10px;gap:12px;}
+.app-shell .live-trip-card .live-trip-title b {font-size:1.0625rem;}
+.app-shell .live-trip-card .live-trip-stats {gap:8px;margin:14px 0;padding-block:10px;}
+.app-shell .live-trip-card .live-trip-stats>span {padding:9px 10px;border-radius:12px;border:1px solid var(--glass-stroke);background:var(--glass-clear);}
+.app-shell .live-trip-card .live-trip-stats b {font-size:1.25rem;}
+.app-shell .live-trip-card .track-button {border-radius:13px;transition:transform 180ms var(--motion-native),box-shadow 220ms;}
+.app-shell .live-trip-card .track-button:active {transform:scale(.98);}
+/* Arrowhead represents estimated heading along continuous railway geometry, never GPS. */
+.live-train-marker.glyph i {
+  position:relative;display:block;width:0;height:0;background:none;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-bottom:8px solid currentColor;border-top:0;border-radius:0;
+  transform:rotate(var(--train-heading,0deg));transform-origin:center 55%;
+  transition:transform 220ms ease-out;
+}
+@media (max-width:699px) {
+  .app-shell .mobile-sheet-panel {left:6px!important;right:6px!important;width:calc(100% - 12px)!important;max-width:none!important;border-radius:24px!important;padding-inline:12px!important;}
+  .app-shell .mobile-sheet-panel>.panel-tools {margin-inline:-12px!important;padding-inline:12px!important;}
+  .mobile-navigation {left:6px!important;right:6px!important;width:calc(100% - 12px)!important;max-width:none!important;transform:none!important;bottom:calc(4px + env(safe-area-inset-bottom,0px));}
+  .settings-dialog-v48[open] {width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;border-radius:22px!important;}
+  .settings-dialog-v48[open] .settings-content {padding-inline:12px!important;}
+  .app-shell .map-menu-popover.detached {left:6px!important;right:6px!important;}
+  .app-shell .board-row-summary {column-gap:8px;}
+  .app-shell .board-row-summary .board-service>.service-logo {font-size:.78rem;}
+  .app-shell .live-trip-card .panel-body {padding-inline:12px;}
+}
+@media (max-width:380px) {
+ .settings-scale-choice {align-items:flex-start;flex-direction:column;}
+ .settings-scale-choice select {max-width:none;width:100%;}
+ .app-shell .mobile-sheet-panel {left:4px!important;right:4px!important;width:calc(100% - 8px)!important;padding-inline:10px!important;}
+ .app-shell .mobile-sheet-panel>.panel-tools {margin-inline:-10px!important;}
+}
+/* Intentional micro-interactions, with no animation storms during map redraws. */
+@keyframes v54-sheet-reveal {from {opacity:.82;filter:blur(4px);}to {opacity:1;filter:blur(0);}}
+@keyframes v54-row-reveal {from {opacity:.65;transform:translateY(5px);}to {opacity:1;transform:translateY(0);}}
+@keyframes v54-badge-pop {0%{scale:.92;}65%{scale:1.06;}100%{scale:1;}}
+@media (prefers-reduced-motion:no-preference) {
+ html:not([data-motion="reduced"]) .app-shell .mobile-sheet-panel:not([data-sheet-dragging="true"]) {animation:v54-sheet-reveal 260ms var(--motion-native) both;}
+ html:not([data-motion="reduced"]) .app-shell .board-row {animation:v54-row-reveal 240ms var(--motion-native) both;}
+ html:not([data-motion="reduced"]) .app-shell .board-row:nth-child(2) {animation-delay:30ms;}
+ html:not([data-motion="reduced"]) .app-shell .board-row:nth-child(3) {animation-delay:60ms;}
+ html:not([data-motion="reduced"]) .app-shell .mobile-navigation>button.active .mobile-nav-icon {animation:v54-badge-pop 300ms var(--motion-native);}
+ html:not([data-motion="reduced"]) .app-shell .station-section-tabs button {transition:color 220ms,border-color 240ms,background-color 220ms;}
+}
+@media (prefers-reduced-motion:reduce) {.live-train-marker.glyph i,.app-shell .live-trip-card .track-button {transition:none!important;}}
+html[data-motion="reduced"] .live-train-marker.glyph i {transition:none!important;}
+
+/* Radar-like train inspector: useful data immediately, details progressively disclosed. */
+.rail-flight-inspector .rail-inspector-body {display:flex;flex-direction:column;gap:14px;min-width:0;}
+.rail-inspector-head {display:grid;gap:6px;}
+.rail-inspector-headline {display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.rail-inspector-headline .service-pill {font-weight:700;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rail-inspector-state {display:inline-flex;padding:5px 9px;border-radius:999px;background:var(--glass-elevated);font-size:.73rem;font-weight:700;color:var(--muted);}
+.rail-inspector-state.status-success,.rail-inspector-state.status-early {color:var(--success);}
+.rail-inspector-state.status-warning {color:var(--warning);}
+.rail-inspector-state.status-danger {color:var(--danger);}
+.rail-inspector-head h2 {margin:0;font-size:clamp(1.08rem,4.2vw,1.38rem);font-weight:750;line-height:1.22;overflow-wrap:anywhere;}
+.rail-inspector-head h2 span {color:var(--muted);font-size:.85em;}
+.rail-inspector-head p {margin:0;color:var(--muted);font-size:.75rem;}
+.rail-inspector-stats {display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.rail-inspector-stats>div {display:flex;flex-direction:column;gap:4px;min-width:0;padding:13px;border:1px solid var(--glass-stroke);border-radius:15px;background:var(--glass-clear);}
+.rail-inspector-stats small,.rail-inspector-metrics span {color:var(--muted);font-size:.73rem;}
+.rail-inspector-stats strong {color:var(--ink);font-size:1.04rem;line-height:1.25;overflow-wrap:anywhere;}
+.rail-inspector-stats>div>span {color:var(--accent);font-size:.8rem;font-weight:650;}
+.rail-inspector-progress {display:grid;gap:7px;padding:10px 4px 6px;}
+.rail-inspector-progress-top {display:flex;justify-content:space-between;gap:12px;font-size:.73rem;font-weight:650;}
+.rail-inspector-progress-top>span {max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rail-inspector-progress .trip-progress {height:5px;margin:5px 8px 8px;background:var(--line-subtle);}
+.rail-inspector-progress>small {color:var(--muted);font-size:.69rem;}
+.rail-inspector-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.rail-inspector-metrics>div {display:flex;flex-direction:column;gap:4px;padding:12px;min-width:0;border-radius:15px;background:var(--glass-clear);border:1px solid var(--glass-stroke);}
+.rail-inspector-metrics strong {font-size:1.34rem;line-height:1.1;font-variant-numeric:tabular-nums;}
+.rail-inspector-metrics small {color:var(--muted);font-size:.68rem;line-height:1.35;}
+.rail-inspector-timeline {display:grid;gap:0;margin:2px 0;}
+.rail-inspector-timeline-row {display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:68px;position:relative;}
+.rail-inspector-timeline-row:first-child:after {content:"";position:absolute;top:55%;bottom:-45%;left:7px;width:2px;background:var(--line);z-index:0;}
+.rail-inspector-timeline-row>i {width:14px;height:14px;border-radius:50%;border:3px solid var(--accent);background:var(--paper);z-index:1;}
+.rail-inspector-timeline-row>div {display:flex;flex-direction:column;gap:3px;min-width:0;}
+.rail-inspector-timeline-row>div strong {font-size:.92rem;overflow-wrap:anywhere;}
+.rail-inspector-timeline-row>div small {font-size:.73rem;color:var(--muted);}
+.rail-inspector-timeline-row>.realtime-time {justify-self:end;}
+.rail-flight-inspector .track-button {min-height:46px;font-weight:700;border-radius:13px;}
+.rail-inspector-method-toggle {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;border:0;border-top:1px solid var(--line-subtle);background:transparent;color:var(--muted);text-align:left;font-size:.76rem;}
+.rail-inspector-method-toggle span {font-size:1.2rem;}
+.rail-inspector-method {margin:-4px 0 2px;color:var(--muted);font-size:.76rem;line-height:1.55;}
+@media(max-width:359px){.rail-inspector-stats>div,.rail-inspector-metrics>div{padding:9px;}.rail-inspector-stats strong{font-size:.95rem;}}
+@media(prefers-reduced-motion:no-preference){
+ html:not([data-motion="reduced"]) .rail-inspector-stats>div,
+ html:not([data-motion="reduced"]) .rail-inspector-metrics>div {animation:v54-row-reveal 260ms var(--motion-native) both;}
+ html:not([data-motion="reduced"]) .rail-inspector-stats>div:nth-child(2),
+ html:not([data-motion="reduced"]) .rail-inspector-metrics>div:nth-child(2) {animation-delay:65ms;}
+}

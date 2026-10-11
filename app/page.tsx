@@ -199,7 +199,7 @@ export default function Home() {
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [boardOnly, setBoardOnly] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
-  const [fontScale, setFontScale] = useState<"normal" | "large">("normal");
+  const [fontScale, setFontScale] = useState<"compact" | "normal" | "large">("compact");
   const [liveVisible, setLiveVisible] = useState(false);
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
@@ -316,7 +316,9 @@ export default function Home() {
     return ids;
   }, [activeStationRoutes, routeInfo]);
   const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(selected,liveVisible,trips => {
-    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? null : null);
+    // Keep a selected journey visible if it leaves this station-centred radar scan;
+    // the inspector marks it as not currently verified rather than silently closing.
+    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
   });
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
@@ -361,7 +363,7 @@ export default function Home() {
         setFavoriteIds(readPreferenceIds(localStorage,"bahnconnections-favorite-stations"));
         setTheme(readPreference(localStorage,"bahnconnections-theme") === "dark" ? "dark" : "light");
         setHighContrast(readPreference(localStorage,"bahnconnections-contrast") === "high");
-        setFontScale(readPreference(localStorage,"bahnconnections-font") === "large" ? "large" : "normal");
+        setFontScale((value=>value==="normal"||value==="large"?value:"compact")(readPreference(localStorage,"bahnconnections-font")));
         setMinimalMode(readPreference(localStorage,"bahnconnections-minimal") === "1");
         setSavedRoutes(parseSavedRoutes(readPreferenceJson(localStorage,SAVED_ROUTES_KEY)));
         setProfile(parseLocalProfile(readPreferenceJson(localStorage,"bahnconnections-profile")));
@@ -378,6 +380,7 @@ export default function Home() {
   useEffect(() => {
     if (!preferencesReady) return;
     document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content",theme==="dark"?"#18232d":"#e7eff0");
     document.documentElement.dataset.contrast = highContrast ? "high" : "normal";
     document.documentElement.dataset.font = fontScale;
     document.documentElement.dataset.motion = reducedMotion ? "reduced" : "full";
@@ -1095,7 +1098,7 @@ export default function Home() {
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
           <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setMoreMenuOpen(false); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
-          <button className="round-button settings-trigger" onClick={()=>setSettingsOpen(true)} aria-label="Einstellungen und Profil">{profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
+          <button className="round-button settings-trigger" onClick={()=>setSettingsOpen(true)} aria-label="Einstellungen und Profil">{profile.avatarDataUrl ? <img className="header-avatar" src={profile.avatarDataUrl} alt=""/> : profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
         </div>
       </header>
 
@@ -1132,8 +1135,8 @@ export default function Home() {
             <span>Live-Züge</span><div className="popover-buttons"><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>An</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
             <span>Zugarten</span><div className="popover-buttons"><button className={liveCategories.includes("fern") ? "active fern" : ""} onClick={() => toggleLiveCategory("fern")}>ICE/IC</button><button className={liveCategories.includes("regional") ? "active regional" : ""} onClick={() => toggleLiveCategory("regional")}>RE/RB</button><button className={liveCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => toggleLiveCategory("sbahn")}>S-Bahn</button><button className={liveCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => toggleLiveCategory("ubahn")}>U-Bahn</button><button className={liveCategories.includes("tram") ? "active tram" : ""} onClick={() => toggleLiveCategory("tram")}>Tram</button></div>
             <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle</option><option value="delayed">Verspätet</option><option value="ontime">Pünktlich</option></select></label>
-            <details className="map-advanced-options"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>
-            <details className="map-advanced-options"><summary>Weitere Kartenoptionen</summary><div><button className={overviewRoutesVisible ? "active" : ""} onClick={() => { setOverviewRoutesVisible((value) => !value); setStationTrip(null); setStationTrips([]); }}>Fernnetz</button><button className={showRouteLabels ? "active" : ""} onClick={() => setShowRouteLabels((value) => !value)} disabled={!overviewRoutesVisible}>Liniennamen</button><button className={showTrails ? "active" : ""} onClick={() => setShowTrails((value) => !value)}>Zugspur</button></div></details>
+            
+            
           </div>}
           {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
@@ -1229,7 +1232,7 @@ export default function Home() {
         )}
 
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} />
+          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
@@ -1237,7 +1240,7 @@ export default function Home() {
 
       </section>
 
-      {settingsOpen && <SettingsDialog savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} largeFont={fontScale==="large"} onLargeFont={value=>setFontScale(value ? "large" : "normal")} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy}/>}
+      {settingsOpen && <SettingsDialog savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
       {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (

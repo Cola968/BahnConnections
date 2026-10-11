@@ -3,6 +3,7 @@ import { VisibilityPoller } from '../app/visibility-poller.ts';
 import { readBoardStream } from '../app/board-stream.ts';
 import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.ts';
 import { pointOnTrip,trailForTrip,segmentAverageSpeed,matchesLiveStatus } from '../app/live-trains.ts';
+import { normaliseTrainStops,nextTrainStopIndex,headingDegrees,cardinalDirection,sourceFreshness } from '../app/train-inspector-data.ts';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 class Visibility extends EventTarget {hidden=false;}
 const visibility=new Visibility(),signals=[];
@@ -21,6 +22,22 @@ assert.equal(matchesLiveStatus({...trip,arrival:'2026-10-11T11:59:00Z'},'ontime'
 assert.equal(pointOnTrip({...trip,points:[]},.5),null);assert.equal(pointOnTrip({...trip,points:[[52,13],[53,14]]},.5),null,'Never cross a source geometry gap');
 assert.equal(pointOnTrip({...trip,arrival:'invalid'},.5),null);assert.deepEqual(trailForTrip({...trip,points:[]},.5),[]);
 assert.deepEqual(trailForTrip(trip,.5).at(-1),pointOnTrip(trip,.5));assert.equal(segmentAverageSpeed({...trip,distance:0}),null);assert.equal(segmentAverageSpeed({...trip,distance:1e9}),null);
+
+
+const fullStops=normaliseTrainStops([
+  {mode:'LONG_DISTANCE',realTime:true,from:{name:'Berlin Hbf',departure:'2026-10-11T12:00:00Z'},to:{name:'Südkreuz',arrival:'2026-10-11T12:05:00Z'}},
+  {mode:'LONG_DISTANCE',realTime:true,from:{name:'Südkreuz',arrival:'2026-10-11T12:05:00Z'},to:{name:'Halle Hbf',arrival:'2026-10-11T13:00:00Z'}},
+]);
+assert.deepEqual(fullStops.map(stop=>stop.name),['Berlin Hbf','Südkreuz','Halle Hbf'],'Shared leg boundary does not duplicate');
+assert.equal(nextTrainStopIndex(fullStops,Date.parse('2026-10-11T12:20:00Z')),2,'Next stop is the upcoming timetable event');
+assert.equal(nextTrainStopIndex(fullStops,Date.parse('2026-10-11T15:20:00Z')),-1,'Completed train has no next stop');
+assert.equal(headingDegrees([52,13],[53,13]),0,'North is zero degrees');
+assert.ok(Math.abs(headingDegrees([52,13],[52,14])-90)<.0001,'East is 90 degrees');
+assert.equal(cardinalDirection(headingDegrees([52,13],[51,13])),'S');
+assert.equal(headingDegrees([52,13],[52,13]),null,'Stationary/invalid direction is hidden');
+assert.equal(sourceFreshness(new Date('2026-10-11T12:00:00Z'),Date.parse('2026-10-11T12:01:00Z'),true),'current');
+assert.equal(sourceFreshness(new Date('2026-10-11T12:00:00Z'),Date.parse('2026-10-11T12:03:00Z'),true),'old');
+assert.equal(sourceFreshness(new Date('2026-10-11T12:00:00Z'),Date.parse('2026-10-11T12:01:00Z'),false),'missing');
 
 const records=[],encoder=new TextEncoder();let streamController;
 const stream=new ReadableStream({start(controller){streamController=controller;}});

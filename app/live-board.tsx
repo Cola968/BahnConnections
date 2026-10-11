@@ -147,9 +147,13 @@ export function brandFor(entry: BoardEntry) {
   if (/^(EC|RJ|RJX|TGV|NJ|EN)\b/i.test(name)) return { label:name.match(/^[A-Z]+/i)?.[0] ?? "EC", number, className:"ec" };
   if (entry.line?.product === "sbahn" || /^S\s?\d+/i.test(name)) return { label:name.replace(/\s+/g, ""), number:"", className:"sbahn" };
   if (entry.line?.product === "ubahn" || /^U\s?\d+/i.test(name)) return { label:name.replace(/\s+/g, ""), number:"", className:"ubahn" };
-  if (/^(RE|RB)\b/i.test(name)) return { label:name.match(/^[A-Z]+/i)?.[0] ?? "R", number, className:"regional" };
+  const regional=name.match(/^(RE|RB)\s*(\d{1,3}[A-Z]?)(?=\b|\s|\()/i);
+  if (regional) return {label:`${regional[1].toUpperCase()}${regional[2].toUpperCase()}`,number:"",className:"regional"};
+  if (/^(RE|RB)\b/i.test(name)) return {label:name.match(/^(RE|RB)/i)?.[0].toUpperCase()??"Regio",number:"",className:"regional"};
   if (entry.line?.product === "fern") return { label:"FV", number:name, className:"ec" };
-  return { label:"R", number:name, className:"regional" };
+  // An unrecognised operator/train ID is not a proven RE/RB route number.
+  // Show its human-readable name once, not a fabricated "R" badge plus internal feed ID.
+  return { label:name.replace(/\s*\([^)]*\)\s*$/,"").slice(0,12)||"Regio", number:"", className:"regional" };
 }
 
 function summaryProduct(entry: BoardEntry): keyof BoardSummary["products"] {
