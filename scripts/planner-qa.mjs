@@ -252,14 +252,43 @@ try {
     await screenshot('390-expanded');
     await inspect('options');await screenshot('390-options');
     await tap('.route-options summary');
-    await tap('.route-station-search input');
-    await waitFor(`Boolean(document.querySelector('.route-station-search .search-suggestions'))`,'Suggestions missing');
-    await inspect('suggestions');await screenshot('390-suggestions');
-    await evaluate(`document.activeElement.blur()`);
+    // Regression: route suggestions must be independently scrollable and tappable even
+    // in a 320px viewport, without being clipped by the planner's panel-body.
+    await setViewport(320,568);
+    await tap('.route-search-pair>div:last-child input');
+    await waitFor(`Boolean(document.querySelector('.planner-station-picker[open] .search-suggestions'))`,'Mobile station picker did not open');
+    await tap('.planner-station-picker-form button');
+    await command('Input.insertText',{text:'München'});
+    await waitFor(`Boolean(document.querySelector('.planner-station-picker .search-suggestions button b[title="München Hbf"]'))`,'München suggestion missing');
+    async function verifyPicker(label) {
+      const result=await evaluate(`(() => {
+        const dialog=document.querySelector('.planner-station-picker[open]'), list=dialog?.querySelector('.search-suggestions'), target=[...dialog?.querySelectorAll('.search-suggestions button')??[]].find(button=>button.textContent.includes('München Hbf'));
+        const box=target?.getBoundingClientRect(),viewport=list?.getBoundingClientRect();
+        if(!dialog||!box||!viewport)return {ok:false,reason:'missing dialog / list / target'};
+        target.scrollIntoView({block:'nearest'});
+        const row=target.getBoundingClientRect(),clip=list.getBoundingClientRect();
+        const x=row.x+row.width/2,y=row.y+row.height/2;
+        const hit=document.elementFromPoint(x,y);
+        return {ok:row.top>=clip.top-1&&row.bottom<=clip.bottom+1&&y<innerHeight&&Boolean(hit&&(hit===target||target.contains(hit))),
+          dialog:dialog.getBoundingClientRect().toJSON(),list:clip.toJSON(),target:row.toJSON(),modalInput:document.activeElement===dialog.querySelector('input'),
+          shortLayout:document.querySelector('.mobile-sheet-panel')?.getBoundingClientRect().width};
+      })()`);
+      if(!result.ok)throw new Error(label+' suggestion clipped or untappable: '+JSON.stringify(result));
+      checks.push({label,...result});
+    }
+    await verifyPicker('320x568 mobile target picker');
+    await screenshot('320-station-picker');
+    await tap('.planner-station-picker-header button');
     await setViewport(390,480);
+    await tap('.route-search-pair>div:last-child input');
+    await waitFor(`Boolean(document.querySelector('.planner-station-picker[open] .search-suggestions'))`,'Short-height station picker missing');
+    await verifyPicker('390x480 short-height target picker');
+    await screenshot('390-keyboard-height-picker');
+    await tap('.planner-station-picker-header button');
     await evaluate(`document.querySelector('.plan-button').scrollIntoView({block:'center'})`);
     const short=await inspect('keyboard-height-simulation');
     if(!short.actionVisible)throw new Error('Action inaccessible in short viewport');
+    if((short.panel?.width??0)<300)throw new Error('Portrait planner collapsed into sidebar: '+JSON.stringify(short));
     await screenshot('390-keyboard-height-simulation');
     await setViewport(390,844);
     await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
@@ -270,8 +299,8 @@ try {
     if(!await evaluate(`document.querySelector('.route-station-search input')?.value==='Changed while loading'`))throw new Error('Input lost');
     checks.push({label:'stale-response-after-edit',passed:true});
     await evaluate(`(() => {const input=document.querySelector('.route-station-search input');input.focus();Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'Berlin Hbf');input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
-    await waitFor(`Boolean(document.querySelector('.route-station-search .search-suggestions button'))`,'Station suggestions not restored');
-    await tap('.route-station-search .search-suggestions button');
+    await waitFor(`Boolean(document.querySelector('.planner-station-picker[open] .search-suggestions button'))`,'Station suggestions not restored');
+    await tap('.planner-station-picker .search-suggestions button');
     await waitFor(`!document.querySelector('.plan-button').disabled`,'Search selection not restored');
     await tap('.plan-button');
     await screenshot('390-loading');
