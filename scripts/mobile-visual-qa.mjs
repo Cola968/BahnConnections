@@ -592,7 +592,16 @@ try {
       await setViewport(320,844);
     }
     const bounds=await evaluate(`(() => {const r=document.querySelector('.settings-dialog').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,overflow:document.querySelector('.settings-dialog').scrollWidth>document.querySelector('.settings-dialog').clientWidth+1};})()`);
-    if(bounds.left<0||bounds.right>width+1||bounds.top<0||bounds.bottom>(width<1024?844:900)+1||bounds.overflow) throw new Error('Settings overflow at '+width+': '+JSON.stringify(bounds));
+    if(bounds.left<0||bounds.right>width+1||bounds.top<0||bounds.bottom>(width<1024?844:900)+1||bounds.overflow) {
+      const offenders=await evaluate(`(() => {
+        const dialog=document.querySelector('.settings-dialog'),root=dialog?.getBoundingClientRect();
+        if(!dialog||!root)return [];
+        return [...dialog.querySelectorAll('*')].map(el=>({name:el.tagName.toLowerCase(),className:String(el.className?.baseVal??el.className).slice(0,90),
+          right:Math.round(el.getBoundingClientRect().right),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}))
+          .filter(row=>row.right>root.right+1||row.scrollWidth>row.clientWidth+2).slice(0,15);
+      })()`);
+      throw new Error('Settings overflow at '+width+': '+JSON.stringify({bounds,offenders}));
+    }
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
     await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
     if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
