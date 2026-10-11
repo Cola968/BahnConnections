@@ -28,7 +28,7 @@
   }
   .desktop-panel-resizer-grip i {display:block;width:3px;height:3px;border-radius:50%;background:var(--muted);}
   .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .map-stage {padding-right:calc(var(--workspace-right,382px) + 28px);}
-  .desktop-workspace .floating-panel {width:var(--workspace-right,382px);max-width:calc(100vw - 465px);min-width:min(300px,calc(100vw - 465px));}
+  .desktop-workspace.has-primary-panel:not(.desktop-search-mode) .floating-panel {width:var(--workspace-right,382px);max-width:calc(100vw - 465px);min-width:min(300px,calc(100vw - 465px));}
 }
 
 /* The board already lives in a scrollable .panel-body. Don't nest a separately
