@@ -30,6 +30,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const [stops,setStops]=useState<TrainStop[]>([]);
   const [detailState,setDetailState]=useState<"loading"|"ready"|"error">("loading");
   const [showAllStops,setShowAllStops]=useState(false);
+  const [detailRetry,setDetailRetry]=useState(0);
   useEffect(()=>{
     const refresh=()=>{if(!document.hidden)setNow(Date.now());};
     const timer=window.setInterval(refresh,4000);
@@ -52,7 +53,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
     }
     void load();
     return()=>controller.abort();
-  },[trip.tripId]);
+  },[trip.tripId,detailRetry]);
 
   const progress=liveTripProgress(trip,now);
   const position=pointOnTrip(trip,progress);
@@ -105,7 +106,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <div className="train-stops-header"><div><b>Fahrtverlauf</b><small>{detailState==="loading"?"Wird geladen …":detailState==="ready"?`${stops.length} gemeldete Halte`:"Fahrtverlauf nicht verfügbar"}</small></div>{detailState==="ready"&&stops.length>6&&<button onClick={()=>setShowAllStops(x=>!x)} type="button">{showAllStops?"Weniger":"Alle Halte"}</button>}</div>
         {upcoming&&<div className="train-next-stop"><UiIcon name="location"/><span><small>Nächster gemeldeter Halt</small><b>{stationName(upcoming.name)}</b></span><strong>{clock(upcoming.arrival??upcoming.departure)}</strong></div>}
         {detailState==="loading"&&<p className="train-stops-state">Halte werden von Transitous geladen.</p>}
-        {detailState==="error"&&<p className="train-stops-state">Der vollständige Fahrtverlauf ist derzeit nicht verfügbar. Die beiden Abschnittshalte oben bleiben sichtbar.</p>}
+        {detailState==="error"&&<div className="train-stops-retry"><p className="train-stops-state">Der vollständige Fahrtverlauf ist gerade nicht erreichbar. Die beiden Abschnittshalte bleiben sichtbar.</p><button type="button" onClick={()=>setDetailRetry(retry=>retry+1)}>Erneut laden</button></div>}
         {detailState==="ready"&&<ol className="train-stop-list">{visibleStops.map((stop,index)=>{
           const isNext=stop===upcoming;const time=stop.arrival??stop.departure;
           const past=validDate(time);const occurred=past!==null&&past<now-60000;
