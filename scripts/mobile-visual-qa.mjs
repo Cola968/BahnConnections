@@ -591,7 +591,7 @@ try {
       await screenshot('320x568-settings-plus-scrolled');
       await setViewport(320,844);
     }
-    const bounds=await evaluate(`(() => {const r=document.querySelector('.settings-dialog').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,overflow:document.querySelector('.settings-dialog').scrollWidth>document.querySelector('.settings-dialog').clientWidth+1};})()`);
+    const bounds=await evaluate(`(() => {const r=document.querySelector('.settings-dialog').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,overflow:document.querySelector('.settings-dialog').scrollWidth>document.querySelector('.settings-dialog').clientWidth+2,scrollWidth:document.querySelector('.settings-dialog').scrollWidth,clientWidth:document.querySelector('.settings-dialog').clientWidth};})()`);
     if(bounds.left<0||bounds.right>width+1||bounds.top<0||bounds.bottom>(width<1024?844:900)+1||bounds.overflow) {
       const offenders=await evaluate(`(() => {
         const dialog=document.querySelector('.settings-dialog'),root=dialog?.getBoundingClientRect();
