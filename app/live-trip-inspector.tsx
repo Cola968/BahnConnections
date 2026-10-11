@@ -62,8 +62,8 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const heading=headingDegrees(past,future);
   const compass=cardinalDirection(heading);
   const realtime=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
-  const freshness=sourceFreshness(radarUpdatedAt,now,inRadar&&radarStatus==="ready");
-  const statusText=freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan") : freshness==="old"?"Daten veraltet":"Nicht mehr im Live-Radar";
+  const freshness=sourceFreshness(radarUpdatedAt,now,inRadar);
+  const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
   const remaining=validDate(trip.arrival);
   const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
   const nextIndex=nextTrainStopIndex(stops,now);
