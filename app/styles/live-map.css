@@ -1,0 +1,60 @@
+
+.live-train-wrap,.live-cluster-wrap { border:0!important; background:transparent!important; }
+.live-train-marker { position:relative; display:flex; align-items:center; justify-content:center; height:23px; padding:0 7px 0 18px; border:2px solid white; border-radius:99px; color:white; background:#0f8b8d; box-shadow:0 5px 15px rgba(5,34,43,.3); font-size:12px; font-weight:600; white-space:nowrap; transition:transform 1s linear; }
+.live-train-marker i { position:absolute; left:5px; width:8px; height:8px; border:2px solid currentColor; border-radius:2px 4px 2px 2px; }
+.live-train-marker.fern { background:var(--red); }
+.live-train-marker.sbahn { background:#23865c; }
+.live-train-marker.delayed { box-shadow:0 0 0 4px rgba(229,57,69,.22),0 5px 15px rgba(5,34,43,.3); animation:train-delay 1.5s ease-in-out infinite; }
+.live-train-marker.tracked { transform:scale(1.18); box-shadow:0 0 0 5px rgba(255,189,74,.35),0 7px 18px rgba(5,34,43,.38); }
+
+.live-train-marker.glyph { width:18px; height:18px; padding:0; border:2px solid rgba(255,255,255,.92); border-radius:50%; background:#4f8f91; box-shadow:0 3px 9px rgba(10,39,47,.25); }
+.live-train-marker.glyph i { position:static; width:7px; height:7px; border:1.5px solid white; border-radius:2px; }
+.live-train-marker.glyph.fern { background:#c96c69; }
+.live-train-marker.glyph.sbahn { background:#4b8b69; }
+.live-train-marker.glyph.delayed { background:#c99b45; animation:none; box-shadow:0 0 0 3px rgba(201,155,69,.17),0 3px 9px rgba(10,39,47,.2); }
+.live-train-marker.glyph.severe { background:#c8675e; box-shadow:0 0 0 4px rgba(200,103,94,.18),0 3px 9px rgba(10,39,47,.2); }
+.live-train-marker.glyph.status-neutral { background:var(--status-schedule); }
+.live-train-marker.glyph.status-success { background:var(--status-on-time); }
+.live-train-marker.glyph.status-early { background:var(--status-early); box-shadow:0 0 0 3px color-mix(in srgb,var(--status-early) 18%,transparent),0 3px 9px rgba(10,39,47,.2); }
+.live-train-marker.glyph.status-warning { background:var(--status-delay); }
+.live-train-marker.glyph.status-danger { background:var(--status-disruption); }
+/* Source status and keyboard focus share the map's existing material contract. */
+.live-train-wrap:focus-visible,.live-cluster-wrap:focus-visible {
+  outline:3px solid var(--action); outline-offset:5px; border-radius:50%;
+}
+.live-cluster.unknown { background:var(--glass-elevated); color:var(--muted); }
+.live-cluster b { font:inherit; }
+.radar-data-notice {
+  position:absolute; top:76px; left:50%; transform:translateX(-50%); z-index:var(--z-header);
+  max-width:calc(100% - 32px); margin:0; padding:8px 12px; border:1px solid var(--glass-stroke);
+  border-radius:var(--radius-control); color:var(--warning); background:var(--glass-scroll-edge);
+  backdrop-filter:var(--glass-filter-strong); font-size:.8125rem; text-align:center;
+}
+.live-trip-card .track-button { min-height:44px; }
+.live-trip-card .track-button:disabled { opacity:.6; cursor:default; }
+.live-trip-card>.panel-body { min-width:0; overflow-x:hidden; }
+.live-trip-title { display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:center; }
+.live-trip-title .service-pill { max-width:80px; padding:6px 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.live-trip-title>div { display:grid; min-width:0; gap:4px; }
+.live-trip-title b { font-size:.9375rem; line-height:1.35; overflow-wrap:anywhere; }
+.live-trip-title small { color:var(--muted); font-size:.75rem; line-height:1.4; }
+.trip-progress { position:relative; height:4px; margin:20px 4px; border-radius:99px; background:var(--line); }
+.trip-progress i { position:absolute; inset:0 auto 0 0; border-radius:inherit; background:var(--accent); }
+.trip-progress span { position:absolute; top:50%; width:12px; height:12px; border:2px solid var(--paper); border-radius:50%; background:var(--accent); transform:translate(-50%,-50%); }
+.live-trip-stops { display:grid; gap:16px; }
+.live-trip-stops>span { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 12px; align-items:start; }
+.live-trip-stops small { grid-column:1/-1; color:var(--muted); font-size:.75rem; }
+.live-trip-stops b { min-width:0; font-size:.875rem; line-height:1.4; overflow-wrap:anywhere; }
+.live-trip-stops .realtime-time { justify-self:end; }
+.live-trip-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:20px 0; padding-block:12px; border-block:1px solid var(--line-subtle); }
+.live-trip-stats>span { display:flex; flex-wrap:wrap; gap:4px 6px; align-items:baseline; min-width:0; color:var(--muted); font-size:.75rem; }
+.live-trip-stats b { color:var(--ink); font-size:1.125rem; white-space:nowrap; font-variant-numeric:tabular-nums; }
+@media (forced-colors:active) {
+  .live-train-wrap:focus-visible,.live-cluster-wrap:focus-visible { outline-color:Highlight; }
+  .radar-data-notice { color:CanvasText; background:Canvas; border-color:CanvasText; }
+}
+
+@media (min-width:1024px) {
+  .app-shell .live-trip-card { bottom:auto; height:auto; max-height:calc(100dvh - 110px); }
+  .live-trip-card>.panel-body { max-height:calc(100dvh - 180px); }
+}

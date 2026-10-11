@@ -1,0 +1,12 @@
+
+.app-shell :is(.topbar,.mobile-search-dock .station-search,.search-suggestions,.map-menu-popover.detached,.settings-dialog,.app-update-notice,.mobile-sheet-restore) {
+  background:linear-gradient(145deg,var(--glass-highlight-soft),transparent 44%),var(--glass-regular)!important;
+  -webkit-backdrop-filter:var(--glass-filter-strong)!important; backdrop-filter:var(--glass-filter-strong)!important;
+  border-color:var(--glass-stroke)!important; box-shadow:var(--glass-shadow-soft)!important;
+}
+.app-shell :is(.brand,.mobile-map-view-button,.location-trigger,.round-button) {
+  background:linear-gradient(145deg,var(--glass-highlight-soft),transparent 44%),var(--glass-clear)!important;
+  -webkit-backdrop-filter:var(--glass-filter)!important; backdrop-filter:var(--glass-filter)!important;
+  box-shadow:var(--glass-shadow-soft)!important;
+}
+.app-shell .station-search>.search-submit-icon { flex:0 0 44px; width:44px; height:44px; min-width:44px; padding:0; display:grid; place-items:center; color:var(--action); background:transparent!important; box-shadow:none!important; }

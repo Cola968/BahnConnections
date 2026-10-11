@@ -511,17 +511,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     padding:0 14px;
     border-radius:14px;
   }
-
-  .station-section-tabs {
-    position:sticky;
-    top:80px;
-    z-index:7;
-    padding:4px;
-    border-radius:16px;
-    background:color-mix(in srgb,var(--elevated) 88%,transparent);
-    -webkit-backdrop-filter:blur(18px);
-    backdrop-filter:blur(18px);
-  }
 }
 
 /* Desktop changes composition too: larger map, narrower instrument-like sidebars. */

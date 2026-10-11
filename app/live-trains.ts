@@ -1,4 +1,6 @@
 import type { Station } from "./network-data";
+import { railDistanceKm } from "./rail-geometry.ts";
+import { deriveRealtimePresentation, REALTIME_DELAY_THRESHOLDS } from "./realtime-presentation.ts";
 
 export type LiveRailMode = "HIGHSPEED_RAIL" | "LONG_DISTANCE" | "NIGHT_RAIL" | "REGIONAL_FAST_RAIL" | "REGIONAL_RAIL" | "SUBURBAN" | "SUBWAY" | "TRAM";
 export type LiveTrainCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
@@ -12,8 +14,8 @@ export type LiveTrip = {
   to: { name: string; lat: number; lon: number };
   departure: string;
   arrival: string;
-  scheduledDeparture: string;
-  scheduledArrival: string;
+  scheduledDeparture?: string;
+  scheduledArrival?: string;
   realTime: boolean;
   delay: number;
   distance: number;
@@ -80,27 +82,50 @@ export function liveTripProgress(trip: LiveTrip, at = Date.now()) {
   return Math.max(0, Math.min(1, (at - start) / (end - start)));
 }
 
-export function pointOnTrip(trip: LiveTrip, progress = liveTripProgress(trip)): [number, number] {
-  if (trip.points.length < 2) return [trip.from.lat, trip.from.lon] as [number, number];
-  const distances = trip.points.slice(1).map((point, index) => Math.hypot(point[0] - trip.points[index][0], point[1] - trip.points[index][1]));
-  const total = distances.reduce((sum, value) => sum + value, 0);
-  let target = total * progress;
-  for (let index = 0; index < distances.length; index += 1) {
-    if (target <= distances[index]) {
-      const ratio = distances[index] ? target / distances[index] : 0;
-      const from = trip.points[index];
-      const to = trip.points[index + 1];
-      return [from[0] + (to[0] - from[0]) * ratio, from[1] + (to[1] - from[1]) * ratio] as [number, number];
-    }
-    target -= distances[index];
+type GeometryIndex = { cumulative:Float64Array; total:number; valid:boolean };
+const geometryIndexes=new WeakMap<LiveTrip['points'],GeometryIndex>();
+function geometryIndex(points:LiveTrip['points']):GeometryIndex {
+  const cached=geometryIndexes.get(points);if(cached)return cached;
+  const cumulative=new Float64Array(points.length);let valid=points.length>1;
+  for(let i=0;i<points.length;i++) {
+    const point=points[i];
+    if(!point.every(Number.isFinite)||Math.abs(point[0])>90||Math.abs(point[1])>180)valid=false;
+    if(i){const distance=railDistanceKm(points[i-1],point);if(!Number.isFinite(distance)||distance>2)valid=false;cumulative[i]=cumulative[i-1]+distance;}
   }
-  return trip.points.at(-1) ?? [trip.to.lat, trip.to.lon];
+  const result={cumulative,total:cumulative.at(-1)??0,valid};geometryIndexes.set(points,result);return result;
 }
-
-export function trailForTrip(trip: LiveTrip, progress = liveTripProgress(trip)) {
-  const end = Math.max(1, Math.round((trip.points.length - 1) * progress));
-  const start = Math.max(0, end - Math.max(2, Math.round(trip.points.length * 0.16)));
-  return [...trip.points.slice(start, end + 1), pointOnTrip(trip, progress)];
+function segmentAt(index:GeometryIndex,progress:number) {
+  const target=index.total*Math.max(0,Math.min(1,progress));let low=1,high=index.cumulative.length-1;
+  while(low<high){const middle=(low+high)>>1;if(index.cumulative[middle]<target)low=middle+1;else high=middle;}
+  return {end:low,target};
+}
+/** Positions are estimates on continuous source geometry, never a GPS measurement. */
+export function pointOnTrip(trip:LiveTrip,progress=liveTripProgress(trip)):[number,number]|null {
+  const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||!Number.isFinite(progress))return null;
+  const index=geometryIndex(trip.points);if(!index.valid)return null;
+  const selected=segmentAt(index,progress),a=trip.points[selected.end-1],b=trip.points[selected.end];
+  const length=index.cumulative[selected.end]-index.cumulative[selected.end-1];
+  const ratio=length?(selected.target-index.cumulative[selected.end-1])/length:0;
+  return [a[0]+(b[0]-a[0])*ratio,a[1]+(b[1]-a[1])*ratio];
+}
+export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
+  const position=pointOnTrip(trip,progress);if(!position)return [];
+  const index=geometryIndex(trip.points),{end}=segmentAt(index,progress);
+  const start=Math.max(0,end-Math.max(2,Math.round(trip.points.length*.16)));
+  // End before the interpolation segment: never overshoot the estimated position.
+  return [...trip.points.slice(start,end),position];
+}
+export function segmentAverageSpeed(trip:LiveTrip):number|null {
+  const hours=(Date.parse(trip.arrival)-Date.parse(trip.departure))/3_600_000;
+  const speed=trip.distance/1000/hours;
+  return hours>0&&trip.distance>0&&Number.isFinite(speed)&&speed<=450?Math.round(speed):null;
+}
+export function matchesLiveStatus(trip:LiveTrip,filter:'all'|'delayed'|'ontime') {
+  if(filter==='all')return true;
+  const state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
+  if(state.delayMinutes===null)return false;
+  return filter==='delayed'?state.delayMinutes>REALTIME_DELAY_THRESHOLDS.greenThrough:state.delayMinutes>=0&&state.delayMinutes<=REALTIME_DELAY_THRESHOLDS.greenThrough;
 }
 
 export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Promise<LiveTrip[]> {
@@ -113,11 +138,14 @@ export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Pr
   url.searchParams.set("endTime", new Date(now + 45_000).toISOString());
   url.searchParams.set("precision", "4");
   url.searchParams.set("language", "de");
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error(`Live-Radar ${response.status}`);
   const payload = await response.json() as ApiTripSegment[];
   const found = new Map<string, LiveTrip>();
+  let prepared=0;
   for (const segment of payload) {
+    signal?.throwIfAborted();
+    if(prepared++%5===0){await new Promise(resolve=>setTimeout(resolve,0));signal?.throwIfAborted();}
     if (!RAIL_MODES.has(segment.mode as LiveRailMode) || !segment.polyline || !segment.departure || !segment.arrival || !segment.from || !segment.to) continue;
     const tripInfo = segment.trips?.[0];
     const tripId = tripInfo?.tripId ?? `${tripInfo?.displayName}-${segment.departure}-${segment.to.name}`;
@@ -137,8 +165,8 @@ export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Pr
       to: { name: segment.to.name ?? "Nächster Halt", lat: segment.to.lat ?? points.at(-1)![0], lon: segment.to.lon ?? points.at(-1)![1] },
       departure: segment.departure,
       arrival: segment.arrival,
-      scheduledDeparture: segment.scheduledDeparture ?? segment.departure,
-      scheduledArrival: segment.scheduledArrival ?? segment.arrival,
+      scheduledDeparture: segment.scheduledDeparture,
+      scheduledArrival: segment.scheduledArrival,
       realTime: Boolean(segment.realTime),
       delay: Math.round((actualDeparture - plannedDeparture) / 60_000),
       distance: segment.distance ?? 0,
@@ -148,5 +176,11 @@ export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Pr
     const currentDistance = current ? Math.abs(liveTripProgress(current) - 0.5) : Number.POSITIVE_INFINITY;
     if (!current || Math.abs(liveTripProgress(trip) - 0.5) < currentDistance) found.set(tripId, trip);
   }
-  return [...found.values()].sort((a, b) => b.delay - a.delay || a.name.localeCompare(b.name, "de")).slice(0, 180);
+  const trips=[...found.values()].sort((a,b)=>b.delay-a.delay||a.name.localeCompare(b.name,"de")).slice(0,180);
+  // Warm distance indexes in yielding batches, before the map's first render.
+  for(let i=0;i<trips.length;i++){
+    if(i%5===0){await new Promise(resolve=>setTimeout(resolve,0));signal?.throwIfAborted();}
+    geometryIndex(trips[i].points);
+  }
+  return trips;
 }
