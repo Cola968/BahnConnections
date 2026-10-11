@@ -7,27 +7,30 @@ import type { SavedRoute } from "./saved-routes";
 import { SUBSCRIPTION_PLANS } from "./subscription-plans";
 import { APP_VERSION_LABEL } from "./app-version";
 
-export type LocalProfile={name:string;homeStationId:string;initials:string};
+export type LocalProfile={name:string;homeStationId:string;homeStationName:string;favoriteLine:string;avatarDataUrl:string;initials:string};
 export function parseLocalProfile(value:unknown):LocalProfile {
   const p=value && typeof value==="object" ? value as Record<string,unknown> : {};
   const name=typeof p.name==="string" ? p.name.trim().slice(0,40) : "";
-  return {name,homeStationId:typeof p.homeStationId==="string" ? p.homeStationId.slice(0,120) : "",initials:name.split(/\s+/).map(part=>Array.from(part)[0]).slice(0,2).join("").toLocaleUpperCase("de-DE")};
+  return {name,homeStationId:typeof p.homeStationId==="string" ? p.homeStationId.slice(0,120) : "",homeStationName:typeof p.homeStationName==="string" ? p.homeStationName.trim().slice(0,100) : "",favoriteLine:typeof p.favoriteLine==="string" ? p.favoriteLine.trim().slice(0,24) : "",avatarDataUrl:typeof p.avatarDataUrl==="string" && /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.avatarDataUrl) && p.avatarDataUrl.length<180000 ? p.avatarDataUrl : "",initials:name.split(/\s+/).map(part=>Array.from(part)[0]).slice(0,2).join("").toLocaleUpperCase("de-DE")};
 }
 type Props={
   savedRoutes:SavedRoute[];onOpenRoute:(route:SavedRoute,reverse:boolean)=>void;onRemoveRoute:(id:string)=>void;
   onClose:()=>void;profile:LocalProfile;onProfile:(profile:LocalProfile)=>boolean;
   stations:Station[];onHomeStation:(station:Station)=>void;favoriteCount:number;
   theme:"light"|"dark";onTheme:(theme:"light"|"dark")=>void;
-  highContrast:boolean;onContrast:(value:boolean)=>void;largeFont:boolean;onLargeFont:(value:boolean)=>void;
+  highContrast:boolean;onContrast:(value:boolean)=>void;fontScale:"compact"|"normal"|"large";onFontScale:(value:"compact"|"normal"|"large")=>void;
   reducedMotion:boolean;onReducedMotion:(value:boolean)=>void;
   autoLocation:boolean;onAutoLocation:(value:boolean)=>void;onRequestLocation:()=>void;
   locationStatus:string;locationAccuracy?:number;
+  showTrails:boolean;onShowTrails:(value:boolean)=>void;showRouteLabels:boolean;onShowRouteLabels:(value:boolean)=>void;overviewRoutesVisible:boolean;onOverviewRoutesVisible:(value:boolean)=>void;
 };
 export function SettingsDialog(p:Props) {
   const dialog=useRef<HTMLDialogElement>(null);
   const [tab,setTab]=useState<"profile"|"settings"|"plans">("profile");
   const [name,setName]=useState(p.profile.name);
-  const [home,setHome]=useState(p.profile.homeStationId);
+  const [homeText,setHomeText]=useState(p.profile.homeStationName || p.stations.find(station=>station.id===p.profile.homeStationId)?.name || "");
+  const [favoriteLine,setFavoriteLine]=useState(p.profile.favoriteLine);
+  const [avatarDataUrl,setAvatarDataUrl]=useState(p.profile.avatarDataUrl);
   const [message,setMessage]=useState("");
   useEffect(()=>{
     const el=dialog.current,previous=document.activeElement as HTMLElement|null;
@@ -36,10 +39,26 @@ export function SettingsDialog(p:Props) {
   },[]);
   function save(event:FormEvent) {
     event.preventDefault();
-    const saved=p.onProfile(parseLocalProfile({name,homeStationId:home}));
+    const found=p.stations.find(station=>station.name.toLocaleLowerCase("de-DE")===homeText.trim().toLocaleLowerCase("de-DE"));
+    const saved=p.onProfile(parseLocalProfile({name,homeStationId:found?.id || "",homeStationName:homeText.trim(),favoriteLine,avatarDataUrl}));
     setMessage(saved ? "Gespeichert." : "Für diese Sitzung übernommen.");
   }
   const homeStation=p.stations.find(station=>station.id===p.profile.homeStationId);
+  const suggestions=homeText.trim().length>=2 ? p.stations.filter(station=>station.name.toLocaleLowerCase("de-DE").includes(homeText.toLocaleLowerCase("de-DE"))).slice(0,12) : [];
+  async function choosePhoto(file?:File) {
+    if(!file)return;
+    if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>5_000_000){setMessage("Bitte ein JPG-, PNG- oder WebP-Bild unter 5 MB auswählen.");return;}
+    try {
+      const bitmap=await createImageBitmap(file);
+      const canvas=document.createElement("canvas");canvas.width=192;canvas.height=192;
+      const ctx=canvas.getContext("2d");if(!ctx){bitmap.close();throw new Error("Canvas nicht verfügbar");}
+      const scale=Math.max(192/bitmap.width,192/bitmap.height);
+      ctx.drawImage(bitmap,(192-bitmap.width*scale)/2,(192-bitmap.height*scale)/2,bitmap.width*scale,bitmap.height*scale);
+      bitmap.close();const data=canvas.toDataURL("image/jpeg",.72);
+      if(data.length>=180000)throw new Error("Bild zu groß");
+      setAvatarDataUrl(data);setMessage("Profilbild ausgewählt. Bitte speichern.");
+    } catch {setMessage("Bild konnte nicht verarbeitet werden.");}
+  }
   const tabIndex=tab==="profile"?0:tab==="settings"?1:2;
   const locationText=`${p.locationStatus}${p.locationAccuracy!==undefined ? ` · ±${Math.round(p.locationAccuracy)} m` : ""}`;
 
@@ -56,14 +75,16 @@ export function SettingsDialog(p:Props) {
     <div className="settings-content" key={tab}>
       {tab==="profile" && <>
         <div className="profile-overview profile-overview-v53">
-          <span className="profile-avatar" aria-hidden="true">{p.profile.initials||<UiIcon name="user"/>}</span>
-          <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{homeStation ? ` · ${homeStation.name}` : ""}</p></div>
+          <span className="profile-avatar" aria-hidden={!p.profile.avatarDataUrl}>{p.profile.avatarDataUrl ? <img src={p.profile.avatarDataUrl} alt="Dein Profilbild"/> : p.profile.initials||<UiIcon name="user"/>}</span>
+          <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{(homeStation?.name || p.profile.homeStationName) ? ` · ${homeStation?.name || p.profile.homeStationName}` : ""}{p.profile.favoriteLine ? ` · ${p.profile.favoriteLine}` : ""}</p></div>
         </div>
-        <div className="profile-quick-stats" aria-label="Dein Überblick"><span><UiIcon name="star"/><strong>{p.favoriteCount}</strong><small>Favoriten</small></span><span><UiIcon name="route"/><strong>{p.savedRoutes.length}</strong><small>Pendelstrecken</small></span><span><UiIcon name="location"/><strong>{homeStation?"1":"0"}</strong><small>Heimatbahnhof</small></span></div>
+        <div className="profile-quick-stats" aria-label="Dein Überblick"><span><UiIcon name="star"/><strong>{p.favoriteCount}</strong><small>Favoriten</small></span><span><UiIcon name="route"/><strong>{p.savedRoutes.length}</strong><small>Pendelstrecken</small></span><span><UiIcon name="location"/><strong>{homeStation||p.profile.homeStationName?"1":"0"}</strong><small>Heimatbahnhof</small></span></div>
         <div className="settings-section-heading settings-profile-intro"><h3><UiIcon name="user"/> Dein Profil</h3><p>Diese Daten bleiben lokal auf deinem Gerät.</p></div>
         <form onSubmit={save} className="profile-form">
           <label><span>Name</span><input autoComplete="nickname" maxLength={40} value={name} onChange={event=>setName(event.target.value)} placeholder="Wie heißt du?"/></label>
-          <label><span>Heimatbahnhof</span><select value={home} onChange={event=>setHome(event.target.value)}><option value="">Nicht festgelegt</option>{p.stations.map(station=><option key={station.id} value={station.id}>{station.name}</option>)}</select></label>
+          <label className="profile-photo-picker"><span>Profilbild (nur auf diesem Gerät)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>void choosePhoto(event.target.files?.[0])}/>{avatarDataUrl && <button type="button" className="settings-link" onClick={()=>setAvatarDataUrl("")}>Bild entfernen</button>}</label>
+          <label><span>Heimatbahnhof</span><input type="text" list="home-station-suggestions" maxLength={100} value={homeText} onChange={event=>setHomeText(event.target.value)} placeholder="Bahnhof eingeben, z. B. Berlin Hbf"/><datalist id="home-station-suggestions">{suggestions.map(station=><option key={station.id} value={station.name}/>)}</datalist><small>Passende Bahnhöfe können direkt geöffnet werden.</small></label>
+          <label><span>Lieblingslinie (optional)</span><input type="text" maxLength={24} value={favoriteLine} onChange={event=>setFavoriteLine(event.target.value)} placeholder="z. B. S7, RE1 oder ICE"/></label>
           <button type="submit" className="settings-primary">Speichern</button>
           {message&&<p role="status" className="settings-message">{message}</p>}
         </form>
@@ -73,7 +94,7 @@ export function SettingsDialog(p:Props) {
         <details className="settings-danger-zone">
           <summary><UiIcon name="info"/> Datenschutz & lokale Profildaten</summary>
           <p>Profil und Heimatbahnhof liegen nur auf diesem Gerät.</p>
-          <button className="settings-link danger" onClick={()=>{setName("");setHome("");p.onProfile(parseLocalProfile(null));setMessage("Profil zurückgesetzt.");}}>Profil zurücksetzen</button>
+          <button className="settings-link danger" onClick={()=>{setName("");setHomeText("");setFavoriteLine("");setAvatarDataUrl("");p.onProfile(parseLocalProfile(null));setMessage("Profil zurückgesetzt.");}}>Profil zurücksetzen</button>
         </details>
       </>}
 
@@ -81,7 +102,7 @@ export function SettingsDialog(p:Props) {
         <section className="settings-group">
           <div className="settings-section-heading"><h3><UiIcon name="sun"/> Darstellung</h3><p>Helligkeit, Lesbarkeit und Bewegung.</p></div>
           <div className="theme-choice" aria-label="Farbschema">{(["light","dark"] as const).map(theme=><button key={theme} aria-pressed={p.theme===theme} className={p.theme===theme ? "active" : ""} onClick={()=>p.onTheme(theme)}><UiIcon name={theme==="light"?"sun":"moon"}/><span>{theme==="light"?"Hell":"Dunkel"}</span></button>)}</div>
-          <Toggle label="Größere Schrift" description="Mehr Lesbarkeit in Tafeln und Verbindungen" checked={p.largeFont} onChange={p.onLargeFont}/>
+          <label className="settings-scale-choice"><span><b>Schriftgröße</b><small>Standard ist jetzt kompakt, jederzeit veränderbar</small></span><select value={p.fontScale} onChange={event=>p.onFontScale(event.target.value as "compact"|"normal"|"large")}><option value="compact">Kompakt (Standard)</option><option value="normal">Normal</option><option value="large">Groß</option></select></label>
           <Toggle label="Hoher Kontrast" description="Stärkere Trennung von Text und Flächen" checked={p.highContrast} onChange={p.onContrast}/>
           <Toggle label="Animationen reduzieren" description="Weniger Bewegung bei Sheets und Navigation" checked={p.reducedMotion} onChange={p.onReducedMotion}/>
         </section>
@@ -90,6 +111,7 @@ export function SettingsDialog(p:Props) {
           <div className="settings-status-row"><span className={p.locationStatus.toLocaleLowerCase("de-DE").includes("aktiv") ? "status-dot active" : "status-dot"} aria-hidden="true"/><span><b>Standortstatus</b><small>{locationText}</small></span><button type="button" onClick={p.onRequestLocation}>Prüfen</button></div>
           <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
         </section>
+        <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="layers"/> Kartendarstellung</h3><p>Selten benötigte Kartenoptionen.</p></div><Toggle label="Fernverkehrsnetz" checked={p.overviewRoutesVisible} onChange={p.onOverviewRoutesVisible}/><Toggle label="Liniennamen" checked={p.showRouteLabels} onChange={p.onShowRouteLabels}/><Toggle label="Zugspur" checked={p.showTrails} onChange={p.onShowTrails}/></section>
         <section className="settings-group v53-app-info">
           <div className="settings-section-heading"><h3><UiIcon name="layers"/> App & Updates</h3><p>Version, Installation und Aktualisierungen.</p></div>
           <div className="v53-version-row"><span><b>Webversion</b><small>Updates werden über die Website bereitgestellt.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
