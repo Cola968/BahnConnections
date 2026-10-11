@@ -1,5 +1,5 @@
 /** BahnConnections product thresholds; these are not official operator colours. */
-export const REALTIME_DELAY_THRESHOLDS = { greenThrough:4, warningThrough:10, severeFrom:30 } as const;
+export const REALTIME_DELAY_THRESHOLDS = { greenThrough:0, minorThrough:4, warningThrough:10, severeFrom:30 } as const;
 
 export type RealtimeKind = "schedule" | "on-time" | "minor-delay" | "delay" | "major-delay" | "early" | "cancelled" | "unknown";
 export type RealtimeTone = "neutral" | "success" | "warning" | "danger";
@@ -35,7 +35,7 @@ export function deriveRealtimePresentation(input: RealtimeInput): RealtimePresen
   if (!input.realtime) return { ...base, kind:scheduled || actual ? "schedule" : "unknown" };
   if (!scheduled || !actual) return base;
   const delayMinutes = Math.round((new Date(actual).getTime() - new Date(scheduled).getTime()) / 60_000);
-  const kind: RealtimeKind = delayMinutes < 0 ? "early" : delayMinutes === 0 ? "on-time" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.greenThrough ? "minor-delay" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.warningThrough ? "delay" : "major-delay";
+  const kind: RealtimeKind = delayMinutes < 0 ? "early" : delayMinutes === 0 ? "on-time" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.minorThrough ? "minor-delay" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.warningThrough ? "delay" : "major-delay";
   const tone: RealtimeTone = delayMinutes <= REALTIME_DELAY_THRESHOLDS.greenThrough ? "success" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.warningThrough ? "warning" : "danger";
   return { ...base, kind, tone, delayMinutes, changed:delayMinutes !== 0, severe:delayMinutes >= REALTIME_DELAY_THRESHOLDS.severeFrom };
 }
