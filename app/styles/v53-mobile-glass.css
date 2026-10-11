@@ -176,3 +176,13 @@ html[data-contrast="high"] .app-shell .walking-card {background:var(--paper)!imp
 @media (prefers-reduced-motion:reduce) {
   .app-shell .simple-more-list>button,.app-shell .simple-more-list>a {transform:none!important;}
 }
+
+
+.v53-version-row {display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 13px;border:1px solid var(--glass-stroke);border-radius:13px;background:var(--glass-clear);}
+.v53-version-row span {display:flex;flex-direction:column;min-width:0;gap:3px;}
+.v53-version-row b {font-size:.875rem;}
+.v53-version-row small {font-size:.75rem;color:var(--muted);line-height:1.4;}
+.v53-version-row>strong {flex:none;font-variant-numeric:tabular-nums;color:var(--action);font-size:.8125rem;}
+.v53-settings-link {display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 12px;color:var(--ink);text-decoration:none;font-weight:600;font-size:.875rem;}
+.v53-settings-link svg {color:var(--action);}
+.v53-settings-link:hover {background:var(--glass-clear);border-radius:12px;}
