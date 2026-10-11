@@ -322,7 +322,9 @@ export default function Home() {
   });
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
-    setSelectedLiveTrip(trip); setExploreOpen(false); setStatsOpen(false); setJourney(null); setMobileSheetState("expanded");
+    setSelectedLiveTrip(trip); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
+    // Like a radar tracker, opening a train keeps most of the map visible on phones.
+    setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
   }, []);
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
     if (!liveCategories.includes(trip.category)) return false;
@@ -701,6 +703,32 @@ export default function Home() {
 
   useLiveMap(mapReady,leafletRef,mapRef,liveLayerRef,visibleLiveTrips,liveVisible,
     {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,appearance:`${theme}:${highContrast}`},selectLiveTrip);
+
+  // Camera follow is deliberate: map dragging stops tracking. The point is always
+  // interpolated from rail geometry, never treated as a reported GPS location.
+  useEffect(() => {
+    if(!trackedTripId||!mapReady)return;
+    const map=mapRef.current;if(!map)return;
+    const stopOnDrag=()=>setTrackedTripId(null);
+    map.on("dragstart",stopOnDrag);
+    let first=true;
+    const update=()=>{
+      if(document.hidden)return;
+      if(liveState!=="ready"||!liveUpdatedAt||Date.now()-liveUpdatedAt.getTime()>90_000)return;
+      const trip=liveTrips.find(candidate=>candidate.tripId===trackedTripId);
+      if(!trip)return;
+      const position=pointOnTrip(trip,liveTripProgress(trip,Date.now()));
+      if(!position)return;
+      const zoom=Math.max(map.getZoom(),12);
+      const shift=window.matchMedia("(max-width:1023px)").matches?Math.min(170,Math.round(map.getSize().y*.16)):0;
+      // Keep the train in the uncovered upper part of the screen on mobile.
+      const centre=map.unproject(map.project(position,zoom).add([0,shift]),zoom);
+      if(first){map.flyTo(centre,zoom,{animate:!prefersReducedMotion(),duration:.65});first=false;}
+      else map.panTo(centre,{animate:!prefersReducedMotion(),duration:.5});
+    };
+    update();const interval=window.setInterval(update,4000);
+    return()=>{window.clearInterval(interval);map.off("dragstart",stopOnDrag);};
+  },[trackedTripId,mapReady,liveTrips,liveState,liveUpdatedAt,mapRef]);
 
   function selectStation(match: Station) {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
@@ -1231,8 +1259,12 @@ export default function Home() {
           </section>
         )}
 
+        {trackedTripId && selectedLiveTrip && <div className="train-tracking-map-hud" role="status">
+          <span className="train-tracking-map-pulse" aria-hidden="true"/><span><b>{selectedLiveTrip.name} wird verfolgt</b><small>Position geschätzt · Karte folgt automatisch</small></span>
+          <button type="button" onClick={()=>setTrackedTripId(null)} aria-label="Zugverfolgung beenden">Beenden</button>
+        </div>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => setTrackedTripId(current => current===selectedLiveTrip.tripId ? null : selectedLiveTrip.tripId)} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
+          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next)setMobileSheetState("half");}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
