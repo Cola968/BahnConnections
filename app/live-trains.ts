@@ -132,6 +132,9 @@ export function realtimeModelSpeed(trip:LiveTrip,at=Date.now()):number|null {
   if(at<start-15_000||at>end+15_000)return null;
   const index=geometryIndex(trip.points);
   if(!index.valid||!Number.isFinite(index.total)||index.total<.02)return null;
+  for(let i=1;i<trip.points.length;i++)if(railDistanceKm(trip.points[i-1],trip.points[i])>2)return null;
+  // Average-between-stops geometry cannot model braking/acceleration at stops.
+  if(at<start+30_000||at>end-30_000)return null;
   if(!pointOnTrip(trip,liveTripProgress(trip,at)))return null;
   const minutes=(end-start)/60_000;
   if(minutes<.3)return null;
