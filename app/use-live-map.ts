@@ -11,14 +11,14 @@ export function useLiveMap(ready:boolean,leaflet:RefObject<typeof Leaflet|null>,
     const instance=new LiveMapRenderer(leaflet.current,mapRef.current,layerRef.current,onSelect);renderer.current=instance;
     return ()=>{instance.dispose();renderer.current=null;};
   },[ready,leaflet,mapRef,layerRef,onSelect]);
-  const {zoom,view,trails,trackedId,appearance}=options;
+  const {zoom,view,trails,trackedId,selectedId,appearance}=options;
   useEffect(()=>{
     function update(){
       if(document.hidden)return;
-      renderer.current?.sync(enabled?trips:[],{zoom,view,trails,trackedId});
+      renderer.current?.sync(enabled?trips:[],{zoom,view,trails,trackedId,selectedId});
     }
     update();const timer=enabled?setInterval(update,4000):null;
     document.addEventListener('visibilitychange',update);
     return ()=>{if(timer!==null)clearInterval(timer);document.removeEventListener('visibilitychange',update);};
-  },[ready,enabled,trips,zoom,view,trails,trackedId,appearance,mapRef]);
+  },[ready,enabled,trips,zoom,view,trails,trackedId,selectedId,appearance,mapRef]);
 }
