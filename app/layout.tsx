@@ -17,6 +17,8 @@ import "./styles/live-map.css";
 import "./styles/planner.css";
 import "./styles/navigation.css";
 import "./styles/v52-polish.css";
+import "./styles/v53-mobile-glass.css";
+import "./styles/v53-desktop-usability.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
