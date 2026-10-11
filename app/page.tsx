@@ -207,6 +207,7 @@ export default function Home() {
   const [showTrails, setShowTrails] = useState(false);
   const [selectedLiveTrip, setSelectedLiveTrip] = useState<LiveTrip | null>(null);
   const [trackedTripId, setTrackedTripId] = useState<string | null>(null);
+  const [trackedRadarAnchor,setTrackedRadarAnchor] = useState<Station | null>(null);
   const [statsOpen, setStatsOpen] = useState(false);
   const [liveFiltersOpen, setLiveFiltersOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -315,14 +316,33 @@ export default function Home() {
     for (const item of routes) for (const station of routePath(item.route, item.from, item.to)) ids.add(station.id);
     return ids;
   }, [activeStationRoutes, routeInfo]);
-  const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(selected,liveVisible,trips => {
+  // The old radar polled a fixed 4km box around the selected station. Fast
+  // trains left it within minutes. Follow the current *estimated* train point
+  // with bounded 20s anchor updates while tracking; never conflate this with GPS.
+  useEffect(()=>{
+    if(!trackedTripId||!selected||!selectedLiveTrip)return;
+    const update=()=>{
+      if(document.hidden)return;
+      const point=pointOnTrip(selectedLiveTrip,liveTripProgress(selectedLiveTrip));
+      if(!point)return;
+      setTrackedRadarAnchor(current=>{
+        if(current&&current.id===selected.id&&Math.abs(current.lat-point[0])<.012&&Math.abs(current.lon-point[1])<.018)return current;
+        return {...selected,lat:point[0],lon:point[1]};
+      });
+    };
+    const begin=window.setTimeout(update,0);
+    const interval=window.setInterval(update,20_000);
+    return()=>{window.clearTimeout(begin);window.clearInterval(interval);};
+  },[trackedTripId,selected,selectedLiveTrip]);
+  const liveRadarCentre = trackedTripId && trackedRadarAnchor ? trackedRadarAnchor : selected;
+  const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(liveRadarCentre,liveVisible,trips => {
     // Keep a selected journey visible if it leaves this station-centred radar scan;
     // the inspector marks it as not currently verified rather than silently closing.
     setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
   });
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
-    setSelectedLiveTrip(trip); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
+    setSelectedLiveTrip(trip); setTrackedTripId(null); setTrackedRadarAnchor(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
   }, []);
@@ -1264,7 +1284,7 @@ export default function Home() {
           <button type="button" onClick={()=>setTrackedTripId(null)} aria-label="Zugverfolgung beenden">Beenden</button>
         </div>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next)setMobileSheetState("half");}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
+          <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
