@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { VisibilityPoller } from '../app/visibility-poller.ts';
 import { readBoardStream } from '../app/board-stream.ts';
 import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.ts';
-import { pointOnTrip,trailForTrip,segmentAverageSpeed,matchesLiveStatus } from '../app/live-trains.ts';
+import { pointOnTrip,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
 import { normaliseTrainStops,nextTrainStopIndex,headingDegrees,cardinalDirection,sourceFreshness } from '../app/train-inspector-data.ts';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 class Visibility extends EventTarget {hidden=false;}
@@ -21,7 +21,15 @@ assert.equal(matchesLiveStatus({...trip,scheduledArrival:undefined},'ontime'),fa
 assert.equal(matchesLiveStatus({...trip,arrival:'2026-10-11T11:59:00Z'},'ontime'),false,'Early is distinct from on time');
 assert.equal(pointOnTrip({...trip,points:[]},.5),null);assert.equal(pointOnTrip({...trip,points:[[52,13],[53,14]]},.5),null,'Never cross a source geometry gap');
 assert.equal(pointOnTrip({...trip,arrival:'invalid'},.5),null);assert.deepEqual(trailForTrip({...trip,points:[]},.5),[]);
-assert.deepEqual(trailForTrip(trip,.5).at(-1),pointOnTrip(trip,.5));assert.equal(segmentAverageSpeed({...trip,distance:0}),null);assert.equal(segmentAverageSpeed({...trip,distance:1e9}),null);
+assert.deepEqual(trailForTrip(trip,.5).at(-1),pointOnTrip(trip,.5));
+const halfway=Date.parse('2026-10-11T12:02:30Z');
+assert.ok(realtimeModelSpeed(trip,halfway)>0,'Valid realtime polyline permits a modelled current speed');
+assert.equal(realtimeModelSpeed({...trip,realTime:false},halfway),null,'Scheduled journeys must not show a realtime speed');
+assert.equal(realtimeModelSpeed({...trip,points:[[52,13],[55,14]]},halfway),null,'Disconnected geometry must not yield a model speed');
+assert.equal(realtimeModelSpeed(trip,halfway+3_600_000),null,'Completed journeys have no current speed');
+assert.equal(realtimeModelSpeed({...trip,departure:'invalid'},halfway),null,'Broken timestamps cannot produce speeds');
+assert.equal(realtimeModelSpeed({...trip,arrival:'2026-10-11T12:00:01Z'},halfway),null,'Implausible durations cannot yield attractive false speeds');
+assert.equal(segmentAverageSpeed({...trip,distance:0}),null);assert.equal(segmentAverageSpeed({...trip,distance:1e9}),null);
 
 
 const fullStops=normaliseTrainStops([
