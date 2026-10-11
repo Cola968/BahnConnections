@@ -19,7 +19,9 @@ visibility.hidden=false;visibility.dispatchEvent(new Event('visibilitychange'));
 poller.dispose();assert.equal(signals[1].aborted,true);await pause(25);assert.equal(signals.length,2);
 
 const trip={points:[[52,13],[52.001,13.001],[52.002,13.002]],departure:'2026-10-11T12:00:00Z',arrival:'2026-10-11T12:05:00Z',scheduledArrival:'2026-10-11T12:00:00Z',realTime:true,distance:1000};
-assert.ok(pointOnTrip(trip,.5));assert.equal(matchesLiveStatus(trip,'delayed'),true,'Five minutes is delayed');
+assert.ok(pointOnTrip(trip,.5));
+assert.equal(activeEstimatedPosition(trip,Date.parse('2026-10-11T11:59:00Z')),null,'Future trips must not appear as live radar markers');
+assert.equal(activeEstimatedPosition(trip,Date.parse('2026-10-11T12:06:00Z')),null,'Finished trips must not appear as live radar markers');assert.equal(matchesLiveStatus(trip,'delayed'),true,'Five minutes is delayed');
 assert.equal(matchesLiveStatus({...trip,realTime:false},'delayed'),false);
 assert.equal(matchesLiveStatus({...trip,scheduledArrival:undefined},'ontime'),false);
 assert.equal(matchesLiveStatus({...trip,arrival:'2026-10-11T11:59:00Z'},'ontime'),false,'Early is distinct from on time');
