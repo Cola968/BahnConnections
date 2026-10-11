@@ -17,7 +17,7 @@ export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   const result:TrainStop[]=[];
   for(const leg of legs){
     if(!RAIL_MODES.has(leg.mode??""))continue;
-    for(const stop of [leg.from,...leg.intermediateStops??[],leg.to]){
+    for(const stop of [leg.from,...(leg.intermediateStops??[]),leg.to]){
       if(!stop?.name)continue;
       const time=stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture;
       const previous=result.at(-1);
