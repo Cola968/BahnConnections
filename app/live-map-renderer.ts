@@ -3,6 +3,7 @@ import { liveTripProgress, pointOnTrip, trailForTrip, type LiveTrip } from './li
 import { deriveRealtimePresentation, realtimeAccessibleLabel } from './realtime-presentation';
 import { realtimeTooltip } from './realtime-tooltip';
 import { headingDegrees } from './train-inspector-data';
+import { railDistanceKm } from './rail-geometry';
 
 export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;appearance?:string};
 type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
@@ -14,8 +15,22 @@ export class LiveMapRenderer {
   private frame:number|null=null;
   private generation=0;
   private canvas:Leaflet.Canvas;
+  private mapIsMoving=false;
+  // Leaflet changes marker transforms while navigating. Never interpolate
+  // positions during user gestures, follow camera moves or zoom animations.
+  private pauseMarkerGlide=()=>{
+    this.mapIsMoving=true;
+    for(const entry of this.entries.values())entry.marker.getElement()?.classList.remove('rail-marker-glide');
+  };
+  private resumeMarkerGlide=()=>{this.mapIsMoving=false;};
   constructor(private L:typeof Leaflet,private map:Leaflet.Map,private layer:Leaflet.LayerGroup,
-    private select:(trip:LiveTrip)=>void){this.canvas=L.canvas({pane:'rail-routes',padding:.2});}
+    private select:(trip:LiveTrip)=>void){
+    this.canvas=L.canvas({pane:'rail-routes',padding:.2});
+    this.map.on('movestart',this.pauseMarkerGlide);
+    this.map.on('zoomstart',this.pauseMarkerGlide);
+    this.map.on('moveend',this.resumeMarkerGlide);
+    this.map.on('zoomend',this.resumeMarkerGlide);
+  }
   sync(trips:LiveTrip[],options:LiveMapOptions,at=Date.now()){
     const generation=++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);
     const desired:Desired[]=[];
@@ -47,7 +62,18 @@ export class LiveMapRenderer {
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
         }
-        const old=entry.marker.getLatLng();if(old.lat!==item.position[0]||old.lng!==item.position[1])entry.marker.setLatLng(item.position);
+        const old=entry.marker.getLatLng();
+        const changed=old.lat!==item.position[0]||old.lng!==item.position[1];
+        const icon=entry.marker.getElement();
+        const jump=changed?railDistanceKm([old.lat,old.lng],item.position):0;
+        // Only animate a continuous, plausible four-second position update.
+        // New markers, stale discontinuities and moving/zooming maps snap
+        // immediately rather than traversing a fictional straight line.
+        icon?.classList.toggle('rail-marker-glide',Boolean(
+          entry.trip && item.trip && !this.mapIsMoving && changed &&
+          Number.isFinite(jump) && jump>0 && jump<=.5
+        ));
+        if(changed)entry.marker.setLatLng(item.position);
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
@@ -86,5 +112,14 @@ export class LiveMapRenderer {
     };
     if(desired.length)this.frame=requestAnimationFrame(draw);
   }
-  dispose(){++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);for(const entry of this.entries.values()){this.layer.removeLayer(entry.marker);if(entry.trail)this.layer.removeLayer(entry.trail);}this.entries.clear();this.canvas.remove();}
+  dispose(){
+    ++this.generation;
+    if(this.frame!==null)cancelAnimationFrame(this.frame);
+    this.map.off('movestart',this.pauseMarkerGlide);
+    this.map.off('zoomstart',this.pauseMarkerGlide);
+    this.map.off('moveend',this.resumeMarkerGlide);
+    this.map.off('zoomend',this.resumeMarkerGlide);
+    for(const entry of this.entries.values()){this.layer.removeLayer(entry.marker);if(entry.trail)this.layer.removeLayer(entry.trail);}
+    this.entries.clear();this.canvas.remove();
+  }
 }

@@ -9,6 +9,9 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
 ].map(read));
 const mapLifecycle = await read("app/use-leaflet-map.ts");
 const liveMapHook = await read("app/use-live-map.ts");
+const liveMapRenderer = await read("app/live-map-renderer.ts");
+const trainMotionCss = await read("app/styles/v54-train-inspector.css");
+const mobileMotionCss = await read("app/styles/v54-mobile-refine.css");
 const liveRadarHook = await read("app/use-live-radar.ts");
 const inspector = await read("app/live-trip-inspector.tsx");
 const plannerPanel = await read("app/planner-panel.tsx");
@@ -74,6 +77,9 @@ check("Mobile bottom navigation stays above safe area",css.includes("--bottom-na
 check("V54 mobile More keeps three core actions while advanced map controls live in Settings",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && !page.includes("Weitere Kartenoptionen") && settingsDialog.includes("Kartendarstellung") && settingsDialog.includes("onShowTrails") && settingsDialog.includes("onOverviewRoutesVisible"));
 check("V54 remembers compact font with an accessible size selector",page.includes('useState<"compact" | "normal" | "large">("compact")') && settingsDialog.includes("Kompakt (Standard)") && v54Styles.includes(".settings-scale-choice"));
 check("Moving radar windows invalidate cached data even with unchanged station IDs",liveRadarHook.includes("data.coverageKey===key") && liveRadarHook.includes("radarCoverageKey(station)"));
+check("V54 idle train marker glides only for bounded continuous position changes",liveMapRenderer.includes("jump<=.5") && liveMapRenderer.includes("mapIsMoving") && liveMapRenderer.includes("pauseMarkerGlide") && liveMapRenderer.includes("map.off('movestart'") && trainMotionCss.includes("rail-marker-glide"));
+check("V54 motion respects OS and in-app reduced-motion preferences",trainMotionCss.includes("@media (prefers-reduced-motion:reduce)") && trainMotionCss.includes('html[data-motion="reduced"] .leaflet-marker-pane') && trainMotionCss.includes("train-progress-line>i") && trainMotionCss.includes("train-hud-enter"));
+check("V54 sheet opening uses compositor opacity, not animated blur",mobileMotionCss.includes("@keyframes v54-sheet-reveal {from {opacity:.72;}to {opacity:1;}}") && !mobileMotionCss.includes("filter:blur(4px)"));
 check("V54 has a single camera-follow owner, preserving mobile offset",!liveMapHook.includes("mapRef.current?.panTo(") && page.includes("const centre=map.unproject(") && page.includes("map.panTo(centre,"));
 check("Expired or stale trips cannot be newly followed; stop remains possible",page.includes("activeEstimatedPosition(trip,Date.now())") && inspector.includes('disabled={!tracked&&!canStartTracking}') && inspector.includes("Verfolgung pausiert"));
 check("V54 station tab buttons stay at least 44px despite inherited !important rules",stationSheetCss.includes("min-height:44px!important; height:44px;") && stationSheetCss.includes("grid-template-rows:44px 44px;"));

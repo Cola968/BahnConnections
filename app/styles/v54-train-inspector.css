@@ -114,3 +114,79 @@ html[data-motion="reduced"] .train-hero-stats .train-metric,html[data-motion="re
 @keyframes train-tracking-pulse {0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 18%,transparent);}50%{box-shadow:0 0 0 7px transparent;}}
 @media(prefers-reduced-motion:reduce){.train-follow-dot,.train-tracking-map-pulse{animation:none!important;}}
 html[data-motion="reduced"] .train-follow-dot,html[data-motion="reduced"] .train-tracking-map-pulse {animation:none!important;}
+
+/* V54 Motion pass. All nonessential motion uses composited opacity/transform.
+ * A marker glides only for <=500m source-geometry updates on an idle map.
+ * The animation is visual interpolation, never proof of vehicle GPS velocity. */
+@media (prefers-reduced-motion:no-preference) {
+  html:not([data-motion="reduced"]) .leaflet-marker-pane .live-train-wrap.rail-marker-glide {
+    transition:transform 3700ms linear;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-progress-line>i {
+    transition:width 3700ms linear;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-progress-line>span {
+    transition:left 3700ms linear;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-follow-state {
+    animation:train-follow-reveal 280ms cubic-bezier(.2,.85,.25,1) both;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-stops-section {
+    animation:train-section-reveal 340ms cubic-bezier(.22,.9,.3,1) both;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(-n+6) {
+    animation:train-section-reveal 300ms cubic-bezier(.22,.9,.3,1) both;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(2) {animation-delay:30ms;}
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(3) {animation-delay:60ms;}
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(4) {animation-delay:90ms;}
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(5) {animation-delay:120ms;}
+  html:not([data-motion="reduced"]) .train-inspector .train-stop-list li:nth-child(6) {animation-delay:150ms;}
+  html:not([data-motion="reduced"]) .train-inspector .train-heading-pill svg {
+    transition:transform 320ms cubic-bezier(.2,.8,.2,1);
+  }
+  html:not([data-motion="reduced"]) .train-inspector .train-source-tag {
+    transition:background-color 250ms,border-color 250ms,color 250ms;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .track-button {
+    transition:background-color 260ms,box-shadow 240ms,transform 170ms;
+  }
+  html:not([data-motion="reduced"]) .train-inspector .track-button:not(:disabled):active {
+    transform:scale(.965);
+  }
+  html:not([data-motion="reduced"]) .train-tracking-map-hud {
+    animation:train-hud-enter 320ms cubic-bezier(.18,.85,.25,1) both;
+  }
+}
+@keyframes train-follow-reveal {
+  from {opacity:0;transform:translate3d(0,-7px,0);}
+  to {opacity:1;transform:translate3d(0,0,0);}
+}
+@keyframes train-section-reveal {
+  from {opacity:.3;transform:translate3d(0,7px,0);}
+  to {opacity:1;transform:translate3d(0,0,0);}
+}
+@keyframes train-hud-enter {
+  from {opacity:0;transform:translate3d(0,-10px,0) scale(.98);}
+  to {opacity:1;transform:translate3d(0,0,0) scale(1);}
+}
+/* Respect both OS and in-app motion preferences, including map position gliding.
+ * Do not remove or hide functional information in reduced-motion mode. */
+@media (prefers-reduced-motion:reduce) {
+  .leaflet-marker-pane .live-train-wrap.rail-marker-glide,
+  .train-inspector .train-progress-line>i,
+  .train-inspector .train-progress-line>span,
+  .train-inspector .train-stops-section,
+  .train-inspector .train-stop-list li,
+  .train-inspector .train-follow-state,
+  .train-inspector .train-heading-pill svg,
+  .train-tracking-map-hud {animation:none!important;transition:none!important;}
+}
+html[data-motion="reduced"] .leaflet-marker-pane .live-train-wrap.rail-marker-glide,
+html[data-motion="reduced"] .train-inspector .train-progress-line>i,
+html[data-motion="reduced"] .train-inspector .train-progress-line>span,
+html[data-motion="reduced"] .train-inspector .train-stops-section,
+html[data-motion="reduced"] .train-inspector .train-stop-list li,
+html[data-motion="reduced"] .train-inspector .train-follow-state,
+html[data-motion="reduced"] .train-inspector .train-heading-pill svg,
+html[data-motion="reduced"] .train-tracking-map-hud {animation:none!important;transition:none!important;}
