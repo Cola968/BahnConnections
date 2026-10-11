@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PanelTools, type MobileSheetState, type PanelControls } from "./panel-tools";
 import { RealtimeTime } from "./realtime-time";
 import { deriveRealtimePresentation } from "./realtime-presentation";
-import { liveTripProgress, pointOnTrip, segmentAverageSpeed, type LiveTrip } from "./live-trains";
+import { liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
 import { compactStationLabel } from "./transit-style";
 import { cardinalDirection, headingDegrees, nextTrainStopIndex, normaliseTrainStops, sourceFreshness, type TrainStop } from "./train-inspector-data";
 import { UiIcon } from "./ui-icon";
@@ -63,6 +63,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const compass=cardinalDirection(heading);
   const realtime=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
   const freshness=sourceFreshness(radarUpdatedAt,now,inRadar);
+  const modelSpeed = freshness==="current" && radarStatus==="ready" ? realtimeModelSpeed(trip,now) : null;
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
   const remaining=validDate(trip.arrival);
   const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
@@ -71,7 +72,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
   const from=stationName(trip.from.name),to=stationName(trip.to.name);
 
-  return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
+  return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Zugdetails" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
     <div className="panel-body">
       <div className="train-header">
@@ -83,8 +84,9 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <p>{position?"Position anhand der Haltezeiten geschätzt":"Keine belastbare Position verfügbar"}</p>
       </div>
 
+      {tracked&&<div className="train-follow-state" role="status"><span className="train-follow-dot" aria-hidden="true"/> Kartenkamera folgt {trip.name} <small>Manuell verschieben beendet die Verfolgung</small></div>}
       <div className="train-hero-stats">
-        <div className="train-metric train-metric-primary"><small>Geschwindigkeit jetzt</small><strong>— <em>km/h</em></strong><span>Keine Fahrzeugmessung verfügbar</span></div>
+        <div className="train-metric train-metric-primary"><small>Aktuell · geschätzt</small><strong>{modelSpeed===null?"—":modelSpeed} <em>km/h</em></strong><span>{modelSpeed===null?"Keine belastbare Echtzeit-Schätzung":"Aus Echtzeit-Haltezeiten · kein GPS"}</span></div>
         <div className="train-metric"><small>Ø Abschnitt</small><strong>{speed===null?"—":speed} <em>km/h</em></strong><span>{speed===null?"Keine Distanzangabe":"Aus Distanz und Fahrzeit berechnet"}</span></div>
         <div className="train-metric"><small>Ankunft Abschnitt</small><strong>{clock(trip.arrival)}</strong><span>{etaMinutes===null?"Keine Zeitangabe":etaMinutes===0?"Fahrzeit abgelaufen":`in etwa ${etaMinutes} Min.`}</span></div>
         <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${realtime.tone}`}>{realtime.delayMinutes===null?"—":realtime.delayMinutes>0?`+${realtime.delayMinutes} Min.`:`${realtime.delayMinutes} Min.`}</strong><span>{realtime.delayMinutes===null?"Keine bestätigte Prognose":trip.realTime?"Prognose der Ankunft":"Fahrplanangabe"}</span></div>
@@ -112,7 +114,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
           return <li key={`${stop.name}-${index}-${time??""}`} className={isNext?"next":stop.cancelled?"cancelled":occurred?"passed":""}><i aria-hidden="true"/><span><b>{stationName(stop.name)}</b><small>{stop.cancelled?"Halt entfällt":isNext?"Nächster Halt":stop.platform?`Gleis ${stop.platform}`:""}</small></span><RealtimeTime scheduled={stop.scheduledArrival??stop.scheduledDeparture} actual={stop.arrival??stop.departure} realtime={stop.realtime} cancelled={stop.cancelled} compact/></li>;
         })}</ol>}
       </section>
-      <details className="train-data-disclosure"><summary>Datenquelle & Genauigkeit</summary><p>Transitous/MOTIS liefert Halte und – wo vorhanden – Echtzeitprognosen. Die dargestellte Zugposition und Fahrtrichtung werden zwischen Halten geschätzt. Ohne Fahrzeugtelemetrie ist eine momentane Live-Geschwindigkeit nicht messbar.</p><small>Radar aktualisiert: {radarUpdatedAt?new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt):"unbekannt"} · Status: {radarStatus}</small></details>
+      <details className="train-data-disclosure"><summary>Datenquelle & Genauigkeit</summary><p>Transitous/MOTIS liefert Halte und – wo vorhanden – Echtzeitprognosen. Position, Richtung und der aktuelle Geschwindigkeits-Schätzwert entstehen aus Streckengeometrie und prognostizierten Haltezeiten. Der km/h-Wert ist ein Modell, keine gemessene Momentangeschwindigkeit und nicht fahrzeugspezifische Telemetrie. Ohne gültige Echtzeitdaten bleibt er leer.</p><small>Radar aktualisiert: {radarUpdatedAt?new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt):"unbekannt"} · Status: {radarStatus}</small></details>
     </div>
   </section>;
 }
