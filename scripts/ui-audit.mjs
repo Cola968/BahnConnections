@@ -81,7 +81,7 @@ check("Standalone website is professional, transparent and service-first",
   websiteCss.includes(':focus-visible') &&
   !/heroGlow|featureGrid|abstractMap|radial-gradient|linear-gradient|backdrop-filter/.test(website + websiteCss)
 );
-check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (min-width:600px) and (max-width:1023px) and (max-height:520px)"));
+check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (min-width:700px) and (max-width:1023px) and (max-height:520px) and (orientation:landscape)"));
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
 check("Drag limits exclude navigation and virtual keyboard",panelTools.includes("navigationHeight") && panelTools.includes("window.visualViewport?.height"));
