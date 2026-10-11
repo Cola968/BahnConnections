@@ -52,7 +52,7 @@
  .app-shell .mobile-sheet-panel>.panel-tools {margin-inline:-10px!important;}
 }
 /* Intentional micro-interactions, with no animation storms during map redraws. */
-@keyframes v54-sheet-reveal {from {opacity:.82;filter:blur(4px);}to {opacity:1;filter:blur(0);}}
+@keyframes v54-sheet-reveal {from {opacity:.72;}to {opacity:1;}}
 @keyframes v54-row-reveal {from {opacity:.65;transform:translateY(5px);}to {opacity:1;transform:translateY(0);}}
 @keyframes v54-badge-pop {0%{scale:.92;}65%{scale:1.06;}100%{scale:1;}}
 @media (prefers-reduced-motion:no-preference) {
