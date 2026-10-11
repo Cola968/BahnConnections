@@ -5,9 +5,10 @@ import { readFile } from "node:fs/promises";
 const read = name => readFile(new URL("../"+name,import.meta.url),"utf8");
 const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJourney,transitous,panelTools,planner,navigation,alternatives,installPage,installClient,desktop,...styles] = await Promise.all([
   "app/page.tsx","app/live-board.tsx","app/station-lines.tsx","app/manifest.ts","public/sw.js","app/trip-trimming.ts","app/track-routing.ts","app/live-journey.ts","app/transitous.ts","app/panel-tools.tsx","app/journey-search.tsx","app/desktop-navigation.tsx","app/journey-alternatives.tsx","app/install/page.tsx","app/install/install-client.tsx","app/desktop-workspace.css",
-  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css",
+  "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css","app/styles/planner.css","app/styles/navigation.css",
 ].map(read));
 const mapLifecycle = await read("app/use-leaflet-map.ts");
+const plannerPanel = await read("app/planner-panel.tsx");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
 const boardToolbar = await read("app/board-toolbar.tsx");
 const stationSheetCss = await read("app/styles/station-sheet.css");
@@ -21,8 +22,8 @@ function check(name,condition) { checks.push({name,ok:Boolean(condition)}); }
 check("Shared design tokens and native system font",css.includes("--space-4:16px") && css.includes("-apple-system") && css.includes('html[data-theme="dark"]'));
 check("Deep Liquid Glass is optical, functional and accessible",css.includes("--glass-clear:") && css.includes("--glass-regular:") && css.includes("--glass-filter-ultra:") && css.includes("linear-gradient(") && css.includes("radial-gradient(") && css.includes("backdrop-filter:var(--glass-filter") && css.includes("@media (prefers-reduced-transparency:reduce)") && css.includes("@media (forced-colors:active)") && css.includes("@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px)))") && !/Georgia/.test(css+desktop));
 check("Search mode: planner and map; journey mode: map and inspector",desktop.includes("padding-left:calc(var(--workspace-left) + 28px);") && desktop.includes("padding-right:12px;") && desktop.includes(".desktop-workspace.desktop-journey-mode .map-stage") && desktop.includes("padding-left:14px;") && page.includes('(!journey || exploreOpen)') && page.includes('Boolean(journey) && !exploreOpen'));
-check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <aside') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
-check("Search editing preserves the selected journey",page.includes('{journey && <button type="button" className="planner-return"') && page.includes('setExploreOpen(false);'));
+check("Planner and inspector have mutually exclusive render guards",page.includes('{plannerVisible && <PlannerPanel') && plannerPanel.includes('planner-panel floating-panel mobile-sheet-panel') && page.includes('journey && !departuresView && !statsOpen && !plannerVisible') && !page.includes('<DesktopWelcome'));
+check("Search editing preserves the selected journey",plannerPanel.includes('className="planner-return"') && page.includes('returnLabel={journey') && page.includes('setExploreOpen(false);'));
 check("General station markers recede behind the selected journey",page.includes('const markerRadius = journey ? Math.min(3.2') && page.includes('fillOpacity: journey ? .15') && mapLifecycle.includes('pane:"rail-routes"') && page.includes('stationLayerRef'));
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
@@ -33,7 +34,7 @@ const appVersion = await read("app/app-version.ts");
 const versionMetadata = await read("public/version.json");
 const declaredVersion = appVersion.match(/APP_VERSION = "([^\"]+)"/)?.[1];
 const publicVersion = JSON.parse(versionMetadata);
-check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:4') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
+check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:0') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
@@ -80,7 +81,7 @@ check("Standalone website is professional, transparent and service-first",
   websiteCss.includes(':focus-visible') &&
   !/heroGlow|featureGrid|abstractMap|radial-gradient|linear-gradient|backdrop-filter/.test(website + websiteCss)
 );
-check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (max-width:1023px) and (max-height:520px)"));
+check("Mobile search floats above the map while landscape keeps inline search",css.includes(".topbar>.station-search {") && css.includes("position:absolute;") && css.includes("top:calc(100% + 8px)") && css.includes("@media (min-width:700px) and (max-width:1023px) and (max-height:520px) and (orientation:landscape)"));
 check("Single sheet with independent presentation state",panelTools.includes('"expanded" | "collapsed" | "closed" | "half"') && css.includes('[data-mobile-sheet="closed"] .mobile-sheet-panel') && css.includes('[data-mobile-sheet="collapsed"] .mobile-sheet-panel'));
 check("Free drag keeps the chosen height",panelTools.includes("setPointerCapture") && panelTools.includes("startHeight - rawDelta") && panelTools.includes("announceSheetHeight(drag.lastHeight)") && css.includes("var(--mobile-sheet-height"));
 check("Drag limits exclude navigation and virtual keyboard",panelTools.includes("navigationHeight") && panelTools.includes("window.visualViewport?.height"));
@@ -90,7 +91,7 @@ check("Navigation preserves journey data",page.includes("!journey || departuresV
 check("Resize observer accounts for the measured sheet",page.includes("new ResizeObserver") && page.includes("measuredHeight") && page.includes("invalidateSize"));
 check("44px mobile actions and scalable 16px input prevent iOS zoom",css.includes("width:44px; height:44px") && css.includes(".station-search input { font-size:calc(1rem * var(--panel-scale,1))"));
 check("Reduced motion is supported",css.includes("@media (prefers-reduced-motion:reduce)") && css.includes("--motion-native:cubic-bezier(.22,1,.36,1)"));
-check("Planner is a controlled extracted view",page.includes("<JourneySearch") && planner.includes("type StationField") && planner.includes("onOptions"));
+check("Planner is a controlled extracted view",plannerPanel.includes("<JourneySearch") && planner.includes("type StationField") && planner.includes("onOptions"));
 check("Travel options collapsed by default",planner.includes('<details className="filter-drawer route-options">') && !planner.includes('route-options" open') && planner.includes('className="planner-time-row"'));
 check("All five modes and five transfers retained",["fern","regional","sbahn","ubahn","tram"].every(mode=>planner.includes("'"+mode+"'")) && planner.includes("[0,1,2,3,4,5]"));
 check("Autocomplete has active descendant and Escape handling",(await read("app/smart-search.tsx")).includes("aria-activedescendant"));

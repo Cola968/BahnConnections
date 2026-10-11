@@ -1,24 +1,9 @@
+import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
 type TransitousPlace = { name?:string; lat?:number; lon?:number };
 type DbLocation = { id?:string; name?:string; type?:string; location?:{ latitude?:number; longitude?:number } };
-
-function normaliseName(value = "") {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de")
-    .replace(/^s\+u\s+|^s\s+|^u\s+/i, "").replace(/hauptbahnhof|bahnhof|bhf\.?|bf\.?/g, "hbf")
-    .replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function distanceMeters(a: { lat:number; lon:number }, b: { lat:number; lon:number }) {
-  const radians = Math.PI / 180;
-  const dLat = (b.lat - a.lat) * radians;
-  const dLon = (b.lon - a.lon) * radians;
-  const lat1 = a.lat * radians;
-  const lat2 = b.lat * radians;
-  const value = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 6_371_000 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-}
 
 async function json<T>(url: URL, signal?:AbortSignal) {
   const response = await fetch(url, { signal, headers:{ Accept:"application/json", "User-Agent":"BahnConnections/24" } });
@@ -37,16 +22,10 @@ async function resolveDbStop(place: TransitousPlace, signal:AbortSignal) {
   url.searchParams.set("poi", "false");
   url.searchParams.set("language", "de");
   const candidates = (await json<DbLocation[]>(url, signal)).filter((item): item is DbLocation & { id:string; name:string; location:{ latitude:number; longitude:number } } => item.type === "stop" && Boolean(item.id && item.name) && Number.isFinite(item.location?.latitude) && Number.isFinite(item.location?.longitude));
-  const targetName = normaliseName(place.name);
-  const ranked = candidates.map((item) => {
-    const distance = distanceMeters(point, { lat:item.location.latitude, lon:item.location.longitude });
-    const candidateName = normaliseName(item.name);
-    const nameMatches = candidateName === targetName || candidateName.includes(targetName) || targetName.includes(candidateName);
-    return { item, distance, nameMatches };
-  }).filter((candidate) => candidate.distance <= 1_200).sort((left, right) => Number(right.nameMatches) - Number(left.nameMatches) || left.distance - right.distance);
-  const match = ranked[0];
-  if (!match || (!match.nameMatches && match.distance > 450)) throw new Error("Keine eindeutige DB-Haltestelle gefunden");
-  return match.item;
+  const match = chooseStationMatch({...point,name:place.name},candidates.map(item => ({...item,lat:item.location.latitude,lon:item.location.longitude})));
+  if (!match) throw new Error("Keine eindeutige DB-Haltestelle gefunden");
+  return match;
+
 }
 
 async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival:boolean, startTime:Date, requestSignal:AbortSignal): Promise<BoardCrossCheck> {

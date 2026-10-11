@@ -346,7 +346,7 @@ try {
   await tap('.simple-more-popover .map-menu-dismiss button');
   await tap('.mobile-navigation button:nth-of-type(2)');
   await tap('.plan-button');
-  await tap('.mobile-sheet-actions button:last-child');
+  await tap('.planner-header-actions>button:last-child');
   await pause(1400);
   if(await evaluate(`Boolean(document.querySelector('.journey-card,.explore-card,.mobile-sheet-restore'))`))throw new Error('Late planner response resurrected the closed view');
   await writeFile(join(outputDirectory,'content-layout-report.json'),JSON.stringify({fixture:true,realDevice:false,checks,closeResets:true,automaticLines:18},null,2));

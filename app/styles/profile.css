@@ -64,12 +64,8 @@
 .settings-content { animation:glass-content 200ms var(--motion-native); }
 :is(.app-shell,.settings-dialog) :is(button,a,summary) { transition:background-color 160ms,border-color 160ms,box-shadow 220ms,scale 180ms var(--motion-native); }
 :is(.app-shell,.settings-dialog) button:active:not(:disabled) { scale:.97; }
-.mobile-navigation button.active { box-shadow:inset 0 1px 0 var(--glass-highlight),0 4px 12px var(--glass-depth); }
-.app-shell .route-station-search,.app-shell .station-search { border-color:var(--glass-stroke); box-shadow:inset 0 1px 0 var(--glass-highlight-soft),0 4px 16px color-mix(in srgb,var(--glass-depth) 35%,transparent); }
-.app-shell .route-station-search { border-radius:16px; background:color-mix(in srgb,var(--glass-clear) 70%,transparent); }
-.explore-card h1 { font-size:clamp(1.65rem,3vw,2rem); }
+.app-shell .station-search:not(.route-station-search) { border-color:var(--glass-stroke); box-shadow:inset 0 1px 0 var(--glass-highlight-soft),0 4px 16px color-mix(in srgb,var(--glass-depth) 35%,transparent); }
 .planner-message p { margin:0; }
-@media (max-width:430px) { .planner-time-row { grid-template-columns:1fr!important; }.planner-time-mode { width:100%; }.planner-date-trigger { min-height:48px; font-size:.9375rem; } }
 @media (max-width:600px) { .settings-heading { padding:20px 18px 12px; }.settings-tabs { margin-inline:18px; }.settings-content { padding:18px 18px 24px; }.settings-dialog { border-radius:24px; }.settings-tabs button { font-size:.8125rem; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
@@ -86,8 +82,12 @@ html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-mo
 .saved-route-open span { font-size:.875rem; }.saved-route-open small { margin-top:4px; }
 .saved-routes li>div { display:flex; justify-content:space-between; gap:8px; margin-top:8px; }
 .saved-routes li>div button { border:0; background:none; color:var(--muted); font-size:.8125rem; min-height:44px; padding:8px 4px; }
-.planner-saved-routes { padding:0 16px 16px; }
-.planner-saved-routes>.settings-link { margin-top:12px; }.planner-saved-routes button:disabled { opacity:.5; }
 .billing-price-options { display:grid!important; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
 .billing-price-options>span { display:flex; flex-direction:column; gap:4px; padding:12px; border:1px solid var(--glass-stroke); border-radius:14px; }
 .billing-price-options strong { color:var(--ink); font-size:1.25rem; }.billing-price-options small { line-height:1.5; }
+
+/* The settings header and tabs stay outside the single, opaque scrolling content region. */
+.settings-dialog[open] { display:flex; flex-direction:column; height:min(720px,calc(100dvh - 24px)); max-height:calc(100dvh - 24px); overflow:hidden; }
+.settings-dialog[open] .settings-heading,.settings-dialog[open] .settings-tabs { position:relative; top:auto; z-index:1; flex:0 0 auto; background:var(--paper); }
+.settings-dialog[open] .settings-content { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-width:thin; background:var(--paper); }
+@media (max-width:600px) { .settings-dialog[open] { height:calc(100dvh - 18px); } .settings-dialog[open] .settings-heading { padding-block:12px 8px; } .settings-dialog[open] .settings-heading h2 { font-size:1.35rem; } .settings-dialog[open] .settings-tabs { margin-bottom:0; } }

@@ -264,7 +264,7 @@ try {
   const plannerReady = await evaluate(`!document.querySelector(".plan-button")?.disabled`);
   if (plannerReady) {
     await tap(".plan-button");
-    await tap('.mobile-sheet-actions button:first-child');
+    await tap('.planner-header-actions .planner-expand');
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const finished = await evaluate(`Boolean(document.querySelector(".journey-card") || document.querySelector(".planner-message.error"))`);
       if (finished) break;
@@ -569,6 +569,28 @@ try {
     await tap('.settings-tabs button:nth-child(3)');
     if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
     await screenshot(width+'-settings-plans');
+    if(width===320) {
+      await setViewport(320,568);
+      await evaluate(`document.querySelector('.settings-content').scrollTop=document.querySelector('.settings-content').scrollHeight`);
+      await pause(170);
+      const shortSettings=await evaluate(`(() => {
+        const d=document.querySelector('.settings-dialog'),heading=d.querySelector('.settings-heading'),
+          tabs=d.querySelector('.settings-tabs'),content=d.querySelector('.settings-content');
+        const h=heading.getBoundingClientRect(),t=tabs.getBoundingClientRect(),c=content.getBoundingClientRect();
+        const hStyle=getComputedStyle(heading),tStyle=getComputedStyle(tabs);
+        const topHit=document.elementFromPoint(t.x+t.width/2,t.y+t.height/2);
+        return {tabsAboveContent:t.bottom<=c.top+1,headerAboveTabs:h.bottom<=t.top+10,
+          tabHit:Boolean(topHit&&(tabs===topHit||tabs.contains(topHit))),
+          opaqueHeader:hStyle.backgroundColor!=='rgba(0, 0, 0, 0)'&&tStyle.backgroundColor!=='rgba(0, 0, 0, 0)',
+          contentScrollable:content.scrollHeight>content.clientHeight+5,
+          bodyScroll:content.scrollTop,viewportHeight:innerHeight,dialogHeight:d.getBoundingClientRect().height};
+      })()`);
+      if(!shortSettings.tabsAboveContent||!shortSettings.tabHit||!shortSettings.opaqueHeader||!shortSettings.contentScrollable)
+        throw new Error('Settings text overlaps title/tabs at 320x568: '+JSON.stringify(shortSettings));
+      profileChecks.push({label:'320x568 settings scroll isolation',...shortSettings});
+      await screenshot('320x568-settings-plus-scrolled');
+      await setViewport(320,844);
+    }
     const bounds=await evaluate(`(() => {const r=document.querySelector('.settings-dialog').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,overflow:document.querySelector('.settings-dialog').scrollWidth>document.querySelector('.settings-dialog').clientWidth+1};})()`);
     if(bounds.left<0||bounds.right>width+1||bounds.top<0||bounds.bottom>(width<1024?844:900)+1||bounds.overflow) throw new Error('Settings overflow at '+width+': '+JSON.stringify(bounds));
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});

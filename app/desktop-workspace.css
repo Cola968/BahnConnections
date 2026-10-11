@@ -133,14 +133,6 @@
     overflow:hidden;
   }
 
-  .desktop-workspace.desktop-search-mode .explore-card {
-    right:auto;
-    left:14px;
-    width:var(--workspace-left);
-  }
-
-  .desktop-workspace.desktop-search-mode .explore-card>.panel-tools { display:none; }
-
   .desktop-workspace .floating-panel>.panel-tools {
     position:sticky;
     top:0;
@@ -181,19 +173,6 @@
 
   .desktop-workspace .leaflet-control-zoom { margin-bottom:80px!important; }
   .desktop-workspace .journey-alternatives { margin-top:0; }
-
-  .desktop-workspace.desktop-search-mode .planner-time-row {
-    grid-template-columns:1fr;
-    align-items:stretch;
-    gap:8px;
-  }
-
-  .desktop-workspace.desktop-search-mode .planner-time-row .planner-time-mode {
-    min-width:0;
-    width:100%;
-  }
-
-  .desktop-workspace.desktop-search-mode .planner-departure input { width:100%; }
 
   .focus-mode.desktop-workspace .map-stage { padding:0; }
 }

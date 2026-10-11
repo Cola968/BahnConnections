@@ -1,3 +1,4 @@
+import { chooseStationMatch } from "./station-match.ts";
 import type { Station } from "./network-data";
 
 type GeocodeStop = {
@@ -22,16 +23,6 @@ export function embeddedTransitousStopId(station: Station) {
   return station.transitousId ?? (station.id.startsWith("motis:") ? station.id.slice(6) : undefined);
 }
 
-function distanceMeters(a: { lat:number; lon:number }, b: { lat:number; lon:number }) {
-  const radians = Math.PI / 180;
-  const dLat = (b.lat - a.lat) * radians;
-  const dLon = (b.lon - a.lon) * radians;
-  const lat1 = a.lat * radians;
-  const lat2 = b.lat * radians;
-  const value = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 6_371_000 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-}
-
 export async function resolveTransitousStopId(station: Station, signal?: AbortSignal) {
   const embedded = embeddedTransitousStopId(station);
   if (embedded) return embedded;
@@ -48,12 +39,8 @@ export async function resolveTransitousStopId(station: Station, signal?: AbortSi
     const response = await fetch(url, { signal, headers:transitousRequestHeaders() });
     if (!response.ok) return null;
     const payload = await response.json() as GeocodeStop[];
-    const candidates = payload
-      .filter((item): item is GeocodeStop & { id:string; lat:number; lon:number } => item.type === "STOP" && Boolean(item.id) && Number.isFinite(item.lat) && Number.isFinite(item.lon))
-      .map((item) => ({ item, distance:distanceMeters(station, item) }))
-      .sort((left, right) => left.distance - right.distance);
-    const best = candidates[0];
-    return best && best.distance <= 1_200 ? best.item.id : null;
+    const candidates = payload.filter((item): item is GeocodeStop & { id:string; lat:number; lon:number } => item.type === "STOP" && Boolean(item.id) && Number.isFinite(item.lat) && Number.isFinite(item.lon));
+    return chooseStationMatch(station,candidates)?.id ?? null;
   })().catch(() => null);
   // An aborted caller must not poison the station ID for other views or retries.
   const stopId = await request;

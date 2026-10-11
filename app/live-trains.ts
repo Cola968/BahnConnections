@@ -90,7 +90,7 @@ function geometryIndex(points:LiveTrip['points']):GeometryIndex {
   for(let i=0;i<points.length;i++) {
     const point=points[i];
     if(!point.every(Number.isFinite)||Math.abs(point[0])>90||Math.abs(point[1])>180)valid=false;
-    if(i){const distance=railDistanceKm(points[i-1],point);if(!Number.isFinite(distance)||distance>2)valid=false;cumulative[i]=cumulative[i-1]+distance;}
+    if(i){const distance=railDistanceKm(points[i-1],point);if(!Number.isFinite(distance))valid=false;cumulative[i]=cumulative[i-1]+distance;}
   }
   const result={cumulative,total:cumulative.at(-1)??0,valid};geometryIndexes.set(points,result);return result;
 }
@@ -106,13 +106,15 @@ export function pointOnTrip(trip:LiveTrip,progress=liveTripProgress(trip)):[numb
   const index=geometryIndex(trip.points);if(!index.valid)return null;
   const selected=segmentAt(index,progress),a=trip.points[selected.end-1],b=trip.points[selected.end];
   const length=index.cumulative[selected.end]-index.cumulative[selected.end-1];
+  if(length>2)return null; // Hide only this gap, retain continuous source sections.
   const ratio=length?(selected.target-index.cumulative[selected.end-1])/length:0;
   return [a[0]+(b[0]-a[0])*ratio,a[1]+(b[1]-a[1])*ratio];
 }
 export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
   const position=pointOnTrip(trip,progress);if(!position)return [];
   const index=geometryIndex(trip.points),{end}=segmentAt(index,progress);
-  const start=Math.max(0,end-Math.max(2,Math.round(trip.points.length*.16)));
+  let start=Math.max(0,end-Math.max(2,Math.round(trip.points.length*.16)));
+  for(let i=end-1;i>start;i--)if(index.cumulative[i]-index.cumulative[i-1]>2){start=i;break;}
   // End before the interpolation segment: never overshoot the estimated position.
   return [...trip.points.slice(start,end),position];
 }

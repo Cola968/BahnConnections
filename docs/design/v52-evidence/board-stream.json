@@ -1,0 +1,291 @@
+{
+  "checkedAt": "2026-10-11T16:04:36.958Z",
+  "fixture": true,
+  "baseline": false,
+  "results": [
+    {
+      "name": "390-light-half",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 301.375,
+        "bottom": 774,
+        "height": 472.625
+      },
+      "body": {
+        "top": 390.375,
+        "bottom": 750,
+        "height": 359.625
+      },
+      "header": {
+        "top": 302.375,
+        "bottom": 390.375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 353.875,
+        "bottom": 390.875,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 390.375,
+        "bottom": 430.375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 431.375,
+        "bottom": 504.8125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "390-light-expanded",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 78,
+        "bottom": 784,
+        "height": 706
+      },
+      "body": {
+        "top": 167,
+        "bottom": 760,
+        "height": 593
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 7,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "390-dark-half",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 301.375,
+        "bottom": 774,
+        "height": 472.625
+      },
+      "body": {
+        "top": 390.375,
+        "bottom": 750,
+        "height": 359.625
+      },
+      "header": {
+        "top": 302.375,
+        "bottom": 390.375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 353.875,
+        "bottom": 390.875,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 390.375,
+        "bottom": 430.375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 431.375,
+        "bottom": 504.8125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "390-dark-expanded",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 78,
+        "bottom": 784,
+        "height": 706
+      },
+      "body": {
+        "top": 167,
+        "bottom": 760,
+        "height": 593
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 7,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    }
+  ]
+}

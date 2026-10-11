@@ -15,7 +15,7 @@ export function StationStats({ station, boardSummary, lineSummary }: {
 }) {
   const board = boardSummary?.stationId === station.id ? boardSummary : null;
   const lines = lineSummary?.stationId === station.id ? lineSummary : null;
-  const validLive = board ? Math.max(0, board.total - board.canceled) : 0;
+  const validLive = board ? board.delaySamples : 0;
   const punctuality = board && validLive ? (validLive - board.delayed6) / validLive * 100 : null;
   const products = board ? Object.entries(board.products).filter(([, value]) => value > 0) : [];
 
@@ -28,7 +28,7 @@ export function StationStats({ station, boardSummary, lineSummary }: {
         <article><small>U-Bahn-Linien</small><strong>{lines?.ubahn ?? "–"}</strong><span>falls am Bahnhof vorhanden</span></article>
         <article><small>Straßenbahn-Linien</small><strong>{lines?.tram ?? "–"}</strong><span>laut aktueller Linienauskunft</span></article>
         <article><small>Fahrten / 500 Min.</small><strong>{board?.total ?? "–"}</strong><span>aktueller Tafelsnapshot</span></article>
-        <article><small>Pünktlich &lt; 6 Min.</small><strong>{punctuality === null ? "–" : percent(punctuality)}</strong><span>{board ? `${board.realtime}/${board.total} Fahrten mit Echtzeitflag` : "Live-Tafel lädt"}</span></article>
+        <article><small>Pünktlich &lt; 6 Min.</small><strong>{punctuality === null ? "–" : percent(punctuality)}</strong><span>{board ? `${board.delaySamples}/${board.total} Fahrten mit auswertbarer Prognose` : "Live-Tafel lädt"}</span></article>
       </section>
 
       <section className="station-role-card live-source-card">
@@ -38,7 +38,7 @@ export function StationStats({ station, boardSummary, lineSummary }: {
 
       <section className="station-live-breakdown">
         <div className="station-stats-title"><span>Verkehrsmittel & Qualität</span><small>nächste 500 Minuten</small></div>
-        {board && board.total ? <><div className="product-shares">{products.map(([name, value]) => <div key={name}><span>{name === "sbahn" ? "S-Bahn" : name === "ubahn" ? "U-Bahn" : name === "tram" ? "Straßenbahn" : name.toUpperCase()}</span><i><b style={{ width:`${value / board.total * 100}%` }} /></i><strong>{percent(value / board.total * 100)}</strong></div>)}</div><div className="delay-thresholds"><span><b>{board.delayed6}</b><small>ab 6 Min.</small></span><span><b>{board.delayed15}</b><small>ab 15 Min.</small></span><span><b>{board.delayed30}</b><small>ab 30 Min.</small></span><span><b>{board.canceled}</b><small>Ausfälle</small></span></div><p className="average-delay-note">Durchschnittliche Abweichung: <b>{board.averageDelay.toLocaleString("de-DE", { maximumFractionDigits:1 })} Minuten</b>.</p></> : <p>Die Qualitätswerte erscheinen, sobald aktuelle Tafeldaten für diesen Bahnhof vorliegen.</p>}
+        {board && board.total ? <><div className="product-shares">{products.map(([name, value]) => <div key={name}><span>{name === "sbahn" ? "S-Bahn" : name === "ubahn" ? "U-Bahn" : name === "tram" ? "Straßenbahn" : name.toUpperCase()}</span><i><b style={{ width:`${value / board.total * 100}%` }} /></i><strong>{percent(value / board.total * 100)}</strong></div>)}</div><div className="delay-thresholds"><span><b>{board.delayed6}</b><small>ab 6 Min.</small></span><span><b>{board.delayed15}</b><small>ab 15 Min.</small></span><span><b>{board.delayed30}</b><small>ab 30 Min.</small></span><span><b>{board.canceled}</b><small>Ausfälle</small></span></div><p className="average-delay-note">Durchschnittliche Abweichung: <b>{board.averageDelay === null ? "Keine auswertbare Prognose" : `${board.averageDelay.toLocaleString("de-DE", { maximumFractionDigits:1 })} Minuten`}</b> · {board.delaySamples} auswertbare Prognosen, Ausfälle ausgeschlossen.</p></> : <p>Die Qualitätswerte erscheinen, sobald aktuelle Tafeldaten für diesen Bahnhof vorliegen.</p>}
       </section>
 
       {lines?.operators.length ? <section className="station-operators"><div className="station-stats-title"><span>Gemeldete Betreiber</span><small>{lines.operators.length}</small></div><p>{lines.operators.slice(0,12).join(" · ")}{lines.operators.length > 12 ? ` · +${lines.operators.length - 12} weitere` : ""}</p></section> : null}

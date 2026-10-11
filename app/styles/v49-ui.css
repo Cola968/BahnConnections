@@ -87,8 +87,7 @@ button:active:not(:disabled) {
 @media (max-width:1023px) and (min-height:521px) {
   .brand,
   .mobile-map-view-button,
-  .mobile-search-dock .station-search,
-  .mobile-navigation {
+  .mobile-search-dock .station-search {
     border-color:color-mix(in srgb,var(--glass-stroke) 70%,transparent)!important;
     background:
       linear-gradient(150deg,color-mix(in srgb,var(--glass-highlight) 72%,transparent),transparent 40%),
@@ -160,151 +159,6 @@ button:active:not(:disabled) {
   .simple-more-list>a { min-width:0; }
   .simple-more-list span,
   .simple-more-list small { min-width:0; overflow-wrap:anywhere; }
-}
-
-@media (max-width:1023px) {
-  .explore-card .panel-body {
-    padding-top:4px!important;
-  }
-
-  .route-search-pair {
-    position:relative;
-    gap:0!important;
-    margin:4px 0 14px!important;
-    padding:6px;
-    border:1px solid var(--v49-hairline);
-    border-radius:20px;
-    background:color-mix(in srgb,var(--elevated-soft) 90%,transparent);
-    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight-soft) 60%,transparent);
-  }
-
-  .route-search-pair::before {
-    position:absolute;
-    top:38px;
-    bottom:38px;
-    left:21px;
-    width:2px;
-    border-radius:999px;
-    background:linear-gradient(var(--action),color-mix(in srgb,var(--action) 40%,var(--line)));
-    content:"";
-    opacity:.55;
-  }
-
-  .route-search-pair>div {
-    position:relative;
-    padding-left:14px;
-  }
-
-  .route-search-pair>div+div {
-    margin-top:3px;
-    padding-top:3px;
-    border-top:1px solid var(--v49-hairline);
-  }
-
-  .route-search-pair>div>span {
-    margin:7px 0 4px 7px!important;
-    font-size:.69rem!important;
-    font-weight:700!important;
-    text-transform:uppercase;
-    letter-spacing:.055em!important;
-  }
-
-  .route-station-search {
-    min-height:50px!important;
-    border:0!important;
-    border-radius:14px!important;
-    background:transparent!important;
-    box-shadow:none!important;
-  }
-
-  .route-station-search:focus-within {
-    background:color-mix(in srgb,var(--glass-elevated) 56%,transparent)!important;
-    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--action) 28%,transparent)!important;
-  }
-
-  .swap-button {
-    top:calc(50% - 22px)!important;
-    right:12px!important;
-    width:44px!important;
-    height:44px!important;
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 72%,transparent)!important;
-    border-radius:14px!important;
-    background:var(--v49-glass-strong)!important;
-    -webkit-backdrop-filter:blur(18px)!important;
-    backdrop-filter:blur(18px)!important;
-    box-shadow:0 6px 18px color-mix(in srgb,var(--glass-depth) 22%,transparent)!important;
-  }
-
-  .planner-time-row {
-    margin:10px 0 12px!important;
-    gap:8px!important;
-  }
-
-  .planner-time-mode {
-    position:relative;
-    isolation:isolate;
-    overflow:hidden;
-    padding:3px!important;
-    border:1px solid var(--v49-hairline)!important;
-    border-radius:15px!important;
-    background:color-mix(in srgb,var(--soft) 80%,transparent)!important;
-  }
-
-  .planner-time-mode::after {
-    position:absolute;
-    z-index:0;
-    top:3px;
-    bottom:3px;
-    left:3px;
-    width:calc((100% - 6px)/2);
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 58%,transparent);
-    border-radius:12px;
-    background:
-      linear-gradient(145deg,color-mix(in srgb,var(--glass-highlight) 70%,transparent),transparent 48%),
-      var(--v49-glass-strong);
-    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight-soft) 80%,transparent),0 4px 12px color-mix(in srgb,var(--glass-depth) 14%,transparent);
-    content:"";
-    pointer-events:none;
-    transform:translateX(0);
-    transition:transform var(--v49-lens) var(--v49-spring);
-  }
-
-  .planner-time-mode.arrive-by::after { transform:translateX(100%); }
-
-  .planner-time-mode button {
-    position:relative;
-    z-index:1;
-    border-radius:12px!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    transition:transform var(--v49-state) var(--v49-spring),background-color var(--v49-state),box-shadow var(--v49-state)!important;
-  }
-
-  .planner-time-mode button.active {
-    background:transparent!important;
-    box-shadow:none!important;
-    color:var(--ink)!important;
-  }
-
-  .plan-button {
-    min-height:54px!important;
-    border-radius:16px!important;
-    font-weight:760!important;
-    letter-spacing:-.01em;
-    box-shadow:0 10px 22px color-mix(in srgb,var(--action) 18%,transparent)!important;
-    transition:transform var(--v49-press) var(--v49-spring),box-shadow var(--v49-state),filter var(--v49-state)!important;
-  }
-
-  .filter-drawer.route-options {
-    margin-top:12px!important;
-    border-top:1px solid var(--v49-hairline)!important;
-    border-bottom:0!important;
-  }
-
-  .planner-saved-routes {
-    padding-top:4px!important;
-    opacity:.88;
-  }
 }
 
 /* ---------- station ---------- */
@@ -459,28 +313,10 @@ button:active:not(:disabled) {
 /* ---------- desktop refinement ---------- */
 
 @media (min-width:1024px) {
-  .desktop-workspace .explore-card,
   .desktop-workspace .floating-panel {
     border-color:color-mix(in srgb,var(--glass-stroke) 38%,transparent)!important;
     background:color-mix(in srgb,var(--elevated) 95%,transparent)!important;
     box-shadow:0 22px 60px color-mix(in srgb,var(--glass-depth) 34%,transparent)!important;
-  }
-
-  .desktop-workspace .route-search-pair {
-    padding:6px;
-    border:1px solid var(--v49-hairline);
-    border-radius:18px;
-    background:var(--elevated-soft);
-  }
-
-  .desktop-workspace .route-search-pair>div+div {
-    border-top:1px solid var(--v49-hairline);
-  }
-
-  .desktop-workspace .route-station-search {
-    border:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
   }
 
   .desktop-workspace .journey-desktop-identity {
@@ -495,16 +331,6 @@ html[data-theme="dark"] {
   --v49-content:var(--glass-sheet-expanded);
 }
 
-html[data-theme="dark"] .route-search-pair {
-  border-color:rgb(255 255 255 / .09)!important;
-  background:rgb(255 255 255 / .035)!important;
-}
-
-html[data-theme="dark"] .planner-time-mode button.active {
-  background:linear-gradient(145deg,rgb(255 255 255 / .12),transparent 45%),rgb(255 255 255 / .055)!important;
-  border-color:rgb(255 255 255 / .11)!important;
-}
-
 /* ---------- accessibility ---------- */
 
 @media (prefers-reduced-motion:reduce) {
@@ -512,7 +338,6 @@ html[data-theme="dark"] .planner-time-mode button.active {
   .app-shell.has-primary-panel .mobile-sheet-panel,
   .mobile-sheet-panel>.panel-body,
   .station-section-tabs::after,
-  .planner-time-mode::after,
   .station-section-tabs + div:not([hidden]),
   .station-info,
   .settings-dialog-v48,
@@ -528,7 +353,6 @@ html[data-theme="dark"] .planner-time-mode button.active {
 html[data-motion="reduced"] .mobile-sheet-panel,
 html[data-motion="reduced"] .mobile-sheet-panel>.panel-body,
 html[data-motion="reduced"] .station-section-tabs::after,
-html[data-motion="reduced"] .planner-time-mode::after,
 html[data-motion="reduced"] .station-section-tabs + div:not([hidden]),
 html[data-motion="reduced"] .station-info,
 html[data-motion="reduced"] .settings-dialog-v48,
@@ -544,7 +368,6 @@ html[data-motion="reduced"] .search-suggestions {
   .brand,
   .mobile-map-view-button,
   .mobile-search-dock .station-search,
-  .mobile-navigation,
   .mobile-sheet-panel,
   .station-section-tabs,
   .settings-dialog-v48 {
@@ -555,15 +378,11 @@ html[data-motion="reduced"] .search-suggestions {
 }
 
 /* Nested content is opaque enough to read without resampling the moving map. */
-.mobile-sheet-panel::before,.mobile-sheet-panel::after,
-.mobile-sheet-panel>.panel-tools,.station-section-tabs,
-.mobile-search-dock .station-search::before,.mobile-search-dock .station-search::after {
+.mobile-sheet-panel::before,.mobile-sheet-panel::after,.mobile-sheet-panel>.panel-tools,.station-section-tabs,.mobile-search-dock .station-search::before,.mobile-search-dock .station-search::after {
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
-.map-moving .brand,.map-moving .mobile-map-view-button,
-.map-moving .mobile-search-dock .station-search,.map-moving .mobile-navigation,
-.map-moving .mobile-sheet-panel {
+.map-moving .brand,.map-moving .mobile-map-view-button,.map-moving .mobile-search-dock .station-search,.map-moving .mobile-sheet-panel {
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
@@ -571,15 +390,12 @@ html[data-motion="reduced"] .search-suggestions {
 .station-line-row>span { min-width:0; }
 .station-line-row small { overflow:hidden; text-overflow:ellipsis; }
 @media (forced-colors:active) {
-  .station-section-tabs::after,.planner-time-mode::after { background:Highlight!important; border:1px solid Highlight; }
-  .station-section-tabs button.active,.planner-time-mode button.active { color:HighlightText!important; }
+  .station-section-tabs::after { background:Highlight!important; border:1px solid Highlight; }
+  .station-section-tabs button.active { color:HighlightText!important; }
 }
 
 /* Keep date/time readable: a sticky primary action must not cover preceding fields. */
 @media (max-width:1023px) {
-  .explore-card .plan-button { position:relative; bottom:auto; }
-  .swap-button { -webkit-backdrop-filter:none!important; backdrop-filter:none!important; }
-  .mobile-navigation::before,.mobile-navigation::after,
   .brand::before,.brand::after,.mobile-map-view-button::before,.mobile-map-view-button::after {
     -webkit-backdrop-filter:none!important; backdrop-filter:none!important;
   }
