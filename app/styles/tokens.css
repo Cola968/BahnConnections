@@ -4,7 +4,7 @@
   --line-subtle:color-mix(in srgb,#526a78 18%,transparent); --elevated:#f8fafb; --elevated-soft:#f1f5f7;
   --red:#df142b; --teal:#28778a; --card:var(--paper); --accent:#096e85; --action:#df142b; --action-fill:#cf1531;
   --success:#376c50; --warning:#875400; --danger:#b3263d;
-  --status-on-time:var(--ink); --status-early:var(--success); --status-delay:var(--warning); --status-disruption:var(--danger); --status-schedule:var(--muted);
+  --status-on-time:var(--success); --status-early:var(--success); --status-delay:var(--warning); --status-disruption:var(--danger); --status-schedule:var(--muted);
   --route-focus:var(--accent); --route-transfer:var(--teal);
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-20:20px; --space-5:24px; --space-6:32px;
   --type-caption:.75rem; --type-secondary:.8125rem; --type-body:.9375rem; --type-title:1.125rem; --type-time:1.75rem;

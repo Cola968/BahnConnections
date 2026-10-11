@@ -1,4 +1,6 @@
 /** BahnConnections product thresholds; these are not official operator colours. */
+export const REALTIME_DELAY_THRESHOLDS = { greenThrough:4, warningThrough:10, severeFrom:30 } as const;
+
 export type RealtimeKind = "schedule" | "on-time" | "minor-delay" | "delay" | "major-delay" | "early" | "cancelled" | "unknown";
 export type RealtimeTone = "neutral" | "success" | "warning" | "danger";
 export type RealtimeInput = {
@@ -33,9 +35,9 @@ export function deriveRealtimePresentation(input: RealtimeInput): RealtimePresen
   if (!input.realtime) return { ...base, kind:scheduled || actual ? "schedule" : "unknown" };
   if (!scheduled || !actual) return base;
   const delayMinutes = Math.round((new Date(actual).getTime() - new Date(scheduled).getTime()) / 60_000);
-  const kind: RealtimeKind = delayMinutes < 0 ? "early" : delayMinutes === 0 ? "on-time" : delayMinutes <= 5 ? "minor-delay" : delayMinutes < 10 ? "delay" : "major-delay";
-  const tone: RealtimeTone = delayMinutes <= 0 ? "success" : delayMinutes < 10 ? "warning" : "danger";
-  return { ...base, kind, tone, delayMinutes, changed:delayMinutes !== 0, severe:delayMinutes >= 30 };
+  const kind: RealtimeKind = delayMinutes < 0 ? "early" : delayMinutes === 0 ? "on-time" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.greenThrough ? "minor-delay" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.warningThrough ? "delay" : "major-delay";
+  const tone: RealtimeTone = delayMinutes <= REALTIME_DELAY_THRESHOLDS.greenThrough ? "success" : delayMinutes <= REALTIME_DELAY_THRESHOLDS.warningThrough ? "warning" : "danger";
+  return { ...base, kind, tone, delayMinutes, changed:delayMinutes !== 0, severe:delayMinutes >= REALTIME_DELAY_THRESHOLDS.severeFrom };
 }
 
 const formatter = new Intl.DateTimeFormat("de-DE", { timeZone:"Europe/Berlin", hour:"2-digit", minute:"2-digit" });

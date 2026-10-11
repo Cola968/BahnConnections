@@ -19,7 +19,7 @@ type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 type DelayFilter = "all" | "ontime" | "delayed" | "canceled";
 type SortMode = "time" | "delay" | "platform" | "product";
 type BoardWindow = 60 | 120 | 180 | 240 | 500;
-type BoardVerificationStatus = "matched" | "different" | "unavailable";
+type BoardVerificationStatus = "matched" | "different" | "inconclusive" | "unavailable";
 
 type BoardEntry = {
   tripId?: string;
@@ -599,7 +599,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           </div>
         )}
       </div>
-      <details className="board-data-details"><summary>Quelle & Aktualisierung{stale || verificationStatus === "different" ? <span> · Datenhinweis</span> : null}</summary><footer className="board-footer"><a className={`verification-${verificationStatus}`} href="https://transitous.org/sources/" target="_blank" rel="noreferrer" title={verificationMessage || sourceWarnings.join(" · ")}><i /> {stale ? "Live-Daten unvollständig · letzter Stand" : verificationStatus === "matched" ? "Transitous · DB-geprüft" : verificationStatus === "different" ? "Transitous · Quellenabweichung" : entries.some((entry) => entry.realtime) ? `${sourceLabel} · DB-Prüfung offen` : "Nur Fahrplandaten verfügbar"}</a><button onClick={() => setRefreshToken((value) => value + 1)} aria-label="Live-Tafel aktualisieren">↻ {updatedAt ? berlinTimestamp(updatedAt) : "Aktualisieren"}</button></footer>{sourceWarnings.map((warning,index) => <p key={index}>{warning}</p>)}</details>
+      <details className="board-data-details"><summary>Quelle & Aktualisierung{stale || verificationStatus === "different" || verificationStatus === "inconclusive" ? <span> · Datenhinweis</span> : null}</summary><footer className="board-footer"><a className={`verification-${verificationStatus}`} href="https://transitous.org/sources/" target="_blank" rel="noreferrer" title={verificationMessage || sourceWarnings.join(" · ")}><i /> {stale ? "Live-Daten unvollständig · letzter Stand" : verificationStatus === "matched" ? "Transitous · DB-geprüft" : verificationStatus === "different" ? "Transitous · Quellenabweichung" : verificationStatus === "inconclusive" ? "Transitous · DB-Prüfung nicht eindeutig" : entries.some((entry) => entry.realtime) ? `${sourceLabel} · DB-Prüfung offen` : "Nur Fahrplandaten verfügbar"}</a><button onClick={() => setRefreshToken((value) => value + 1)} aria-label="Live-Tafel aktualisieren">↻ {updatedAt ? berlinTimestamp(updatedAt) : "Aktualisieren"}</button></footer>{sourceWarnings.map((warning,index) => <p key={index}>{warning}</p>)}</details>
     </section>
   );
 }

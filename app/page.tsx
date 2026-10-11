@@ -739,29 +739,40 @@ export default function Home() {
 
   useEffect(() => {
     if (!selected || !liveVisible) {
-      const timer = window.setTimeout(() => setLiveTrips([]), 0);
+      const timer = window.setTimeout(() => { setLiveTrips([]); setLiveUpdatedAt(null); }, 0);
       return () => window.clearTimeout(timer);
     }
     const liveStation = selected;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let hasLoaded = false;
+    // A station switch must never show radar vehicles from the previous location.
+    const reset = window.setTimeout(() => {
+      if (!controller.signal.aborted) {
+        setLiveTrips([]);
+        setLiveUpdatedAt(null);
+        setLiveState("loading");
+      }
+    }, 0);
     async function load() {
-      if (!liveTrips.length) setLiveState("loading");
+      if (controller.signal.aborted) return;
       try {
         const trips = await fetchLiveTrips(liveStation, controller.signal);
+        if (controller.signal.aborted) return;
+        hasLoaded = true;
         setLiveTrips(trips);
         setLiveUpdatedAt(new Date());
         setLiveState("ready");
         setSelectedLiveTrip((current) => current ? trips.find((trip) => trip.tripId === current.tripId) ?? null : null);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setLiveState(liveTrips.length ? "ready" : "error");
+        if (controller.signal.aborted) return;
+        if ((error as Error).name !== "AbortError") setLiveState(hasLoaded ? "ready" : "error");
       }
-      timer = setTimeout(load, 45_000);
+      // Never reschedule an aborted request: otherwise switching stations leaks pollers.
+      if (!controller.signal.aborted) timer = setTimeout(() => void load(), 45_000);
     }
-    load();
-    return () => { controller.abort(); if (timer) clearTimeout(timer); };
-    // Existing rows intentionally remain available as a short-lived fallback.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void load();
+    return () => { controller.abort(); clearTimeout(reset); if (timer) clearTimeout(timer); };
   }, [liveVisible, selected]);
 
   useEffect(() => {
@@ -784,7 +795,7 @@ export default function Home() {
         const positions = trips.map((trip) => pointOnTrip(trip, liveTripProgress(trip, liveTick)));
         const position: [number, number] = [positions.reduce((sum, point) => sum + point[0], 0) / positions.length, positions.reduce((sum, point) => sum + point[1], 0) / positions.length];
         const average = trips.reduce((sum, trip) => sum + trip.delay, 0) / trips.length;
-        const tone = average >= 15 ? "severe" : average >= 6 ? "late" : "calm";
+        const tone = average >= 11 ? "severe" : average >= 5 ? "late" : "calm";
         L.marker(position, { icon:L.divIcon({ className:"live-cluster-wrap", html:`<div class="live-cluster ${tone}">${trips.length}<small>Züge</small></div>`, iconSize:[42,42], iconAnchor:[21,21] }) }).bindTooltip(`${trips.length} Live-Züge · Ø ${average.toLocaleString("de-DE", { maximumFractionDigits:1 })} Min. · ab Zoom 10 einzeln`).addTo(layer);
         continue;
       }
@@ -1333,7 +1344,7 @@ export default function Home() {
           <section className="live-trip-card floating-panel mobile-sheet-panel" style={tripControls.style} aria-live="polite">
             <PanelTools controls={tripControls} label="Zugdetails" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileSummary={`${stationDisplayName(selectedLiveTrip.from.name)} → ${stationDisplayName(selectedLiveTrip.to.name)}`} />
             <div className="panel-body">
-            <div className="live-trip-title"><span className={`service-pill ${selectedLiveTrip.category === "fern" ? "ice" : selectedLiveTrip.category === "sbahn" ? "sbahn" : selectedLiveTrip.category === "ubahn" ? "ubahn" : selectedLiveTrip.category === "tram" ? "tram" : "regional"}`}>{selectedLiveTrip.name}</span><div><b>{stationDisplayName(selectedLiveTrip.from.name)} → {stationDisplayName(selectedLiveTrip.to.name)}</b><small>{selectedLiveTrip.realTime ? "Position aus Echtzeit interpoliert" : "Position aus Fahrplan interpoliert"}</small></div></div>
+            <div className="live-trip-title"><span className={`service-pill ${selectedLiveTrip.category === "fern" ? "ice" : selectedLiveTrip.category === "sbahn" ? "sbahn" : selectedLiveTrip.category === "ubahn" ? "ubahn" : selectedLiveTrip.category === "tram" ? "tram" : "regional"}`}>{selectedLiveTrip.name}</span><div><b>{stationDisplayName(selectedLiveTrip.from.name)} → {stationDisplayName(selectedLiveTrip.to.name)}</b><small>{selectedLiveTrip.realTime ? "Geschätzte Position aus Echtzeit-Haltezeiten, keine GPS-Ortung" : "Geschätzte Position aus Fahrplan, keine GPS-Ortung"}</small></div></div>
             <div className="trip-progress"><i style={{ width:`${Math.round(selectedTripProgress * 100)}%` }} /><span style={{ left:`${Math.round(selectedTripProgress * 100)}%` }} /></div>
             <div className="live-trip-stops"><span><small>Letzter Halt</small><b>{stationDisplayName(selectedLiveTrip.from.name)}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledDeparture} actual={selectedLiveTrip.departure} realtime={selectedLiveTrip.realTime} showStatus compact /></span><span><small>Nächster Halt</small><b>{stationDisplayName(selectedLiveTrip.to.name)}</b><RealtimeTime scheduled={selectedLiveTrip.scheduledArrival} actual={selectedLiveTrip.arrival} realtime={selectedLiveTrip.realTime} showStatus compact /></span></div>
             <div className="live-trip-stats"><span><b>{selectedTripSpeed}</b> km/h Ø Segment</span><span><b>{Math.round(selectedTripProgress * 100)}%</b> des Abschnitts</span></div>
