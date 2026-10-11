@@ -1,3 +1,12 @@
+# V51.0 · Flüssiger Radar & progressive Abfahrten
+
+- Bestehende Zugmarker werden aktualisiert statt bei jedem Radar-Takt neu aufgebaut. Geometrie wird vorbereitet und in kurzen Zeitbudgets verarbeitet.
+- Abfahrten erscheinen bereits während der optionalen DB-Prüfung. Ein späteres Prüfergebnis erhält die geöffnete Fahrt.
+- Kompaktere Desktop-Tafel und konsolidierte Liquid-Glass-Flächen; mobiles Bahnhofssheet weiterhin mit vier vollständigen Abfahrten bei 390 px.
+- Veraltete Anfragen werden beim Stationswechsel abgebrochen. Hintergrund-Polling pausiert bei unsichtbarer App.
+- Barrierefreie Tastatursteuerung für Tafel-Tabs und Radar-Marker; Inspector ohne horizontalen Scrollbalken.
+- PWA-Version, Update-Pfad und Service-Worker-Cache auf V51.0 angehoben.
+
 # V50.2 · Responsive Station UI & Lines
 
 - Klarere Typografie, feine Tab-Indikatoren und ruhige Abfahrtszeilen auf der gemeinsamen Liquid-Glass-Fläche.
