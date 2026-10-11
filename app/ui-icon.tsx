@@ -19,6 +19,7 @@ const paths = {
   arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
   star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />,
   train: <><rect x="6" y="3" width="12" height="15" rx="3" /><path d="M6 10h12M9 21l2-3m4 3-2-3M12 3v7M9 14h.01M15 14h.01" /></>,
+  check: <path d="m4 12 5 5L20 6"/>,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>,
 } as const;
 
