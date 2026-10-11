@@ -553,7 +553,7 @@ try {
   const profileChecks=[];
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
-    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:nth-child(2)');}
+    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
