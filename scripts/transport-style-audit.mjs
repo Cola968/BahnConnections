@@ -26,7 +26,7 @@ globalThis.fetch=async (_url,{signal}={})=>{
   calls++;
   await new Promise(resolve=>setTimeout(resolve,5));
   if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
-  return {ok:true,json:async()=>[{type:'STOP',id:'verified-stop',lat:station.lat,lon:station.lon}]};
+  return {ok:true,json:async()=>[{type:'STOP',id:'verified-stop',name:station.name,lat:station.lat,lon:station.lon}]};
 };
 try {
   const controller=new AbortController();

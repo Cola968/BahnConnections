@@ -20,7 +20,8 @@
     "audit:layout": "node scripts/content-layout-qa.mjs",
     "audit:transport": "node scripts/transport-style-audit.mjs",
     "audit:api": "node scripts/api-smoke.mjs",
-    "audit:billing": "node scripts/billing-audit.mjs"
+    "audit:billing": "node scripts/billing-audit.mjs",
+    "audit:planner": "node scripts/planner-logic-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",

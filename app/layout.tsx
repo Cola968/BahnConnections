@@ -14,6 +14,8 @@ import "./styles/v49-ui.css";
 import "./styles/material-surfaces.css";
 import "./styles/station-sheet.css";
 import "./styles/live-map.css";
+import "./styles/planner.css";
+import "./styles/navigation.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {

@@ -21,14 +21,9 @@ body {
   font-variant-numeric:tabular-nums lining-nums;
 }
 
-:is(.route-discovery-head h1,.station-card-head h2,.source-modal h2) {
+:is(.station-card-head h2,.source-modal h2) {
   letter-spacing:-.035em;
   text-wrap:balance;
-}
-
-.route-discovery-head h1 {
-  font-size:var(--designer-display);
-  line-height:1.05;
 }
 
 .station-card-head h2 {
@@ -43,7 +38,7 @@ body {
 }
 
 /* Content controls are solid/quiet. Glass is reserved for chrome. */
-:is(.route-station-search,.planner-time-mode,.board-search,.station-line-search,.filter-grid select,.filter-grid input[type="datetime-local"]) {
+:is(.board-search,.station-line-search,.filter-grid select,.filter-grid input[type="datetime-local"]) {
   background:var(--elevated-soft);
   border-color:var(--line-subtle);
   -webkit-backdrop-filter:none;
@@ -51,7 +46,7 @@ body {
   box-shadow:none;
 }
 
-:is(.route-station-search,.board-search,.station-line-search):focus-within {
+:is(.board-search,.station-line-search):focus-within {
   border-color:color-mix(in srgb,var(--accent) 55%,var(--line-subtle));
   box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);
 }
@@ -180,33 +175,6 @@ body {
       0 14px 36px color-mix(in srgb,var(--glass-depth) 42%,transparent);
   }
 
-  .mobile-navigation {
-    bottom:calc(10px + var(--keyboard-inset,0px));
-    width:min(520px,calc(100% - 24px));
-    min-height:64px;
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 62%,transparent);
-    border-radius:24px;
-    background:var(--designer-glass-nav);
-    -webkit-backdrop-filter:blur(30px) saturate(138%);
-    backdrop-filter:blur(30px) saturate(138%);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 64%,transparent),
-      0 18px 46px color-mix(in srgb,var(--glass-depth) 48%,transparent);
-  }
-
-  .mobile-navigation button {
-    margin:1px;
-    border:0;
-    border-radius:18px;
-    font-weight:600;
-  }
-
-  .mobile-navigation button.active {
-    color:var(--action);
-    background:color-mix(in srgb,var(--glass-elevated) 66%,transparent);
-    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 56%,transparent);
-  }
-
   .mobile-sheet-panel {
     border-color:color-mix(in srgb,var(--glass-stroke) 42%,transparent);
     border-radius:var(--radius-sheet) var(--radius-sheet) 0 0;
@@ -292,7 +260,7 @@ html[data-theme="dark"] {
   --designer-hairline-strong:rgba(244,245,247,.2);
 }
 
-html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-search,.station-line-search,.filter-grid select,.filter-grid input[type="datetime-local"]) {
+html[data-theme="dark"] :is(.board-search,.station-line-search,.filter-grid select,.filter-grid input[type="datetime-local"]) {
   background:var(--elevated-soft);
 }
 
@@ -303,7 +271,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
   .brand,
   .mobile-map-view-button,
   .topbar>.station-search,
-  .mobile-navigation,
   .mobile-sheet-panel,
   .mobile-sheet-panel>.panel-tools {
     background:var(--paper)!important;
@@ -319,7 +286,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
   .brand,
   .mobile-map-view-button,
   .topbar>.station-search,
-  .mobile-navigation,
   .mobile-sheet-panel,
   .mobile-sheet-panel>.panel-tools {
     border-color:CanvasText!important;
@@ -428,29 +394,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     right:12px;
   }
 
-  .mobile-navigation {
-    bottom:calc(8px + var(--keyboard-inset,0px));
-    height:calc(62px + env(safe-area-inset-bottom,0px));
-    width:min(520px,calc(100% - 24px));
-    padding:4px 7px calc(4px + env(safe-area-inset-bottom,0px));
-    border-radius:25px;
-  }
-
-  .mobile-navigation button {
-    min-height:50px;
-    gap:2px;
-    font-size:.70rem;
-  }
-
-  .mobile-navigation button svg {
-    width:21px;
-    height:21px;
-  }
-
-  .app-shell:not(.has-primary-panel) .mobile-navigation {
-    transform:translateX(-50%);
-  }
-
   .mobile-sheet-panel {
     bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px))!important;
   }
@@ -547,28 +490,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     border-radius:28px;
   }
 
-  .desktop-workspace.desktop-search-mode .explore-card {
-    left:16px;
-    width:var(--workspace-left);
-    padding:28px 22px;
-  }
-
-  .desktop-workspace.desktop-search-mode .route-discovery-head h1 {
-    margin:0 0 28px;
-    font-size:2.15rem;
-    line-height:.98;
-    letter-spacing:-.055em;
-  }
-
-  .desktop-workspace.desktop-search-mode .route-station-search {
-    min-height:58px;
-    border-radius:16px;
-  }
-
-  .desktop-workspace.desktop-search-mode .planner-time-row {
-    margin-top:18px;
-  }
-
   .desktop-workspace .journey-card .panel-body {
     padding-top:6px;
   }
@@ -614,7 +535,7 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     position:fixed;
     z-index:calc(var(--z-navigation) + 20);
     right:12px;
-    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 12px);
+    bottom:calc(var(--bottom-navigation) + var(--keyboard-inset,0px) + 20px);
     left:12px;
     display:block;
     pointer-events:auto;
@@ -716,11 +637,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     padding:0 10px;
     font-size:.78rem;
   }
-  .mobile-navigation {
-    width:calc(100% - 16px);
-    min-height:60px;
-  }
-  .mobile-navigation button { font-size:.66rem; }
   .journey-mobile-route .journey-time-range { font-size:1.62rem; }
   .mobile-sheet-panel { padding-right:13px; padding-left:13px; }
   .mobile-sheet-panel>.panel-tools {
@@ -756,7 +672,7 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
   }
 }
 
-@media (max-width:1023px) and (max-height:520px) {
+@media (min-width:600px) and (max-width:1023px) and (max-height:520px) {
   .mobile-search-dock { display:none!important; }
 
   .topbar {
@@ -769,20 +685,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
   .topbar>.station-search,
   .brand,
   .header-actions { pointer-events:auto; }
-
-  .mobile-navigation {
-    bottom:8px;
-    width:min(420px,calc(100% - 24px));
-    height:54px;
-    padding:3px 8px;
-    border-radius:19px;
-  }
-
-  .mobile-navigation button {
-    min-height:46px;
-    gap:5px;
-    font-size:.72rem;
-  }
 
   .mobile-sheet-panel,
   .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
@@ -832,21 +734,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
     -ms-overflow-style:none;
   }
   .mobile-sheet-panel::-webkit-scrollbar { display:none; width:0; height:0; }
-
-  .explore-card .plan-button {
-    position:sticky;
-    z-index:6;
-    bottom:0;
-    width:100%;
-    margin-top:14px;
-    box-shadow:
-      0 -10px 24px color-mix(in srgb,var(--elevated) 90%,transparent),
-      0 8px 20px color-mix(in srgb,var(--glass-depth) 28%,transparent);
-  }
-
-  .explore-card .panel-body {
-    padding-bottom:10px;
-  }
 }
 
 
@@ -889,119 +776,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
 @keyframes settings-pane-in {
   from { opacity:0; transform:translateY(7px) scale(.992); }
   to { opacity:1; transform:translateY(0) scale(1); }
-}
-
-@media (max-width:1023px) {
-  .mobile-navigation {
-    isolation:isolate;
-    overflow:hidden;
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 78%,transparent);
-    background:
-      linear-gradient(155deg,color-mix(in srgb,var(--glass-highlight) 72%,transparent) 0%,transparent 32%),
-      linear-gradient(180deg,color-mix(in srgb,var(--glass-clear) 82%,transparent),color-mix(in srgb,var(--glass-navigation) 94%,transparent));
-    -webkit-backdrop-filter:blur(34px) saturate(158%) brightness(1.04);
-    backdrop-filter:blur(34px) saturate(158%) brightness(1.04);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 78%,transparent),
-      inset 0 -1px 0 color-mix(in srgb,var(--glass-stroke) 44%,transparent),
-      0 -8px 34px color-mix(in srgb,var(--glass-depth) 24%,transparent),
-      0 14px 36px color-mix(in srgb,var(--glass-depth) 18%,transparent);
-  }
-
-  .mobile-navigation::before {
-    position:absolute;
-    z-index:0;
-    inset:0;
-    content:"";
-    pointer-events:none;
-    background:
-      radial-gradient(110% 90% at 18% -10%,color-mix(in srgb,var(--glass-highlight) 72%,transparent),transparent 54%),
-      linear-gradient(90deg,transparent,color-mix(in srgb,var(--glass-highlight-soft) 24%,transparent),transparent);
-    opacity:.72;
-  }
-
-  .mobile-navigation::after {
-    position:absolute;
-    z-index:1;
-    top:5px;
-    bottom:5px;
-    left:8px;
-    width:calc((100% - 16px) / 4);
-    border:1px solid color-mix(in srgb,var(--glass-stroke) 86%,transparent);
-    border-radius:18px;
-    pointer-events:none;
-    transform:translateX(var(--mobile-nav-offset,0%));
-    transition:
-      transform 420ms cubic-bezier(.2,.9,.2,1.04),
-      box-shadow 260ms ease,
-      background-color 260ms ease;
-    background:
-      radial-gradient(80% 110% at 50% -12%,color-mix(in srgb,var(--action) 10%,transparent),transparent 64%),
-      linear-gradient(145deg,color-mix(in srgb,var(--glass-highlight) 82%,transparent) 0%,transparent 40%),
-      linear-gradient(180deg,color-mix(in srgb,var(--glass-clear) 56%,transparent),color-mix(in srgb,var(--glass-elevated) 42%,transparent));
-    -webkit-backdrop-filter:blur(26px) saturate(170%);
-    backdrop-filter:blur(26px) saturate(170%);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb,var(--glass-highlight) 92%,transparent),
-      inset 0 -1px 0 color-mix(in srgb,var(--glass-stroke) 36%,transparent),
-      0 7px 18px color-mix(in srgb,var(--glass-depth) 28%,transparent);
-  }
-
-  .mobile-navigation button {
-    position:relative;
-    z-index:2;
-    overflow:visible;
-    background:transparent!important;
-    box-shadow:none!important;
-    transition:
-      color 220ms ease,
-      opacity 220ms ease,
-      transform 180ms var(--motion-press);
-  }
-
-  .mobile-navigation button:not(.active) {
-    color:color-mix(in srgb,var(--muted) 94%,var(--ink));
-  }
-
-  .mobile-navigation button.active {
-    color:var(--action);
-  }
-
-  .mobile-nav-icon {
-    display:grid;
-    place-items:center;
-    width:28px;
-    height:26px;
-    transform-origin:center bottom;
-    transition:transform 260ms cubic-bezier(.2,.9,.25,1.15),filter 220ms ease;
-  }
-
-  .mobile-nav-label {
-    display:block;
-    transition:
-      transform 260ms cubic-bezier(.2,.9,.25,1.15),
-      opacity 200ms ease,
-      font-weight 200ms ease;
-  }
-
-  .mobile-navigation button.active .mobile-nav-icon {
-    animation:mobile-nav-icon-pop 360ms cubic-bezier(.2,.9,.25,1.15);
-    transform:translateY(-1px) scale(1.06);
-    filter:drop-shadow(0 3px 8px color-mix(in srgb,var(--action) 22%,transparent));
-  }
-
-  .mobile-navigation button.active .mobile-nav-label {
-    transform:translateY(-1px);
-    font-weight:720;
-  }
-
-  .mobile-navigation button:active .mobile-nav-icon {
-    transform:scale(.9);
-  }
-
-  .mobile-navigation button:active .mobile-nav-label {
-    transform:translateY(1px) scale(.97);
-  }
 }
 
 .settings-dialog-v48 {
@@ -1405,18 +1179,6 @@ html[data-theme="dark"] :is(.route-station-search,.planner-time-mode,.board-sear
   }
 }
 
-html[data-theme="dark"] .mobile-navigation {
-  background:
-    linear-gradient(155deg,rgb(255 255 255 / .11),transparent 34%),
-    color-mix(in srgb,var(--glass-navigation) 92%,#07111a 8%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / .15),
-    inset 0 -1px 0 rgb(255 255 255 / .05),
-    0 -8px 34px rgb(0 0 0 / .24),
-    0 14px 42px rgb(0 0 0 / .28);
-}
-
-html[data-theme="dark"] .mobile-navigation::after,
 html[data-theme="dark"] .settings-tab-indicator {
   border-color:rgb(255 255 255 / .14);
   background:
@@ -1426,28 +1188,20 @@ html[data-theme="dark"] .settings-tab-indicator {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .mobile-navigation::after,
   .settings-tab-indicator,
-  .mobile-nav-icon,
-  .mobile-nav-label,
   .settings-dialog-v48 .settings-content {
     animation:none!important;
     transition:none!important;
   }
 }
 
-html[data-motion="reduced"] .mobile-navigation::after,
 html[data-motion="reduced"] .settings-tab-indicator,
-html[data-motion="reduced"] .mobile-nav-icon,
-html[data-motion="reduced"] .mobile-nav-label,
 html[data-motion="reduced"] .settings-dialog-v48 .settings-content {
   animation:none!important;
   transition:none!important;
 }
 
 @media (prefers-reduced-transparency:reduce) {
-  .mobile-navigation,
-  .mobile-navigation::after,
   .settings-dialog-v48,
   .settings-tab-indicator {
     background:var(--paper)!important;

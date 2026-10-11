@@ -45,8 +45,9 @@ export function usePanelControls(id: string): PanelControls {
   };
 }
 
-export function PanelTools({ controls, label, onClose, mobileState, onMobileStateChange, mobileTitle, mobileSummary, subNavigation, fullTitle }: {
+export function PanelTools({ controls, label, onClose, mobileState, onMobileStateChange, mobileTitle, mobileSummary, subNavigation, fullTitle, compact = false }: {
   controls: PanelControls;
+  compact?: boolean;
   label: string;
   onClose?: () => void;
   mobileState?: MobileSheetState;
@@ -148,6 +149,17 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
     });
     dragRef.current = null;
   }
+
+  if (compact) return <div className="planner-panel-header" ref={toolsRef}
+    onPointerDown={event => { if (!(event.target instanceof Element && event.target.closest('button,details'))) startMobileDrag(event); }}
+    onPointerMove={moveMobileDrag} onPointerUp={finishMobileDrag} onPointerCancel={finishMobileDrag}>
+    <h1>{label}</h1>
+    <div className="planner-header-actions">
+      <button type="button" className="planner-expand" aria-label={`${label} ${mobileState === "collapsed" ? "vergrößern" : "minimieren"}`} onClick={() => selectSize(mobileState === "collapsed" ? "expanded" : "collapsed")}><UiIcon name="chevron" /></button>
+      <details className="planner-text-size"><summary aria-label="Schriftgröße">Aa</summary><div><button type="button" onClick={controls.smaller} aria-label="Schrift kleiner">A−</button><button type="button" onClick={controls.larger} aria-label="Schrift größer">A+</button><button type="button" onClick={controls.reset} aria-label="Schriftgröße zurücksetzen">↺</button></div></details>
+      <button type="button" onClick={onClose} aria-label={`${label} schließen`}><UiIcon name="close" /></button>
+    </div>
+  </div>;
 
   return (
     <div className={`panel-tools${subNavigation ? " station-sheet-header" : ""}`} ref={toolsRef}

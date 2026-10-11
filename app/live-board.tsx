@@ -1,5 +1,6 @@
 "use client";
 
+import { boardDelayStatistics } from "./board-statistics";
 import { readPreferenceIds } from "./local-preferences";
 import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
@@ -49,7 +50,8 @@ export type BoardSummary = {
   delayed6: number;
   delayed15: number;
   delayed30: number;
-  averageDelay: number;
+  averageDelay: number | null;
+  delaySamples: number;
   products: { ice: number; ic: number; ec: number; sbahn: number; ubahn: number; tram: number; regional: number };
   updatedAt?: string;
   realtimeStatus?: "live" | "schedule" | "stale";
@@ -410,17 +412,14 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       const eventTime = new Date(entry.when ?? entry.plannedWhen ?? 0).getTime();
       return eventTime >= now - 5 * 60_000 && eventTime <= now + 500 * 60_000;
     });
-    const validDelays = scoped.filter((entry) => !entry.canceled).map(delayMinutes);
+    const delayStats = boardDelayStatistics(scoped.map(entry => ({scheduled:entry.plannedWhen,actual:entry.when,realtime:entry.realtime,cancelled:entry.canceled})));
     const products = { ice:0, ic:0, ec:0, sbahn:0, ubahn:0, tram:0, regional:0 };
     for (const entry of scoped) products[summaryProduct(entry)] += 1;
     return {
       stationId:station.id, windowMinutes:500, total:scoped.length,
       realtime:scoped.filter((entry) => entry.realtime).length,
       canceled:scoped.filter((entry) => entry.canceled).length,
-      delayed6:scoped.filter((entry) => !entry.canceled && delayMinutes(entry) >= 6).length,
-      delayed15:scoped.filter((entry) => !entry.canceled && delayMinutes(entry) >= 15).length,
-      delayed30:scoped.filter((entry) => !entry.canceled && delayMinutes(entry) >= 30).length,
-      averageDelay:validDelays.length ? validDelays.reduce((sum, value) => sum + value, 0) / validDelays.length : 0,
+      ...delayStats,
       products,
       updatedAt:updatedAt?.toISOString(),
       realtimeStatus:stale ? "stale" : scoped.some((entry) => entry.realtime) ? "live" : "schedule",

@@ -29,6 +29,7 @@ jobs:
       - run: pnpm audit:billing
       - run: pnpm audit:board
       - run: pnpm audit:transport
+      - run: pnpm audit:planner
       - run: pnpm audit:radar
       - run: pnpm audit:map
       - run: pnpm build
@@ -51,6 +52,7 @@ jobs:
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
           node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
+          node scripts/planner-qa.mjs http://localhost:3000 work/planner-qa
       - name: Live network sources
         continue-on-error: true
         run: timeout 180 pnpm audit:network > work/network-audit.json 2>&1
@@ -76,6 +78,7 @@ jobs:
             work/live-map-qa/
             work/board-stream-qa/
             work/station-loading-qa/
+            work/planner-qa/
             work/bahnconnections-dev.log
             work/network-audit.json
             work/api-smoke.json

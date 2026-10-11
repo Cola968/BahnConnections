@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {boardDelayStatistics} from '../app/board-statistics.ts';
+import {chooseStationMatch} from '../app/station-match.ts';
+import {pointOnTrip,trailForTrip} from '../app/live-trains.ts';
+const planned='2026-10-11T12:00:00Z',late='2026-10-11T12:10:00Z';
+const result=boardDelayStatistics([{scheduled:planned,actual:late,realtime:true},{scheduled:planned,actual:planned,realtime:false},{scheduled:planned,realtime:true},{scheduled:planned,actual:late,realtime:true,cancelled:true}]);
+assert.deepEqual(result,{delaySamples:1,delayed6:1,delayed15:0,delayed30:0,averageDelay:10});
+assert.equal(boardDelayStatistics([{scheduled:planned,realtime:true}]).averageDelay,null);
+const berlin={name:'Berlin Hbf',lat:52.5251,lon:13.3694};
+assert.equal(chooseStationMatch(berlin,[{name:'Berlin Ostbahnhof',lat:52.5251,lon:13.3694,id:'wrong'},{name:'Berlin Hauptbahnhof (S+U)',lat:52.5255,lon:13.3697,id:'right'}]).id,'right');
+assert.equal(chooseStationMatch(berlin,[{name:'Berlin Ostbahnhof',lat:52.5251,lon:13.3694}]),null);
+assert.equal(chooseStationMatch(berlin,[{...berlin,lat:52.52,lon:13.37},{...berlin,lat:52.53,lon:13.37}]),null,'Equally close distinct stations are ambiguous');
+assert.equal(chooseStationMatch(berlin,[{...berlin,lat:51}]),null);
+assert.equal(chooseStationMatch(berlin,[{...berlin,lat:52.5291},{...berlin,lat:52.52911},{...berlin,lat:52.52108}]),null,'Geographic duplicates cannot mask a third ambiguous station');
+const trip={points:[[52,13],[52.001,13.001],[53,14],[53.001,14.001]],departure:planned,arrival:late};
+assert.ok(pointOnTrip(trip,0),'Keep valid geometry before a gap');assert.equal(pointOnTrip(trip,.5),null);assert.ok(pointOnTrip(trip,1),'Keep valid geometry after a gap');
+assert.ok(trailForTrip(trip,1).every(p=>p[0]>=53),'Trail cannot bridge a preceding geometry gap');
+console.log('Planner logic: unknown delays excluded, sample denominator, named/near/ambiguous station matching, continuous geometry preserved passed.');
