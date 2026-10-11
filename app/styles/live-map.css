@@ -32,7 +32,7 @@
 }
 .live-trip-card .track-button { min-height:44px; }
 .live-trip-card .track-button:disabled { opacity:.6; cursor:default; }
-.live-trip-card>.panel-body { min-width:0; overflow-x:hidden; }
+.app-shell .live-trip-card>.panel-body { min-width:0; overflow-x:hidden; }
 .live-trip-title { display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:center; }
 .live-trip-title .service-pill { max-width:80px; padding:6px 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .live-trip-title>div { display:grid; min-width:0; gap:4px; }
@@ -56,5 +56,5 @@
 
 @media (min-width:1024px) {
   .app-shell .live-trip-card { bottom:auto; height:auto; max-height:calc(100dvh - 110px); }
-  .live-trip-card>.panel-body { max-height:calc(100dvh - 180px); }
+  .app-shell .live-trip-card>.panel-body { max-height:calc(100dvh - 180px); }
 }

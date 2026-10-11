@@ -1,0 +1,14 @@
+{
+  "fixture": true,
+  "cpuSlowdown": 4,
+  "geometryPoints": 12000,
+  "lines": 18,
+  "sheetFrame": 165,
+  "maxTask": 161,
+  "blockingTime": 432,
+  "longTasks": 10,
+  "maxFrameGap": 166.69999999999982,
+  "routes": 18,
+  "added": 18,
+  "requests": 18
+}

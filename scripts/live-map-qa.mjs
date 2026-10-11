@@ -99,6 +99,7 @@ try {
     await pause(250);assert.equal(await evaluate("Boolean(document.querySelector('.live-trip-card'))"),true,'Keyboard opens current trip details');
     assert.equal(await evaluate("document.querySelectorAll('.live-trip-card img[src=x],.leaflet-tooltip img[src=x]').length"),0,'Provider text must not become HTML');
     assert.equal(await evaluate("(() => {const panel=document.querySelector('.live-trip-card'),body=panel.querySelector('.panel-body');return panel.scrollWidth>panel.clientWidth+1||body.scrollWidth>body.clientWidth+1;})()"),false,'Trip inspector must not overflow with long provider text');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.live-trip-card>.panel-body')).overflowX"),'hidden','Inspector must use the component horizontal overflow policy');
     await screenshot('1440-trip-details');
     assert.equal(metrics.retained,count,'Ticks must preserve marker identity');assert.equal(metrics.mutations,0,'Ticks must not replace DOM markers');assert.equal(metrics.markers,count);assert.ok(metrics.maxTask<250,'Radar main-thread budget');}
 }finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}
