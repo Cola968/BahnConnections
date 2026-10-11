@@ -118,6 +118,32 @@ export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
   // End before the interpolation segment: never overshoot the estimated position.
   return [...trip.points.slice(start,end),position];
 }
+/** A current *modelled* velocity, never a measured train speed.
+ * The MOTIS map feed supplies predicted stop times and a route polyline but no
+ * GTFS-RT VehiclePosition. Compute a bounded geometry-derived speed only when
+ * the source explicitly marks the segment as realtime and its position exists.
+ * The estimate changes when realtime predicted times/geometry change, not due
+ * to a fictitious GPS stream.
+ */
+export function realtimeModelSpeed(trip:LiveTrip,at=Date.now()):number|null {
+  if(!trip.realTime)return null;
+  const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return null;
+  if(at<start-15_000||at>end+15_000)return null;
+  const index=geometryIndex(trip.points);
+  if(!index.valid||!Number.isFinite(index.total)||index.total<.02)return null;
+  for(let i=1;i<trip.points.length;i++)if(railDistanceKm(trip.points[i-1],trip.points[i])>2)return null;
+  // Average-between-stops geometry cannot model braking/acceleration at stops.
+  if(at<start+30_000||at>end-30_000)return null;
+  if(!pointOnTrip(trip,liveTripProgress(trip,at)))return null;
+  const minutes=(end-start)/60_000;
+  if(minutes<.3)return null;
+  const speed=index.total/(minutes/60);
+  // Conservative physical sanity limit. Invalid feed geometry must not become
+  // an eye-catching but false speed value.
+  return Number.isFinite(speed)&&speed>=0&&speed<=350?Math.round(speed):null;
+}
+
 export function segmentAverageSpeed(trip:LiveTrip):number|null {
   const hours=(Date.parse(trip.arrival)-Date.parse(trip.departure))/3_600_000;
   const speed=trip.distance/1000/hours;
