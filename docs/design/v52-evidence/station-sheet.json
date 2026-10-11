@@ -1,0 +1,1995 @@
+{
+  "checkedAt": "2026-10-11T16:02:55.390Z",
+  "fixture": true,
+  "baseline": false,
+  "results": [
+    {
+      "name": "320-light-half",
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 256,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 238,
+        "bottom": 630,
+        "height": 392
+      },
+      "body": {
+        "top": 327,
+        "bottom": 606,
+        "height": 279
+      },
+      "header": {
+        "top": 239,
+        "bottom": 327,
+        "height": 88
+      },
+      "tabs": {
+        "top": 290.5,
+        "bottom": 327.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 327,
+        "bottom": 367,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 368,
+        "bottom": 438.75,
+        "height": 70.75
+      },
+      "rowHeights": [
+        70.75,
+        70.75,
+        70.75,
+        70.75,
+        71.75,
+        70.75
+      ],
+      "visibleRows": 3,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "320-light-expanded",
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 256,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 78,
+        "bottom": 640,
+        "height": 562
+      },
+      "body": {
+        "top": 167,
+        "bottom": 616,
+        "height": 449
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 278.75,
+        "height": 70.75
+      },
+      "rowHeights": [
+        70.75,
+        70.75,
+        70.75,
+        70.75,
+        71.75,
+        70.75
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "320-dark-half",
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 256,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 238,
+        "bottom": 630,
+        "height": 392
+      },
+      "body": {
+        "top": 327,
+        "bottom": 606,
+        "height": 279
+      },
+      "header": {
+        "top": 239,
+        "bottom": 327,
+        "height": 88
+      },
+      "tabs": {
+        "top": 290.5,
+        "bottom": 327.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 327,
+        "bottom": 367,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 368,
+        "bottom": 438.75,
+        "height": 70.75
+      },
+      "rowHeights": [
+        70.75,
+        70.75,
+        70.75,
+        70.75,
+        71.75,
+        70.75
+      ],
+      "visibleRows": 3,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "320-dark-expanded",
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 256,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 78,
+        "bottom": 640,
+        "height": 562
+      },
+      "body": {
+        "top": 167,
+        "bottom": 616,
+        "height": 449
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 278.75,
+        "height": 70.75
+      },
+      "rowHeights": [
+        70.75,
+        70.75,
+        70.75,
+        70.75,
+        71.75,
+        70.75
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "360-light-half",
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 296,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 282,
+        "bottom": 730,
+        "height": 448
+      },
+      "body": {
+        "top": 371,
+        "bottom": 706,
+        "height": 335
+      },
+      "header": {
+        "top": 283,
+        "bottom": 371,
+        "height": 88
+      },
+      "tabs": {
+        "top": 334.5,
+        "bottom": 371.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 371,
+        "bottom": 411,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 412,
+        "bottom": 485.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "360-light-expanded",
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 296,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 78,
+        "bottom": 740,
+        "height": 662
+      },
+      "body": {
+        "top": 167,
+        "bottom": 716,
+        "height": 549
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 6,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "360-dark-half",
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 296,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 282,
+        "bottom": 730,
+        "height": 448
+      },
+      "body": {
+        "top": 371,
+        "bottom": 706,
+        "height": 335
+      },
+      "header": {
+        "top": 283,
+        "bottom": 371,
+        "height": 88
+      },
+      "tabs": {
+        "top": 334.5,
+        "bottom": 371.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 371,
+        "bottom": 411,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 412,
+        "bottom": 485.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "360-dark-expanded",
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 296,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 78,
+        "bottom": 740,
+        "height": 662
+      },
+      "body": {
+        "top": 167,
+        "bottom": 716,
+        "height": 549
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 6,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "390-light-half",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 301.375,
+        "bottom": 774,
+        "height": 472.625
+      },
+      "body": {
+        "top": 390.375,
+        "bottom": 750,
+        "height": 359.625
+      },
+      "header": {
+        "top": 302.375,
+        "bottom": 390.375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 353.875,
+        "bottom": 390.875,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 390.375,
+        "bottom": 430.375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 431.375,
+        "bottom": 504.8125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "390-light-expanded",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 78,
+        "bottom": 784,
+        "height": 706
+      },
+      "body": {
+        "top": 167,
+        "bottom": 760,
+        "height": 593
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 7,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "390-dark-half",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 301.375,
+        "bottom": 774,
+        "height": 472.625
+      },
+      "body": {
+        "top": 390.375,
+        "bottom": 750,
+        "height": 359.625
+      },
+      "header": {
+        "top": 302.375,
+        "bottom": 390.375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 353.875,
+        "bottom": 390.875,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 390.375,
+        "bottom": 430.375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 431.375,
+        "bottom": 504.8125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 4,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "390-dark-expanded",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 326,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 78,
+        "bottom": 784,
+        "height": 706
+      },
+      "body": {
+        "top": 167,
+        "bottom": 760,
+        "height": 593
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 7,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "430-light-half",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 366,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 340.09375,
+        "bottom": 862,
+        "height": 521.90625
+      },
+      "body": {
+        "top": 429.09375,
+        "bottom": 838,
+        "height": 408.90625
+      },
+      "header": {
+        "top": 341.09375,
+        "bottom": 429.09375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 392.59375,
+        "bottom": 429.59375,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 429.09375,
+        "bottom": 469.09375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 470.09375,
+        "bottom": 543.53125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "430-light-expanded",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 366,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 78,
+        "bottom": 872,
+        "height": 794
+      },
+      "body": {
+        "top": 167,
+        "bottom": 848,
+        "height": 681
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 8,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "430-dark-half",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 366,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 340.09375,
+        "bottom": 862,
+        "height": 521.90625
+      },
+      "body": {
+        "top": 429.09375,
+        "bottom": 838,
+        "height": 408.90625
+      },
+      "header": {
+        "top": 341.09375,
+        "bottom": 429.09375,
+        "height": 88
+      },
+      "tabs": {
+        "top": 392.59375,
+        "bottom": 429.59375,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 429.09375,
+        "bottom": 469.09375,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 470.09375,
+        "bottom": 543.53125,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "430-dark-expanded",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 366,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 78,
+        "bottom": 872,
+        "height": 794
+      },
+      "body": {
+        "top": 167,
+        "bottom": 848,
+        "height": 681
+      },
+      "header": {
+        "top": 79,
+        "bottom": 167,
+        "height": 88
+      },
+      "tabs": {
+        "top": 130.5,
+        "bottom": 167.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 167,
+        "bottom": 207,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 208,
+        "bottom": 281.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 8,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "768-light-half",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 704,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 380.5625,
+        "bottom": 954,
+        "height": 573.4375
+      },
+      "body": {
+        "top": 469.5625,
+        "bottom": 929,
+        "height": 459.4375
+      },
+      "header": {
+        "top": 381.5625,
+        "bottom": 469.5625,
+        "height": 88
+      },
+      "tabs": {
+        "top": 433.0625,
+        "bottom": 470.0625,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 469.5625,
+        "bottom": 509.5625,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 510.5625,
+        "bottom": 584,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.55)"
+    },
+    {
+      "name": "768-light-expanded",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 704,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 68,
+        "bottom": 954,
+        "height": 886
+      },
+      "body": {
+        "top": 157,
+        "bottom": 929,
+        "height": 772
+      },
+      "header": {
+        "top": 69,
+        "bottom": 157,
+        "height": 88
+      },
+      "tabs": {
+        "top": 120.5,
+        "bottom": 157.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 157,
+        "bottom": 197,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 198,
+        "bottom": 271.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 9,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "768-dark-half",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "state": "half",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 704,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 380.5625,
+        "bottom": 954,
+        "height": 573.4375
+      },
+      "body": {
+        "top": 469.5625,
+        "bottom": 929,
+        "height": 459.4375
+      },
+      "header": {
+        "top": 381.5625,
+        "bottom": 469.5625,
+        "height": 88
+      },
+      "tabs": {
+        "top": 433.0625,
+        "bottom": 470.0625,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 469.5625,
+        "bottom": 509.5625,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 510.5625,
+        "bottom": 584,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 5,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(30px) saturate(1.45)"
+    },
+    {
+      "name": "768-dark-expanded",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "state": "expanded",
+      "search": {
+        "top": 10,
+        "bottom": 54,
+        "height": 44,
+        "left": 64,
+        "right": 704,
+        "position": "fixed",
+        "computedTop": "10px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 64,
+        "height": 64,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 68,
+        "bottom": 954,
+        "height": 886
+      },
+      "body": {
+        "top": 157,
+        "bottom": 929,
+        "height": 772
+      },
+      "header": {
+        "top": 69,
+        "bottom": 157,
+        "height": 88
+      },
+      "tabs": {
+        "top": 120.5,
+        "bottom": 157.5,
+        "height": 37
+      },
+      "toolbar": {
+        "top": 157,
+        "bottom": 197,
+        "height": 40
+      },
+      "firstRow": {
+        "top": 198,
+        "bottom": 271.4375,
+        "height": 73.4375
+      },
+      "rowHeights": [
+        73.4375,
+        73.4375,
+        73.4375,
+        73.4375,
+        73.75,
+        73.4375
+      ],
+      "visibleRows": 9,
+      "chrome": 130,
+      "navHeight": 60,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "1024-light-desktop",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 422.71875,
+        "right": 952,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "height": 662
+      },
+      "body": {
+        "top": 189,
+        "bottom": 751,
+        "height": 562
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 6,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "1024-dark-desktop",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 422.71875,
+        "right": 952,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "height": 662
+      },
+      "body": {
+        "top": 189,
+        "bottom": 751,
+        "height": 562
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 6,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "1366-light-desktop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 714.71875,
+        "right": 1190,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "height": 662
+      },
+      "body": {
+        "top": 189,
+        "bottom": 751,
+        "height": 562
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 6,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "1366-dark-desktop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 714.71875,
+        "right": 1190,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "height": 662
+      },
+      "body": {
+        "top": 189,
+        "bottom": 751,
+        "height": 562
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 6,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "1440-light-desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 732.71875,
+        "right": 1264,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 90,
+        "bottom": 884,
+        "height": 794
+      },
+      "body": {
+        "top": 189,
+        "bottom": 883,
+        "height": 694
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 7,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "1440-dark-desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 732.71875,
+        "right": 1264,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 90,
+        "bottom": 884,
+        "height": 794
+      },
+      "body": {
+        "top": 189,
+        "bottom": 883,
+        "height": 694
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 7,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    },
+    {
+      "name": "1920-light-desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 732.71875,
+        "right": 1744,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "light",
+      "panel": {
+        "top": 90,
+        "bottom": 1064,
+        "height": 974
+      },
+      "body": {
+        "top": 189,
+        "bottom": 1063,
+        "height": 874
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 10,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.65)"
+    },
+    {
+      "name": "1920-dark-desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "state": "desktop",
+      "search": {
+        "top": 12.5,
+        "bottom": 60.5,
+        "height": 48,
+        "left": 732.71875,
+        "right": 1744,
+        "position": "relative",
+        "computedTop": "0px",
+        "transform": "none",
+        "translate": "none"
+      },
+      "topbar": {
+        "top": 0,
+        "bottom": 74,
+        "height": 74,
+        "left": 0,
+        "transform": "none",
+        "translate": "none"
+      },
+      "actualTheme": "dark",
+      "panel": {
+        "top": 90,
+        "bottom": 1064,
+        "height": 974
+      },
+      "body": {
+        "top": 189,
+        "bottom": 1063,
+        "height": 874
+      },
+      "header": {
+        "top": 91,
+        "bottom": 189,
+        "height": 98
+      },
+      "tabs": {
+        "top": 139,
+        "bottom": 184,
+        "height": 45
+      },
+      "toolbar": {
+        "top": 201,
+        "bottom": 253,
+        "height": 52
+      },
+      "firstRow": {
+        "top": 254,
+        "bottom": 334,
+        "height": 80
+      },
+      "rowHeights": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "visibleRows": 10,
+      "chrome": 164,
+      "navHeight": 0,
+      "overlap": false,
+      "overflow": false,
+      "glass": "blur(40px) saturate(1.55)"
+    }
+  ]
+}

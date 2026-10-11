@@ -1,0 +1,7930 @@
+{
+  "checkedAt": "2026-10-11T16:02:04.013Z",
+  "url": "http://localhost:3014",
+  "journeyLoaded": true,
+  "plannerReady": true,
+  "inputMode": "mouse-clicks + touch-drag",
+  "realDeviceTest": false,
+  "journeyFixture": true,
+  "realtimeChecks": [
+    {
+      "theme": "light",
+      "scenario": "on-time",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--on-time realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "minor-3",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--minor-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+3 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "delay-10",
+      "tone": "warning",
+      "kind": "realtime-time realtime-time--delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+10 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "major-11",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+11 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "major-24",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+24 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "severe-45",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+45 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "early",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--early realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "3 Min. früher",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "platform",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--on-time realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": true,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "cancelled-stop",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--cancelled realtime-time--compact",
+      "planned": true,
+      "actual": false,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "cancelled-leg",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--cancelled realtime-time--compact",
+      "planned": true,
+      "actual": false,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "schedule",
+      "tone": "neutral",
+      "kind": "realtime-time realtime-time--schedule realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "scenario": "unknown",
+      "tone": "neutral",
+      "kind": "realtime-time realtime-time--unknown realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "Keine Echtzeit",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "on-time",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--on-time realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "minor-3",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--minor-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+3 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "delay-10",
+      "tone": "warning",
+      "kind": "realtime-time realtime-time--delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+10 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "major-11",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+11 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "major-24",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+24 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "severe-45",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--major-delay realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "+45 Min.",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "early",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--early realtime-time--compact",
+      "planned": true,
+      "actual": true,
+      "delta": "3 Min. früher",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "platform",
+      "tone": "success",
+      "kind": "realtime-time realtime-time--on-time realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": true,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "cancelled-stop",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--cancelled realtime-time--compact",
+      "planned": true,
+      "actual": false,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "cancelled-leg",
+      "tone": "danger",
+      "kind": "realtime-time realtime-time--cancelled realtime-time--compact",
+      "planned": true,
+      "actual": false,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "schedule",
+      "tone": "neutral",
+      "kind": "realtime-time realtime-time--schedule realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "scenario": "unknown",
+      "tone": "neutral",
+      "kind": "realtime-time realtime-time--unknown realtime-time--compact",
+      "planned": false,
+      "actual": true,
+      "delta": "Keine Echtzeit",
+      "aria": null,
+      "color": true,
+      "platform": false,
+      "overflow": false
+    }
+  ],
+  "profileChecks": [
+    {
+      "width": 320,
+      "saved": true,
+      "settings": true,
+      "plannedBilling": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "saved": true,
+      "settings": true,
+      "plannedBilling": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "saved": true,
+      "settings": true,
+      "plannedBilling": true,
+      "noOverflow": true
+    },
+    {
+      "width": 320,
+      "routeRestored": true,
+      "reverse": true,
+      "save": true,
+      "remove": true
+    },
+    {
+      "width": 390,
+      "routeRestored": true,
+      "reverse": true,
+      "save": true,
+      "remove": true
+    },
+    {
+      "width": 1440,
+      "routeRestored": true,
+      "reverse": true,
+      "save": true,
+      "remove": true
+    },
+    {
+      "autoLocation": true,
+      "optOutPersists": true,
+      "subscriptionFailsClosed": true,
+      "accuracy": "OberflächeHellDunkelGrößere SchriftMehr Lesbarkeit in Tafeln und VerbindungenHoher KontrastStärkere Trennung von Text und FlächenAnimationen reduzierenWeniger Bewegung bei Sheets und NavigationStandortStandortstatusStandort aktiv · ±3200 mPrüfenAutomatisch aktivierenNur wenn die Browser-Freigabe bereits erteilt ist"
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "390x844 initial",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "none",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": null,
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 planner",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "planner",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 294,
+          "width": 370,
+          "height": 480
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 journey",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 369,
+          "width": 370,
+          "height": 405
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 426,
+          "width": 336,
+          "height": 93
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 604,
+          "width": 308,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 freely resized",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 262,
+          "width": 370,
+          "height": 512
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 313,
+          "width": 336,
+          "height": 93
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 491,
+          "width": 308,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 freely lowered",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 332,
+          "width": 370,
+          "height": 442
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 383,
+          "width": 336,
+          "height": 93
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 561,
+          "width": 308,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 collapsed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "collapsed",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 674,
+          "width": 370,
+          "height": 100
+        },
+        ".journey-mobile-overview": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".model-stop-list": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "390x844 closed by X",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "sheetState": "closed",
+      "primaryPanel": "none",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 332,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": null,
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320x700 expanded",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 294,
+          "width": 300,
+          "height": 336
+        },
+        ".journey-mobile-overview": {
+          "x": 24,
+          "y": 351,
+          "width": 272,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 52,
+          "y": 527,
+          "width": 244,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "360 restored",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "scrollWidth": 360,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 360,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 302,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 369,
+          "width": 340,
+          "height": 405
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 426,
+          "width": 306,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 602,
+          "width": 278,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "375 restored",
+      "viewport": {
+        "width": 375,
+        "height": 844
+      },
+      "scrollWidth": 375,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 317,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 370,
+          "width": 355,
+          "height": 405
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 427,
+          "width": 321,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 603,
+          "width": 293,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "430 restored",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "scrollWidth": 430,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 372,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 10,
+          "y": 369,
+          "width": 410,
+          "height": 405
+        },
+        ".journey-mobile-overview": {
+          "x": 27,
+          "y": 426,
+          "width": 376,
+          "height": 97
+        },
+        ".model-stop-list": {
+          "x": 55,
+          "y": 608,
+          "width": 348,
+          "height": 394
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "768 restored",
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "scrollWidth": 768,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 710,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 94,
+          "y": 370,
+          "width": 580,
+          "height": 405
+        },
+        ".journey-mobile-overview": {
+          "x": 111,
+          "y": 427,
+          "width": 546,
+          "height": 101
+        },
+        ".model-stop-list": {
+          "x": 139,
+          "y": 612,
+          "width": 518,
+          "height": 394
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "844x390 landscape",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "scrollWidth": 844,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 67,
+          "y": 8,
+          "width": 713,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 788,
+          "y": 10,
+          "width": 44,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 448,
+          "y": 135,
+          "width": 388,
+          "height": 187
+        },
+        ".journey-mobile-overview": {
+          "x": 465,
+          "y": 196,
+          "width": 354,
+          "height": 117
+        },
+        ".model-stop-list": {
+          "x": 493,
+          "y": 398,
+          "width": 326,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1024 desktop journey",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "scrollWidth": 1024,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1024,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 423,
+          "y": 13,
+          "width": 529,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 962,
+          "y": 15,
+          "width": 44,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 680,
+          "y": 90,
+          "width": 328,
+          "height": 794
+        },
+        ".journey-mobile-overview": {
+          "x": 701,
+          "y": 280,
+          "width": 286,
+          "height": 74
+        },
+        ".model-stop-list": {
+          "x": 701,
+          "y": 422,
+          "width": 286,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1280 desktop journey",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "scrollWidth": 1280,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 715,
+          "y": 13,
+          "width": 389,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1122,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 904,
+          "y": 90,
+          "width": 360,
+          "height": 794
+        },
+        ".journey-mobile-overview": {
+          "x": 925,
+          "y": 280,
+          "width": 318,
+          "height": 74
+        },
+        ".model-stop-list": {
+          "x": 925,
+          "y": 422,
+          "width": 318,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1440 desktop journey",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 733,
+          "y": 13,
+          "width": 531,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1282,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 1052,
+          "y": 90,
+          "width": 372,
+          "height": 794
+        },
+        ".journey-mobile-overview": {
+          "x": 1073,
+          "y": 280,
+          "width": 330,
+          "height": 74
+        },
+        ".model-stop-list": {
+          "x": 1073,
+          "y": 422,
+          "width": 330,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1920 desktop journey",
+      "viewport": {
+        "width": 1920,
+        "height": 900
+      },
+      "scrollWidth": 1920,
+      "horizontalOverflow": false,
+      "sheetState": "half",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 733,
+          "y": 13,
+          "width": 1011,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1762,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 1532,
+          "y": 90,
+          "width": 372,
+          "height": 794
+        },
+        ".journey-mobile-overview": {
+          "x": 1553,
+          "y": 280,
+          "width": 330,
+          "height": 74
+        },
+        ".model-stop-list": {
+          "x": 1553,
+          "y": 422,
+          "width": 330,
+          "height": 395
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1440 desktop closed",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflow": false,
+      "sheetState": "closed",
+      "primaryPanel": "none",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 733,
+          "y": 13,
+          "width": 531,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1282,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": null,
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1024 desktop search",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "scrollWidth": 1024,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "planner",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1024,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 423,
+          "y": 13,
+          "width": 529,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 962,
+          "y": 15,
+          "width": 44,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 16,
+          "y": 90,
+          "width": 360,
+          "height": 794
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1280 desktop search",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "scrollWidth": 1280,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "planner",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 715,
+          "y": 13,
+          "width": 389,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1122,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 16,
+          "y": 90,
+          "width": 360,
+          "height": 794
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1440 desktop search",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "planner",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 733,
+          "y": 13,
+          "width": 531,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1282,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 16,
+          "y": 90,
+          "width": 360,
+          "height": 794
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "1920 desktop search",
+      "viewport": {
+        "width": 1920,
+        "height": 900
+      },
+      "scrollWidth": 1920,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "planner",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 74
+        },
+        ".station-search": {
+          "x": 733,
+          "y": 13,
+          "width": 1011,
+          "height": 48
+        },
+        ".header-actions": {
+          "x": 1762,
+          "y": 15,
+          "width": 140,
+          "height": 44
+        },
+        ".mobile-sheet-panel": {
+          "x": 16,
+          "y": 90,
+          "width": 360,
+          "height": 794
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light on-time",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light minor-3",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light delay-10",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light major-11",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light major-24",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light severe-45",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light early",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 81,
+          "width": 292,
+          "height": 179
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light platform",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light cancelled-stop",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 122
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 342,
+          "width": 264,
+          "height": 604
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light cancelled-leg",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 99,
+          "width": 292,
+          "height": 163
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 347,
+          "width": 264,
+          "height": 585
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light schedule",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 light unknown",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark on-time",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark minor-3",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark delay-10",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark major-11",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark major-24",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark severe-45",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 124,
+          "width": 292,
+          "height": 136
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark early",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 81,
+          "width": 292,
+          "height": 179
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 345,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark platform",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark cancelled-stop",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 122
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 342,
+          "width": 264,
+          "height": 604
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark cancelled-leg",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 99,
+          "width": 292,
+          "height": 163
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 347,
+          "width": 264,
+          "height": 585
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark schedule",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 dark unknown",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "journey",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": {
+          "x": 14,
+          "y": 135,
+          "width": 292,
+          "height": 91
+        },
+        ".model-stop-list": {
+          "x": 42,
+          "y": 311,
+          "width": 264,
+          "height": 608
+        },
+        ".mobile-sheet-restore": null
+      }
+    },
+    {
+      "label": "320 high contrast large type reduced motion",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "scrollWidth": 320,
+      "horizontalOverflow": false,
+      "sheetState": "expanded",
+      "primaryPanel": "station",
+      "elements": {
+        ".topbar": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 64
+        },
+        ".station-search": {
+          "x": 64,
+          "y": 10,
+          "width": 192,
+          "height": 44
+        },
+        ".header-actions": {
+          "x": 262,
+          "y": 9,
+          "width": 46,
+          "height": 46
+        },
+        ".mobile-sheet-panel": {
+          "x": 0,
+          "y": 78,
+          "width": 320,
+          "height": 602
+        },
+        ".journey-mobile-overview": null,
+        ".model-stop-list": null,
+        ".mobile-sheet-restore": null
+      }
+    }
+  ],
+  "responsiveMatrix": [
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 482
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 368
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 368
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 287
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 150,
+      "headerBottom": null,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 294,
+      "headerBottom": 351,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 335
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 482
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 368
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 368
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 287
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 150,
+      "headerBottom": null,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 294,
+      "headerBottom": 351,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 335
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 561
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 389
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 528
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 632,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 561
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 250,
+      "headerBottom": null,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 346,
+      "headerBottom": 403,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 383
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 250,
+      "headerBottom": null,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 346,
+      "headerBottom": 403,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 383
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 661
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 109
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 116
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 406
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 732,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 661
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 294,
+      "headerBottom": null,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 368.890625,
+      "headerBottom": 425.890625,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 404
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 294,
+      "headerBottom": null,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 368.890625,
+      "headerBottom": 425.890625,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 404
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 705
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 113
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 120
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 440
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 597
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 776,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 705
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 382,
+      "headerBottom": null,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 414.640625,
+      "headerBottom": 471.640625,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 446
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 78,
+      "headerBottom": 167,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 382,
+      "headerBottom": null,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": null,
+      "scrollHeight": 479
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 414.640625,
+      "headerBottom": 471.640625,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 446
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 793
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 125
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 133
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 485
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 658
+        }
+      ],
+      "sheetTop": 78,
+      "headerBottom": 135,
+      "navigationTop": 864,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 793
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 157,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 68,
+      "headerBottom": 157,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 474,
+      "headerBottom": null,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 478
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 462.484375,
+      "headerBottom": 519.484375,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.38)",
+      "blur": "blur(30px) saturate(1.55)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 490
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 125,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 125,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(246, 250, 252, 0.62)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 533
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 407
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 318
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 157,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 68,
+      "headerBottom": 157,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 474,
+      "headerBottom": null,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": null,
+      "scrollHeight": 478
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "journey-half",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 462.484375,
+      "headerBottom": 519.484375,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.36)",
+      "blur": "blur(30px) saturate(1.45)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 490
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 125,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 884
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 139
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 148
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 545
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 68,
+      "headerBottom": 125,
+      "navigationTop": 956,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "rgba(0, 0, 0, 0)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "rgba(32, 52, 66, 0.62)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 884
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 660
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "view": "journey-large-type",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 813
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 813
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "view": "journey-large-type",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 551
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 813
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 813
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 792
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.972549 0.980392 0.984314 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.972549 0.980392 0.984314 / 0.95)",
+      "blur": "blur(40px) saturate(1.65)",
+      "normalTimeColor": "rgb(55, 108, 80)",
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "map",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": null,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": null,
+      "blur": null,
+      "normalTimeColor": null,
+      "scrollHeight": null
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "board",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 431
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 329
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 183
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 257
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 41
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "station-info",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": 189,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "planner",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [],
+      "sheetTop": 90,
+      "headerBottom": null,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": null,
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": null,
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "journey",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 972
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "view": "journey-scroll",
+      "horizontalOverflow": false,
+      "panelOverflow": false,
+      "overflowElements": [
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 501
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 49
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 51
+        },
+        {
+          "className": "sr-only",
+          "width": 1,
+          "scrollWidth": 739
+        }
+      ],
+      "sheetTop": 90,
+      "headerBottom": 164,
+      "navigationTop": 0,
+      "activeTabs": 1,
+      "headerOverlap": false,
+      "scrollEdge": "color(srgb 0.113725 0.176471 0.223529 / 0.92)",
+      "scrolled": null,
+      "loadedMapTiles": 0,
+      "contentBackground": "color(srgb 0.113725 0.176471 0.223529 / 0.95)",
+      "blur": "blur(40px) saturate(1.55)",
+      "normalTimeColor": "rgb(99, 210, 151)",
+      "scrollHeight": 972
+    }
+  ],
+  "websiteChecks": [
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "title": "Bahnreisen planen. Abfahrten prüfen.",
+      "horizontalOverflow": false,
+      "appLinks": 3,
+      "installLinks": 2,
+      "sections": 9,
+      "independent": true,
+      "dbStatus": true,
+      "departureExample": true,
+      "versionVisible": true,
+      "sourceLinks": 3,
+      "skipLink": true,
+      "structuredData": true,
+      "boardCells": {
+        "ok": true
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "title": "Bahnreisen planen. Abfahrten prüfen.",
+      "horizontalOverflow": false,
+      "appLinks": 3,
+      "installLinks": 2,
+      "sections": 9,
+      "independent": true,
+      "dbStatus": true,
+      "departureExample": true,
+      "versionVisible": true,
+      "sourceLinks": 3,
+      "skipLink": true,
+      "structuredData": true,
+      "boardCells": {
+        "ok": true
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "title": "Bahnreisen planen. Abfahrten prüfen.",
+      "horizontalOverflow": false,
+      "appLinks": 3,
+      "installLinks": 2,
+      "sections": 9,
+      "independent": true,
+      "dbStatus": true,
+      "departureExample": true,
+      "versionVisible": true,
+      "sourceLinks": 3,
+      "skipLink": true,
+      "structuredData": true,
+      "boardCells": {
+        "ok": true
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "title": "Bahnreisen planen. Abfahrten prüfen.",
+      "horizontalOverflow": false,
+      "appLinks": 3,
+      "installLinks": 2,
+      "sections": 9,
+      "independent": true,
+      "dbStatus": true,
+      "departureExample": true,
+      "versionVisible": true,
+      "sourceLinks": 3,
+      "skipLink": true,
+      "structuredData": true,
+      "boardCells": {
+        "ok": true
+      }
+    }
+  ]
+}

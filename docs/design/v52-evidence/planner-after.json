@@ -1,0 +1,2238 @@
+{
+  "baseline": false,
+  "fixture": true,
+  "realKeyboard": false,
+  "checks": [
+    {
+      "label": "320x568-light",
+      "header": {
+        "top": 69.03125,
+        "bottom": 125.03125,
+        "left": 11,
+        "right": 309,
+        "height": 56,
+        "width": 298
+      },
+      "group": {
+        "top": 129.03125,
+        "bottom": 243.03125,
+        "left": 27,
+        "right": 293,
+        "height": 114,
+        "width": 266
+      },
+      "time": {
+        "top": 255.03125,
+        "bottom": 320.78125,
+        "left": 27,
+        "right": 293,
+        "height": 65.75,
+        "width": 266
+      },
+      "action": {
+        "top": 439.8125,
+        "bottom": 486,
+        "left": 27,
+        "right": 293,
+        "height": 46.1875,
+        "width": 266
+      },
+      "options": {
+        "top": 333.78125,
+        "bottom": 377.78125,
+        "left": 27,
+        "right": 293,
+        "height": 44,
+        "width": 266
+      },
+      "navigation": {
+        "top": 500,
+        "bottom": 560,
+        "left": 12,
+        "right": 308,
+        "height": 60,
+        "width": 296
+      },
+      "panel": {
+        "top": 68.03125,
+        "bottom": 498,
+        "left": 10,
+        "right": 310,
+        "height": 429.96875,
+        "width": 300
+      },
+      "body": {
+        "top": 125.03125,
+        "bottom": 426.8125,
+        "left": 11,
+        "right": 309,
+        "height": 301.78125,
+        "width": 298
+      },
+      "scrollHeight": 330,
+      "clientHeight": 302,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "320x568-dark",
+      "header": {
+        "top": 69,
+        "bottom": 125,
+        "left": 11,
+        "right": 309,
+        "height": 56,
+        "width": 298
+      },
+      "group": {
+        "top": 129,
+        "bottom": 243,
+        "left": 27,
+        "right": 293,
+        "height": 114,
+        "width": 266
+      },
+      "time": {
+        "top": 255,
+        "bottom": 320.75,
+        "left": 27,
+        "right": 293,
+        "height": 65.75,
+        "width": 266
+      },
+      "action": {
+        "top": 439.8125,
+        "bottom": 486,
+        "left": 27,
+        "right": 293,
+        "height": 46.1875,
+        "width": 266
+      },
+      "options": {
+        "top": 333.75,
+        "bottom": 377.75,
+        "left": 27,
+        "right": 293,
+        "height": 44,
+        "width": 266
+      },
+      "navigation": {
+        "top": 500,
+        "bottom": 560,
+        "left": 12,
+        "right": 308,
+        "height": 60,
+        "width": 296
+      },
+      "panel": {
+        "top": 68,
+        "bottom": 498,
+        "left": 10,
+        "right": 310,
+        "height": 430,
+        "width": 300
+      },
+      "body": {
+        "top": 125,
+        "bottom": 426.8125,
+        "left": 11,
+        "right": 309,
+        "height": 301.8125,
+        "width": 298
+      },
+      "scrollHeight": 330,
+      "clientHeight": 302,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "360x740-light",
+      "header": {
+        "top": 191,
+        "bottom": 247,
+        "left": 11,
+        "right": 349,
+        "height": 56,
+        "width": 338
+      },
+      "group": {
+        "top": 251,
+        "bottom": 365,
+        "left": 27,
+        "right": 333,
+        "height": 114,
+        "width": 306
+      },
+      "time": {
+        "top": 377,
+        "bottom": 442.75,
+        "left": 27,
+        "right": 333,
+        "height": 65.75,
+        "width": 306
+      },
+      "action": {
+        "top": 611.8125,
+        "bottom": 658,
+        "left": 27,
+        "right": 333,
+        "height": 46.1875,
+        "width": 306
+      },
+      "options": {
+        "top": 455.75,
+        "bottom": 499.75,
+        "left": 27,
+        "right": 333,
+        "height": 44,
+        "width": 306
+      },
+      "navigation": {
+        "top": 672,
+        "bottom": 732,
+        "left": 12,
+        "right": 348,
+        "height": 60,
+        "width": 336
+      },
+      "panel": {
+        "top": 190,
+        "bottom": 670,
+        "left": 10,
+        "right": 350,
+        "height": 480,
+        "width": 340
+      },
+      "body": {
+        "top": 247,
+        "bottom": 598.8125,
+        "left": 11,
+        "right": 349,
+        "height": 351.8125,
+        "width": 338
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "360x740-dark",
+      "header": {
+        "top": 191,
+        "bottom": 247,
+        "left": 11,
+        "right": 349,
+        "height": 56,
+        "width": 338
+      },
+      "group": {
+        "top": 251,
+        "bottom": 365,
+        "left": 27,
+        "right": 333,
+        "height": 114,
+        "width": 306
+      },
+      "time": {
+        "top": 377,
+        "bottom": 442.75,
+        "left": 27,
+        "right": 333,
+        "height": 65.75,
+        "width": 306
+      },
+      "action": {
+        "top": 611.8125,
+        "bottom": 658,
+        "left": 27,
+        "right": 333,
+        "height": 46.1875,
+        "width": 306
+      },
+      "options": {
+        "top": 455.75,
+        "bottom": 499.75,
+        "left": 27,
+        "right": 333,
+        "height": 44,
+        "width": 306
+      },
+      "navigation": {
+        "top": 672,
+        "bottom": 732,
+        "left": 12,
+        "right": 348,
+        "height": 60,
+        "width": 336
+      },
+      "panel": {
+        "top": 190,
+        "bottom": 670,
+        "left": 10,
+        "right": 350,
+        "height": 480,
+        "width": 340
+      },
+      "body": {
+        "top": 247,
+        "bottom": 598.8125,
+        "left": 11,
+        "right": 349,
+        "height": 351.8125,
+        "width": 338
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "375x812-light",
+      "header": {
+        "top": 263,
+        "bottom": 319,
+        "left": 11,
+        "right": 364,
+        "height": 56,
+        "width": 353
+      },
+      "group": {
+        "top": 323,
+        "bottom": 437,
+        "left": 27,
+        "right": 348,
+        "height": 114,
+        "width": 321
+      },
+      "time": {
+        "top": 449,
+        "bottom": 514.75,
+        "left": 27,
+        "right": 348,
+        "height": 65.75,
+        "width": 321
+      },
+      "action": {
+        "top": 683.8125,
+        "bottom": 730,
+        "left": 27,
+        "right": 348,
+        "height": 46.1875,
+        "width": 321
+      },
+      "options": {
+        "top": 527.75,
+        "bottom": 571.75,
+        "left": 27,
+        "right": 348,
+        "height": 44,
+        "width": 321
+      },
+      "navigation": {
+        "top": 744,
+        "bottom": 804,
+        "left": 12,
+        "right": 363,
+        "height": 60,
+        "width": 351
+      },
+      "panel": {
+        "top": 262,
+        "bottom": 742,
+        "left": 10,
+        "right": 365,
+        "height": 480,
+        "width": 355
+      },
+      "body": {
+        "top": 319,
+        "bottom": 670.8125,
+        "left": 11,
+        "right": 364,
+        "height": 351.8125,
+        "width": 353
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "375x812-dark",
+      "header": {
+        "top": 263,
+        "bottom": 319,
+        "left": 11,
+        "right": 364,
+        "height": 56,
+        "width": 353
+      },
+      "group": {
+        "top": 323,
+        "bottom": 437,
+        "left": 27,
+        "right": 348,
+        "height": 114,
+        "width": 321
+      },
+      "time": {
+        "top": 449,
+        "bottom": 514.75,
+        "left": 27,
+        "right": 348,
+        "height": 65.75,
+        "width": 321
+      },
+      "action": {
+        "top": 683.8125,
+        "bottom": 730,
+        "left": 27,
+        "right": 348,
+        "height": 46.1875,
+        "width": 321
+      },
+      "options": {
+        "top": 527.75,
+        "bottom": 571.75,
+        "left": 27,
+        "right": 348,
+        "height": 44,
+        "width": 321
+      },
+      "navigation": {
+        "top": 744,
+        "bottom": 804,
+        "left": 12,
+        "right": 363,
+        "height": 60,
+        "width": 351
+      },
+      "panel": {
+        "top": 262,
+        "bottom": 742,
+        "left": 10,
+        "right": 365,
+        "height": 480,
+        "width": 355
+      },
+      "body": {
+        "top": 319,
+        "bottom": 670.8125,
+        "left": 11,
+        "right": 364,
+        "height": 351.8125,
+        "width": 353
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "390x844-light",
+      "header": {
+        "top": 295,
+        "bottom": 351,
+        "left": 11,
+        "right": 379,
+        "height": 56,
+        "width": 368
+      },
+      "group": {
+        "top": 355,
+        "bottom": 469,
+        "left": 27,
+        "right": 363,
+        "height": 114,
+        "width": 336
+      },
+      "time": {
+        "top": 481,
+        "bottom": 546.75,
+        "left": 27,
+        "right": 363,
+        "height": 65.75,
+        "width": 336
+      },
+      "action": {
+        "top": 715.8125,
+        "bottom": 762,
+        "left": 27,
+        "right": 363,
+        "height": 46.1875,
+        "width": 336
+      },
+      "options": {
+        "top": 559.75,
+        "bottom": 603.75,
+        "left": 27,
+        "right": 363,
+        "height": 44,
+        "width": 336
+      },
+      "navigation": {
+        "top": 776,
+        "bottom": 836,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 294,
+        "bottom": 774,
+        "left": 10,
+        "right": 380,
+        "height": 480,
+        "width": 370
+      },
+      "body": {
+        "top": 351,
+        "bottom": 702.8125,
+        "left": 11,
+        "right": 379,
+        "height": 351.8125,
+        "width": 368
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "390x844-dark",
+      "header": {
+        "top": 295,
+        "bottom": 351,
+        "left": 11,
+        "right": 379,
+        "height": 56,
+        "width": 368
+      },
+      "group": {
+        "top": 355,
+        "bottom": 469,
+        "left": 27,
+        "right": 363,
+        "height": 114,
+        "width": 336
+      },
+      "time": {
+        "top": 481,
+        "bottom": 546.75,
+        "left": 27,
+        "right": 363,
+        "height": 65.75,
+        "width": 336
+      },
+      "action": {
+        "top": 715.8125,
+        "bottom": 762,
+        "left": 27,
+        "right": 363,
+        "height": 46.1875,
+        "width": 336
+      },
+      "options": {
+        "top": 559.75,
+        "bottom": 603.75,
+        "left": 27,
+        "right": 363,
+        "height": 44,
+        "width": 336
+      },
+      "navigation": {
+        "top": 776,
+        "bottom": 836,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 294,
+        "bottom": 774,
+        "left": 10,
+        "right": 380,
+        "height": 480,
+        "width": 370
+      },
+      "body": {
+        "top": 351,
+        "bottom": 702.8125,
+        "left": 11,
+        "right": 379,
+        "height": 351.8125,
+        "width": 368
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "430x932-light",
+      "header": {
+        "top": 383,
+        "bottom": 439,
+        "left": 11,
+        "right": 419,
+        "height": 56,
+        "width": 408
+      },
+      "group": {
+        "top": 443,
+        "bottom": 557,
+        "left": 27,
+        "right": 403,
+        "height": 114,
+        "width": 376
+      },
+      "time": {
+        "top": 569,
+        "bottom": 634.75,
+        "left": 27,
+        "right": 403,
+        "height": 65.75,
+        "width": 376
+      },
+      "action": {
+        "top": 803.8125,
+        "bottom": 850,
+        "left": 27,
+        "right": 403,
+        "height": 46.1875,
+        "width": 376
+      },
+      "options": {
+        "top": 647.75,
+        "bottom": 691.75,
+        "left": 27,
+        "right": 403,
+        "height": 44,
+        "width": 376
+      },
+      "navigation": {
+        "top": 864,
+        "bottom": 924,
+        "left": 12,
+        "right": 418,
+        "height": 60,
+        "width": 406
+      },
+      "panel": {
+        "top": 382,
+        "bottom": 862,
+        "left": 10,
+        "right": 420,
+        "height": 480,
+        "width": 410
+      },
+      "body": {
+        "top": 439,
+        "bottom": 790.8125,
+        "left": 11,
+        "right": 419,
+        "height": 351.8125,
+        "width": 408
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "430x932-dark",
+      "header": {
+        "top": 383,
+        "bottom": 439,
+        "left": 11,
+        "right": 419,
+        "height": 56,
+        "width": 408
+      },
+      "group": {
+        "top": 443,
+        "bottom": 557,
+        "left": 27,
+        "right": 403,
+        "height": 114,
+        "width": 376
+      },
+      "time": {
+        "top": 569,
+        "bottom": 634.75,
+        "left": 27,
+        "right": 403,
+        "height": 65.75,
+        "width": 376
+      },
+      "action": {
+        "top": 803.8125,
+        "bottom": 850,
+        "left": 27,
+        "right": 403,
+        "height": 46.1875,
+        "width": 376
+      },
+      "options": {
+        "top": 647.75,
+        "bottom": 691.75,
+        "left": 27,
+        "right": 403,
+        "height": 44,
+        "width": 376
+      },
+      "navigation": {
+        "top": 864,
+        "bottom": 924,
+        "left": 12,
+        "right": 418,
+        "height": 60,
+        "width": 406
+      },
+      "panel": {
+        "top": 382,
+        "bottom": 862,
+        "left": 10,
+        "right": 420,
+        "height": 480,
+        "width": 410
+      },
+      "body": {
+        "top": 439,
+        "bottom": 790.8125,
+        "left": 11,
+        "right": 419,
+        "height": 351.8125,
+        "width": 408
+      },
+      "scrollHeight": 352,
+      "clientHeight": 352,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "667x375-light",
+      "header": {
+        "top": 65,
+        "bottom": 121,
+        "left": 353.1875,
+        "right": 658,
+        "height": 56,
+        "width": 304.8125
+      },
+      "group": {
+        "top": 133,
+        "bottom": 247,
+        "left": 369.1875,
+        "right": 642,
+        "height": 114,
+        "width": 272.8125
+      },
+      "time": {
+        "top": 259,
+        "bottom": 324.75,
+        "left": 369.1875,
+        "right": 642,
+        "height": 65.75,
+        "width": 272.8125
+      },
+      "action": {
+        "top": 247.8125,
+        "bottom": 294,
+        "left": 369.1875,
+        "right": 642,
+        "height": 46.1875,
+        "width": 272.8125
+      },
+      "options": {
+        "top": 337.75,
+        "bottom": 381.75,
+        "left": 369.1875,
+        "right": 642,
+        "height": 44,
+        "width": 272.8125
+      },
+      "navigation": {
+        "top": 311,
+        "bottom": 367,
+        "left": 8,
+        "right": 344.171875,
+        "height": 56,
+        "width": 336.171875
+      },
+      "panel": {
+        "top": 64,
+        "bottom": 307,
+        "left": 352.1875,
+        "right": 659,
+        "height": 243,
+        "width": 306.8125
+      },
+      "body": {
+        "top": 121,
+        "bottom": 234.8125,
+        "left": 353.1875,
+        "right": 658,
+        "height": 113.8125,
+        "width": 304.8125
+      },
+      "scrollHeight": 338,
+      "clientHeight": 114,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "667x375-dark",
+      "header": {
+        "top": 65,
+        "bottom": 121,
+        "left": 353.1875,
+        "right": 658,
+        "height": 56,
+        "width": 304.8125
+      },
+      "group": {
+        "top": 133,
+        "bottom": 247,
+        "left": 369.1875,
+        "right": 642,
+        "height": 114,
+        "width": 272.8125
+      },
+      "time": {
+        "top": 259,
+        "bottom": 324.75,
+        "left": 369.1875,
+        "right": 642,
+        "height": 65.75,
+        "width": 272.8125
+      },
+      "action": {
+        "top": 247.8125,
+        "bottom": 294,
+        "left": 369.1875,
+        "right": 642,
+        "height": 46.1875,
+        "width": 272.8125
+      },
+      "options": {
+        "top": 337.75,
+        "bottom": 381.75,
+        "left": 369.1875,
+        "right": 642,
+        "height": 44,
+        "width": 272.8125
+      },
+      "navigation": {
+        "top": 311,
+        "bottom": 367,
+        "left": 8,
+        "right": 344.171875,
+        "height": 56,
+        "width": 336.171875
+      },
+      "panel": {
+        "top": 64,
+        "bottom": 307,
+        "left": 352.1875,
+        "right": 659,
+        "height": 243,
+        "width": 306.8125
+      },
+      "body": {
+        "top": 121,
+        "bottom": 234.8125,
+        "left": 353.1875,
+        "right": 658,
+        "height": 113.8125,
+        "width": 304.8125
+      },
+      "scrollHeight": 338,
+      "clientHeight": 114,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "844x390-light",
+      "header": {
+        "top": 65,
+        "bottom": 121,
+        "left": 448.765625,
+        "right": 835,
+        "height": 56,
+        "width": 386.234375
+      },
+      "group": {
+        "top": 133,
+        "bottom": 247,
+        "left": 464.765625,
+        "right": 819,
+        "height": 114,
+        "width": 354.234375
+      },
+      "time": {
+        "top": 259,
+        "bottom": 324.75,
+        "left": 464.765625,
+        "right": 819,
+        "height": 65.75,
+        "width": 354.234375
+      },
+      "action": {
+        "top": 262.8125,
+        "bottom": 309,
+        "left": 464.765625,
+        "right": 819,
+        "height": 46.1875,
+        "width": 354.234375
+      },
+      "options": {
+        "top": 337.75,
+        "bottom": 381.75,
+        "left": 464.765625,
+        "right": 819,
+        "height": 44,
+        "width": 354.234375
+      },
+      "navigation": {
+        "top": 326,
+        "bottom": 382,
+        "left": 8,
+        "right": 428,
+        "height": 56,
+        "width": 420
+      },
+      "panel": {
+        "top": 64,
+        "bottom": 322,
+        "left": 447.765625,
+        "right": 836,
+        "height": 258,
+        "width": 388.234375
+      },
+      "body": {
+        "top": 121,
+        "bottom": 249.8125,
+        "left": 448.765625,
+        "right": 835,
+        "height": 128.8125,
+        "width": 386.234375
+      },
+      "scrollHeight": 338,
+      "clientHeight": 129,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "844x390-dark",
+      "header": {
+        "top": 65,
+        "bottom": 121,
+        "left": 448.765625,
+        "right": 835,
+        "height": 56,
+        "width": 386.234375
+      },
+      "group": {
+        "top": 133,
+        "bottom": 247,
+        "left": 464.765625,
+        "right": 819,
+        "height": 114,
+        "width": 354.234375
+      },
+      "time": {
+        "top": 259,
+        "bottom": 324.75,
+        "left": 464.765625,
+        "right": 819,
+        "height": 65.75,
+        "width": 354.234375
+      },
+      "action": {
+        "top": 262.8125,
+        "bottom": 309,
+        "left": 464.765625,
+        "right": 819,
+        "height": 46.1875,
+        "width": 354.234375
+      },
+      "options": {
+        "top": 337.75,
+        "bottom": 381.75,
+        "left": 464.765625,
+        "right": 819,
+        "height": 44,
+        "width": 354.234375
+      },
+      "navigation": {
+        "top": 326,
+        "bottom": 382,
+        "left": 8,
+        "right": 428,
+        "height": 56,
+        "width": 420
+      },
+      "panel": {
+        "top": 64,
+        "bottom": 322,
+        "left": 447.765625,
+        "right": 836,
+        "height": 258,
+        "width": 388.234375
+      },
+      "body": {
+        "top": 121,
+        "bottom": 249.8125,
+        "left": 448.765625,
+        "right": 835,
+        "height": 128.8125,
+        "width": 386.234375
+      },
+      "scrollHeight": 338,
+      "clientHeight": 129,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "768x1024-light",
+      "header": {
+        "top": 475,
+        "bottom": 531,
+        "left": 95,
+        "right": 673,
+        "height": 56,
+        "width": 578
+      },
+      "group": {
+        "top": 535,
+        "bottom": 649,
+        "left": 111,
+        "right": 657,
+        "height": 114,
+        "width": 546
+      },
+      "time": {
+        "top": 661,
+        "bottom": 726.75,
+        "left": 111,
+        "right": 657,
+        "height": 65.75,
+        "width": 546
+      },
+      "action": {
+        "top": 894.8125,
+        "bottom": 941,
+        "left": 111,
+        "right": 657,
+        "height": 46.1875,
+        "width": 546
+      },
+      "options": {
+        "top": 739.75,
+        "bottom": 783.75,
+        "left": 111,
+        "right": 657,
+        "height": 44,
+        "width": 546
+      },
+      "navigation": {
+        "top": 956,
+        "bottom": 1016,
+        "left": 174,
+        "right": 594,
+        "height": 60,
+        "width": 420
+      },
+      "panel": {
+        "top": 474,
+        "bottom": 954,
+        "left": 94,
+        "right": 674,
+        "height": 480,
+        "width": 580
+      },
+      "body": {
+        "top": 531,
+        "bottom": 881.8125,
+        "left": 95,
+        "right": 673,
+        "height": 350.8125,
+        "width": 578
+      },
+      "scrollHeight": 351,
+      "clientHeight": 351,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "768x1024-dark",
+      "header": {
+        "top": 475,
+        "bottom": 531,
+        "left": 95,
+        "right": 673,
+        "height": 56,
+        "width": 578
+      },
+      "group": {
+        "top": 535,
+        "bottom": 649,
+        "left": 111,
+        "right": 657,
+        "height": 114,
+        "width": 546
+      },
+      "time": {
+        "top": 661,
+        "bottom": 726.75,
+        "left": 111,
+        "right": 657,
+        "height": 65.75,
+        "width": 546
+      },
+      "action": {
+        "top": 894.8125,
+        "bottom": 941,
+        "left": 111,
+        "right": 657,
+        "height": 46.1875,
+        "width": 546
+      },
+      "options": {
+        "top": 739.75,
+        "bottom": 783.75,
+        "left": 111,
+        "right": 657,
+        "height": 44,
+        "width": 546
+      },
+      "navigation": {
+        "top": 956,
+        "bottom": 1016,
+        "left": 174,
+        "right": 594,
+        "height": 60,
+        "width": 420
+      },
+      "panel": {
+        "top": 474,
+        "bottom": 954,
+        "left": 94,
+        "right": 674,
+        "height": 480,
+        "width": 580
+      },
+      "body": {
+        "top": 531,
+        "bottom": 881.8125,
+        "left": 95,
+        "right": 673,
+        "height": 350.8125,
+        "width": 578
+      },
+      "scrollHeight": 351,
+      "clientHeight": 351,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1024x768-light",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 689,
+        "bottom": 739,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "left": 16,
+        "right": 376,
+        "height": 662,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 676,
+        "left": 17,
+        "right": 375,
+        "height": 529,
+        "width": 358
+      },
+      "scrollHeight": 529,
+      "clientHeight": 529,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1024x768-dark",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 689,
+        "bottom": 739,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "left": 16,
+        "right": 376,
+        "height": 662,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 676,
+        "left": 17,
+        "right": 375,
+        "height": 529,
+        "width": 358
+      },
+      "scrollHeight": 529,
+      "clientHeight": 529,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1180x820-light",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 741,
+        "bottom": 791,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 804,
+        "left": 16,
+        "right": 376,
+        "height": 714,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 728,
+        "left": 17,
+        "right": 375,
+        "height": 581,
+        "width": 358
+      },
+      "scrollHeight": 581,
+      "clientHeight": 581,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1180x820-dark",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 741,
+        "bottom": 791,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 804,
+        "left": 16,
+        "right": 376,
+        "height": 714,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 728,
+        "left": 17,
+        "right": 375,
+        "height": 581,
+        "width": 358
+      },
+      "scrollHeight": 581,
+      "clientHeight": 581,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1366x768-light",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 689,
+        "bottom": 739,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "left": 16,
+        "right": 376,
+        "height": 662,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 676,
+        "left": 17,
+        "right": 375,
+        "height": 529,
+        "width": 358
+      },
+      "scrollHeight": 529,
+      "clientHeight": 529,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1366x768-dark",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 689,
+        "bottom": 739,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 752,
+        "left": 16,
+        "right": 376,
+        "height": 662,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 676,
+        "left": 17,
+        "right": 375,
+        "height": 529,
+        "width": 358
+      },
+      "scrollHeight": 529,
+      "clientHeight": 529,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1440x900-light",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 821,
+        "bottom": 871,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 884,
+        "left": 16,
+        "right": 376,
+        "height": 794,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 808,
+        "left": 17,
+        "right": 375,
+        "height": 661,
+        "width": 358
+      },
+      "scrollHeight": 661,
+      "clientHeight": 661,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1440x900-dark",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 821,
+        "bottom": 871,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 884,
+        "left": 16,
+        "right": 376,
+        "height": 794,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 808,
+        "left": 17,
+        "right": 375,
+        "height": 661,
+        "width": 358
+      },
+      "scrollHeight": 661,
+      "clientHeight": 661,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1920x1080-light",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 1001,
+        "bottom": 1051,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 1064,
+        "left": 16,
+        "right": 376,
+        "height": 974,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 988,
+        "left": 17,
+        "right": 375,
+        "height": 841,
+        "width": 358
+      },
+      "scrollHeight": 841,
+      "clientHeight": 841,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "1920x1080-dark",
+      "header": {
+        "top": 91,
+        "bottom": 147,
+        "left": 17,
+        "right": 375,
+        "height": 56,
+        "width": 358
+      },
+      "group": {
+        "top": 159,
+        "bottom": 273,
+        "left": 33,
+        "right": 359,
+        "height": 114,
+        "width": 326
+      },
+      "time": {
+        "top": 285,
+        "bottom": 350.75,
+        "left": 33,
+        "right": 359,
+        "height": 65.75,
+        "width": 326
+      },
+      "action": {
+        "top": 1001,
+        "bottom": 1051,
+        "left": 33,
+        "right": 359,
+        "height": 50,
+        "width": 326
+      },
+      "options": {
+        "top": 363.75,
+        "bottom": 407.75,
+        "left": 33,
+        "right": 359,
+        "height": 44,
+        "width": 326
+      },
+      "navigation": null,
+      "panel": {
+        "top": 90,
+        "bottom": 1064,
+        "left": 16,
+        "right": 376,
+        "height": 974,
+        "width": 360
+      },
+      "body": {
+        "top": 147,
+        "bottom": 988,
+        "left": 17,
+        "right": 375,
+        "height": 841,
+        "width": 358
+      },
+      "scrollHeight": 841,
+      "clientHeight": 841,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "planner-minimized",
+      "passed": true
+    },
+    {
+      "label": "planner-expanded",
+      "header": {
+        "top": 79.03125,
+        "bottom": 135.03125,
+        "left": 1,
+        "right": 389,
+        "height": 56,
+        "width": 388
+      },
+      "group": {
+        "top": 139.03125,
+        "bottom": 253.03125,
+        "left": 17,
+        "right": 373,
+        "height": 114,
+        "width": 356
+      },
+      "time": {
+        "top": 265.03125,
+        "bottom": 330.78125,
+        "left": 17,
+        "right": 373,
+        "height": 65.75,
+        "width": 356
+      },
+      "action": {
+        "top": 725.84375,
+        "bottom": 772.03125,
+        "left": 17,
+        "right": 373,
+        "height": 46.1875,
+        "width": 356
+      },
+      "options": {
+        "top": 343.78125,
+        "bottom": 387.78125,
+        "left": 17,
+        "right": 373,
+        "height": 44,
+        "width": 356
+      },
+      "navigation": {
+        "top": 776,
+        "bottom": 836,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 78.03125,
+        "bottom": 784.03125,
+        "left": 0,
+        "right": 390,
+        "height": 706,
+        "width": 390
+      },
+      "body": {
+        "top": 135.03125,
+        "bottom": 712.84375,
+        "left": 1,
+        "right": 389,
+        "height": 577.8125,
+        "width": 388
+      },
+      "scrollHeight": 798,
+      "clientHeight": 578,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "options",
+      "header": {
+        "top": 79.0625,
+        "bottom": 135.0625,
+        "left": 1,
+        "right": 389,
+        "height": 56,
+        "width": 388
+      },
+      "group": {
+        "top": 139.0625,
+        "bottom": 253.0625,
+        "left": 17,
+        "right": 373,
+        "height": 114,
+        "width": 356
+      },
+      "time": {
+        "top": 265.0625,
+        "bottom": 330.8125,
+        "left": 17,
+        "right": 373,
+        "height": 65.75,
+        "width": 356
+      },
+      "action": {
+        "top": 725.875,
+        "bottom": 772.0625,
+        "left": 17,
+        "right": 373,
+        "height": 46.1875,
+        "width": 356
+      },
+      "options": {
+        "top": 343.8125,
+        "bottom": 387.8125,
+        "left": 17,
+        "right": 373,
+        "height": 44,
+        "width": 356
+      },
+      "navigation": {
+        "top": 776,
+        "bottom": 836,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 78.0625,
+        "bottom": 784.0625,
+        "left": 0,
+        "right": 390,
+        "height": 706,
+        "width": 390
+      },
+      "body": {
+        "top": 135.0625,
+        "bottom": 712.875,
+        "left": 1,
+        "right": 389,
+        "height": 577.8125,
+        "width": 388
+      },
+      "scrollHeight": 798,
+      "clientHeight": 578,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "suggestions",
+      "header": {
+        "top": 79,
+        "bottom": 135,
+        "left": 1,
+        "right": 389,
+        "height": 56,
+        "width": 388
+      },
+      "group": {
+        "top": 139,
+        "bottom": 253,
+        "left": 17,
+        "right": 373,
+        "height": 114,
+        "width": 356
+      },
+      "time": {
+        "top": 265,
+        "bottom": 330.75,
+        "left": 17,
+        "right": 373,
+        "height": 65.75,
+        "width": 356
+      },
+      "action": {
+        "top": 725.8125,
+        "bottom": 772,
+        "left": 17,
+        "right": 373,
+        "height": 46.1875,
+        "width": 356
+      },
+      "options": {
+        "top": 343.75,
+        "bottom": 387.75,
+        "left": 17,
+        "right": 373,
+        "height": 44,
+        "width": 356
+      },
+      "navigation": {
+        "top": 776,
+        "bottom": 836,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 78,
+        "bottom": 784,
+        "left": 0,
+        "right": 390,
+        "height": 706,
+        "width": 390
+      },
+      "body": {
+        "top": 135,
+        "bottom": 712.8125,
+        "left": 1,
+        "right": 389,
+        "height": 577.8125,
+        "width": 388
+      },
+      "scrollHeight": 578,
+      "clientHeight": 578,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "keyboard-height-simulation",
+      "header": {
+        "top": 73,
+        "bottom": 129,
+        "left": 1,
+        "right": 389,
+        "height": 56,
+        "width": 388
+      },
+      "group": {
+        "top": 141,
+        "bottom": 255,
+        "left": 17,
+        "right": 373,
+        "height": 114,
+        "width": 356
+      },
+      "time": {
+        "top": 267,
+        "bottom": 332.75,
+        "left": 17,
+        "right": 373,
+        "height": 65.75,
+        "width": 356
+      },
+      "action": {
+        "top": 360.8125,
+        "bottom": 407,
+        "left": 17,
+        "right": 373,
+        "height": 46.1875,
+        "width": 356
+      },
+      "options": {
+        "top": 345.75,
+        "bottom": 389.75,
+        "left": 17,
+        "right": 373,
+        "height": 44,
+        "width": 356
+      },
+      "navigation": {
+        "top": 412,
+        "bottom": 472,
+        "left": 12,
+        "right": 378,
+        "height": 60,
+        "width": 366
+      },
+      "panel": {
+        "top": 72,
+        "bottom": 420,
+        "left": 0,
+        "right": 390,
+        "height": 348,
+        "width": 390
+      },
+      "body": {
+        "top": 129,
+        "bottom": 347.8125,
+        "left": 1,
+        "right": 389,
+        "height": 218.8125,
+        "width": 388
+      },
+      "scrollHeight": 338,
+      "clientHeight": 219,
+      "actionVisible": true,
+      "horizontal": false,
+      "bodyOverflow": false,
+      "inputs": [
+        "Berlin Hbf",
+        "München Hbf"
+      ]
+    },
+    {
+      "label": "stale-response-after-edit",
+      "passed": true
+    },
+    {
+      "label": "date-mode-back-close-cancellation",
+      "passed": true
+    },
+    {
+      "label": "desktop-text-size",
+      "beforeFont": 16,
+      "afterFont": 17.6
+    },
+    {
+      "label": "back-after-desktop-reload",
+      "passed": true
+    }
+  ]
+}

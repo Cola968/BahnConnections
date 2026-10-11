@@ -1,0 +1,1317 @@
+{
+  "fixture": true,
+  "realDevice": false,
+  "checks": [
+    {
+      "label": "4x CPU: pointer pan preserves all 18 dense routes",
+      "revision": 8,
+      "transform": "translate3d(64px, 32px, 0px)",
+      "markers": 23,
+      "routes": 18
+    },
+    {
+      "label": "Line details reuse the fetched trip",
+      "requests": 18
+    },
+    {
+      "label": "320x568 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "320x568 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "320x568 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "320x568 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320x568 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "320x568 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "360x640 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "360x640 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "360x640 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "360x640 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "360x640 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "390x844 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "390x844 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "390x844 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390x844 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "390x844 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "430x932 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "430x932 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "430x932 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "430x932 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "430x932 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "768x1024 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "768x1024 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "768x1024 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768x1024 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "768x1024 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "844x390 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "844x390 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "844x390 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844x390 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "844x390 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "568x320 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "568x320 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "568x320 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "568x320 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "568x320 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x400 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x400 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x400 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x400 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x400 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x600 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x600 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x600 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024x600 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1024x600 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1440x900 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1440x900 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1440x900 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440x900 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1440x900 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 light normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 light normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1920x1080 light normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 light large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 light large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1920x1080 light large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 dark normal board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 dark normal scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1920x1080 dark normal lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 dark large board",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1920x1080 dark large scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 160
+    },
+    {
+      "label": "1920x1080 dark large lines",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "Planner date accessible",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "320 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "320 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "390 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "390 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "390 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "844 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "844 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "844 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "768 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "768 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "768 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "1024 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "1024 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1024 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 180
+    },
+    {
+      "label": "1440 normal journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440 normal journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 14
+    },
+    {
+      "label": "1440 large journey",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 0
+    },
+    {
+      "label": "1440 large journey scrolled",
+      "overflow": [],
+      "overlaps": [],
+      "headerSeparate": true,
+      "horizontal": false,
+      "bodyScroll": 57
+    },
+    {
+      "label": "320 normal More menu fits",
+      "left": 10,
+      "right": 310,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "label": "320 large More menu fits",
+      "left": 10,
+      "right": 310,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "label": "360 normal More menu fits",
+      "left": 10,
+      "right": 350,
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "label": "360 large More menu fits",
+      "left": 10,
+      "right": 350,
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "label": "768 normal More menu fits",
+      "left": 124,
+      "right": 644,
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "label": "768 large More menu fits",
+      "left": 124,
+      "right": 644,
+      "width": 768,
+      "overflow": false
+    }
+  ],
+  "closeResets": true,
+  "automaticLines": 18
+}
