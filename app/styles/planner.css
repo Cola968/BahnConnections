@@ -138,3 +138,40 @@ html[data-font="large"] .planner-panel :is(input,button,summary) { font-size:1em
   .planner-station-picker-header { min-height:48px; }
   .planner-station-picker-form { min-height:44px; margin-top:4px; }
 }
+
+
+/* V52.1: intrinsic sizing prevents Abfahrt / Ankunft and the date from clipping. */
+.planner-panel .planner-time-row {
+  display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:stretch;
+}
+.planner-panel .planner-time-mode {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+  width:100%;min-width:0;padding:4px;border:1px solid var(--line-subtle);
+  border-radius:14px;background:var(--glass-clear);
+}
+.planner-panel .planner-time-mode button {
+  min-width:0;width:100%;min-height:44px;padding:9px 7px;display:flex;
+  align-items:center;justify-content:center;white-space:nowrap;
+  overflow:hidden;text-overflow:clip;overflow-wrap:normal;word-break:normal;
+  font-size:clamp(.875rem,3.4vw,1rem);line-height:1.2;border-radius:10px;
+}
+.planner-panel .planner-departure label {display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.planner-panel .planner-date-control {width:100%;min-width:0}
+.planner-panel .planner-date-trigger {
+  display:flex;width:100%;min-height:48px;padding:10px 12px;gap:10px;
+  border:1px solid var(--line-subtle);border-radius:12px;
+  background:var(--glass-clear);font-size:clamp(.875rem,3.5vw,1rem)
+}
+.planner-panel .planner-date-trigger>span {flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.planner-panel .planner-date-label {font-size:.8125rem;font-weight:550}
+@media (min-width:470px) {
+  .planner-panel .planner-time-row {grid-template-columns:minmax(176px,.94fr) minmax(0,1.06fr);align-items:end}
+}
+@media (max-width:1023px) {
+  .app-shell .planner-panel>.panel-body {padding-inline:clamp(10px,3vw,16px)}
+  .planner-footer {padding-inline:clamp(10px,3vw,16px)}
+}
+@media (max-width:359px) {
+  .planner-panel .planner-time-row {grid-template-columns:minmax(0,1fr)}
+  .planner-panel .planner-time-mode button {font-size:.91rem}
+}
