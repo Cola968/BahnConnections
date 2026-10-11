@@ -1,3 +1,12 @@
+# V55.0 · Zugradar und Geschwindigkeitsmodell
+
+- Beim Antippen eines Zugmarkers öffnet sich ein kompakter Radar-Inspector mit Zugnummer, Strecke, Echtzeitstatus, Modellgeschwindigkeit und direkter Kartenverfolgung.
+- Das Karten-HUD zeigt beim Folgen die aus aktuell gemeldeten Haltezeitprognosen und belegter Geometrie abgeleitete km/h-Schätzung, den Datenstand und einen sofort bedienbaren Beenden-Knopf.
+- Fahrplanmodelle sind von Echtzeitmeldungen getrennt; es werden weder GPS-Fahrzeugpositionen noch gemessene Momentangeschwindigkeiten behauptet.
+- Ausgewählte Züge bleiben auch beim Herauszoomen sichtbar. Abgelaufene Abschnitte werden nicht als aktive Radarposition weitergeführt.
+- Flüssige, begrenzte Marker-/Panelanimationen, aktive Kartenkamera und reduzierte Bewegung als barrierefreie Alternative.
+- PWA-Version und Update-Cache auf V55.0 synchronisiert.
+
 # V51.0 · Flüssiger Radar & progressive Abfahrten
 
 - Bestehende Zugmarker werden aktualisiert statt bei jedem Radar-Takt neu aufgebaut. Geometrie wird vorbereitet und in kurzen Zeitbudgets verarbeitet.
