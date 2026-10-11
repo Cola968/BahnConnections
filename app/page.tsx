@@ -346,6 +346,7 @@ export default function Home() {
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
   }, []);
+  const trackedRadarFresh = liveState==="ready" && liveUpdatedAt !== null && Date.now()-liveUpdatedAt.getTime()<=90_000 && liveTrips.some(trip=>trip.tripId===trackedTripId);
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
     if (!liveCategories.includes(trip.category)) return false;
     return matchesLiveStatus(trip, liveStatusFilter);
@@ -1280,7 +1281,7 @@ export default function Home() {
         )}
 
         {trackedTripId && selectedLiveTrip && <div className="train-tracking-map-hud" role="status">
-          <span className="train-tracking-map-pulse" aria-hidden="true"/><span><b>{selectedLiveTrip.name} wird verfolgt</b><small>Position geschätzt · Karte folgt automatisch</small></span>
+          <span className={`train-tracking-map-pulse${trackedRadarFresh?"":" is-stale"}`} aria-hidden="true"/><span><b>{selectedLiveTrip.name} · {trackedRadarFresh?"Kamera folgt":"Tracking pausiert"}</b><small>{trackedRadarFresh?"Position geschätzt · automatische Karte":"Suche nach aktuellen Radar-Daten"}</small></span>
           <button type="button" onClick={()=>setTrackedTripId(null)} aria-label="Zugverfolgung beenden">Beenden</button>
         </div>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
