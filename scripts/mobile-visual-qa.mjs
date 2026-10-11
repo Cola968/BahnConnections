@@ -388,6 +388,36 @@ try {
   await screenshot('1440-board-destinations');
   await evaluate(`document.querySelector('.board-row-summary')?.scrollIntoView({block:'center'})`);
   await screenshot('1440-board-realtime');
+  // V53 desktop: resize the right-side panel with keyboard and persist the result.
+  const resizeBefore=await evaluate(`(() => {
+    const handle=document.querySelector('.desktop-panel-resizer');
+    const panel=document.querySelector('.station-card');
+    if(!handle||!panel)return null;
+    return {width:panel.getBoundingClientRect().width,separator:handle.getAttribute('role')};
+  })()`);
+  if(!resizeBefore||resizeBefore.separator!=='separator')throw new Error('Desktop divider missing: '+JSON.stringify(resizeBefore));
+  await evaluate(`(() => {const handle=document.querySelector('.desktop-panel-resizer');handle.focus();handle.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true,cancelable:true}));})()`);
+  await pause(100);
+  const resizeAfter=await evaluate(`({width:document.querySelector('.station-card').getBoundingClientRect().width,
+    stored:Number(localStorage.getItem('bahnconnections-desktop-panel-width')),
+    aria:document.querySelector('.desktop-panel-resizer').getAttribute('aria-valuenow')})`);
+  if(resizeAfter.width<resizeBefore.width+15||Math.abs(resizeAfter.stored-resizeAfter.width)>2)
+    throw new Error('Desktop resize/persistence failed: '+JSON.stringify({resizeBefore,resizeAfter}));
+  snapshots.push({label:'1440-station-resizable',before:resizeBefore.width,after:resizeAfter.width});
+  await screenshot('1440-station-resized');
+  // Only the station pane scrolls: the filter must not be a second scroll container.
+  await tap('.station-card .board-filter-toggle');
+  const filterLayout=await evaluate(`(() => {const filter=document.querySelector('.board-filter-panel'),pane=document.querySelector('.station-card>.panel-body');if(!filter)return null;
+    const style=getComputedStyle(filter);
+    return {position:style.position,overflowY:style.overflowY,filterScrollHeight:filter.scrollHeight,
+      filterClientHeight:filter.clientHeight,paneOverflow:getComputedStyle(pane).overflowY};
+  })()`);
+  if(!filterLayout||filterLayout.position==='absolute'||filterLayout.overflowY!=='visible'||
+     filterLayout.filterScrollHeight>filterLayout.filterClientHeight+4||filterLayout.paneOverflow!=='auto')
+    throw new Error('Board filter still scrolls inside a scroll pane: '+JSON.stringify(filterLayout));
+  snapshots.push({label:'1440-board-filter-one-scroll',...filterLayout});
+  await screenshot('1440-board-filter-inline');
+  await tap('.station-card .board-filter-close');
   await tap('.station-card .desktop-panel-actions button:last-child', true);
   if (await evaluate(`Boolean(document.querySelector('.station-card'))`)) throw new Error('Desktop-Bahnhof-X reagiert nicht');
   await tap('.desktop-navigation button:first-child');
