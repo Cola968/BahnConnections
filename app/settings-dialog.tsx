@@ -44,7 +44,7 @@ export function SettingsDialog(p:Props) {
 
   return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
     <header className="settings-heading">
-      <div><h2 id="settings-title">Einstellungen</h2><p className="settings-subtitle">Dein BahnConnections – ganz nach deinen Wünschen</p></div>
+      <div className="settings-heading-copy"><h2 id="settings-title">Einstellungen</h2><p className="settings-subtitle">Passe die App an dich an</p></div>
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
     </header>
     <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex,"--settings-tab-offset":`${tabIndex*100}%`} as CSSProperties}>
@@ -59,7 +59,7 @@ export function SettingsDialog(p:Props) {
           <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{homeStation ? ` · ${homeStation.name}` : ""}</p></div>
         </div>
         <div className="profile-quick-stats" aria-label="Dein Überblick"><span><UiIcon name="star"/><strong>{p.favoriteCount}</strong><small>Favoriten</small></span><span><UiIcon name="route"/><strong>{p.savedRoutes.length}</strong><small>Pendelstrecken</small></span><span><UiIcon name="location"/><strong>{homeStation?"1":"0"}</strong><small>Heimatbahnhof</small></span></div>
-        <div className="settings-section-heading settings-profile-intro"><h3><UiIcon name="user"/> Persönliche Angaben</h3><p>Diese Daten bleiben lokal auf deinem Gerät.</p></div>
+        <div className="settings-section-heading settings-profile-intro"><h3><UiIcon name="user"/> Dein Profil</h3><p>Diese Daten bleiben lokal auf deinem Gerät.</p></div>
         <form onSubmit={save} className="profile-form">
           <label><span>Name</span><input autoComplete="nickname" maxLength={40} value={name} onChange={event=>setName(event.target.value)} placeholder="Wie heißt du?"/></label>
           <label><span>Heimatbahnhof</span><select value={home} onChange={event=>setHome(event.target.value)}><option value="">Nicht festgelegt</option>{p.stations.map(station=><option key={station.id} value={station.id}>{station.name}</option>)}</select></label>
