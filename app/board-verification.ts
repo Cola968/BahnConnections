@@ -9,7 +9,7 @@ export type DbBoardRow = { tripId?:string; when?:string; plannedWhen?:string; di
 
 export type BoardCrossCheck = {
   source:"DB transport.rest";
-  status:"matched" | "different" | "unavailable";
+  status:"matched" | "different" | "inconclusive" | "unavailable";
   checkedAt:string;
   stationId?:string;
   comparedRows:number;
@@ -44,11 +44,16 @@ export function compareBoardRows(stopTimes: TransitousBoardRow[], dbRows: DbBoar
     const index = secondary.findIndex((candidate, candidateIndex) => !used.has(candidateIndex) && normaliseBoardLine(candidate.line?.name) === line && Math.abs(new Date(candidate.plannedWhen ?? candidate.when ?? 0).getTime() - when) <= 3 * 60_000);
     if (index >= 0) { used.add(index); matchedRows += 1; }
   }
-  const comparedRows = Math.min(primary.length, secondary.length);
-  const matchRate = comparedRows ? Math.round(matchedRows / comparedRows * 100) : primary.length === secondary.length ? 100 : 0;
-  const status = comparedRows >= 5 && matchRate < 55 ? "different" : "matched";
+  // The denominator must include all primary rows. Otherwise one matching DB trip
+  // could incorrectly be advertised as confirming fifty primary departures.
+  const comparedRows = primary.length;
+  const matchRate = comparedRows ? Math.round(matchedRows / comparedRows * 100) : 0;
+  const sufficientSample = primary.length >= 5 && secondary.length >= 5;
+  const status = !sufficientSample ? "inconclusive" : matchRate >= 80 ? "matched" : matchRate < 55 ? "different" : "inconclusive";
   const message = status === "matched"
-    ? `DB-Gegenprüfung bestätigt ${matchedRows} von ${comparedRows} vergleichbaren Fahrten.`
-    : `DB-Gegenprüfung weicht ab: ${matchedRows} von ${comparedRows} vergleichbaren Fahrten stimmen überein. Die Quellen werden nicht vermischt.`;
+    ? `Stichprobe: DB bestätigt ${matchedRows} von ${comparedRows} Transitous-Fahrten. Keine Vollständigkeitsgarantie.`
+    : status === "different"
+      ? `DB-Gegenprüfung weicht ab: ${matchedRows} von ${comparedRows} Transitous-Fahrten stimmen überein. Die Quellen werden nicht vermischt.`
+      : `DB-Gegenprüfung nicht aussagekräftig: ${matchedRows} von ${comparedRows} Transitous-Fahrten bestätigt. Keine unabhängige Bestätigung.`;
   return { status, comparedRows, matchedRows, matchRate, message };
 }

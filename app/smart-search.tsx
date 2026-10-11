@@ -60,9 +60,14 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
   const [activeIndex, setActiveIndex] = useState(0);
   const [liveSuggestions, setLiveSuggestions] = useState<Station[]>([]);
   const [liveSearching, setLiveSearching] = useState(false);
+  const [liveQuery, setLiveQuery] = useState("");
+  const [liveErrorQuery, setLiveErrorQuery] = useState<string | null>(null);
   const [recentIds, setRecentIds] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
-    try { return JSON.parse(localStorage.getItem("bahnconnections-recent-stations") ?? "[]"); } catch { return []; }
+    try {
+      const saved:unknown = JSON.parse(localStorage.getItem("bahnconnections-recent-stations") ?? "[]");
+      return Array.isArray(saved) ? saved.filter((item):item is string => typeof item === "string").slice(0,6) : [];
+    } catch { return []; }
   });
 
   const searchValue=useDeferredValue(value);
@@ -74,12 +79,23 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       const preferred = [...favoriteIds, ...recentIds, ...stations.filter((station) => station.hub).map((station) => station.id)];
       return [...new Set(preferred)].map((id) => stations.find((station) => station.id === id)).filter((station): station is Station => Boolean(station)).slice(0, 9);
     }
-    return stations
-      .map((station) => ({ station, score: score(station, query) }))
-      .filter((item) => item.score < 99)
-      .sort((a, b) => a.score - b.score || Number(Boolean(b.station.hub)) - Number(Boolean(a.station.hub)) || a.station.name.localeCompare(b.station.name, "de"))
-      .slice(0, 9)
-      .map((item) => item.station);
+    // Keep only the best nine candidates, rather than sorting the entire national
+    // station catalogue on every keystroke.
+    const best: { station:Station; score:number }[] = [];
+    const compare = (a:typeof best[number], b:typeof best[number]) =>
+      a.score - b.score || Number(Boolean(b.station.hub)) - Number(Boolean(a.station.hub)) || a.station.name.localeCompare(b.station.name, "de");
+    for (const station of stations) {
+      const item = { station, score:score(station, query) };
+      if (item.score >= 99) continue;
+      const index = best.findIndex((candidate) => compare(item, candidate) < 0);
+      if (index < 0) {
+        if (best.length < 9) best.push(item);
+      } else {
+        best.splice(index, 0, item);
+        if (best.length > 9) best.pop();
+      }
+    }
+    return best.map((item) => item.station);
   }, [favoriteIds, recentIds, stations, searchValue, open]);
 
   useEffect(() => {
@@ -88,17 +104,27 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       return () => window.clearTimeout(timer);
     }
     const controller = new AbortController();
+    const requestedQuery = value.trim();
     const timer = window.setTimeout(async () => {
+      if (controller.signal.aborted) return;
       setLiveSearching(true);
+      setLiveErrorQuery(null);
       try {
         const url = new URL("/api/stations/search", window.location.origin);
-        url.searchParams.set("q", value.trim());
+        url.searchParams.set("q", requestedQuery);
         const response = await fetch(url, { signal:controller.signal });
         if (!response.ok) throw new Error(`Haltestellensuche ${response.status}`);
         const payload = await response.json() as { stations?:Station[] };
-        setLiveSuggestions(payload.stations ?? []);
+        if (!controller.signal.aborted) {
+          setLiveSuggestions(payload.stations ?? []);
+          setLiveQuery(requestedQuery);
+        }
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setLiveSuggestions([]);
+        if (!controller.signal.aborted && (error as Error).name !== "AbortError") {
+          setLiveSuggestions([]);
+          setLiveQuery(requestedQuery);
+          setLiveErrorQuery(requestedQuery);
+        }
       } finally { if (!controller.signal.aborted) setLiveSearching(false); }
     }, 220);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -106,12 +132,14 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
 
   const suggestions = useMemo(() => {
     const unique = new Map<string, Station>();
-    for (const station of [...localSuggestions, ...liveSuggestions]) {
+    // Old remote results must never be selectable for a newly entered query.
+    const currentLive = liveQuery === value.trim() ? liveSuggestions : [];
+    for (const station of [...localSuggestions, ...currentLive]) {
       const key = `${normalise(station.name)}|${station.lat.toFixed(3)}|${station.lon.toFixed(3)}`;
       if (!unique.has(key)) unique.set(key, station);
     }
     return [...unique.values()].slice(0, 10);
-  }, [liveSuggestions, localSuggestions]);
+  }, [liveSuggestions, liveQuery, localSuggestions, value]);
 
   const inputRef=useRef<HTMLInputElement>(null);
 
@@ -171,7 +199,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
               {favoriteIds.includes(station.id) && <em aria-label="Favorit"><UiIcon name="star" width="16" height="16" /></em>}
             </button>
           ))}
-          {!suggestions.length && <p>Kein exakter Treffer. Probiere einen Ortsnamen oder ein DB-Kürzel.</p>}
+          {!suggestions.length && <p role="status">{liveTransit && liveErrorQuery === value.trim() ? "Online-Suche nicht erreichbar. Lokale Bahnhöfe bleiben durchsuchbar." : liveSearching || (liveTransit && value.trim().length >= 2 && liveQuery !== value.trim()) ? "Weitere Bahnhöfe werden gesucht …" : "Kein passender Bahnhof gefunden. Probiere einen Ortsnamen oder ein DB-Kürzel."}</p>}
         </div>
       )}
     </form>

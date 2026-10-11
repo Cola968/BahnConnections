@@ -76,7 +76,7 @@ export function decodePolyline(encoded: string, precision = 4): [number, number]
 export function liveTripProgress(trip: LiveTrip, at = Date.now()) {
   const start = new Date(trip.departure).getTime();
   const end = new Date(trip.arrival).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0.5;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0; // Never invent a midpoint for invalid times.
   return Math.max(0, Math.min(1, (at - start) / (end - start)));
 }
 
@@ -123,22 +123,26 @@ export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Pr
     const tripId = tripInfo?.tripId ?? `${tripInfo?.displayName}-${segment.departure}-${segment.to.name}`;
     const mode = segment.mode as LiveRailMode;
     const actualDeparture = new Date(segment.departure).getTime();
+    const actualArrival = new Date(segment.arrival).getTime();
     const plannedDeparture = new Date(segment.scheduledDeparture ?? segment.departure).getTime();
+    if (!Number.isFinite(actualDeparture) || !Number.isFinite(actualArrival) || actualArrival <= actualDeparture || !Number.isFinite(plannedDeparture)) continue;
+    const points = decodePolyline(segment.polyline, 4);
+    if (points.length < 2 || points.some(([lat, lon]) => !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)) continue;
     const trip: LiveTrip = {
       tripId,
       name: tripInfo?.displayName ?? (mode === "SUBURBAN" ? "S-Bahn" : mode === "SUBWAY" ? "U-Bahn" : mode === "REGIONAL_RAIL" || mode === "REGIONAL_FAST_RAIL" ? "Regionalzug" : "Fernzug"),
       mode,
       category: category(mode),
-      from: { name: segment.from.name ?? "Letzter Halt", lat: segment.from.lat ?? station.lat, lon: segment.from.lon ?? station.lon },
-      to: { name: segment.to.name ?? "Nächster Halt", lat: segment.to.lat ?? station.lat, lon: segment.to.lon ?? station.lon },
+      from: { name: segment.from.name ?? "Letzter Halt", lat: segment.from.lat ?? points[0][0], lon: segment.from.lon ?? points[0][1] },
+      to: { name: segment.to.name ?? "Nächster Halt", lat: segment.to.lat ?? points.at(-1)![0], lon: segment.to.lon ?? points.at(-1)![1] },
       departure: segment.departure,
       arrival: segment.arrival,
       scheduledDeparture: segment.scheduledDeparture ?? segment.departure,
       scheduledArrival: segment.scheduledArrival ?? segment.arrival,
       realTime: Boolean(segment.realTime),
-      delay: Math.max(0, Math.round((actualDeparture - plannedDeparture) / 60_000)),
+      delay: Math.round((actualDeparture - plannedDeparture) / 60_000),
       distance: segment.distance ?? 0,
-      points: decodePolyline(segment.polyline, 4),
+      points,
     };
     const current = found.get(tripId);
     const currentDistance = current ? Math.abs(liveTripProgress(current) - 0.5) : Number.POSITIVE_INFINITY;
