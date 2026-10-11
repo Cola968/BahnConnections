@@ -553,7 +553,7 @@ try {
   const profileChecks=[];
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
-    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
+    if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:nth-child(2)');}
     else await tap('[aria-label="Einstellungen und Profil"]');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const input=document.querySelector('.profile-form input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(input,'Alex Bahn');input.dispatchEvent(new Event('input',{bubbles:true}));const select=document.querySelector('.profile-form select');select.value='berlin';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
@@ -581,11 +581,11 @@ try {
         const topHit=document.elementFromPoint(t.x+t.width/2,t.y+t.height/2);
         return {tabsAboveContent:t.bottom<=c.top+1,headerAboveTabs:h.bottom<=t.top+10,
           tabHit:Boolean(topHit&&(tabs===topHit||tabs.contains(topHit))),
-          opaqueHeader:hStyle.backgroundColor!=='rgba(0, 0, 0, 0)'&&tStyle.backgroundColor!=='rgba(0, 0, 0, 0)',
+          headerTitleDoesNotCollide:(()=>{const title=heading.querySelector('h2').getBoundingClientRect(),subtitle=heading.querySelector('.settings-subtitle').getBoundingClientRect(),close=heading.querySelector('button').getBoundingClientRect();return title.bottom<=subtitle.top+1 && title.right<close.left+2 && subtitle.right<close.left+2})(),
           contentScrollable:content.scrollHeight>content.clientHeight+5,
           bodyScroll:content.scrollTop,viewportHeight:innerHeight,dialogHeight:d.getBoundingClientRect().height};
       })()`);
-      if(!shortSettings.tabsAboveContent||!shortSettings.tabHit||!shortSettings.opaqueHeader||!shortSettings.contentScrollable)
+      if(!shortSettings.tabsAboveContent||!shortSettings.tabHit||!shortSettings.headerTitleDoesNotCollide||!shortSettings.contentScrollable)
         throw new Error('Settings text overlaps title/tabs at 320x568: '+JSON.stringify(shortSettings));
       profileChecks.push({label:'320x568 settings scroll isolation',...shortSettings});
       await screenshot('320x568-settings-plus-scrolled');
