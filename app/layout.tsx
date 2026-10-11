@@ -20,6 +20,7 @@ import "./styles/v52-polish.css";
 import "./styles/v53-mobile-glass.css";
 import "./styles/v53-desktop-usability.css";
 import "./styles/v54-mobile-refine.css";
+import "./styles/v54-train-inspector.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
