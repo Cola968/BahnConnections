@@ -1,7 +1,7 @@
 // Deliberate UI fixtures. These are not live timetable or route-quality evidence.
 export const realtimeScenarios = [
   {name:"on-time",delay:0,tone:"success",kind:"on-time"},
-  {name:"minor-3",delay:3,tone:"success",kind:"minor-delay"},
+  {name:"minor-3",delay:3,tone:"warning",kind:"minor-delay"},
   {name:"delay-10",delay:10,tone:"warning",kind:"delay"},
   {name:"major-11",delay:11,tone:"danger",kind:"major-delay"},
   {name:"major-24",delay:24,tone:"danger",kind:"major-delay"},
