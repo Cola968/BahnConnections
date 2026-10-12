@@ -98,6 +98,11 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const hasRealtime = stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
     const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    // The disruption screen needs route-specific alerts, not a second DB check
+    // for each direction. Streamed live boards retain full verification.
+    if(query.get("verify")==="0" && query.get("stream")!=="1"){
+      return Response.json({...primary,verification:{status:"unavailable",message:"DB-Gegenprüfung für diese Hinweisansicht nicht angefordert."}},{headers:{"Cache-Control":"no-store"}});
+    }
     const verificationController=new AbortController();
     const verificationSignal=AbortSignal.any([request.signal,verificationController.signal]);
     const verify = async () => {
