@@ -29,7 +29,7 @@ export function safeBoardAlertHeaders(value:unknown):string[] {
       ? translations.find(row=>row&&typeof row==="object"&&typeof row.text==="string"&&row.text.trim())?.text : undefined;
     const rawText=typeof alert.header==="string"&&alert.header.trim()?alert.header:translated;
     if(typeof rawText!=="string")continue;
-    const text=rawText.trim().replace(/\\s+/g," ").slice(0,240);
+    const text=rawText.trim().replace(/\s+/g," ").slice(0,240);
     if(text)result.push(text);
   }
   return result;
