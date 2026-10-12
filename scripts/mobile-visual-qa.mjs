@@ -479,11 +479,11 @@ try {
     const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
     return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
   })()`);
-  if (!simpleMore || simpleMore.count !== 3) throw new Error('Mehr-Menü ist nicht auf drei Kernaktionen reduziert: '+JSON.stringify(simpleMore));
+  if (!simpleMore || simpleMore.count !== 4) throw new Error('Mehr-Menü ist nicht auf vier Kernaktionen begrenzt: '+JSON.stringify(simpleMore));
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Profil & Einstellungen','App & Updates','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
