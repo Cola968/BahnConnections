@@ -1,10 +1,11 @@
 import { transitousRequestHeaders } from "../../transitous";
+import { readLimitedJson, RequestInputError } from "../request-limits";
 import { distanceMeters, parseWalkingRoute } from "../../walking-route";
 
 export async function POST(request: Request) {
   const updatedAt = new Date().toISOString();
   let body: { from?: { lat?: number; lon?: number }; to?: { lat?: number; lon?: number } };
-  try { body = await request.json(); } catch { return Response.json({ error:"Ungültige Anfrage", updatedAt }, { status:400 }); }
+  try { body = await readLimitedJson(request) as typeof body; } catch(error) { return Response.json({ error:error instanceof Error ? error.message : "Ungültige Anfrage", updatedAt }, { status:error instanceof RequestInputError ? error.status : 400 }); }
   const from = body?.from;
   const to = body?.to;
   if (!from || !to || !Number.isFinite(from.lat) || !Number.isFinite(from.lon) || !Number.isFinite(to.lat) || !Number.isFinite(to.lon) || Math.abs(from.lat!) > 90 || Math.abs(to.lat!) > 90 || Math.abs(from.lon!) > 180 || Math.abs(to.lon!) > 180) {
