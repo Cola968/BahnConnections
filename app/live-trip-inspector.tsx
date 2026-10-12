@@ -104,8 +104,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
           <span className={`service-pill ${trip.category==="fern"?"ice":trip.category==="regional"?"regional":trip.category}`}>{trip.name}</span>
           <span className={`train-source-tag ${freshness}`}><i aria-hidden="true"/>{statusText}</span>
         </div>
-        <h2>{from} <span aria-hidden="true">→</span> {to}</h2>
-        <p>{sourceCurrent&&position?"Position anhand der Haltezeiten geschätzt":"Keine aktuelle Positionsschätzung"}</p>
+        <p className="train-position-note">{sourceCurrent&&position?"Position aus Haltezeiten geschätzt · kein GPS":"Keine aktuelle Positionsschätzung"}</p>
       </div>
 
       {tracked&&<div className={canStartTracking?"train-follow-state":"train-follow-state is-paused"} role="status"><span className="train-follow-dot" aria-hidden="true"/> {canStartTracking?`Kartenkamera folgt ${trip.name}`:"Verfolgung pausiert: keine aktuelle Positionsprognose"} <small>{canStartTracking?"Manuell verschieben beendet die Verfolgung":"Erneute Radardaten abwarten oder Verfolgung beenden"}</small></div>}
