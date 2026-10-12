@@ -38,7 +38,7 @@ jobs:
         run: |
           export HOST=0.0.0.0
           export PORT=4175
-          pnpm exec vinext start > /tmp/bahnconnections-node.log 2>&1 &
+          node .output/server/index.mjs > /tmp/bahnconnections-node.log 2>&1 &
           server_pid=$!
           trap 'kill $server_pid || true; cat /tmp/bahnconnections-node.log' EXIT
           for i in $(seq 1 35); do
