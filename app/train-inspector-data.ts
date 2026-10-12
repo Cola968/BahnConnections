@@ -31,10 +31,15 @@ export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   }
   return result.slice(0,150);
 }
-export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
+export function nextTrainStopIndex(stops:TrainStop[],now:number,detailsFresh=true):number {
   return stops.findIndex(stop=>{
     if(stop.cancelled)return false;
-    const at=Date.parse(stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture??"");
+    // When detail polling is stale, do not use old delay predictions to infer
+    // which station the train is currently heading toward.
+    const time=detailsFresh&&stop.realtime
+      ? (stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture)
+      : (stop.scheduledArrival??stop.scheduledDeparture??(!stop.realtime?(stop.arrival??stop.departure):undefined));
+    const at=Date.parse(time??"");
     return Number.isFinite(at)&&at>=now-60_000;
   });
 }

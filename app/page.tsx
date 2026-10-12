@@ -19,6 +19,7 @@ import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
+import { TrainRadarHud } from "./train-radar-hud";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
@@ -347,11 +348,12 @@ export default function Home() {
     setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
   }, []);
   const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
-  const trackedRadarFresh = liveState==="ready" && liveUpdatedAt !== null && Date.now()-liveUpdatedAt.getTime()<=90_000 && currentTrackedTrip!==undefined && activeEstimatedPosition(currentTrackedTrip)!==null;
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
-    if (!liveCategories.includes(trip.category)) return false;
-    return matchesLiveStatus(trip, liveStatusFilter);
-  }), [liveCategories, liveStatusFilter, liveTrips]);
+    // A passenger-selected vehicle should not disappear behind other map filters.
+    if(trip.tripId===selectedLiveTrip?.tripId||trip.tripId===trackedTripId)return true;
+    if(!liveCategories.includes(trip.category))return false;
+    return matchesLiveStatus(trip,liveStatusFilter);
+  }),[liveCategories,liveStatusFilter,liveTrips,selectedLiveTrip?.tripId,trackedTripId]);
 
   useEffect(() => {
     if (journeyDeparture) return;
@@ -724,7 +726,7 @@ export default function Home() {
   }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme, leafletRef, mapRef, stationLayerRef]);
 
   useLiveMap(mapReady,leafletRef,mapRef,liveLayerRef,visibleLiveTrips,liveVisible,
-    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,appearance:`${theme}:${highContrast}`},selectLiveTrip);
+    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,selectedId:selectedLiveTrip?.tripId??null,radarReady:liveState==="ready",radarUpdatedAtMs:liveUpdatedAt?.getTime()??null,appearance:`${theme}:${highContrast}`},selectLiveTrip);
 
   // Camera follow is deliberate: map dragging stops tracking. The point is always
   // interpolated from rail geometry, never treated as a reported GPS location.
@@ -1281,10 +1283,7 @@ export default function Home() {
           </section>
         )}
 
-        {trackedTripId && selectedLiveTrip && <div className="train-tracking-map-hud" role="status">
-          <span className={`train-tracking-map-pulse${trackedRadarFresh?"":" is-stale"}`} aria-hidden="true"/><span><b>{selectedLiveTrip.name} · {trackedRadarFresh?"Kamera folgt":"Tracking pausiert"}</b><small>{trackedRadarFresh?"Position geschätzt · automatische Karte":"Suche nach aktuellen Radar-Daten"}</small></span>
-          <button type="button" onClick={()=>setTrackedTripId(null)} aria-label="Zugverfolgung beenden">Beenden</button>
-        </div>}
+        {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>setTrackedTripId(null)}/>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
           <LiveTripInspector trip={selectedLiveTrip} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}

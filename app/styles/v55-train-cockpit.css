@@ -1,0 +1,145 @@
+/* V55 · rail radar cockpit: estimate, never measured vehicle telemetry. */
+.app-shell .train-inspector {border-radius:22px;overflow:hidden}
+.app-shell .train-inspector .panel-body {min-width:0;overflow-x:hidden}
+.train-inspector .train-header {padding-bottom:9px;border-bottom:0}
+.train-inspector .train-header h2 {font-size:clamp(1.02rem,3.8vw,1.24rem)}
+.train-cockpit {position:relative;isolation:isolate;display:grid;gap:13px;min-width:0;padding:15px;border-radius:19px;overflow:hidden;color:#eff8fb;background:linear-gradient(135deg,#193540 0%,#0d2631 57%,#081b27 100%);border:1px solid rgba(182,223,230,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 10px 26px rgba(9,29,38,.15)}
+.train-cockpit::before {content:"";position:absolute;z-index:-1;inset:-50% -25%;background:radial-gradient(circle at 85% 21%,rgba(52,168,195,.22),transparent 40%);pointer-events:none}
+.train-cockpit-eyebrow {display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;font-size:.63rem;font-weight:800;letter-spacing:.075em}
+.train-cockpit-eyebrow>span:first-child {display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:#c8e9ed}
+.train-cockpit-eyebrow svg {width:14px;height:14px}
+.train-cockpit-feed {display:inline-flex;align-items:center;gap:5px;min-width:0;color:#eac99b;font-size:.61rem;letter-spacing:0;font-weight:650;text-align:right}
+.train-cockpit-feed i {flex:0 0 6px;width:6px;height:6px;border-radius:50%;background:#d4a563}
+.train-cockpit-feed.active {color:#ade5d0}
+.train-cockpit-feed.active i {background:#6acda6}
+.train-cockpit-route {display:grid;grid-template-columns:minmax(0,1fr) minmax(45px,22%) minmax(0,1fr);align-items:center;gap:5px}
+.train-cockpit-route>div:first-child,.train-cockpit-route>div:last-child {min-width:0;display:grid;gap:3px}
+.train-cockpit-route>div:last-child {text-align:right}
+.train-cockpit-route small {font-size:.59rem;color:#b4c8cd}
+.train-cockpit-route b {font-size:clamp(.9rem,3.4vw,1.13rem);font-weight:760;letter-spacing:-.02em;line-height:1.15;overflow-wrap:anywhere}
+.train-cockpit-track {display:flex;align-items:center;gap:4px;color:#8eddd1;opacity:.92;min-width:0}
+.train-cockpit-track i {flex:1;height:1px;background:repeating-linear-gradient(90deg,#65b3b4 0 3px,transparent 3px 6px)}
+.train-cockpit-track svg {flex:0 0 22px;width:22px;height:22px}
+.train-cockpit-bottom {display:flex;align-items:end;justify-content:space-between;gap:10px;min-width:0;padding-top:10px;border-top:1px solid rgba(229,245,250,.17)}
+.train-cockpit-speed {display:grid;gap:2px;min-width:0}
+.train-cockpit-speed>small {color:#c1d5dc;font-size:.66rem;font-weight:650}
+.train-cockpit-speed>strong {font-size:clamp(2rem,7.5vw,3.1rem);font-weight:780;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.06em}
+.train-cockpit-speed>strong em {font-style:normal;font-size:.79rem;letter-spacing:0;color:#c2d5dd;font-weight:650;margin-left:7px}
+.train-cockpit-speed>span {font-size:.62rem;color:#b8cbd0;line-height:1.32;max-width:210px}
+.train-cockpit-provenance {display:grid;gap:4px;max-width:42%;text-align:right;flex:0 1 auto}
+.train-cockpit-provenance b {color:#ade5d0;font-size:.71rem}
+.train-cockpit-provenance small {color:#bed1d6;font-size:.59rem;line-height:1.2}
+.train-inspector .train-action-row {margin:11px 0 10px}
+.train-inspector .train-hero-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:0}
+.train-inspector .train-hero-stats .train-metric {min-height:86px;padding:10px 8px;gap:6px;border-radius:13px}
+.train-inspector .train-metric strong {font-size:clamp(.93rem,3.1vw,1.24rem);white-space:normal;overflow-wrap:anywhere}
+.train-inspector .train-metric strong em {font-size:.66rem}
+.train-inspector .train-metric small {font-size:.64rem}
+.train-inspector .train-metric>span {font-size:.61rem}
+.train-inspector .train-progress-panel {margin-top:10px}
+.train-inspector .train-stop-list li.next {background:color-mix(in srgb,var(--accent) 7%,transparent);border-radius:11px}
+.train-radar-hud {gap:8px}
+.train-radar-hud .train-hud-copy {display:grid;gap:3px;min-width:0;flex:1}
+.train-radar-hud .train-hud-copy b {font-size:.78rem}
+.train-radar-hud .train-hud-copy small {font-size:.62rem}
+.train-hud-speed {display:grid;gap:0;text-align:right;flex:0 0 auto;min-width:48px;padding-left:9px;border-left:1px solid var(--line-subtle)}
+.train-hud-speed strong {font-size:1.2rem;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.train-hud-speed small {font-size:.57rem;color:var(--muted)}
+.live-train-marker.glyph.selected {outline:2px solid var(--action);outline-offset:4px;box-shadow:0 0 0 5px color-mix(in srgb,var(--action) 17%,transparent),0 4px 13px rgba(0,0,0,.27)}
+.live-train-marker.glyph.selected.tracked {outline-color:var(--success)}
+@media(max-width:699px) {.app-shell .train-inspector .panel-body {padding:6px 9px 16px!important}.train-cockpit {padding:12px;border-radius:16px;gap:10px}.train-cockpit-route b {font-size:.9rem}.train-cockpit-provenance {max-width:40%}.train-inspector .train-hero-stats .train-metric {min-height:90px}.train-radar-hud {width:min(350px,calc(100% - 16px))}.train-radar-hud button {min-width:51px;padding:6px}}
+@media(max-width:350px) {.train-cockpit {padding:10px}.train-cockpit-eyebrow {gap:5px;font-size:.6rem}.train-cockpit-route {grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr)}.train-cockpit-track svg {width:17px;flex-basis:17px}.train-inspector .train-hero-stats {grid-template-columns:repeat(2,minmax(0,1fr))}.train-inspector .train-hero-stats .train-metric:last-child {grid-column:1/-1;min-height:58px}.train-radar-hud .train-hud-copy small {display:none}}
+@media(prefers-reduced-motion:no-preference) {html:not([data-motion="reduced"]) .train-cockpit {animation:train-cockpit-open 330ms cubic-bezier(.18,.86,.24,1) both}html:not([data-motion="reduced"]) .train-cockpit-track svg {animation:train-route-symbol 420ms cubic-bezier(.2,.85,.3,1) both}html:not([data-motion="reduced"]) .train-cockpit-speed>strong {animation:train-speed-open 360ms cubic-bezier(.2,.85,.3,1) both}}
+@keyframes train-cockpit-open {from{opacity:.35;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes train-route-symbol {from{transform:translateX(-9px);opacity:.25}to{transform:none;opacity:1}}
+@keyframes train-speed-open {from{transform:translateY(6px);opacity:.2}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce) {.train-cockpit,.train-cockpit-track svg,.train-cockpit-speed>strong {animation:none!important;transition:none!important}}
+html[data-motion="reduced"] .train-cockpit,html[data-motion="reduced"] .train-cockpit-track svg,html[data-motion="reduced"] .train-cockpit-speed>strong {animation:none!important;transition:none!important}
+@media(forced-colors:active) {.train-cockpit {border:1px solid CanvasText;color:Canvas;background:CanvasText}.train-cockpit-provenance b,.train-cockpit-track {color:Canvas}}
+@media(prefers-reduced-transparency:reduce) {.train-cockpit {backdrop-filter:none}.train-radar-hud {backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+
+/* Clearly compare scheduled and expected arrivals on the first visible screen. */
+.train-arrival-panel {display:grid;gap:9px;min-width:0;margin-top:1px;padding:12px;border:1px solid rgba(206,240,247,.24);border-radius:15px;background:rgba(228,250,255,.075);}
+.train-arrival-title {display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;}
+.train-arrival-title>span {flex:0 0 auto;color:#bdd2d9;font-size:.67rem;font-weight:680;}
+.train-arrival-title>b {min-width:0;text-align:right;font-size:.73rem;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.train-arrival-times {display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);align-items:center;gap:6px;}
+.train-arrival-time {display:grid;gap:4px;min-width:0;}
+.train-arrival-time.expected {text-align:right;}
+.train-arrival-time>small {color:#bbd3da;font-size:.62rem;font-weight:630;}
+.train-arrival-time>time {color:#cfdee2;font-size:clamp(1.33rem,5.2vw,1.85rem);line-height:1.04;font-weight:760;font-variant-numeric:tabular-nums;letter-spacing:-.045em;white-space:nowrap;}
+.train-arrival-time.expected>time {color:#f2fbfd;font-weight:830;}
+.train-arrival-time.expected>time.tone-warning {color:#ffdc8b;}
+.train-arrival-time.expected>time.tone-danger {color:#ffb6aa;}
+.train-arrival-time.expected>time.tone-success {color:#acf0ce;}
+.train-arrival-arrow {color:#94b2bc;font-size:1rem;text-align:center;margin-top:15px;}
+.train-arrival-footer {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px 8px;}
+.train-arrival-footer>small {color:#b4ccd4;font-size:.59rem;line-height:1.3;}
+.train-arrival-status {display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border-radius:8px;background:rgba(230,242,245,.12);color:#e5f1f5;font-size:.65rem;font-weight:760;line-height:1.1;}
+.train-arrival-status.tone-success {background:rgba(87,199,140,.18);color:#b3efce;}
+.train-arrival-status.tone-warning {background:rgba(244,190,87,.16);color:#ffdd93;}
+.train-arrival-status.tone-danger {background:rgba(238,120,101,.2);color:#ffc0b3;}
+.train-arrival-panel.secondary {margin:11px 0 9px;background:var(--glass-elevated);border-color:var(--glass-stroke);color:var(--ink);}
+.train-arrival-panel.secondary .train-arrival-title>span,
+.train-arrival-panel.secondary .train-arrival-time>small,
+.train-arrival-panel.secondary .train-arrival-footer>small {color:var(--muted);}
+.train-arrival-panel.secondary .train-arrival-time>time,
+.train-arrival-panel.secondary .train-arrival-time.expected>time,
+.train-arrival-panel.secondary .train-arrival-title>b {color:var(--ink);}
+.train-arrival-panel.secondary .train-arrival-arrow {color:var(--muted);}
+.train-arrival-panel.secondary .train-arrival-status.tone-neutral {color:var(--muted);background:var(--glass-clear);}
+.train-arrival-panel.secondary .train-arrival-status.tone-success,
+.train-arrival-panel.secondary .train-arrival-time.expected>time.tone-success {color:var(--success);}
+.train-arrival-panel.secondary .train-arrival-status.tone-warning,
+.train-arrival-panel.secondary .train-arrival-time.expected>time.tone-warning {color:var(--warning);}
+.train-arrival-panel.secondary .train-arrival-status.tone-danger,
+.train-arrival-panel.secondary .train-arrival-time.expected>time.tone-danger {color:var(--danger);}
+@media(max-width:350px) {
+  .train-arrival-panel {padding:10px;gap:7px;}
+  .train-arrival-times {gap:3px;grid-template-columns:minmax(0,1fr) 11px minmax(0,1fr);}
+  .train-arrival-time>time {font-size:1.3rem;}
+  .train-arrival-time>small {font-size:.59rem;}
+  .train-arrival-arrow {font-size:.8rem;}
+}
+@media(prefers-reduced-motion:no-preference) {
+  html:not([data-motion="reduced"]) .train-arrival-panel {animation:train-arrival-enter 330ms cubic-bezier(.18,.84,.3,1) both;}
+  html:not([data-motion="reduced"]) .train-arrival-time.expected>time {transition:color 240ms ease-in-out;}
+}
+@keyframes train-arrival-enter {from{opacity:.55;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce) {.train-arrival-panel,.train-arrival-time.expected>time {animation:none!important;transition:none!important}}
+html[data-motion="reduced"] .train-arrival-panel,
+html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!important;transition:none!important}
+@media(forced-colors:active) {
+  .train-arrival-panel {background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}
+  .train-arrival-panel :is(time,b,small,span) {color:CanvasText!important;}
+}
+
+/* Stop-to-stop rail radar: show the replaced timetable time unmistakably. */
+.train-arrival-time>time.superseded {
+  color:#aec0c5;
+  text-decoration:line-through;
+  text-decoration-color:rgba(247,171,158,.9);
+  text-decoration-thickness:2px;
+  text-decoration-skip-ink:none;
+}
+.train-arrival-time.expected .train-arrival-day {
+  display:inline-flex;
+  justify-self:end;
+  color:#ffdb94;
+  font-size:.67rem;
+  font-weight:760;
+  letter-spacing:.005em;
+}
+.train-arrival-panel.secondary .train-arrival-time>time.superseded {
+  color:var(--muted);
+  text-decoration-color:var(--danger);
+}
+.train-arrival-panel.secondary .train-arrival-time.expected .train-arrival-day {color:var(--warning);}
+@media(max-width:350px) {
+  .train-arrival-panel .train-arrival-time>time {font-size:clamp(1.05rem,6vw,1.3rem);}
+  .train-arrival-title>b {font-size:.68rem;}
+}
+@media(forced-colors:active) {
+  .train-arrival-time>time.superseded {text-decoration:line-through;forced-color-adjust:auto;}
+}

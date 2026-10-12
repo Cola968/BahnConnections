@@ -1,11 +1,11 @@
 import type * as Leaflet from 'leaflet';
-import { liveTripProgress, pointOnTrip, trailForTrip, type LiveTrip } from './live-trains';
+import { liveTripProgress, pointOnTrip, activeEstimatedPosition, trailForTrip, type LiveTrip } from './live-trains';
 import { deriveRealtimePresentation, realtimeAccessibleLabel } from './realtime-presentation';
 import { realtimeTooltip } from './realtime-tooltip';
 import { headingDegrees } from './train-inspector-data';
 import { railDistanceKm } from './rail-geometry';
 
-export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;appearance?:string};
+export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;selectedId?:string|null;radarReady?:boolean;radarUpdatedAtMs?:number|null;appearance?:string};
 type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
 type Desired={id:string;position:[number,number];trip:LiveTrip|null;members:LiveTrip[]};
 
@@ -36,8 +36,8 @@ export class LiveMapRenderer {
     const desired:Desired[]=[];
     const groups=new Map<string,Desired>();
     for(const trip of trips){
-      const position=pointOnTrip(trip,liveTripProgress(trip,at));if(!position)continue;
-      if(options.zoom<10||options.view==='stress'){
+      const position=activeEstimatedPosition(trip,at);if(!position)continue;
+      if((options.zoom<10||options.view==='stress') && trip.tripId!==options.selectedId && trip.tripId!==options.trackedId){
         const id=`cluster:${Math.round(position[0]*18)}:${Math.round(position[1]*18)}`;
         const group=groups.get(id);if(group){group.members.push(trip);group.position[0]+=position[0];group.position[1]+=position[1];}
         else groups.set(id,{id,position:[...position],trip:null,members:[trip]});
@@ -62,6 +62,7 @@ export class LiveMapRenderer {
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
         }
+        if(item.trip){const highlighted=item.trip.tripId===options.selectedId||item.trip.tripId===options.trackedId;entry.marker.setZIndexOffset(item.trip.tripId===options.trackedId?1450:highlighted?1250:900);}
         const old=entry.marker.getLatLng();
         const changed=old.lat!==item.position[0]||old.lng!==item.position[1];
         const icon=entry.marker.getElement();
@@ -86,8 +87,8 @@ export class LiveMapRenderer {
             if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg`);
             else glyph.removeAttribute("style");
           }
-          const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}`;
-          if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}`;
+          const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}:${options.selectedId===trip.tripId}`;
+          if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}${options.selectedId===trip.tripId?' selected':''}`;
           if(entry.trip!==trip){
             entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11]});
             element?.setAttribute('aria-label',`${trip.name}. Position geschätzt, keine GPS-Ortung. ${realtimeAccessibleLabel(state)} Details öffnen.`);
