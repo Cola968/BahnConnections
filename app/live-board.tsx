@@ -124,8 +124,8 @@ function alertHeader(alert: { header?: string; headerText?: { translation?: { te
   return cleanDestination(alert.header) ?? cleanDestination(alert.headerText?.translation?.find((item) => item.text)?.text);
 }
 
-function delayMinutes(entry: BoardEntry) {
-  if (!entry.when || !entry.plannedWhen) return 0;
+function delayMinutes(entry: BoardEntry, fresh:boolean) {
+  if (!fresh || !entry.realtime || !entry.when || !entry.plannedWhen) return 0;
   return Math.max(0, Math.round((new Date(entry.when).getTime() - new Date(entry.plannedWhen).getTime()) / 60_000));
 }
 
@@ -399,7 +399,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     }).sort((a, b) => {
       const pinnedDifference = Number(pinned.includes(entryKey(b))) - Number(pinned.includes(entryKey(a)));
       if (pinnedDifference) return pinnedDifference;
-      if (sortMode === "delay") return delayMinutes(b) - delayMinutes(a);
+      if (sortMode === "delay") return delayMinutes(b,boardLive) - delayMinutes(a,boardLive);
       if (sortMode === "platform") return String(a.platform ?? a.plannedPlatform ?? "").localeCompare(String(b.platform ?? b.plannedPlatform ?? ""), "de", { numeric: true });
       if (sortMode === "product") return String(a.line?.name ?? "").localeCompare(String(b.line?.name ?? ""), "de", { numeric: true });
       return (boardEventTime(a,boardLive)??Number.POSITIVE_INFINITY)-(boardEventTime(b,boardLive)??Number.POSITIVE_INFINITY);
