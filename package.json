@@ -25,7 +25,8 @@
     "audit:release": "node scripts/release-readiness-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
-    "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)"
+    "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
+    "build:render": "pnpm add -D nitro @tailwindcss/vite && NITRO_PRESET=node vite build --config vite.render.config.ts"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",
@@ -55,5 +56,6 @@
     "vite": "8.0.13",
     "wrangler": "4.92.0"
   },
-  "type": "module"
+  "type": "module",
+  "packageManager": "pnpm@10.34.7"
 }
