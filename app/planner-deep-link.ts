@@ -7,7 +7,8 @@ export type SharedPlannerSearch = {
 };
 const ALL:PlannerCategory[]=["fern","regional","sbahn","ubahn","tram"];
 function safeId(value:string|null):string|null {
-  return value && value.length<=150 && /^[\w:.-]+$/.test(value) ? value : null;
+  // URLSearchParams escapes the identifier; actual existence is checked against stationById.
+  return value && value.length<=180 && !/[\\x00-\\x1f\\x7f]/.test(value) ? value : null;
 }
 function validLocalDate(value:string|null):value is string {
   return Boolean(value && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)
