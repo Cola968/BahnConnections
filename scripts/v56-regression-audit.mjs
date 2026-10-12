@@ -119,6 +119,9 @@ assert.equal(outputs.filter(row=>row.status==="rejected").length,1);
 assert.deepEqual(observedBatchSizes,[[6,6],[6,12],[6,18],[1,19]]);
 const listing=source("app/live-board.tsx");
 assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
+assert.match(listing,/\["delayed","Verspätet"\]/,"Positive-delay filter must not claim a five-minute threshold");
+assert.match(listing,/if\s*\(existing\)\s*\{\s*setTripDetailState\([^;]+;\s*if\s*\(existing\.points\.length\)/,"Opening an enriched trip must mark its cached stop details ready");
+
 assert.match(listing,/inBatches\(unresolved,\s*6/,"Resolve missing destinations with bounded six-wide batches");
 assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
