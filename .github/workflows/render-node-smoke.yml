@@ -55,7 +55,7 @@ jobs:
             if curl --fail --silent --show-error --max-time 30 "${target}/version.json" -o /tmp/render-version.json; then break; fi
             sleep 5
           done
-          node -e 'const v=require("/tmp/render-version.json");const candidate=require("./public/version.json");if(!/^\\d+\\.\\d+/.test(v.version))process.exit(1);console.log("Public Render V"+v.version+"; candidate "+candidate.label+" (not yet necessarily deployed)");'
+          node -e 'const v=require("/tmp/render-version.json");const candidate=require("./public/version.json");if(typeof v.version!=="string"||!v.version.match(/^[0-9]+[.][0-9]+/))process.exit(1);console.log("Public Render V"+v.version+"; candidate "+candidate.label+" (not yet necessarily deployed)");'
           curl --fail --silent --show-error --location --max-time 60 "${target}/" -o /tmp/render-home.html
           grep -qi "Bahn" /tmp/render-home.html
           curl --fail --silent --show-error --location --max-time 40 "${target}/api/subscription" -o /tmp/render-subscription.json
