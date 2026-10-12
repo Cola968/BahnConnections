@@ -20,6 +20,15 @@ export function filterStationNotices(items:readonly RailNotice[],filter:RailNoti
 
 type Alert={header?:string;headerText?:{translation?:{text?:string}[]};descriptionText?:{translation?:{text?:string}[]}};
 export type NoticeStopTime={tripId?:string;displayName?:string;routeShortName?:string;headsign?:string;tripFrom?:{name?:string};tripTo?:{name?:string};place?:{departure?:string;arrival?:string;scheduledDeparture?:string;scheduledArrival?:string;cancelled?:boolean};cancelled?:boolean;tripCancelled?:boolean;alerts?:Alert[]};
+type NoticeFeed={stopTimes:NoticeStopTime[];warnings:string[]};
+/** Preserve usable disruption reports when arrivals or departures cannot be loaded. */
+export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<NoticeFeed>[]) {
+ const fulfilled=results.filter((result):result is PromiseFulfilledResult<NoticeFeed>=>result.status==="fulfilled");
+ const entries=fulfilled.flatMap(result=>result.value.stopTimes);
+ const warnings=fulfilled.flatMap(result=>result.value.warnings)
+   .filter((warning):warning is string=>typeof warning==="string").slice(0,3);
+ return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
+}
 function clean(v:unknown){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,360):"";}
 function firstTranslation(value:unknown):string{
  if(!value||typeof value!=="object"||Array.isArray(value))return "";
