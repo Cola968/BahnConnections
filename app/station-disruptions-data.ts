@@ -1,4 +1,23 @@
 export type RailNotice={key:string;kind:"construction"|"cancellation"|"incident";headline:string;lines:string[];detail:string;plannedTime?:string;direction?:string;journey?:string};
+export type RailNoticeFilter="all"|"construction"|"cancellation"|"incident";
+
+/** Counts are calculated on deduplicated notice records, before user filtering. */
+export function noticeCategoryCounts(items:readonly RailNotice[]):Record<RailNoticeFilter,number>{
+ const counts={all:items.length,construction:0,cancellation:0,incident:0};
+ for(const item of items)counts[item.kind]+=1;
+ return counts;
+}
+function searchKey(text:string){
+ return text.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("de-DE").replace(/\s+/g," ").trim();
+}
+/** Searches alerts, route names and all grouped rail lines, never just a headline. */
+export function filterStationNotices(items:readonly RailNotice[],filter:RailNoticeFilter,query:string):RailNotice[]{
+ const term=searchKey(query.slice(0,100));
+ return items.filter(item=>(filter==="all"||item.kind===filter)&&(!term||searchKey([
+  item.headline,item.detail,item.lines.join(" "),item.direction??"",item.journey??""
+ ].join(" ")).includes(term)));
+}
+
 type Alert={header?:string;headerText?:{translation?:{text?:string}[]};descriptionText?:{translation?:{text?:string}[]}};
 export type NoticeStopTime={tripId?:string;displayName?:string;routeShortName?:string;headsign?:string;tripFrom?:{name?:string};tripTo?:{name?:string};place?:{departure?:string;arrival?:string;scheduledDeparture?:string;scheduledArrival?:string;cancelled?:boolean};cancelled?:boolean;tripCancelled?:boolean;alerts?:Alert[]};
 function clean(v:unknown){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,360):"";}
