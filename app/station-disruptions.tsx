@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from "react";
 import type {Station} from "./network-data";
 import {requireTransitousStopId} from "./transitous";
 import {VisibilityPoller} from "./visibility-poller";
-import {extractStationNotices,filterStationNotices,noticeCategoryCounts,type NoticeStopTime,type RailNotice,type RailNoticeFilter} from "./station-disruptions-data";
+import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds,type NoticeStopTime,type RailNotice,type RailNoticeFilter} from "./station-disruptions-data";
 import {UiIcon} from "./ui-icon";
 
 const noticeFilters:readonly {id:RailNoticeFilter;name:string}[]=[
@@ -38,19 +38,30 @@ export function StationDisruptions({station}:{station:Station}){
    const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(20_000)]);
    try{
     const id=await requireTransitousStopId(station,requestSignal);
-    const url=new URL("/api/stations/"+encodeURIComponent(id)+"/board",window.location.origin);
-    url.searchParams.set("n","350");
-    const response=await fetch(url,{signal:requestSignal,cache:"no-store"});
-    if(!response.ok)throw new Error("Hinweise HTTP "+response.status);
-    const payload=await response.json() as {stopTimes?:unknown;warnings?:unknown};
+    // A station may have reports on arriving trains that are absent from its departure list.
+    // Share the 350-row budget between both directions rather than doubling the load.
+    const kinds=["departure","arrival"] as const;
+    const results=await Promise.allSettled(kinds.map(async kind=>{
+     const url=new URL("/api/stations/"+encodeURIComponent(id)+"/board",window.location.origin);
+     url.searchParams.set("n","175");
+     url.searchParams.set("kind",kind);
+     const response=await fetch(url,{signal:requestSignal,cache:"no-store"});
+     if(!response.ok)throw new Error("Hinweise "+kind+" HTTP "+response.status);
+     const payload=await response.json() as {stopTimes?:unknown;warnings?:unknown};
+     return {
+      stopTimes:Array.isArray(payload?.stopTimes)?payload.stopTimes as NoticeStopTime[]:[],
+      warnings:Array.isArray(payload?.warnings)?payload.warnings.filter((value):value is string=>typeof value==="string"):[]
+     };
+    }));
     if(requestSignal.aborted)return;
-    const entries=Array.isArray(payload?.stopTimes)?payload.stopTimes as NoticeStopTime[]:[];
-    const sourceWarnings=Array.isArray(payload?.warnings)
-      ? payload.warnings.filter((value):value is string=>typeof value==="string")
-        .filter(value=>!value.startsWith("DB-Gegenprüfung")).slice(0,2).join(" · ") : "";
-    setItems(extractStationNotices(entries));
+    const merged=combineStationNoticeFeeds(results);
+    if(!merged.successful)throw new Error("Keine Meldungsquellen erreichbar");
+    const sourceWarnings=merged.warnings
+      .filter(value=>!value.startsWith("DB-Gegenprüfung")).slice(0,2);
+    if(merged.partial)sourceWarnings.unshift("Teilansicht: Abfahrts- oder Ankunftsmeldungen waren nicht erreichbar.");
+    setItems(extractStationNotices(merged.entries));
     setUpdated(new Date().toISOString());
-    setWarning(sourceWarnings);
+    setWarning(sourceWarnings.join(" · "));
     hasSuccessfulDataRef.current=true;
     setState("ready");
    }catch{
@@ -72,7 +83,7 @@ export function StationDisruptions({station}:{station:Station}){
  const loaded=state==="ready"||state==="refreshing";
  return <section className="station-incidents" aria-labelledby="incidents-heading">
   <header className="station-incidents-head"><div><p className="incidents-eyebrow">BETRIEBSLAGE</p><h2 id="incidents-heading">Störungen & Bauarbeiten</h2><p>{station.name}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)} disabled={state==="loading"||state==="refreshing"}><UiIcon name="refresh"/>Aktualisieren</button></header>
-  <div className="incidents-source"><UiIcon name="info"/><span>Meldungen zu abgerufenen Fahrten an diesem Bahnhof.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten.</span></div>
+  <div className="incidents-source"><UiIcon name="info"/><span>Hinweise aus Abfahrten und Ankünften am gewählten Bahnhof.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten.</span></div>
   {loaded&&<><div className="incidents-search-row"><label className="incidents-search"><span>Hinweise durchsuchen</span><input type="search" value={query} maxLength={100} onChange={event=>setQuery(event.target.value)} placeholder="Linie, Störung oder Ziel suchen" aria-label="Störungsmeldungen durchsuchen"/></label>{hasQuery&&<button type="button" onClick={()=>setQuery("")} aria-label="Suche leeren">Löschen</button>}</div>
    <div className="incidents-filters" role="group" aria-label="Meldungstyp">{noticeFilters.map(item=><button type="button" key={item.id} aria-pressed={filter===item.id} className={filter===item.id?"active":""} onClick={()=>setFilter(item.id)}>{item.name} <span aria-hidden="true">{counts[item.id]}</span></button>)}</div>
   </>}
