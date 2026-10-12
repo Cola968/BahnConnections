@@ -1,6 +1,7 @@
 "use client";
 
 import { boardDelayStatistics } from "./board-statistics";
+import { safeBoardAlertHeaders } from "./board-verification";
 import { boardDedupeKey } from "./board-dedup";
 import { readPreferenceIds, writePreference } from "./local-preferences";
 import { matchesBoardDelayFilter, type BoardDelayFilter } from "./board-delay-filter";
@@ -16,7 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
 import { occupancyForecast } from "./occupancy";
 import { decodePolyline } from "./live-trains";
-import { cleanDestination, compactStationLabel, serviceBadgeStyle } from "./transit-style";
+import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
 import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
 import { trimRepeatedStationLoop } from "./trip-trimming";
 
@@ -121,10 +122,6 @@ type TripLeg = {
 
 type TripDetail = { stops: TripPlace[]; points: [number, number][]; segments: [number, number][][]; realtime: boolean; origin?: string; destination?: string; color?: string; textColor?: string };
 
-function alertHeader(alert: { header?: string; headerText?: { translation?: { text?: string }[] } }) {
-  return cleanDestination(alert.header) ?? cleanDestination(alert.headerText?.translation?.find((item) => item.text)?.text);
-}
-
 function delayMinutes(entry: BoardEntry, fresh:boolean) {
   if (!fresh || !entry.realtime || !entry.when || !entry.plannedWhen) return 0;
   return Math.max(0, Math.round((new Date(entry.when).getTime() - new Date(entry.plannedWhen).getTime()) / 60_000));
@@ -190,6 +187,8 @@ function deduplicate(entries: BoardEntry[]) {
   return [...unique.values()];
 }
 
+const safeBoardText=(value:unknown):string|undefined=>typeof value==="string"?value:undefined;
+
 type BoardPayload = { type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
 async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal, onPrimary:(board:ReturnType<typeof boardResult>)=>void, onVerification:(payload:BoardPayload)=>void) {
   const stopId = await requireTransitousStopId(station, signal);
@@ -211,21 +210,21 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal,
 function boardResult(payload:BoardPayload,kind:BoardKind) {
   const arrivals=kind==="arrival";
   // One malformed row must not blank the complete live board.
-  const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object") : [];
+  const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object" && !Array.isArray(entry.place)) : [];
   const entries = validRows.map((entry): BoardEntry => ({
-    tripId: entry.tripId,
+    tripId: safeBoardText(entry.tripId),
     kind,
-    when: arrivals ? entry.place.arrival : entry.place.departure,
-    plannedWhen: arrivals ? entry.place.scheduledArrival : entry.place.scheduledDeparture,
-    platform: entry.place.track,
-    plannedPlatform: entry.place.scheduledTrack,
-    canceled: entry.cancelled || entry.tripCancelled || entry.place.cancelled,
+    when: safeBoardText(arrivals ? entry.place.arrival : entry.place.departure),
+    plannedWhen: safeBoardText(arrivals ? entry.place.scheduledArrival : entry.place.scheduledDeparture),
+    platform: safeBoardText(entry.place.track),
+    plannedPlatform: safeBoardText(entry.place.scheduledTrack),
+    canceled: entry.cancelled===true || entry.tripCancelled===true || entry.place.cancelled===true,
     cancellationScope:entry.tripCancelled || entry.cancelled ? "leg" : entry.place.cancelled ? "stop" : undefined,
-    realtime: entry.realTime,
-    direction: compactStationLabel(entry.headsign) ?? compactStationLabel(entry.tripTo?.name) ?? compactStationLabel(entry.routeLongName),
-    provenance: compactStationLabel(entry.tripFrom?.name),
-    alerts:(entry.alerts ?? []).map(alertHeader).filter((value): value is string => Boolean(value)),
-    line: { name: entry.displayName || entry.routeShortName, product: product(entry.mode), routeId:entry.routeId, color:entry.routeColor, textColor:entry.routeTextColor },
+    realtime: entry.realTime===true,
+    direction: compactStationLabel(safeBoardText(entry.headsign)) ?? compactStationLabel(safeBoardText(entry.tripTo?.name)) ?? compactStationLabel(safeBoardText(entry.routeLongName)),
+    provenance: compactStationLabel(safeBoardText(entry.tripFrom?.name)),
+    alerts:safeBoardAlertHeaders(entry.alerts),
+    line: { name: safeBoardText(entry.displayName) || safeBoardText(entry.routeShortName), product: product(safeBoardText(entry.mode)), routeId:safeBoardText(entry.routeId), color:safeBoardText(entry.routeColor), textColor:safeBoardText(entry.routeTextColor) },
   }));
   return { entries, source:payload.source ?? "Transitous / MOTIS", updatedAt:payload.updatedAt, warnings:payload.warnings ?? [], verificationStatus:payload.verification?.status ?? "unavailable", verificationMessage:payload.verification?.message };
 }
