@@ -335,7 +335,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
             <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded} aria-label={`${line.shortName}${line.destinations.length ? ": " + line.destinations.join(" · ") : ""}`}>
               <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${station.name} ${line.operator}`)}>{lineBadge(line)}</span>
-              <span><b>{primary}</b><small title={line.destinations.join(" · ")}>{secondary || (destinations.length ? {fern:"Fernverkehr",regional:"Regionalverkehr",sbahn:"S-Bahn",ubahn:"U-Bahn",tram:"Tram"}[line.category] : line.longName || "Keine weitere Fahrt")}</small></span>
+              <span className="station-line-copy"><b>{primary}</b><small title={line.destinations.join(" · ")}>{line.category === "fern" && destinations.length > 0 && <><strong>{line.shortName}</strong>{" · "}</>}{secondary || (destinations.length ? {fern:"Fernverkehr",regional:"Regionalverkehr",sbahn:"S-Bahn",ubahn:"U-Bahn",tram:"Tram"}[line.category] : line.longName || "Keine weitere Fahrt")}</small></span>
               <span className="station-line-next">{line.nextTime && <time>{lineTime(line.nextTime)}</time>}<UiIcon name="chevron" style={expanded ? {transform:"rotate(180deg)"} : undefined} /></span>
             </button>
             {expanded && <div className="station-line-routes">
