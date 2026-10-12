@@ -529,6 +529,9 @@ try {
     await screenshot('390-live-train-inspector');
     await tap('.train-inspector .track-button');
     await waitFor("Boolean(document.querySelector('.train-radar-hud'))","Follow did not open radar HUD");
+    // Starting follow changes the radar anchor; the new query may briefly show
+    // a dash. Verify that an actual fresh km/h model returns after the scan.
+    await waitFor("Number(document.querySelector('.train-radar-hud .train-hud-speed strong')?.textContent)>0","Fresh model speed did not return after radar follow recentered");
     const follow=await evaluate(`(() => {
       const hud=document.querySelector('.train-radar-hud');
       return {speed:hud?.querySelector('.train-hud-speed')?.textContent,
@@ -537,7 +540,7 @@ try {
         stop:!hud?.querySelector('button')?.disabled,
         overflow:document.documentElement.scrollWidth>innerWidth+1};
     })()`);
-    if(!follow.train||follow.active!=='true'||!follow.stop||follow.overflow||!follow.speed?.includes('Modell'))
+    if(!follow.train||follow.active!=='true'||!follow.stop||follow.overflow||!follow.speed?.includes('Modell')||!(parseFloat(follow.speed)>0))
       throw new Error('Follow camera/HUD regression: '+JSON.stringify(follow));
     await screenshot('390-live-train-follow');
     await tap('.train-radar-hud button');
