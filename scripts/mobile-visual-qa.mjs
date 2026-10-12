@@ -656,7 +656,7 @@ try {
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
         if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
-        await tap('.station-section-tabs button:nth-child(3)');
+        await tap('.station-section-tabs button:nth-child(4)');
         await matrixCapture('station-info');
         await tap(nav(2));
         await matrixCapture('planner');
