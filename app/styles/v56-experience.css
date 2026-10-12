@@ -196,7 +196,8 @@ html[data-theme="dark"] {
 .app-shell .planner-now { order:1; }
 .app-shell .planner-departure { order:2; grid-column:1/-1; }
 .app-shell .planner-now { min-height:44px; padding:8px 12px; border:1px solid var(--line-subtle); border-radius:var(--radius-control); color:var(--action); background:var(--glass-elevated); cursor:pointer; }
-@media (max-width:359px) { .app-shell .planner-time-row { grid-template-columns:minmax(0,1fr); } }
+@media (max-width:469px) { .app-shell .planner-time-row { grid-template-columns:minmax(0,1fr); } }
+html[data-font="large"] .app-shell .planner-time-row { grid-template-columns:minmax(0,1fr); }
 /* When a narrow-height mobile panel is active, its close buttons must win hit testing. */
 @media (max-width:1023px) and (max-height:520px) {
   .app-shell.has-primary-panel[data-primary-panel] .topbar>.station-search { display:none!important; }

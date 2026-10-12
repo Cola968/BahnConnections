@@ -40,3 +40,5 @@ Der folgende Quality-Lauf kam über den zuvor verdeckten Kartenbutton hinaus. Er
 Google dokumentiert die verwendeten vorausgefüllten Termine unter https://developers.google.com/workspace/calendar/api/concepts/inviting-attendees-to-events#provide_a_link_for_users_to_add_the_event.
 
 Als nächstes sind ein vollständiger grüner Quality-Lauf, Rückkehr aus dem Hintergrund, Wiederaufnahme nach Netzwechsel und Messungen auf schwächeren Mobilgeräten wichtig. Erst danach passen größere Funktionen wie dauerhafte Reisebegleitung, verlässliche Benachrichtigungen oder Kontosynchronisierung. Diese benötigen einen belastbaren Backend- und Berechtigungsentwurf.
+
+Der nächste vollständige CI-Lauf bestand die Mobile-, Einstellungs-, Stations- und Kartenprüfungen und fand im Planner-Test bei 360 Pixeln mit großer Schrift abgeschnittene Abfahrt-/Ankunftsbuttons. Die Zeitwahl wird jetzt unter 470 Pixeln und bei großer Schrift in einer eigenen Zeile angeordnet. Im Browser sind beide Buttons bei 360 × 740, 358 × 569 und Desktop 1365 × 900 vollständig lesbar; der mobile Suchbutton bleibt erreichbar. Der Planner-Test bleibt unverändert und prüft die Korrektur im folgenden CI-Lauf.
