@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Standalone Worker; this file is deliberately not named wrangler.jsonc.
+  // The existing ChatGPT Sites build keeps using vite.config.ts unchanged.
+  "name": "bahnconnections-standalone",
+  "main": "vinext/server/app-router-entry",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "assets": {
+    "not_found_handling": "none"
+  }
+}
