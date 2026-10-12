@@ -5,6 +5,16 @@ export type TransitousBoardRow = {
   realTime?:boolean;
 };
 
+/** Ignore malformed external records individually instead of dropping the full board. */
+export function validTransitousBoardRows(input:unknown):TransitousBoardRow[] {
+  if(!Array.isArray(input))return [];
+  return input.filter((row):row is TransitousBoardRow => {
+    if(!row||typeof row!=="object"||Array.isArray(row))return false;
+    const place=(row as TransitousBoardRow).place;
+    return !!place&&typeof place==="object"&&!Array.isArray(place);
+  });
+}
+
 export type DbBoardRow = { tripId?:string; when?:string; plannedWhen?:string; direction?:string; cancelled?:boolean; line?:{ name?:string; product?:string } };
 
 export type BoardCrossCheck = {
