@@ -4,6 +4,8 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
+**Eigenständige Cloudflare-Veröffentlichung (ohne Sites-Plugin):** Die Anleitung für den einfachen GitHub-Import steht unter [Cloudflare Workers – Handy-Anleitung](docs/deploy/CLOUDFLARE-WORKERS.md). Nach Merge von PR #58 Cloudflare öffnen → **Workers & Pages → Create application → Import a repository** → `Cola968/BahnConnections` auswählen. Worker-Name `bahnconnections-standalone`, Build `pnpm build:cloudflare`, Deploy `pnpm deploy:cloudflare`. **Keine GitHub-Secrets oder API-Tokens** für diesen Weg nötig. Die neue Website ist noch nicht live.
+
 ## V55.0 · Zugradar und Ankunftsprognosen
 
 Die geplante V55.0 ergänzt ein Flightradar-ähnliches Zugfenster mit Fahrplan-/Prognoseankunft, Verspätungsstatus und Kartenverfolgung. Wo aktuelle Haltezeitprognosen und Streckengeometrie vorliegen, erscheint eine daraus berechnete **Modellgeschwindigkeit**. Es gibt keine GPS-Fahrzeugortung und keinen gemessenen Live-Tachowert. Bei fehlenden oder veralteten Daten muss der Status das ausdrücklich sagen.

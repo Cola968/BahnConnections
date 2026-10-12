@@ -43,3 +43,7 @@ next-env.d.ts
 site-v*.tar.gz
 .mobile-qa-*/
 .visual-qa-*/
+
+# local Cloudflare secret files and generated deployment bundles
+.dev.vars*
+/.cloudflare/

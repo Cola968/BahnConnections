@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Canonical config recognized by Cloudflare Dashboard > Import a repository.
+  // The existing ChatGPT Sites build keeps using its inline Vite binding config.
+  "name": "bahnconnections-standalone",
+  "main": "vinext/server/app-router-entry",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "assets": {
+    "not_found_handling": "none"
+  }
+}

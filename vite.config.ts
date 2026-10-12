@@ -53,6 +53,9 @@ export default defineConfig(async () => {
       vinext(),
       sites(),
       cloudflare({
+        // Do not inherit the standalone root wrangler.jsonc config: its
+        // compatibility flags are already supplied by localBindingConfig.
+        configPath: './.openai/wrangler-sites-local.jsonc',
         viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
         config: localBindingConfig,
       }),
