@@ -14,6 +14,12 @@ assert.deepEqual(notices[0].lines,["RE1","RE2"]);
 assert.ok(notices.some(item=>item.kind==="cancellation"));
 assert.ok(notices.some(item=>item.kind==="incident"));
 assert.deepEqual(extractStationNotices([{tripId:"only",displayName:"S2"}]),[],"No incidents without source alerts/cancellations.");
+const malformedNotices=extractStationNotices([{tripId:"faulty",displayName:"S7",alerts:[
+  null,{headerText:{translation:"wrong"}},{headerText:{translation:[null, {text:123}, {text:" Signalstörung "}]}},
+  {descriptionText:{translation:[]}},
+]}]);
+assert.equal(malformedNotices.length,1,"Bad alerts cannot hide a valid disruption");
+assert.equal(malformedNotices[0].headline,"Signalstörung");
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const page=read("app/page.tsx"), filter=read("app/live-board.tsx"),settings=read("app/settings-dialog.tsx");
 assert.match(page,/StationDisruptions/);
@@ -38,6 +44,9 @@ assert.match(page,/setLiveVisible\(true\);setLiveView\("trains"\)/,"Selecting fi
 assert.match(search,/planner-origin-location/,"Location entry must live inside the planner");
 assert.doesNotMatch(page,/className="walking-card"/,"No intrusive floating walking popup");
 assert.match(settings,/bahnconnections-language|onLanguage/,"Language selector must be operable");
+const navigation=read("app/desktop-navigation.tsx");
+assert.match(navigation,/const displayLabel=/,"Mobile navigation needs a visible locale-aware label");
+assert.match(navigation,/mobile-nav-label">{displayLabel}/,"Displayed tab label should match accessible language");
 assert.match(css,/@keyframes bc-clock-turn/);
 assert.match(css,/prefers-reduced-motion/);
 console.log("V56 station notices, direct filters, Changelog and avatar integration OK.");
