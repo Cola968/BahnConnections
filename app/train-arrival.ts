@@ -49,6 +49,7 @@ export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
       : delayMinutes===0 ? "Pünktlich"
       : `+${delayMinutes} Min.`
     : input.realtime && !input.fresh ? "Prognose derzeit nicht aktuell"
+    : input.realtime && !state.actual ? planned ? "Echtzeitprognose fehlt – nur Fahrplan" : "Keine Ankunftszeit"
     : planned ? "Nur Fahrplan" : "Keine Ankunftszeit";
   const tone = input.cancelled ? "danger" : expected && delayMinutes!==null
     ? delayMinutes<=0 ? "success" : delayMinutes<=10 ? "warning" : "danger"
