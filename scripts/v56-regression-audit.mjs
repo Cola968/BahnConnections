@@ -49,7 +49,7 @@ const walking=source("app/api/walk/route.ts");
 assert.match(walking,/body\?\.from/);
 assert.match(walking,/AbortSignal\.any/);
 const page=source("app/page.tsx");
-assert.match(page,/setJourneyDeparture\(" "\)|setJourneyDeparture\(")"?/); // reset confirmed separately below
+assert.match(page,/setJourneyDeparture\(""\); setArriveBy\(false\)/);
 assert.match(page,/setArriveBy\(false\); setMaxChanges\(5\); setTransferMinutes\(0\)/);
 assert.match(page,/onNow:\(\) =>/);
 const searchComponent=source("app/journey-search.tsx");
