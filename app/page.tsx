@@ -1292,8 +1292,8 @@ export default function Home() {
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{stationDisplayName(selectedJourneyStart.name)} → {stationDisplayName(selectedJourneyTarget.name)}</span></div>
             <NetworkNotice/>
             <div className="journey-mobile-overview">
-              <p className="journey-date-range">{journeyDateRange(journey)}</p>
               <div className="journey-mobile-route">
+                <p className="journey-date-range">{journeyDateRange(journey)}</p>
                 <JourneyTimeRange journey={journey} />
                 <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
                 {journey.cancelled && <small className="journey-disruption" role="status">Ausfall · Fahrtabschnitte prüfen</small>}
