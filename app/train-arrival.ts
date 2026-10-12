@@ -9,6 +9,7 @@ export type TrainArrivalInput = {
   actual?: string | null;
   realtime: boolean;
   fresh: boolean;
+  cancelled?: boolean;
 };
 export type TrainArrivalView = {
   planned: string | null;
@@ -38,18 +39,18 @@ export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
   // The map feed sometimes omits the scheduled value. Only when the segment
   // explicitly lacks realtime may the arrival field serve as timetable data.
   const planned = state.scheduled ?? (!input.realtime ? state.actual : null);
-  const expected = input.realtime && input.fresh ? state.actual : null;
+  const expected = !input.cancelled && input.realtime && input.fresh ? state.actual : null;
   const delayMinutes = planned && expected
     ? Math.round((Date.parse(expected)-Date.parse(planned))/60_000)
     : null;
-  const status = expected
+  const status = input.cancelled ? "Halt entfällt" : expected
     ? delayMinutes===null ? "Prognose ohne Sollvergleich"
       : delayMinutes<0 ? `${Math.abs(delayMinutes)} Min. früher`
       : delayMinutes===0 ? "Pünktlich"
       : `+${delayMinutes} Min.`
     : input.realtime && !input.fresh ? "Prognose derzeit nicht aktuell"
     : planned ? "Nur Fahrplan" : "Keine Ankunftszeit";
-  const tone = expected && delayMinutes!==null
+  const tone = input.cancelled ? "danger" : expected && delayMinutes!==null
     ? delayMinutes<=0 ? "success" : delayMinutes<=10 ? "warning" : "danger"
     : "neutral";
   const expectedDayOffset=planned&&expected?localDay(expected)-localDay(planned):null;
@@ -58,7 +59,7 @@ export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
     plannedLabel:formatRealtimeTime(planned),
     // Without live predictions show timetable arrival, explicitly marked
     // "Nach Fahrplan" in the UI; do not present it as a realtime estimate.
-    expectedLabel:formatRealtimeTime(expected??planned),
+    expectedLabel:input.cancelled?"–":formatRealtimeTime(expected??planned),
     delayMinutes,status,tone,
     isFreshPrediction:Boolean(expected),
     expectedDayOffset,
