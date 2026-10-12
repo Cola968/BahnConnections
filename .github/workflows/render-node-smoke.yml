@@ -1,0 +1,50 @@
+name: Node hosting build and smoke
+
+on:
+  pull_request:
+    paths:
+      - "vite.render.config.ts"
+      - ".github/workflows/render-node-smoke.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "vite.render.config.ts"
+      - ".github/workflows/render-node-smoke.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  render-node:
+    name: Build and run V55 Node app
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:render
+      - name: Start Node server and check V55 PWA + root page
+        run: |
+          export HOST=0.0.0.0
+          export PORT=4175
+          pnpm exec vinext start > /tmp/bahnconnections-node.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true; cat /tmp/bahnconnections-node.log' EXIT
+          for i in $(seq 1 35); do
+            if curl -sSf "http://127.0.0.1:4175/version.json" >/tmp/version.json; then break; fi
+            sleep 2
+          done
+          node -e 'const v=require("/tmp/version.json");if(v.version!=="55.0")process.exit(1);console.log("V55 release "+v.version)'
+          curl -fSL --max-time 30 -o /tmp/landing.html "http://127.0.0.1:4175/"
+          grep -qi 'Bahn' /tmp/landing.html
