@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { boardDisplayActual, boardDisplayPlatform, boardEventTime, boardPredictionFresh } from "../app/board-time.ts";
 import { boardDedupeKey } from "../app/board-dedup.ts";
-import { validTransitousBoardRows, safeBoardAlertHeaders } from "../app/board-verification.ts";
+import { validTransitousBoardRows, safeBoardAlertHeaders, safeBoardMetadata } from "../app/board-verification.ts";
 import { trainArrivalView } from "../app/train-arrival.ts";
 import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
 import { matchesBoardDelayFilter } from "../app/board-delay-filter.ts";
@@ -56,6 +56,14 @@ assert.deepEqual(safeBoardAlertHeaders([
   {header:" Gleiswechsel "},
   {header:{unsafe:true}},
 ]),["Signalstörung auf Linie S7","Gleiswechsel"],"Malformed third-party alerts cannot erase the station board");
+assert.deepEqual(safeBoardMetadata({
+  source:{not:"a string"},updatedAt:"not an ISO timestamp",
+  warnings:[" Gleiswechsel  ",null,{},12,"", "Störung   im Netz"]
+}),{source:"Transitous / MOTIS",updatedAt:undefined,warnings:["Gleiswechsel","Störung im Netz"]},
+"Malformed board metadata must not cause an invalid-date crash or inject objects into rendered notices");
+assert.deepEqual(safeBoardMetadata({source:"Provider A",updatedAt:"2026-10-12T10:00:00Z",warnings:["Hinweis"]}),{
+  source:"Provider A",updatedAt:"2026-10-12T10:00:00Z",warnings:["Hinweis"]
+});
 assert.equal(decodeRouteSegment("%XX"),null,"Invalid percent escapes cannot crash route handlers");
 assert.equal(decodeRouteSegment("trip%3A123"),"trip:123");
 assert.equal(writePreference({setItem(){throw new Error("SecurityError");}},"pin","[]"),false,"Denied storage is optional");
@@ -123,6 +131,8 @@ assert.match(listing,/\["delayed","Verspätet"\]/,"Positive-delay filter must no
 assert.match(listing,/if\s*\(existing\)\s*\{\s*setTripDetailState\([^;]+;\s*if\s*\(existing\.points\.length\)/,"Opening an enriched trip must mark its cached stop details ready");
 
 assert.match(listing,/inBatches\(unresolved,\s*6/,"Resolve missing destinations with bounded six-wide batches");
+assert.match(listing,/const metadata=safeBoardMetadata\(payload\)/,"Board view must validate source metadata at the UI edge");
+assert.match(listing,/setUpdatedAt\(board\.updatedAt\?new Date\(board\.updatedAt\):null\)/,"Unknown update time may not masquerade as live data");
 assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
 const update=source("app/pwa-register.tsx");
