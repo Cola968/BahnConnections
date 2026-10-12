@@ -532,6 +532,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     if (!opening || !entry.tripId || tripDetailState[key] === "loading") return;
     const existing = tripDetails[key];
     if (existing) {
+      setTripDetailState((current) => ({ ...current, [key]:"ready" }));
       if (existing.points.length) onMapTrip?.(mapTrip(entry, existing));
       return;
     }
@@ -572,7 +573,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           {([["all","Alle",entries.length],["fern","Fernverkehr",productCounts.fern],["regional","Regional",productCounts.regional],["sbahn","S-Bahn",productCounts.sbahn],["ubahn","U-Bahn",productCounts.ubahn],["tram","Tram",productCounts.tram]] as const).map(([id,label,count])=><button type="button" key={id} aria-pressed={productFilter===id} className={productFilter===id?"active":""} onClick={()=>setProductFilter(id)}>{label}<small>{count}</small></button>)}
         </div></div>
         <div className="board-filter-block"><div className="board-filter-section-title">Betriebslage</div><div className="board-status-pills" aria-label="Betriebslage">
-          {([["all","Alle"],["ontime","Pünktlich"],["delayed","+5 Min."],["canceled","Ausfälle"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={delayFilter===id} className={delayFilter===id?"active":""} onClick={()=>setDelayFilter(id)}>{label}</button>)}
+          {([["all","Alle"],["ontime","Pünktlich"],["delayed","Verspätet"],["canceled","Ausfälle"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={delayFilter===id} className={delayFilter===id?"active":""} onClick={()=>setDelayFilter(id)}>{label}</button>)}
         </div></div>
         <div className="board-filter-fields">
           <label>Gleis<select value={platformFilter} onChange={event=>setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map(platform=><option key={platform} value={platform}>{platform}</option>)}</select></label>
