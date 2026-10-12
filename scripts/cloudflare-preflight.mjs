@@ -23,6 +23,14 @@ assert.ok(vite.includes('viteEnvironment: { name: "rsc", childEnvironments: ["ss
 assert.ok(!vite.includes("@openai/sites-vite-plugin"),"Standalone build must not depend on ChatGPT Sites");
 assert.ok(!/\bfrom\s+["\x27][^"\x27]*hosting\.json/.test(vite),"Standalone build must not import Sites metadata");
 
+// The original ChatGPT Sites environment must remain isolated from the root Worker.
+const sitesVite=text("vite.config.ts");
+const sitesWorker=JSON.parse(text(".openai/wrangler-sites-local.jsonc").replace(/^\\s*\\/\\/.*$/gm,""));
+assert.ok(sitesVite.includes("configPath: './.openai/wrangler-sites-local.jsonc'"));
+assert.ok(sitesVite.includes("config: localBindingConfig"));
+assert.equal(sitesWorker.name,"sites-project");
+assert.equal(sitesWorker.compatibility_flags,undefined,"Avoid duplicate nodejs_compat in Sites local runtime");
+
 const pkg=JSON.parse(text("package.json"));
 assert.equal(pkg.scripts["build:cloudflare"],"vite build --config vite.cloudflare.config.ts");
 assert.equal(pkg.scripts["audit:cloudflare"],"node scripts/cloudflare-preflight.mjs");
