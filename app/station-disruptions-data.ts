@@ -2,7 +2,22 @@ export type RailNotice={key:string;kind:"construction"|"cancellation"|"incident"
 type Alert={header?:string;headerText?:{translation?:{text?:string}[]};descriptionText?:{translation?:{text?:string}[]}};
 export type NoticeStopTime={tripId?:string;displayName?:string;routeShortName?:string;headsign?:string;tripFrom?:{name?:string};tripTo?:{name?:string};place?:{departure?:string;arrival?:string;scheduledDeparture?:string;scheduledArrival?:string;cancelled?:boolean};cancelled?:boolean;tripCancelled?:boolean;alerts?:Alert[]};
 function clean(v:unknown){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,360):"";}
-function alertText(alert:Alert){const header=clean(alert.header)||clean(alert.headerText?.translation?.find(i=>clean(i.text))?.text);const detail=clean(alert.descriptionText?.translation?.find(i=>clean(i.text))?.text);return {header,detail};}
+function firstTranslation(value:unknown):string{
+ if(!value||typeof value!=="object"||Array.isArray(value))return "";
+ const translations=(value as {translation?:unknown}).translation;
+ if(!Array.isArray(translations))return "";
+ for(const translation of translations){
+  if(!translation||typeof translation!=="object")continue;
+  const text=clean((translation as {text?:unknown}).text);
+  if(text)return text;
+ }
+ return "";
+}
+function alertText(alert:Alert){
+ const header=clean(alert.header)||firstTranslation(alert.headerText);
+ const detail=firstTranslation(alert.descriptionText);
+ return {header,detail};
+}
 function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":/ausfall|entfällt|ersatzverkehr|abgesagt/.test(s)?"cancellation":"incident";}
 export function extractStationNotices(entries:NoticeStopTime[],limit=35):RailNotice[]{
  const unique=new Map<string,RailNotice>();
