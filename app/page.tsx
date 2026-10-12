@@ -1045,6 +1045,9 @@ export default function Home() {
   function resetMap() {
     plannerRequestRef.current?.abort(); walkRequestRef.current?.abort(); pendingWalkTargetRef.current = null;
     setPlannerState("idle"); setJourneyEndpoints(null); setJourneyOptionLimit(8);
+    setJourneyDeparture(""); setArriveBy(false); setMaxChanges(5); setTransferMinutes(0);
+    setWheelchairRouting(false); setBikeRequired(false);
+    setPlannerCategories(["fern", "regional", "sbahn", "ubahn", "tram"]);
     setStartId("berlin"); setStartSearch("Berlin Hbf");
     setTargetId("muenchen"); setTargetSearch("München Hbf");
     setRouteSaveMessage("");
@@ -1211,6 +1214,7 @@ export default function Home() {
             start:{ value:startSearch, onChange:(value) => { invalidatePlanner(); setStartSearch(value); setStartId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setStartId(station.id); setStartSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             target:{ value:targetSearch, onChange:(value) => { invalidatePlanner(); setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             departure:journeyDeparture, onDeparture:(value) => { invalidatePlanner(); setJourneyDeparture(value); },
+            onNow:() => { invalidatePlanner(); setArriveBy(false); setJourneyDeparture(localDateTimeValue(new Date())); },
             onSwap:() => { invalidatePlanner(); setStartId(targetId); setStartSearch(targetSearch); setTargetId(startId); setTargetSearch(startSearch); setJourneyMessage(""); setPlannerState("idle"); },
             categories:plannerCategories, onCategory:togglePlannerCategory,
             options:{ arriveBy, maxChanges, transferMinutes, wheelchair:wheelchairRouting, bike:bikeRequired },
