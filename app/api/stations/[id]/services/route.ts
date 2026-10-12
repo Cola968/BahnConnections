@@ -1,8 +1,9 @@
+import { decodeRouteSegment } from "../../../decode-route-segment";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 
 export async function GET(request: Request, context: { params:Promise<{ id:string }> }) {
   const { id } = await context.params;
-  const stopId = decodeURIComponent(id);
+  const stopId = decodeRouteSegment(id);
   const query = new URL(request.url).searchParams;
   const updatedAt = new Date().toISOString();
   if (!stopId || stopId.length > 500) return Response.json({routes:[],stopTimes:[],warnings:["Ungültige Haltestellen-ID"]}, {status:400});
