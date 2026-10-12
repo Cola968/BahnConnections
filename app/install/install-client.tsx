@@ -70,15 +70,8 @@ export function InstallClient() {
     setUpdateState("checking");
     try {
       const registrations = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistrations() : [];
-      for (const registration of registrations) {
-        try { await registration.update(); } catch { /* keep checking other registrations */ }
-      }
-
-      let waiting: ServiceWorker | null = null;
-      for (const registration of registrations) {
-        waiting = await waitForWaitingWorker(registration);
-        if (waiting) break;
-      }
+      await Promise.race([Promise.all(registrations.map(registration=>registration.update().catch(()=>undefined))),new Promise<void>(resolve=>window.setTimeout(resolve,3500))]);
+      const waiting:ServiceWorker|null = registrations.find(registration=>registration.waiting)?.waiting ?? (await Promise.all(registrations.map(registration=>waitForWaitingWorker(registration,1000)))).find(Boolean) ?? null;
 
       if (waiting) {
         setUpdateState("activating");
@@ -91,7 +84,7 @@ export function InstallClient() {
         return;
       }
 
-      const response = await fetch(`/version.json?ts=${Date.now()}`, { cache:"no-store" });
+      const response = await fetch(`/version.json?ts=${Date.now()}`, { cache:"no-store",signal:AbortSignal.timeout(7000) });
       const payload = response.ok ? await response.json() as VersionPayload : {};
       if (payload.version && !isNewerAppVersion(payload.version, APP_VERSION)) {
         setUpdateState("done");
@@ -119,8 +112,8 @@ export function InstallClient() {
 
   const updatePanel = requestedUpdate ? (
     <div className="install-update-panel" role="status">
-      <b>{requestedUpdate} herunterladen / aktualisieren</b>
-      <span>Installierte BahnConnections-Version: {APP_VERSION_LABEL}. Die Web-App lädt Updates direkt vom BahnConnections-Server; es gibt keine separate APK-Datei.</span>
+      <b>App-Version {requestedUpdate} prüfen</b>
+      <span>Installiert: {APP_VERSION_LABEL}. Aktualisierungen werden über diese Webadresse geladen.</span>
       <button type="button" className="install-primary" onClick={() => void updateApp()} disabled={updateState === "checking" || updateState === "activating"}>
         {updateState === "checking" ? "Update wird gesucht …" : updateState === "activating" ? "Neue Version wird aktiviert …" : "Neue Version laden"}
       </button>
