@@ -76,7 +76,7 @@ export function SettingsDialog(p:Props) {
     <div className="settings-content" key={tab}>
       {tab==="profile" && <>
         <div className="profile-overview profile-overview-v53">
-          <span className="profile-avatar" aria-hidden={!p.profile.avatarDataUrl}>{avatarDataUrl ? <img src={avatarDataUrl} alt="Dein Profilbild · Vorschau"/> : (name.trim().split(/\s+/).map(item=>item[0]).slice(0,2).join("").toLocaleUpperCase("de")||<UiIcon name="user"/>)}</span>
+          <span className="profile-avatar" aria-hidden={!avatarDataUrl}>{avatarDataUrl ? <img src={avatarDataUrl} alt="Dein Profilbild · Vorschau"/> : (name.trim().split(/\s+/).map(item=>item[0]).slice(0,2).join("").toLocaleUpperCase("de")||<UiIcon name="user"/>)}</span>
           <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{(homeStation?.name || p.profile.homeStationName) ? ` · ${homeStation?.name || p.profile.homeStationName}` : ""}{p.profile.favoriteLine ? ` · ${p.profile.favoriteLine}` : ""}</p></div>
         </div>
         <div className="profile-quick-stats" aria-label="Dein Überblick"><span><UiIcon name="star"/><strong>{p.favoriteCount}</strong><small>Favoriten</small></span><span><UiIcon name="route"/><strong>{p.savedRoutes.length}</strong><small>Pendelstrecken</small></span><span><UiIcon name="location"/><strong>{homeStation||p.profile.homeStationName?"1":"0"}</strong><small>Heimatbahnhof</small></span></div>
