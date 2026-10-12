@@ -8,6 +8,7 @@ import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
 import { matchesBoardDelayFilter } from "../app/board-delay-filter.ts";
 import { decodeRouteSegment } from "../app/api/decode-route-segment.ts";
 import { writePreference } from "../app/local-preferences.ts";
+import { inBatches } from "../app/transitous.ts";
 
 const schedule="2026-10-25T02:30:00+02:00";
 const delayed="2026-10-25T02:40:00+02:00";
@@ -94,8 +95,25 @@ assert.doesNotMatch(inspector,/segmentAverageSpeed/);
 assert.match(inspector,/remainingArrivalMinutes/);
 assert.match(inspector,/realtime=\{sourceCurrent&&trip\.realTime\}/);
 assert.match(inspector,/detailState!=="loading"&&stops\.length>0&&<ol/);
+let activeDetailRequests=0,maxDetailRequests=0;
+const observedBatchSizes=[];
+const outputs=await inBatches(Array.from({length:19},(_,i)=>i),6,async value=>{
+  activeDetailRequests++;
+  maxDetailRequests=Math.max(maxDetailRequests,activeDetailRequests);
+  await new Promise(resolve=>setTimeout(resolve,1));
+  activeDetailRequests--;
+  if(value===7)throw Error("Individual detail lookup failed");
+  return value;
+},(results,completed)=>{
+  observedBatchSizes.push([results.length,completed]);
+});
+assert.equal(maxDetailRequests,6,"At most six trip detail lookups run at once");
+assert.equal(outputs.length,19,"One bad train must not hide other results");
+assert.equal(outputs.filter(row=>row.status==="rejected").length,1);
+assert.deepEqual(observedBatchSizes,[[6,6],[6,12],[6,18],[1,19]]);
 const listing=source("app/live-board.tsx");
 assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
+assert.match(listing,/inBatches\(unresolved,\s*6/,"Resolve missing destinations with bounded six-wide batches");
 assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
 const update=source("app/pwa-register.tsx");
