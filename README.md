@@ -4,13 +4,15 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-**Eigenständige Cloudflare-Veröffentlichung (ohne Sites-Plugin):** Die Anleitung für den einfachen GitHub-Import steht unter [Cloudflare Workers – Handy-Anleitung](docs/deploy/CLOUDFLARE-WORKERS.md). Nach Merge von PR #58 Cloudflare öffnen → **Workers & Pages → Create application → Import a repository** → `Cola968/BahnConnections` auswählen. Worker-Name `bahnconnections-standalone`, Build `pnpm build:cloudflare`, Deploy `pnpm deploy:cloudflare`. **Keine GitHub-Secrets oder API-Tokens** für diesen Weg nötig. Die neue Website ist noch nicht live.
+**Cloudflare-V56.2-Releasekandidat:** Die neue Version wird in [PR #64](https://github.com/Cola968/BahnConnections/pull/64) vorbereitet. Eine **eigenständige Cloudflare-Workers-Veröffentlichung wurde noch nicht durchgeführt**. Die Anleitung für die Ersteinrichtung per Smartphone: [Cloudflare Workers](docs/deploy/CLOUDFLARE-WORKERS.md). Vor Veröffentlichung ist die [V56.2-Release-Checkliste](docs/releases/V56.2-RELEASE-CHECKLIST.md) abzuarbeiten.
 
-## V55.0 · Zugradar und Ankunftsprognosen
+## V56.2 · Störungszentrale und zuverlässige Echtzeitdaten
 
-Die geplante V55.0 ergänzt ein Flightradar-ähnliches Zugfenster mit Fahrplan-/Prognoseankunft, Verspätungsstatus und Kartenverfolgung. Wo aktuelle Haltezeitprognosen und Streckengeometrie vorliegen, erscheint eine daraus berechnete **Modellgeschwindigkeit**. Es gibt keine GPS-Fahrzeugortung und keinen gemessenen Live-Tachowert. Bei fehlenden oder veralteten Daten muss der Status das ausdrücklich sagen.
-
-Die mobile Bedienung wird kompakter. Die App trennt planmäßige Abfahrtszeiten von aktuellen Prognosen, zeigt im Zugfenster beide Zeiten und pausiert überalterte Verfolgung. Vor Veröffentlichung müssen Browser- und Echtgeräteprüfungen sowie die Nutzungsrechte der Live-Datenquellen geklärt sein.
+- Suche und Kategorie-Filter für Meldungen, Bauarbeiten und Ausfälle; Hinweise aus Ankünften und Abfahrten werden zusammengeführt.
+- Regelmäßige Aktualisierung bei sichtbarer Ansicht, letztes erfolgreiches Ergebnis bei kurzfristigen Quellenproblemen.
+- Korrekte Filterung bestätigter +1-bis-+4-Minuten-Verspätungen, defensiver Umgang mit ungültigen Providerdaten, begrenzte Detailabfragen und Zeitlimits.
+- Bessere mobile Tastaturbedienung, sichtbare Fahrthaltelisten und englische Navigationsbeschriftung.
+- **Wichtige Einschränkungen:** Reale Gerätetests fehlen; Live-Ankunfts- und Geschwindigkeitsangaben sind quellenabhängige Prognosen beziehungsweise Modellwerte, kein Fahrzeug-GPS. Die Transitous-Nutzung für kommerzielle Zwecke oder ohne Open-Source-Lizenz ist noch nicht freigegeben.
 
 ## Funktionen
 
