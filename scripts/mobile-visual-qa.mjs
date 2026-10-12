@@ -500,14 +500,16 @@ try {
     await waitFor("Boolean(document.querySelector('.station-card'))","Radar QA needs a selected station");
     await tap('.mobile-navigation button:first-of-type');
     await tap('.mobile-map-view-button');
-    await tap('.live-filter-popover .popover-buttons button:first-child');
+    await tap('.map-filter-master input');
     await tap('.map-menu-dismiss button');
     await waitFor("Boolean(document.querySelector('.live-train-wrap,.live-cluster-wrap'))","Rail radar markers missing");
     if(!await evaluate("Boolean(document.querySelector('.live-train-wrap'))")) {
       await tap('.live-cluster-wrap');
-      await waitFor("Boolean(document.querySelector('.live-train-wrap'))","Zoom did not expose selectable train marker");
-    }
-    await tap('.live-train-wrap');
+      if(!await evaluate("Boolean(document.querySelector('.train-inspector'))")) {
+        await waitFor("Boolean(document.querySelector('.live-train-wrap'))","Zoom did not expose selectable train marker");
+        await tap('.live-train-wrap');
+      }
+    } else await tap('.live-train-wrap');
     await waitFor("Boolean(document.querySelector('.train-inspector .train-cockpit'))","Train tap did not open its inspector");
     const inspected=await evaluate(`(() => {
       const sheet=document.querySelector('.train-inspector'),planned=sheet?.querySelector('.train-arrival-time:not(.expected) time'),
@@ -523,7 +525,7 @@ try {
         bounds:rect?{left:rect.left,right:rect.right}:null};
     })()`);
     if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min. Verspätung'||
-      !(inspected.speed??'').includes('km/h')||!inspected.canFollow||inspected.mobileSheet!=='half'||
+      !(inspected.speed??'').includes('km/h')||!inspected.canFollow||inspected.mobileSheet!=='expanded'||
       inspected.horizontalOverflow||!inspected.bounds||inspected.bounds.left<-1||inspected.bounds.right>391)
       throw new Error('Rail radar inspector regression: '+JSON.stringify(inspected));
     await screenshot('390-live-train-inspector');
@@ -776,17 +778,20 @@ try {
   await evaluate(`localStorage.setItem('bahnconnections-auto-location','1')`);
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
+  await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.my-location-point'))`,'Granted location did not auto-activate');
   await tap('.settings-trigger');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
   await tap('[aria-label="Einstellungen schließen"]');
-  await tap('.location-stop');
+  await tap('.settings-trigger');
+  await tap('.settings-tabs button:nth-child(2)');
+  await evaluate(`(() => { const row=[...document.querySelectorAll('.settings-toggle')].find(label=>label.textContent.includes('Automatisch aktivieren'));if(!row)throw new Error('Location opt-out toggle missing');row.querySelector('input').click(); })()`);
+  await tap('[aria-label="Einstellungen schließen"]');
   if(await evaluate(`localStorage.getItem('bahnconnections-auto-location')`) !== '0') throw new Error('Stopping location did not persist opt-out');
   const stoppedOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
-  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger'))`,'Location control did not reload');
+  await waitFor(`performance.timeOrigin > ${stoppedOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell'))`,'Location control did not reload');
   await new Promise(resolve=>setTimeout(resolve,800));
   if(await evaluate(`Boolean(document.querySelector('.location-trigger.active'))`)) throw new Error('Opted-out location restarted');
   await command('Browser.resetPermissions');
