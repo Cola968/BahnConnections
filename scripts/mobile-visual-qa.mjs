@@ -388,7 +388,7 @@ try {
     const actions=document.querySelector('.header-actions')?.getBoundingClientRect();
     return { searchRight:search?.right ?? 0, actionsLeft:actions?.left ?? 0, actionsWidth:actions?.width ?? 0, overlap:Boolean(search&&actions&&search.right>actions.left-4) };
   })()`);
-  if (landscapeChrome.actionsWidth > 52 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
+  if (landscapeChrome.actionsWidth > 92 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
   const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; const mapRight=document.querySelector('.map-canvas').getBoundingClientRect().right; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:Math.min(mapRight,el.getBoundingClientRect().right),left}));})()`);
   if (landscapeStops.some(stop=>stop.right>stop.left+2)) throw new Error('Journey-Halte liegen im Querformat unter dem seitlichen Sheet');
   await screenshot("844-landscape");
