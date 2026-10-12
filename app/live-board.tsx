@@ -328,7 +328,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     rowRequestRef.current = controller;
     return () => { controller.abort(); if(rowRequestRef.current===controller)rowRequestRef.current=null; };
   }, [station.id,mode]);
-  const endpointSignatureRef = useRef("");
+  const enrichmentAttemptsRef = useRef<Map<string,number>>(new Map());
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -349,7 +349,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     let hasRows=boardHasRows.current;
     const kind:BoardKind=mode==="arrivals"?"arrival":"departure";
     const scope=`${station.id}:${kind}`;
-    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setTripDetails({});setTripDetailState({});endpointSignatureRef.current="";previewSignatureRef.current="";setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
+    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setTripDetails({});setTripDetailState({});enrichmentAttemptsRef.current.clear();previewSignatureRef.current="";setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
     if(boardScope.current!==scope){hasRows=false;boardHasRows.current=false;boardScope.current=scope;}
     const poller=new VisibilityPoller(async signal=>{
       try {
@@ -437,39 +437,50 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   useEffect(() => { if (status === "ready") onSummary?.(summary); }, [onSummary, status, summary]);
 
   useEffect(() => {
-    if (status !== "ready") return;
-    const unresolved = entries.filter((entry) => entry.tripId && (mode === "departures" ? !entry.direction : !entry.provenance)).slice(0, 90);
-    const signature = `${station.id}|${mode}|${unresolved.map((entry) => entry.tripId).join("|")}`;
-    if (!unresolved.length || endpointSignatureRef.current === signature) return;
-    endpointSignatureRef.current = signature;
+    if (status !== "ready" || boardScope.current !== `${station.id}:${mode === "arrivals" ? "arrival" : "departure"}`) return;
+    // Only enrich the first visible candidates; never fan out ninety requests.
+    // Failed lookups are eligible to retry after 150 seconds, not every render.
+    const now = Date.now();
+    const unresolved = entries.filter(entry => {
+      if (!entry.tripId || (mode === "departures" ? !!entry.direction : !!entry.provenance)) return false;
+      return now - (enrichmentAttemptsRef.current.get(entryKey(entry)) ?? -Infinity) >= 150_000;
+    }).slice(0, 36);
+    if (!unresolved.length) return;
+    for (const entry of unresolved) enrichmentAttemptsRef.current.set(entryKey(entry),now);
     const controller = new AbortController();
     let active = true;
-    void Promise.allSettled(unresolved.map(async (entry) => ({
-      tripId:entry.tripId!,
-      detail:await loadTrip(entry.tripId!, station, entry.when ?? entry.plannedWhen, controller.signal),
-    }))).then((results) => {
-      if (!active) return;
-      const resolved = new Map(results.filter((result): result is PromiseFulfilledResult<{ tripId:string; detail:TripDetail }> => result.status === "fulfilled").map((result) => [result.value.tripId, result.value.detail]));
-      if (!resolved.size) return;
-      setTripDetails((current) => {
-        const next = { ...current };
-        for (const entry of unresolved) {
-          const detail = entry.tripId ? resolved.get(entry.tripId) : undefined;
-          if (detail) next[entryKey(entry)] = detail;
-        }
+    const resolved = new Map<string,TripDetail>();
+    void inBatches(unresolved, 6, async entry => {
+      controller.signal.throwIfAborted();
+      const detail = await loadTrip(entry.tripId!,station,entry.when ?? entry.plannedWhen,controller.signal);
+      return {key:entryKey(entry),detail};
+    }, results => {
+      if (!active || controller.signal.aborted) return;
+      const batch = results
+        .filter((result):result is PromiseFulfilledResult<{key:string;detail:TripDetail}> => result.status === "fulfilled")
+        .map(result => result.value);
+      if (!batch.length) return;
+      for (const item of batch) resolved.set(item.key,item.detail);
+      // Detail panels may show successful stops before slower batches finish.
+      setTripDetails(current => {
+        const next = {...current};
+        for (const item of batch) next[item.key] = item.detail;
         return next;
       });
-      setEntries((current) => current.map((entry) => {
-        const detail = entry.tripId ? resolved.get(entry.tripId) : undefined;
+    }).then(() => {
+      if (!active || controller.signal.aborted || !resolved.size) return;
+      // One final entry update avoids restarting the effect between batches.
+      setEntries(current => current.map(entry => {
+        const detail = resolved.get(entryKey(entry));
         if (!detail) return entry;
         return {
           ...entry,
           direction:entry.direction ?? detail.destination,
           provenance:entry.provenance ?? detail.origin,
-          line:{ ...entry.line, color:entry.line?.color ?? detail.color, textColor:entry.line?.textColor ?? detail.textColor },
+          line:{...entry.line,color:entry.line?.color ?? detail.color,textColor:entry.line?.textColor ?? detail.textColor},
         };
       }));
-    });
+    }).catch(() => { /* An aborted station request cannot change the next station. */ });
     return () => { active = false; controller.abort(); };
   }, [entries, mode, station, status]);
 
