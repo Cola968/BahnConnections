@@ -6,6 +6,7 @@ import { stationPassengerInfo } from "./station-passengers";
 import { PlannerPanel } from "./planner-panel";
 import { usePanelHistory } from "./use-panel-history";
 import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
+import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
@@ -196,6 +197,7 @@ export default function Home() {
   const [curatedAliases, setCuratedAliases] = useState<Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>>({});
   const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>([]);
   const [routeSaveMessage,setRouteSaveMessage]=useState("");
+  const [shareMessage,setShareMessage]=useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [boardOnly, setBoardOnly] = useState(false);
@@ -231,6 +233,7 @@ export default function Home() {
   const [journeyOptionLimit, setJourneyOptionLimit] = useState(8);
   const [mobileSheetState, setMobileSheetState] = useState<MobileSheetState>("half");
   const stationLinkAppliedRef = useRef(false);
+  const plannerLinkAppliedRef = useRef(false);
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
   const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
@@ -429,6 +432,24 @@ export default function Home() {
       .catch((error) => { if ((error as Error).name !== "AbortError") setExtraStations([]); });
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if(plannerLinkAppliedRef.current)return;
+    const parsed=parsePlannerLink(window.location.href);
+    if(!parsed)return;
+    const from=stationById.get(parsed.from),to=stationById.get(parsed.to);
+    if(!from||!to)return;
+    plannerLinkAppliedRef.current=true;
+    const timer=window.setTimeout(()=>{
+      setStartId(from.id);setStartSearch(stationDisplayName(from.name));
+      setTargetId(to.id);setTargetSearch(stationDisplayName(to.name));
+      setJourneyDeparture(parsed.departure);setArriveBy(parsed.arriveBy);
+      setMaxChanges(parsed.maxChanges);setTransferMinutes(parsed.transferMinutes);
+      setWheelchairRouting(parsed.wheelchair);setBikeRequired(parsed.bike);setPlannerCategories(parsed.categories);
+      setActiveView("connections");setExploreOpen(true);setMobileSheetState("half");
+    },0);
+    return()=>window.clearTimeout(timer);
+  },[stationById]);
 
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("station");
@@ -1042,6 +1063,19 @@ export default function Home() {
     } : { padding:[80,80], maxZoom:12, animate:false });
   }
 
+  async function shareCurrentPlanner() {
+    try {
+      const url=buildPlannerLink(window.location.origin,{from:startId,to:targetId,departure:journeyDeparture,
+        arriveBy,maxChanges,transferMinutes,wheelchair:wheelchairRouting,bike:bikeRequired,categories:plannerCategories});
+      if(navigator.share){
+        try {await navigator.share({title:"BahnConnections – Reiseplanung",url});setShareMessage("Link geteilt.");return;}
+        catch(error){if((error as Error)?.name==="AbortError")return;}
+      }
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);setShareMessage("Reiseplanungs-Link kopiert.");return;}
+      setShareMessage(`Link: ${url}`);
+    } catch {setShareMessage("Teilen nicht möglich. Bitte Start, Ziel und Zeitpunkt prüfen.");}
+  }
+
   function resetMap() {
     plannerRequestRef.current?.abort(); walkRequestRef.current?.abort(); pendingWalkTargetRef.current = null;
     setPlannerState("idle"); setJourneyEndpoints(null); setJourneyOptionLimit(8);
@@ -1050,7 +1084,7 @@ export default function Home() {
     setPlannerCategories(["fern", "regional", "sbahn", "ubahn", "tram"]);
     setStartId("berlin"); setStartSearch("Berlin Hbf");
     setTargetId("muenchen"); setTargetSearch("München Hbf");
-    setRouteSaveMessage("");
+    setRouteSaveMessage(""); setShareMessage("");
     setMobileSheetHeight(null); setStationPanel("live"); setSidebarCollapsed(false);
     setActiveView("map");
     setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
@@ -1215,6 +1249,7 @@ export default function Home() {
             target:{ value:targetSearch, onChange:(value) => { invalidatePlanner(); setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             departure:journeyDeparture, onDeparture:(value) => { invalidatePlanner(); setJourneyDeparture(value); },
             onNow:() => { invalidatePlanner(); setArriveBy(false); setJourneyDeparture(localDateTimeValue(new Date())); },
+            onShare:()=>{void shareCurrentPlanner();}, shareMessage,
             onSwap:() => { invalidatePlanner(); setStartId(targetId); setStartSearch(targetSearch); setTargetId(startId); setTargetSearch(startSearch); setJourneyMessage(""); setPlannerState("idle"); },
             categories:plannerCategories, onCategory:togglePlannerCategory,
             options:{ arriveBy, maxChanges, transferMinutes, wheelchair:wheelchairRouting, bike:bikeRequired },
