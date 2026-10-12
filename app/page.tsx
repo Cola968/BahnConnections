@@ -439,8 +439,8 @@ export default function Home() {
     if(!parsed)return;
     const from=stationById.get(parsed.from),to=stationById.get(parsed.to);
     if(!from||!to)return;
-    plannerLinkAppliedRef.current=true;
     const timer=window.setTimeout(()=>{
+      plannerLinkAppliedRef.current=true;
       setStartId(from.id);setStartSearch(stationDisplayName(from.name));
       setTargetId(to.id);setTargetSearch(stationDisplayName(to.name));
       setJourneyDeparture(parsed.departure);setArriveBy(parsed.arriveBy);
