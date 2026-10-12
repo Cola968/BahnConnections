@@ -5,7 +5,7 @@ import { readPreferenceIds } from "./local-preferences";
 import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
-import { boardDisplayActual,boardEventTime,boardPredictionFresh } from "./board-time";
+import { boardDisplayActual,boardDisplayPlatform,boardEventTime,boardPredictionFresh } from "./board-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { BoardToolbar } from "./board-toolbar";
 import { UiIcon } from "./ui-icon";
@@ -368,7 +368,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     return()=>{clearTimeout(reset);poller.dispose();};
   },[mode,refreshToken,station]);
 
-  const platformOptions = useMemo(() => [...new Set(entries.map((entry) => entry.platform ?? entry.plannedPlatform).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, "de", { numeric:true })), [entries]);
+  const platformOptions = useMemo(() => [...new Set(entries.map((entry) => boardDisplayPlatform(entry,boardLive) ?? entry.plannedPlatform).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, "de", { numeric:true })), [entries,boardLive]);
   const productCounts = useMemo(() => ({
     fern: entries.filter((entry) => ["fern", "fern-express"].includes(entry.line?.product ?? "")).length,
     regional: entries.filter((entry) => entry.line?.product === "regional").length,
@@ -391,7 +391,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if(delayFilter==="ontime"&&(entry.canceled||delay===null||delay<0||delay>4))return false;
       if(delayFilter==="delayed"&&(entry.canceled||delay===null||delay<5))return false;
       if (delayFilter === "canceled" && !entry.canceled) return false;
-      const platform = entry.platform ?? entry.plannedPlatform ?? "";
+      const platform = boardDisplayPlatform(entry,boardLive) ?? entry.plannedPlatform ?? "";
       if (platformFilter !== "all" && platform !== platformFilter) return false;
       if (normalisedQuery && ![entry.line?.name, entry.direction, entry.provenance, platform].filter(Boolean).join(" ").toLocaleLowerCase("de").includes(normalisedQuery)) return false;
       const eventTime = boardEventTime(entry,boardLive);
@@ -400,7 +400,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       const pinnedDifference = Number(pinned.includes(entryKey(b))) - Number(pinned.includes(entryKey(a)));
       if (pinnedDifference) return pinnedDifference;
       if (sortMode === "delay") return delayMinutes(b,boardLive) - delayMinutes(a,boardLive);
-      if (sortMode === "platform") return String(a.platform ?? a.plannedPlatform ?? "").localeCompare(String(b.platform ?? b.plannedPlatform ?? ""), "de", { numeric: true });
+      if (sortMode === "platform") return String(boardDisplayPlatform(a,boardLive) ?? a.plannedPlatform ?? "").localeCompare(String(boardDisplayPlatform(b,boardLive) ?? b.plannedPlatform ?? ""), "de", { numeric: true });
       if (sortMode === "product") return String(a.line?.name ?? "").localeCompare(String(b.line?.name ?? ""), "de", { numeric: true });
       return (boardEventTime(a,boardLive)??Number.POSITIVE_INFINITY)-(boardEventTime(b,boardLive)??Number.POSITIVE_INFINITY);
     });
@@ -590,7 +590,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
               const key = entryKey(entry);
               const rowOpen = expandedRows.includes(key);
               const brand = brandFor(entry);
-              const forecast = occupancyForecast(entry.when ?? entry.plannedWhen, entry.line?.name);
+              const forecast = occupancyForecast(boardDisplayActual(entry,boardLive) ?? entry.plannedWhen, entry.line?.name);
+               const shownPlatform = boardDisplayPlatform(entry,boardLive);
               const detail = tripDetails[key];
               const detailState = tripDetailState[key];
               const severity = presentation.kind === "cancelled" ? "cancel" : presentation.severe ? "severe" : presentation.kind;
@@ -602,11 +603,11 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                     <span className="board-service"><span className={`service-logo ${brand.className}`} style={serviceBadgeStyle(brand.className === "ice" || brand.className === "ic" || brand.className === "ec" ? "fern" : brand.className === "sbahn" ? "sbahn" : brand.className === "ubahn" ? "ubahn" : brand.className === "tram" ? "tram" : "regional", entry.line?.color, entry.line?.textColor, entry.line?.name, `${station.state ?? ""} ${entry.provenance ?? ""} ${entry.direction ?? ""}`)}>{brand.label}</span>{brand.number ? <b>{brand.number}</b> : null}</span>
                     <span className="board-time"><RealtimeTime scheduled={entry.plannedWhen} actual={boardDisplayActual(entry,boardLive)} realtime={boardLive&&entry.realtime} cancelled={entry.canceled} cancellationLabel={entry.cancellationScope === "stop" ? "Halt entfällt" : "Fahrt entfällt"} compact /></span>
                     <span className="board-destination" title={destination}><b>{destination}</b>{!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null}</span>
-                    <span className="board-platform">{/^\d/.test(entry.platform ?? entry.plannedPlatform ?? "") && <span className="board-platform-label" aria-hidden="true">Gl. </span>}<RealtimePlatform scheduled={entry.plannedPlatform} actual={entry.platform} compact /></span>
+                    <span className="board-platform">{/^\d/.test(shownPlatform ?? entry.plannedPlatform ?? "") && <span className="board-platform-label" aria-hidden="true">Gl. </span>}<RealtimePlatform scheduled={entry.plannedPlatform} actual={shownPlatform} compact /></span>
                   </button>
                   {rowOpen && <div className="board-row-detail">
                     <div className="trip-detail-summary"><div>{entry.canceled ? <b>Fahrt entfällt</b> : null}{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>{alert}</small>)}</div><div className={`occupancy-forecast level-${forecast.level}`}><b>Auslastung {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
-                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; const stopName=compactStationLabel(stop.name) ?? stop.name; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stopName}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={stop.track} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={boardLive&&stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
+                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; const stopName=compactStationLabel(stop.name) ?? stop.name; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stopName}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={boardDisplayPlatform({platform:stop.track,plannedPlatform:stop.scheduledTrack,realtime:stop.realtime},boardLive)} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={boardLive&&stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
                   </div>}
                 </article>
               );

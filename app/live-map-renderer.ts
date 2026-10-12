@@ -5,7 +5,7 @@ import { realtimeTooltip } from './realtime-tooltip';
 import { headingDegrees } from './train-inspector-data';
 import { railDistanceKm } from './rail-geometry';
 
-export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;selectedId?:string|null;appearance?:string};
+export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;selectedId?:string|null;radarStatus?:'loading'|'ready'|'stale'|'error';radarUpdatedAtMs?:number|null;appearance?:string};
 type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
 type Desired={id:string;position:[number,number];trip:LiveTrip|null;members:LiveTrip[]};
 

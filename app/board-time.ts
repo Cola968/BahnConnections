@@ -28,3 +28,9 @@ export function boardDisplayActual(entry:BoardTimeInput,fresh:boolean):string|un
   if(!entry.realtime&&instant(entry.when)!==null)return entry.when??undefined;
   return undefined;
 }
+
+/** Never keep a realtime platform change labeled as current after its source expires. */
+export function boardDisplayPlatform(entry:{platform?:string|null;plannedPlatform?:string|null;realtime?:boolean},fresh:boolean):string|undefined {
+  if(fresh||!entry.realtime)return entry.platform??undefined;
+  return undefined;
+}
