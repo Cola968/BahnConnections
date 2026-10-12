@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {extractStationNotices,filterStationNotices,noticeCategoryCounts} from "../app/station-disruptions-data.ts";
+import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds} from "../app/station-disruptions-data.ts";
 const alerts=[
  {tripId:"r1",displayName:"RE1",place:{departure:"2026-10-12T17:00:00Z"},alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
  {tripId:"r2",displayName:"RE2",alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
@@ -21,6 +21,22 @@ assert.equal(filterStationNotices(notices,"cancellation","").length,1);
 assert.equal(filterStationNotices(notices,"incident","signal").length,1);
 assert.equal(filterStationNotices(notices,"all","Keine passende Störung").length,0);
 assert.equal(filterStationNotices(notices,"all","  ").length,3,"Blank search must not hide reports");
+const complete=combineStationNoticeFeeds([
+ {status:"fulfilled",value:{stopTimes:alerts.slice(0,2),warnings:[]}},
+ {status:"fulfilled",value:{stopTimes:alerts.slice(2),warnings:[]}}
+]);
+assert.equal(complete.entries.length,4,"Departure and arrival notice sources must be combined");
+assert.equal(complete.partial,false);
+assert.equal(extractStationNotices(complete.entries).length,3,"Duplicate alerts must still be grouped across both feeds");
+const half=combineStationNoticeFeeds([
+ {status:"fulfilled",value:{stopTimes:alerts.slice(0,2),warnings:["Unvollständig"]}},
+ {status:"rejected",reason:new Error("Arrival service timed out")}
+]);
+assert.equal(half.entries.length,2);
+assert.equal(half.partial,true,"Partial source failure must be disclosed");
+assert.equal(half.successful,1);
+assert.equal(combineStationNoticeFeeds([{status:"rejected",reason:"Offline"}]).successful,0);
+
 
 const malformedNotices=extractStationNotices([{tripId:"faulty",displayName:"S7",alerts:[
   null,{headerText:{translation:"wrong"}},{headerText:{translation:[null, {text:123}, {text:" Signalstörung "}]}},
@@ -36,6 +52,10 @@ assert.match(incidentPage,/placeholder="Linie, Störung oder Ziel suchen"/,"Inci
 assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters must actually change the visible incidents");
 assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
 assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
+assert.match(incidentPage,/const kinds=\["departure","arrival"\] as const/,"Incident view must include arrivals, not departures only");
+assert.match(incidentPage,/Promise\.allSettled\(kinds\.map/,"One missing feed must not lose all incidents");
+assert.match(incidentPage,/combineStationNoticeFeeds\(results\)/,"Partial notices require an explicit, testable merge");
+
 assert.match(incidentPage,/Letzte erfolgreiche Abfrage/,"Stale last-known reports must disclose their source freshness");
 
 assert.match(filter,/board-filter-apply/);
