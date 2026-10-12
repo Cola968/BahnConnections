@@ -960,6 +960,7 @@ export default function Home() {
   }
 
   function toggleLiveCategory(category: LiveTrainCategory) {
+    setLiveVisible(true);setLiveView("trains");
     setLiveCategories((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category]);
   }
 
@@ -1239,15 +1240,15 @@ export default function Home() {
           {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – Zugpositionen ausgeblendet" : "Radar derzeit nicht erreichbar"}</p>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached map-filters-v57" id="map-view-menu" role="dialog" aria-label="Kartenfilter">
-            <div className="map-menu-dismiss"><div><strong>Kartenansicht</strong><small>{liveVisible ? visibleLiveTrips.length+" Züge in der Auswahl" : "Zugradar deaktiviert"}</small></div><button type="button" className="map-filter-close" onClick={()=>setLiveFiltersOpen(false)} aria-label="Kartenfilter schließen"><UiIcon name="close"/></button></div>
-            <label className="map-filter-master"><span><b>Live-Züge anzeigen</b><small>Positionen sind geschätzt</small></span><input type="checkbox" checked={liveVisible} onChange={event=>{setLiveVisible(event.target.checked);if(event.target.checked)setLiveView("trains");}}/></label>
-            <div className="map-filter-section"><div className="map-filter-label">Zugarten</div><div className="map-filter-grid">
+            <div className="map-menu-dismiss"><div><strong>{language==="en"?"Map filters":"Kartenansicht"}</strong><small>{liveVisible ? visibleLiveTrips.length+(language==="en"?" trains selected":" Züge in der Auswahl") : language==="en"?"Train radar off":"Zugradar deaktiviert"}</small></div><button type="button" className="map-filter-close" onClick={()=>setLiveFiltersOpen(false)} aria-label="Kartenfilter schließen"><UiIcon name="close"/></button></div>
+            <label className="map-filter-master"><span><b>{language==="en"?"Show live trains":"Live-Züge anzeigen"}</b><small>{language==="en"?"Estimated positions":"Positionen sind geschätzt"}</small></span><input type="checkbox" checked={liveVisible} onChange={event=>{setLiveVisible(event.target.checked);if(event.target.checked)setLiveView("trains");}}/></label>
+            <div className="map-filter-section"><div className="map-filter-label">{language==="en"?"Train types":"Zugarten"}</div><div className="map-filter-grid">
               {([["fern","ICE / IC"],["regional","RE / RB"],["sbahn","S-Bahn"],["ubahn","U-Bahn"],["tram","Tram"]] as const).map(([id,label])=><button type="button" key={id} className={liveCategories.includes(id)?"active":""} aria-pressed={liveCategories.includes(id)} onClick={()=>toggleLiveCategory(id)}>{label}{liveCategories.includes(id)&&<UiIcon name="check"/>}</button>)}
             </div></div>
-            <div className="map-filter-section"><div className="map-filter-label">Pünktlichkeit</div><div className="map-filter-status" role="group" aria-label="Pünktlichkeit">
-              {([["all","Alle"],["delayed","Verspätet"],["ontime","Pünktlich"]] as const).map(([id,label])=><button type="button" key={id} className={liveStatusFilter===id?"active":""} aria-pressed={liveStatusFilter===id} onClick={()=>setLiveStatusFilter(id)}>{label}</button>)}
+            <div className="map-filter-section"><div className="map-filter-label">{language==="en"?"Punctuality":"Pünktlichkeit"}</div><div className="map-filter-status" role="group" aria-label="Pünktlichkeit">
+              {([["all",language==="en"?"All":"Alle"],["delayed",language==="en"?"Delayed":"Verspätet"],["ontime",language==="en"?"On time":"Pünktlich"]] as const).map(([id,label])=><button type="button" key={id} className={liveStatusFilter===id?"active":""} aria-pressed={liveStatusFilter===id} onClick={()=>{setLiveVisible(true);setLiveView("trains");setLiveStatusFilter(id);}}>{label}</button>)}
             </div></div>
-            <div className="map-filter-footer"><button type="button" onClick={()=>{setLiveVisible(true);setLiveView("trains");setLiveCategories(["fern","regional","sbahn","ubahn","tram"]);setLiveStatusFilter("all");}}>Zurücksetzen</button><button type="button" onClick={()=>setLiveFiltersOpen(false)}>Karte anzeigen <UiIcon name="arrow"/></button></div>
+            <div className="map-filter-footer"><button type="button" onClick={()=>{setLiveVisible(true);setLiveView("trains");setLiveCategories(["fern","regional","sbahn","ubahn","tram"]);setLiveStatusFilter("all");}}>{language==="en"?"Reset":"Zurücksetzen"}</button><button type="button" onClick={()=>setLiveFiltersOpen(false)}>{language==="en"?"Show map":"Karte anzeigen"} <UiIcon name="arrow"/></button></div>
           </div>}
           {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
