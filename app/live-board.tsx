@@ -388,7 +388,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if (productFilter === "tram" && productName !== "tram") return false;
       const delayState=deriveRealtimePresentation({scheduled:entry.plannedWhen,actual:boardDisplayActual(entry,boardLive),realtime:entry.realtime&&boardLive,cancelled:entry.canceled});
       const delay=delayState.delayMinutes;
-      if(delayFilter==="ontime"&&(entry.canceled||delay===null||delay<0||delay>4))return false;
+      if(delayFilter==="ontime"&&(entry.canceled||delay!==0))return false;
       if(delayFilter==="delayed"&&(entry.canceled||delay===null||delay<5))return false;
       if (delayFilter === "canceled" && !entry.canceled) return false;
       const platform = boardDisplayPlatform(entry,boardLive) ?? entry.plannedPlatform ?? "";
