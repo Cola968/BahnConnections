@@ -1,3 +1,13 @@
+# V55.1 · Lesbare Linien, vollständiger Reset und ehrliche Prognosen
+
+- Allgemeine Suche verdeckt bei kurzen mobilen Fenstern keine geöffneten Panel-Köpfe mehr.
+- Linien erhalten feste Symbol-/Text-/Zeitspalten; Fernverkehrs-Liniennummern bleiben sichtbar.
+- Schließen setzt Reisezeit, Verkehrsmittel, Ankunftsmodus und Reiseoptionen zurück.
+- „Jetzt abfahren“ setzt die Reisezeit auf die aktuelle Berliner Ortszeit und aktiviert Abfahrt.
+- Zugradar zeigt eine Modellgeschwindigkeit; abgelaufene/veraltete Ankunftsprognosen bestätigen keine Ankunft.
+- Datum erhält eine vollständige Zeile; Countdown-Grenzfälle werden in CI geprüft.
+- Ausführlicher Reifebericht mit getesteten Grenzen und offenen Aufgaben unter docs/quality/APP-MATURITY-V55.md.
+
 # V55.0 · Zugradar, Ankunft und Datenfrische
 
 - Kompaktes Zugradar-Fenster mit Zug, Strecke, Fahrplanankunft, erwarteter Ankunft, Prognoseabweichung und direkter Kartenverfolgung.

@@ -22,6 +22,7 @@ import "./styles/v53-desktop-usability.css";
 import "./styles/v54-mobile-refine.css";
 import "./styles/v54-train-inspector.css";
 import "./styles/v55-train-cockpit.css";
+import "./styles/app-maturity.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
