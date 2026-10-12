@@ -1,3 +1,13 @@
+# V56.1 · Zugmarker, Kartenfilter und mobile Bedienung
+
+- Größere Touchbereiche für Zugmarker; einzelne Zuggruppen öffnen direkt die Fahrt. Mobile Zugdetails sind sofort ausgeklappt.
+- Direkte Zugarten- und Statusfilter mit Trefferzahl, Sichtbarkeitsschalter und Zurücksetzen.
+- Störungsmeldungen mit gemeldeter Linie, verfügbarer Fahrtrichtung und Fahrtstrecke; klarere Linienkennungen.
+- Standortauswahl am Startbahnhof und Wegdaten direkt am Bahnhof.
+- Gespeicherte Sprachwahl Deutsch/Englisch für Hauptnavigation und Planer (Beta); dezente Animationen mit Rücksicht auf reduzierte Bewegung.
+- App-Version, Update-Datei, Paket und Service-Worker-Cache auf V56.1 abgestimmt.
+- Reale Android-/iOS-Touch- und PWA-Geräteprüfungen bleiben offen.
+
 # V56.0 · Reife-Beta: zuverlässiger Zugradar, mobile Bedienung, teilbare Fahrten
 
 - **Kalender:** Reise direkt als vorausgefüllten Termin in Google Kalender oder Outlook öffnen; ICS-Import für Apple und andere Kalender. Im Kalender speichern, mit Fahrplanzeiten und Hinweis auf spätere Reiseänderungen. Textdownload und Kopieren entfernt. Ausgefallene Abschnitte sperren den Kalenderimport.
@@ -19,7 +29,7 @@
 - Robustere externe Aufrufe: Timeouts, Abbruch, Eingabegrenzen und unabhängige Teilantworten für Stationen, Linien, Verbindungen, Fahrtverläufe und Fußwege.
 - Mobile Oberfläche überarbeitet: Kontrast und große Schrift, kompakte Fahrtzeilen, Tastaturfokus, reduzierte Bewegung und verständliche Fehlerzustände.
 - Neue Regressionstests für Ankunftsgrenzen, Deep Links, Request-Größen und Datenidentität im GitHub-Quality-Workflow.
-- **Noch kein Produktionsrelease**: V56 muss vor einer Auslieferung vollständige CI- und reale Android-/PWA-Tests bestehen.
+- V56.0 wurde nach erfolgreicher CI auf Render veröffentlicht. Reale Android-/PWA-Geräteprüfungen bleiben offen.
 
 # V55.0 · Zugradar, Ankunft und Datenfrische
 

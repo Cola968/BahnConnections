@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V56.0",date:"12. Oktober 2026 · Beta",current:true,lead:"Weniger Reibung, mehr Verlässlichkeit.",tags:["Bedienung","Daten","Reiseplanung"],changes:[
+ {version:"V56.1",date:"12. Oktober 2026 · Beta",current:true,lead:"Züge leichter antippen, Meldungen klarer lesen.",tags:["Zugradar","Karte","Mobile"],changes:[
+  ["Zugmarker öffnen","Größere Touchbereiche und einzelne Zuggruppen öffnen die Fahrt direkt. Mobile Zugdetails sind sofort ausgeklappt."],
+  ["Kartenfilter","Zugarten und Status direkt filtern, Trefferzahl sehen und die Auswahl zurücksetzen."],
+  ["Klarere Störungsmeldungen","Gemeldete Linie, Fahrtrichtung und verfügbare Fahrtstrecke bei Störungen anzeigen."],
+  ["Mobile Reiseplanung","Standortauswahl am Startbahnhof und Wegdaten direkt am Bahnhof statt in einer überlagernden Karte."],
+  ["Sprache und Bewegung","Deutsch oder Englisch für Hauptnavigation und Planer wählen. Dezente Animationen berücksichtigen reduzierte Bewegung."]
+ ]},
+ {version:"V56.0",date:"12. Oktober 2026 · Beta",current:false,lead:"Weniger Reibung, mehr Verlässlichkeit.",tags:["Bedienung","Daten","Reiseplanung"],changes:[
   ["Reise im Kalender","Google Kalender und Outlook mit vorausgefüllter Reise öffnen oder in andere Kalender importieren. Im Kalender mit Speichern bestätigen."],
   ["Besser vergleichen","Nach Ankunft, Dauer, Umstiegen und Fußweg sortieren. Bei Nachtfahrten bleibt der Folgetag erkennbar."],
   ["Störungen & Baustellen","Bahnhofsbezogene Meldungen direkt in einem eigenen Reiter. Meldungen und Quellenstatus werden getrennt ausgewiesen."],
