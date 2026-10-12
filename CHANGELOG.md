@@ -1,5 +1,11 @@
 # V56.0 · Reife-Beta: zuverlässiger Zugradar, mobile Bedienung, teilbare Fahrten
 
+- **Störungen & Baustellen:** Neuer Bahnhof-Reiter und Schnelleinstieg über „Mehr“; Meldungen aus Transitous/MOTIS, Gruppierung identischer Hinweise, Trennung von Baustellen/Ausfällen/Betriebshinweisen, mit Quellenbegrenzung und Fehlerzuständen. Keine erfundenen Netzinformationen.
+- **Tafelfilter:** Kompakte Suchzeile mit korrekter Icon-Ausrichtung, Verkehrsmittel-Chips mit Zählung, direkte Statusfilter, passende Gliederung und Ergebnisknopf. Schließen/Zurücksetzen bleiben erreichbar.
+- **Changelog:** Neue lesbare Seite `/changelog` mit Veröffentlichungsstatus je Version und klarer Trennung von Entwicklungsbranch und öffentlicher Version.
+- **Profil & Einstellungen:** Bildvorschau beim Auswählen, Avatar im Header, vier getrennte Bereiche (Profil, Design, App, Plus), Datenexport als lokale JSON-Datei, explizite Datenerklärungen.
+- **Installation:** Alte Werbeseite unter `/install` durch eine kurze integrierte Installation-/Update-Ansicht ersetzt; der für PWA-Updates wichtige Pfad bleibt bestehen.
+
 - Die bestätigten V55.1-Verbesserungen sind integriert: Bei kurzer Höhe keine überlappende Header-Suche; Desktop-Linien mit lesbaren Spalten und sichtbaren Fernverkehrskennungen.
 - Vollständiges Zurücksetzen der Planeroptionen beim Schließen; „Jetzt abfahren“ setzt den aktuellen Zeitpunkt, ohne aktive Filter zu verlieren.
 - Nur eine als Modell deklarierte Zuggeschwindigkeit. Abgelaufene Soll-/Prognosezeit ist kein Nachweis einer Ankunft; der Countdown bleibt bei fehlender aktueller Datenbasis leer.
