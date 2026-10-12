@@ -353,7 +353,7 @@ export default function Home() {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
     setSelectedLiveTrip(trip); setTrackedTripId(null); setTrackedRadarAnchor(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
-    setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
+    setMobileSheetState("expanded");
   }, []);
   const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
