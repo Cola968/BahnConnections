@@ -26,6 +26,7 @@
     "audit:v56": "node scripts/v56-regression-audit.mjs",
     "audit:arrival": "node scripts/arrival-countdown-audit.mjs",
     "audit:links": "node scripts/planner-link-audit.mjs",
+    "audit:input": "node scripts/api-input-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
