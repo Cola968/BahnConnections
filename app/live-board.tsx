@@ -323,10 +323,11 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const previewSignatureRef = useRef("");
   const rowRequestRef = useRef<AbortController | null>(null);
   useEffect(() => {
+    // Switching stations or direction must invalidate pending detail requests.
     const controller = new AbortController();
     rowRequestRef.current = controller;
-    return () => controller.abort();
-  }, []);
+    return () => { controller.abort(); if(rowRequestRef.current===controller)rowRequestRef.current=null; };
+  }, [station.id,mode]);
   const endpointSignatureRef = useRef("");
 
   useEffect(() => {
@@ -348,7 +349,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     let hasRows=boardHasRows.current;
     const kind:BoardKind=mode==="arrivals"?"arrival":"departure";
     const scope=`${station.id}:${kind}`;
-    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
+    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setTripDetails({});setTripDetailState({});endpointSignatureRef.current="";previewSignatureRef.current="";setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
     if(boardScope.current!==scope){hasRows=false;boardHasRows.current=false;boardScope.current=scope;}
     const poller=new VisibilityPoller(async signal=>{
       try {
@@ -509,7 +510,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     const key = entryKey(entry);
     setPinned((current) => {
       const next = current.includes(key) ? current.filter((item) => item !== key) : [key, ...current].slice(0, 30);
-      writePreference(localStorage,"bahnconnections-pinned-trips",JSON.stringify(next));
+      try { writePreference(localStorage,"bahnconnections-pinned-trips",JSON.stringify(next)); } catch { /* Storage can be unavailable in restricted contexts. */ }
       return next;
     });
   }
