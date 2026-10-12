@@ -34,6 +34,7 @@ import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
 import { StationMapRenderer } from "./station-map-renderer";
 import { StationLines, type StationLineSummary } from "./station-lines";
+import { StationDisruptions } from "./station-disruptions";
 import { compactStationLabel, serviceBadgeStyle, serviceColors } from "./transit-style";
 import {
   estimateMinutes,
@@ -188,7 +189,7 @@ export default function Home() {
   const [bikeRequired, setBikeRequired] = useState(false);
   const [journeyMessage, setJourneyMessage] = useState("");
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
-  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats">("live");
+  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
   const [helpOpen, setHelpOpen] = useState(false);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
@@ -1231,7 +1232,9 @@ export default function Home() {
             
             <div className="simple-more-list">
               <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
-              <a href="/install"><UiIcon name="layers"/><span><b>App & Updates</b><small>Installieren, Version und Aktualisierung</small></span><UiIcon name="arrow"/></a>
+              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
+              <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
+              <a href="/changelog"><UiIcon name="info"/><span><b>Was ist neu?</b><small>Änderungen der aktuellen Beta</small></span><UiIcon name="arrow"/></a>
               <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
@@ -1264,6 +1267,7 @@ export default function Home() {
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}><LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} /></div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
+            {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
             {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
             <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
