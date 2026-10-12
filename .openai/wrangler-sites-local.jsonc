@@ -1,0 +1,7 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Local ChatGPT Sites environment only. Vite config adds its RSC/SSR
+  // entry and optional Sites-specific D1/R2 placeholder bindings.
+  "name": "sites-project",
+  "compatibility_date": "2026-10-12"
+}
