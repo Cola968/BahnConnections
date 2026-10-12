@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { PanelTools, type MobileSheetState, type PanelControls } from "./panel-tools";
 import { RealtimeTime } from "./realtime-time";
 import { trainArrivalView } from "./train-arrival";
+import { remainingArrivalMinutes } from "./arrival-countdown";
 import { TrainArrivalPanel } from "./train-arrival-panel";
-import { activeEstimatedPosition, liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
+import { activeEstimatedPosition, liveTripProgress, pointOnTrip, realtimeModelSpeed, type LiveTrip } from "./live-trains";
 import { compactStationLabel } from "./transit-style";
 import { cardinalDirection, headingDegrees, nextTrainStopIndex, normaliseTrainStops, sourceFreshness, type TrainStop } from "./train-inspector-data";
 import { UiIcon } from "./ui-icon";
@@ -75,7 +76,6 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
 
   const progress=liveTripProgress(trip,now);
   const position=activeEstimatedPosition(trip,now);
-  const speed=segmentAverageSpeed(trip);
   const future=pointOnTrip(trip,Math.min(1,progress+.006));
   const past=pointOnTrip(trip,Math.max(0,progress-.006));
   const heading=headingDegrees(past,future);
@@ -87,8 +87,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const modelSpeed = sourceCurrent ? realtimeModelSpeed(trip,now) : null;
   const canStartTracking = sourceCurrent && activeEstimatedPosition(trip,now)!==null;
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
-  const remaining=validDate(arrival.expected??arrival.planned??undefined);
-  const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
+  const etaMinutes=remainingArrivalMinutes(arrival.expected??arrival.planned,now,sourceCurrent);
   const nextIndex=detailFresh?nextTrainStopIndex(stops,now):-1;
   const upcoming=nextIndex>=0?stops[nextIndex]:null;
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
@@ -129,8 +128,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
       </div>
       <div className="train-hero-stats">
-        <div className="train-metric"><small>Ø Abschnitt</small><strong>{speed===null?"—":speed} <em>km/h</em></strong><span>{speed===null?"Keine Distanzangabe":"Aus Distanz und Fahrzeit berechnet"}</span></div>
-        <div className="train-metric"><small>Bis zum nächsten Halt</small><strong>{etaMinutes===null?"—":etaMinutes===0?"0":etaMinutes} <em>{etaMinutes===null?"":"Min."}</em></strong><span>{etaMinutes===null?"Keine Ankunftszeit":etaMinutes===0?"Ankunftszeit erreicht":arrival.isFreshPrediction?"Laut aktueller Prognose":"Nach Fahrplan"}</span></div>
+        <div className="train-metric"><small>Bis zum nächsten Halt</small><strong>{etaMinutes===null?"—":etaMinutes} <em>{etaMinutes===null?"":"Min."}</em></strong><span>{etaMinutes===null?"Keine aktuelle Restzeit":etaMinutes===0?"Prognosezeit erreicht":arrival.isFreshPrediction?"Laut aktueller Prognose":"Nach Fahrplan"}</span></div>
         <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${arrival.tone}`}>{arrival.delayMinutes===null?"—":arrival.delayMinutes>0?`+${arrival.delayMinutes} Min.`:arrival.delayMinutes<0?`${arrival.delayMinutes} Min.`:"0 Min."}</strong><span>{arrival.delayMinutes===null?"Keine aktuelle Verspätungsprognose":arrival.delayMinutes===0?"Pünktlich laut Prognose":arrival.delayMinutes<0?"Früher als geplant":"Aktuelle Ankunftsprognose"}</span></div>
       </div>
 
