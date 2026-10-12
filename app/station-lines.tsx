@@ -83,6 +83,9 @@ function lineBadge(line: StationLine) {
   }
   const match=line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)\s*(\d{1,5}[A-Z]?)(?:\b|$)/i);
   if(match)return `${match[1].toUpperCase()} ${match[2]}`;
+  const prefix=line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)\b/i)?.[0]?.toUpperCase();
+  const number=line.destinations.find(destination=>/^\d{1,5}[A-Z]?$/.test(destination.trim()));
+  if(prefix&&number)return `${prefix} ${number.trim()}`;
   return line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)/i)?.[0]?.toUpperCase() ?? (line.mode === "HIGHSPEED_RAIL" ? "ICE" : "FV");
 }
 
