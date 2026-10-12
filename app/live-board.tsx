@@ -557,29 +557,22 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
 
       {status === "ready" && (!boardLive || verificationStatus === "different") && <p className="board-quality-notice" role="status">{!boardLive ? "Echtzeitdaten veraltet · Fahrplanzeiten angezeigt" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
 
-      {filtersOpen && <div className="board-filter-panel" id="board-filters" onKeyDown={event => { if(event.key === "Escape") {event.stopPropagation();setFiltersOpen(false);event.currentTarget.closest('.live-board')?.querySelector<HTMLButtonElement>('.board-filter-toggle')?.focus();} }}>
-        <div className="board-filter-heading"><b>Tafel filtern</b><button type="button" className="board-filter-close" onClick={() => {setFiltersOpen(false);document.querySelector<HTMLButtonElement>('.board-filter-toggle')?.focus();}} aria-label="Filter schließen"><UiIcon name="close" /></button></div>
-        <div className="board-product-tabs" aria-label="Verkehrsmittel">
-          <button aria-pressed={productFilter === "fern"} className={productFilter === "fern" ? "active" : ""} onClick={() => setProductFilter("fern")}>Fern</button>
-          {productCounts.regional > 0 && <button aria-pressed={productFilter === "regional"} className={productFilter === "regional" ? "active" : ""} onClick={() => setProductFilter("regional")}>Regio</button>}
-          {productCounts.sbahn > 0 && <button aria-pressed={productFilter === "sbahn"} className={productFilter === "sbahn" ? "active" : ""} onClick={() => setProductFilter("sbahn")}>S-Bahn</button>}
-          {productCounts.tram > 0 && <button aria-pressed={productFilter === "tram"} className={productFilter === "tram" ? "active" : ""} onClick={() => setProductFilter("tram")}>Straßenbahn</button>}
-          {productCounts.ubahn > 0 && <button aria-pressed={productFilter === "ubahn"} className={productFilter === "ubahn" ? "active" : ""} onClick={() => setProductFilter("ubahn")}>U-Bahn</button>}
-          <button aria-pressed={productFilter === "all"} className={productFilter === "all" ? "active" : ""} onClick={() => setProductFilter("all")}>Alle</button>
-        </div>
-
-        <div className="board-search-row">
-          <label className="board-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis" aria-label="Innerhalb der Bahnhofstafel suchen" />{query && <button onClick={() => setQuery("")} aria-label="Tafelsuche leeren">×</button>}</label>
-        </div>
-
+      {filtersOpen && <div className="board-filter-panel" id="board-filters" onKeyDown={event=>{if(event.key==="Escape"){event.stopPropagation();setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}}>
+        <div className="board-filter-heading"><div><b>Abfahrten filtern</b><small>{visibleEntries.length} von {entries.length} Fahrten · {mode==="arrivals"?"Ankunft":"Abfahrt"}</small></div><button type="button" className="board-filter-close" onClick={()=>{setFiltersOpen(false);document.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}} aria-label="Filter schließen"><UiIcon name="close"/></button></div>
+        <div className="board-search-row"><label className="board-search"><UiIcon name="search"/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis suchen" aria-label="Innerhalb der Bahnhofstafel suchen"/>{query&&<button type="button" onClick={()=>setQuery("")} aria-label="Suche leeren"><UiIcon name="close"/></button>}</label></div>
+        <div className="board-filter-block"><div className="board-filter-section-title">Verkehrsmittel</div><div className="board-product-tabs" aria-label="Verkehrsmittel">
+          {([["all","Alle",entries.length],["fern","Fernverkehr",productCounts.fern],["regional","Regional",productCounts.regional],["sbahn","S-Bahn",productCounts.sbahn],["ubahn","U-Bahn",productCounts.ubahn],["tram","Tram",productCounts.tram]] as const).map(([id,label,count])=><button type="button" key={id} aria-pressed={productFilter===id} className={productFilter===id?"active":""} onClick={()=>setProductFilter(id)}>{label}<small>{count}</small></button>)}
+        </div></div>
+        <div className="board-filter-block"><div className="board-filter-section-title">Betriebslage</div><div className="board-status-pills" aria-label="Betriebslage">
+          {([["all","Alle"],["ontime","Pünktlich"],["delayed","+5 Min."],["canceled","Ausfälle"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={delayFilter===id} className={delayFilter===id?"active":""} onClick={()=>setDelayFilter(id)}>{label}</button>)}
+        </div></div>
         <div className="board-filter-fields">
-          <label>Status<select value={delayFilter} onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}><option value="all">Alle Lagen</option><option value="ontime">Pünktlich</option><option value="delayed">Ab +5 Min.</option><option value="canceled">Nur Ausfälle</option></select></label>
-          <label>Gleis<select value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select></label>
-          <label>Zeitraum<select value={windowMinutes} onChange={(event) => setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">60 Minuten</option><option value="120">120 Minuten</option><option value="180">180 Minuten</option><option value="240">240 Minuten</option><option value="500">500 Minuten</option></select></label>
-          <label>Sortierung<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}><option value="time">{mode === "arrivals" ? "Ankunftszeit" : "Abfahrtszeit"}</option><option value="delay">Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
+          <label>Gleis<select value={platformFilter} onChange={event=>setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map(platform=><option key={platform} value={platform}>{platform}</option>)}</select></label>
+          <label>Zeitraum<select value={windowMinutes} onChange={event=>setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="180">3 Stunden</option><option value="240">4 Stunden</option><option value="500">Bis zu 8 Std. 20 Min.</option></select></label>
+          <label>Sortierung<select value={sortMode} onChange={event=>setSortMode(event.target.value as SortMode)}><option value="time">{mode==="arrivals"?"Ankunftszeit":"Abfahrtszeit"}</option><option value="delay">Größte Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
-        <div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div>
-        <button type="button" className="board-filter-reset" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Filter zurücksetzen</button>
+        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={()=>{setFiltersOpen(false);document.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
+        <details className="board-filter-extra"><summary>Weitere Tafeloptionen</summary><div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div></details>
       </div>}
 
       <div className="board-table">
