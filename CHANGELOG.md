@@ -1,11 +1,13 @@
-# V55.0 · Zugradar und Geschwindigkeitsmodell
+# V55.0 · Zugradar, Ankunft und Datenfrische
 
-- Beim Antippen eines Zugmarkers öffnet sich ein kompakter Radar-Inspector mit Zugnummer, Strecke, Echtzeitstatus, Modellgeschwindigkeit und direkter Kartenverfolgung.
-- Das Karten-HUD zeigt beim Folgen die aus aktuell gemeldeten Haltezeitprognosen und belegter Geometrie abgeleitete km/h-Schätzung, den Datenstand und einen sofort bedienbaren Beenden-Knopf.
-- Fahrplanmodelle sind von Echtzeitmeldungen getrennt; es werden weder GPS-Fahrzeugpositionen noch gemessene Momentangeschwindigkeiten behauptet.
-- Ausgewählte Züge bleiben auch beim Herauszoomen sichtbar. Abgelaufene Abschnitte werden nicht als aktive Radarposition weitergeführt.
-- Flüssige, begrenzte Marker-/Panelanimationen, aktive Kartenkamera und reduzierte Bewegung als barrierefreie Alternative.
-- PWA-Version und Update-Cache auf V55.0 synchronisiert.
+- Kompaktes Zugradar-Fenster mit Zug, Strecke, Fahrplanankunft, erwarteter Ankunft, Prognoseabweichung und direkter Kartenverfolgung.
+- km/h-Anzeige als aus aktuellen Haltezeitprognosen und gültiger Streckengeometrie abgeleitete **Modellschätzung**, nicht als gemessene GPS- oder Tachogeschwindigkeit. Bei fehlender Datenbasis bleibt sie leer.
+- Kamera folgt dem gewählten Zug; manuelle Kartenbewegung stoppt die Verfolgung. Abgelaufene und ungültige Streckenabschnitte erzeugen keine scheinbar aktuellen Positionen.
+- Fahrtprognosen werden erneut geladen; überalterte Prognosen werden ausdrücklich von Fahrplanzeiten unterschieden.
+- Bahnhofstafel verwendet aktuelle Vorhersagen nur bei ausreichend frischen Daten. Bei fehlgeschlagenem oder veraltetem Abruf werden bekannte Sollzeiten angezeigt und problematische Daten gekennzeichnet.
+- Mobil: kompakter Zug-Inspector, mehr nutzbare Breite, kleinere Standardschrift und einstellbare Schriftgröße; ruhigere Animationen mit Reduced-Motion-Alternative.
+- Chromium-Prüfung erweitert um Zugmarker antippen, Ankunftsvergleich, Modellgeschwindigkeit, Follow-HUD, Stop und Schließen. Vollständige Live- und Echtgerätevalidierung bleibt ein Freigabeschritt.
+- PWA-Version, Update-Pfad und Service-Worker-Cache auf V55.0 synchronisiert.
 
 # V51.0 · Flüssiger Radar & progressive Abfahrten
 
