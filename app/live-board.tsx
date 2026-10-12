@@ -288,7 +288,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
 export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { station: Station; onSummary?: (summary: BoardSummary) => void; onMapTrip?: (trip: BoardMapTrip) => void; onStationTrips?: (trips: BoardMapTrip[]) => void }) {
   const [mode, setMode] = useState<BoardMode>("departures");
   const [productFilter, setProductFilter] = useState<ProductFilter>("all");
-  const [delayFilter, setDelayFilter] = useState<DelayFilter>("all");
+  const [delayFilter, setDelayFilter] = useState<BoardDelayFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("time");
   const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(240);
