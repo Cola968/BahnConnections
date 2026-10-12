@@ -126,3 +126,16 @@ html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!im
   .train-arrival-time>time {font-size:clamp(1.2rem,5.5vw,1.36rem);}
   .train-arrival-footer>small {font-size:.63rem;}
 }
+
+/* The mobile sheet already names the train and section in PanelTools.
+   Show this operational header only once, freeing first-screen space for
+   scheduled/expected times and speed. */
+@media (max-width:1023px) {
+  .app-shell .train-inspector .train-header {padding:0 0 6px;gap:0;}
+  .app-shell .train-inspector .train-header h2,
+  .app-shell .train-inspector .train-header>.train-heading-row>.service-pill,
+  .app-shell .train-inspector .train-header>p {display:none;}
+  .app-shell .train-inspector .train-heading-row {justify-content:flex-start;min-height:24px;}
+  .app-shell .train-inspector .train-source-tag {max-width:100%;padding:4px 8px;font-size:.68rem;}
+  .app-shell .train-inspector .train-cockpit {margin-top:0;}
+}
