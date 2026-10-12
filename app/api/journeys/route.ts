@@ -1,4 +1,5 @@
 import { fetchLiveJourneysDirect, type LiveJourneyRequest, type PlannerCategory } from "../../live-journey";
+import { readLimitedJson, RequestInputError } from "../request-limits";
 
 const ALLOWED_CATEGORIES=new Set<PlannerCategory>(["fern","regional","sbahn","ubahn","tram"]);
 function validStation(value:unknown):value is LiveJourneyRequest["from"] {
@@ -13,7 +14,7 @@ function validBody(value:unknown):value is Omit<LiveJourneyRequest,"signal"> {
   const b=value as Record<string,unknown>;
   return validStation(b.from)&&validStation(b.to)&&typeof b.departure==="string"
     &&b.departure.length<=80&&Number.isFinite(Date.parse(b.departure))
-    &&typeof b.arriveBy==="boolean"
+    &&typeof b.arriveBy==="boolean" &&typeof b.bike==="boolean" &&typeof b.wheelchair==="boolean"
     &&typeof b.maxTransfers==="number"&&Number.isInteger(b.maxTransfers)&&Number(b.maxTransfers)>=0&&Number(b.maxTransfers)<=8
     &&typeof b.minTransferMinutes==="number"&&Number.isInteger(b.minTransferMinutes)&&Number(b.minTransferMinutes)>=0&&Number(b.minTransferMinutes)<=60
     &&Array.isArray(b.categories)&&b.categories.length<=5
@@ -23,13 +24,13 @@ function validBody(value:unknown):value is Omit<LiveJourneyRequest,"signal"> {
 export async function POST(request: Request) {
   const updatedAt = new Date().toISOString();
   try {
-    const body:unknown = await request.json();
+    const body:unknown = await readLimitedJson(request);
     if (!validBody(body)) return Response.json({ journeys:[], source:"Transitous / MOTIS + DB-Gegenprüfung", updatedAt, realtimeStatus:"partial", warnings:["Ungültige Planer-Anfrage"] }, { status:400 });
     const signal=AbortSignal.any([request.signal,AbortSignal.timeout(23_000)]);
     const journeys = await fetchLiveJourneysDirect({...body,signal});
     const warnings = [...new Set(journeys.flatMap((journey) => journey.warnings))];
     return Response.json({ journeys, source:"Transitous / MOTIS + DB-Gegenprüfung", updatedAt, realtimeStatus:journeys.some((journey) => journey.realtimeStatus === "partial") ? "partial" : journeys.some((journey) => journey.realtimeStatus === "live") ? "live" : "schedule", warnings },{headers:{"Cache-Control":"no-store"}});
   } catch (error) {
-    return Response.json({ journeys:[], source:"Transitous / MOTIS + DB-Gegenprüfung", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Verbindungssuche nicht erreichbar"] }, { status:502,headers:{"Cache-Control":"no-store"} });
+    return Response.json({ journeys:[], source:"Transitous / MOTIS + DB-Gegenprüfung", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Verbindungssuche nicht erreichbar"] }, { status:error instanceof RequestInputError ? error.status : 502,headers:{"Cache-Control":"no-store"} });
   }
 }
