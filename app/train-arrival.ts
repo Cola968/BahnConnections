@@ -19,7 +19,15 @@ export type TrainArrivalView = {
   status: string;
   tone: "neutral" | "success" | "warning" | "danger";
   isFreshPrediction: boolean;
+  expectedDayOffset: number | null;
 };
+
+const germanDay = new Intl.DateTimeFormat("en-GB", {timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit"});
+function localDay(instant: string): number {
+  const fields=germanDay.formatToParts(new Date(instant));
+  const part=(type: string)=>Number(fields.find(field=>field.type===type)?.value);
+  return Math.round(Date.UTC(part("year"),part("month")-1,part("day"))/86_400_000);
+}
 
 export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
   const state = deriveRealtimePresentation({
@@ -44,11 +52,15 @@ export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
   const tone = expected && delayMinutes!==null
     ? delayMinutes<=0 ? "success" : delayMinutes<=10 ? "warning" : "danger"
     : "neutral";
+  const expectedDayOffset=planned&&expected?localDay(expected)-localDay(planned):null;
   return {
-    planned, expected,
+    planned,expected,
     plannedLabel:formatRealtimeTime(planned),
-    expectedLabel:expected ? formatRealtimeTime(expected) : "–",
+    // Without live predictions show timetable arrival, explicitly marked
+    // "Nach Fahrplan" in the UI; do not present it as a realtime estimate.
+    expectedLabel:formatRealtimeTime(expected??planned),
     delayMinutes,status,tone,
     isFreshPrediction:Boolean(expected),
+    expectedDayOffset,
   };
 }
