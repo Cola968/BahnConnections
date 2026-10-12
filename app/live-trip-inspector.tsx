@@ -87,7 +87,6 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const modelSpeed = sourceCurrent ? realtimeModelSpeed(trip,now) : null;
   const canStartTracking = sourceCurrent && activeEstimatedPosition(trip,now)!==null;
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
-  const etaMinutes=remainingArrivalMinutes(arrival.expected??arrival.planned,now,sourceCurrent);
   const nextIndex=detailFresh?nextTrainStopIndex(stops,now):-1;
   const upcoming=nextIndex>=0?stops[nextIndex]:null;
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
@@ -95,6 +94,12 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const finalStop=stops.at(-1);
   const showDestination=Boolean(finalStop && !finalStop.cancelled && stationName(finalStop.name)!==to);
   const upcomingArrival=upcoming?trainArrivalView({scheduled:upcoming.scheduledArrival??upcoming.scheduledDeparture,actual:upcoming.arrival??upcoming.departure,realtime:upcoming.realtime,fresh:detailFresh}):null;
+  // A final-destination ETA must never be presented as time to the next stop.
+  const nextEtaMinutes=upcomingArrival?remainingArrivalMinutes(upcomingArrival.expected??upcomingArrival.planned,now,detailFresh):null;
+  const finalEtaMinutes=remainingArrivalMinutes(arrival.expected??arrival.planned,now,sourceCurrent);
+  const etaMinutes=nextEtaMinutes??finalEtaMinutes;
+  const etaDestination=nextEtaMinutes!==null&&upcoming?stationName(upcoming.name):to;
+  const etaIsNext=nextEtaMinutes!==null;
 
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Zugradar" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
@@ -128,7 +133,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <span className="train-heading-pill" title={heading===null?"Keine zuverlässige Streckenrichtung":`Geschätzte Kursrichtung ${Math.round(heading)}°`}>{heading===null?<UiIcon name="info"/>:<UiIcon name="arrow" style={{transform:`rotate(${heading-90}deg)`}}/>}{compass}</span>
       </div>
       <div className="train-hero-stats">
-        <div className="train-metric"><small>Bis zum nächsten Halt</small><strong>{etaMinutes===null?"—":etaMinutes} <em>{etaMinutes===null?"":"Min."}</em></strong><span>{etaMinutes===null?"Keine aktuelle Restzeit":etaMinutes===0?"Prognosezeit erreicht":arrival.isFreshPrediction?"Laut aktueller Prognose":"Nach Fahrplan"}</span></div>
+        <div className="train-metric"><small>{etaIsNext?"Bis zum nächsten Halt":"Bis zum Fahrtziel"} · {etaDestination}</small><strong>{etaMinutes===null?"—":etaMinutes} <em>{etaMinutes===null?"":"Min."}</em></strong><span>{etaMinutes===null?"Keine aktuelle Restzeit":etaMinutes===0?"Ankunftszeit erreicht (nicht bestätigt)":etaIsNext?(upcomingArrival?.isFreshPrediction?"Nächste Ankunft prognostiziert":"Nach Fahrplan"):(arrival.isFreshPrediction?"Laut aktueller Prognose":"Nach Fahrplan")}</span></div>
         <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${arrival.tone}`}>{arrival.delayMinutes===null?"—":arrival.delayMinutes>0?`+${arrival.delayMinutes} Min.`:arrival.delayMinutes<0?`${arrival.delayMinutes} Min.`:"0 Min."}</strong><span>{arrival.delayMinutes===null?"Keine aktuelle Verspätungsprognose":arrival.delayMinutes===0?"Pünktlich laut Prognose":arrival.delayMinutes<0?"Früher als geplant":"Aktuelle Ankunftsprognose"}</span></div>
       </div>
 
