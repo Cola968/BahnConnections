@@ -141,6 +141,7 @@ assert.match(listing,/const metadata=safeBoardMetadata\(payload\)/,"Board view m
 assert.match(listing,/setUpdatedAt\(board\.updatedAt\?new Date\(board\.updatedAt\):null\)/,"Unknown update time may not masquerade as live data");
 assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
+assert.doesNotMatch(listing,/document\.querySelector<HTMLButtonElement>\("\.board-filter-toggle"\)/,"Filter dismissal must return focus to the current board rather than a globally selected hidden toolbar");
 const update=source("app/pwa-register.tsx");
 assert.match(update,/Storage can be blocked in private browsing/);
 const css=source("app/styles/v56-experience.css");
