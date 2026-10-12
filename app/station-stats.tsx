@@ -32,8 +32,8 @@ export function StationStats({ station, boardSummary, lineSummary }: {
       </section>
 
       <section className="station-role-card live-source-card">
-        <div className="station-stats-title"><span>Linienabdeckung</span><small>stationsbezogener Fahrplan</small></div>
-        {lines ? <><div className="line-mode-grid"><span><b>{lines.fern}</b><small>Fern</small></span><span><b>{lines.regional}</b><small>Regio</small></span><span><b>{lines.sbahn}</b><small>S-Bahn</small></span><span><b>{lines.ubahn}</b><small>U-Bahn</small></span><span><b>{lines.tram}</b><small>Straßenbahn</small></span></div><p>Die Werte stammen aus der aktuellen Linienauskunft genau dieses Bahnhofs. Sie ersetzen die frühere, unvollständige Zuordnung aus dem kuratierten Übersichtskartennetz.</p></> : <p>Die aktuelle Linienliste wird noch geladen. Bis dahin zeigt die App keinen geschätzten Ersatzwert.</p>}
+        <div className="station-stats-title"><span>Linien am Bahnhof</span><small>Fahrplandaten</small></div>
+        {lines ? <><div className="line-mode-grid"><span><b>{lines.fern}</b><small>Fern</small></span><span><b>{lines.regional}</b><small>Regio</small></span><span><b>{lines.sbahn}</b><small>S-Bahn</small></span><span><b>{lines.ubahn}</b><small>U-Bahn</small></span><span><b>{lines.tram}</b><small>Straßenbahn</small></span></div></> : <p>Linien werden geladen.</p>}
       </section>
 
       <section className="station-live-breakdown">
@@ -41,9 +41,9 @@ export function StationStats({ station, boardSummary, lineSummary }: {
         {board && board.total ? <><div className="product-shares">{products.map(([name, value]) => <div key={name}><span>{name === "sbahn" ? "S-Bahn" : name === "ubahn" ? "U-Bahn" : name === "tram" ? "Straßenbahn" : name.toUpperCase()}</span><i><b style={{ width:`${value / board.total * 100}%` }} /></i><strong>{percent(value / board.total * 100)}</strong></div>)}</div><div className="delay-thresholds"><span><b>{board.delayed6}</b><small>ab 6 Min.</small></span><span><b>{board.delayed15}</b><small>ab 15 Min.</small></span><span><b>{board.delayed30}</b><small>ab 30 Min.</small></span><span><b>{board.canceled}</b><small>Ausfälle</small></span></div><p className="average-delay-note">Durchschnittliche Abweichung: <b>{board.averageDelay === null ? "Keine auswertbare Prognose" : `${board.averageDelay.toLocaleString("de-DE", { maximumFractionDigits:1 })} Minuten`}</b> · {board.delaySamples} auswertbare Prognosen, Ausfälle ausgeschlossen.</p></> : <p>Die Qualitätswerte erscheinen, sobald aktuelle Tafeldaten für diesen Bahnhof vorliegen.</p>}
       </section>
 
-      {lines?.operators.length ? <section className="station-operators"><div className="station-stats-title"><span>Gemeldete Betreiber</span><small>{lines.operators.length}</small></div><p>{lines.operators.slice(0,12).join(" · ")}{lines.operators.length > 12 ? ` · +${lines.operators.length - 12} weitere` : ""}</p></section> : null}
+      {lines?.operators.length ? <section className="station-operators"><div className="station-stats-title"><span>Verkehrsunternehmen</span><small>{lines.operators.length}</small></div><p>{lines.operators.slice(0,4).join(" · ")}{lines.operators.length > 4 ? ` · ${lines.operators.length - 4} weitere` : ""}</p></section> : null}
 
-      <section className="station-comparison-note"><b>Keine erfundenen Vollständigkeitswerte</b><p>Eine Fahrt wird nur dann als live bezeichnet, wenn die Quelle ein Echtzeitmerkmal liefert. Langzeit- und Fahrgastkennzahlen werden nicht aus der Zahl der Linien abgeleitet.</p></section>
+      <details className="station-comparison-note"><summary>Daten & Genauigkeit</summary><p>„Live“ bedeutet, dass der Datenanbieter aktuelle Zeitangaben liefert. Fehlende Messwerte werden nicht geschätzt.</p></details>
     </div>
   );
 }

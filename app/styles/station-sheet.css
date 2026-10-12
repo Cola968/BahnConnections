@@ -44,7 +44,7 @@
   }
   .app-shell .mobile-sheet-panel>.panel-body::-webkit-scrollbar { display:none; }
   .app-shell .station-card>.station-sheet-header {
-    position:relative; top:auto; min-height:88px!important; grid-template-rows:44px 36px;
+    position:relative; top:auto; min-height:88px!important; grid-template-rows:44px 44px;
     padding:8px 0 0!important; margin:0!important; gap:0!important; min-width:0;
     border:0!important; border-radius:0; background:transparent!important;
     backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
@@ -54,8 +54,8 @@
   .app-shell .station-sheet-header .mobile-sheet-summary b { font-size:1.25rem!important; line-height:1.2; }
   .app-shell .station-sheet-header .mobile-sheet-actions button { width:44px; height:44px; background:transparent!important; box-shadow:none; }
   .app-shell .station-card>.panel-body { padding-top:0!important; background:transparent!important; animation:none; }
-  .app-shell .station-section-tabs { display:flex; min-width:0; min-height:36px; margin:0!important; padding:0!important; gap:0!important; border:0; border-bottom:1px solid var(--line-subtle)!important; }
-  .app-shell .station-section-tabs button { flex:1; min-width:0; min-height:36px!important; height:36px; padding:4px 0!important; font-size:.8125rem; border:0; border-bottom:2px solid transparent; }
+  .app-shell .station-section-tabs { display:flex; min-width:0; min-height:44px; margin:0!important; padding:0!important; gap:0!important; border:0; border-bottom:1px solid var(--line-subtle)!important; }
+  .app-shell .station-section-tabs button { flex:1; min-width:0; min-height:44px!important; height:44px; padding:4px 0!important; font-size:.8125rem; border:0; border-bottom:2px solid transparent; }
   .app-shell .station-section-tabs button.active { border-bottom-color:var(--action); color:var(--action); font-weight:700; }
   .app-shell .station-sheet-header .station-section-tabs { touch-action:pan-x; }
   .app-shell[data-mobile-sheet="collapsed"] .station-sheet-header { grid-template-rows:44px; min-height:56px!important; }

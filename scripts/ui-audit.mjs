@@ -8,10 +8,20 @@ const [page,board,stationLines,manifest,worker,tripTrimming,trackRouting,liveJou
   "app/styles/tokens.css","app/styles/controls.css","app/styles/workspace.css","app/styles/transport.css","app/styles/liquid-glass.css","app/styles/planner.css","app/styles/navigation.css",
 ].map(read));
 const mapLifecycle = await read("app/use-leaflet-map.ts");
+const liveMapHook = await read("app/use-live-map.ts");
+const trainHud = await read("app/train-radar-hud.tsx");
+const trainCockpitCss = await read("app/styles/v55-train-cockpit.css");
+const liveMapRenderer = await read("app/live-map-renderer.ts");
+const trainMotionCss = await read("app/styles/v54-train-inspector.css");
+const mobileMotionCss = await read("app/styles/v54-mobile-refine.css");
+const liveRadarHook = await read("app/use-live-radar.ts");
+const inspector = await read("app/live-trip-inspector.tsx");
 const plannerPanel = await read("app/planner-panel.tsx");
 const stationSubNavigation = await read("app/station-sub-navigation.tsx");
 const boardToolbar = await read("app/board-toolbar.tsx");
 const stationSheetCss = await read("app/styles/station-sheet.css");
+const settingsDialog = await read("app/settings-dialog.tsx");
+const v54Styles = await read("app/styles/v54-mobile-refine.css");
 const website = await read("app/website/page.tsx");
 const websiteCss = await read("app/website/website.module.css");
 const css = styles.join("\n");
@@ -28,6 +38,7 @@ check("General station markers recede behind the selected journey",page.includes
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
+const boardTiming = await read("app/board-time.ts");
 const realtimePlatform = await read("app/realtime-platform.tsx");
 const pwaRegister = await read("app/pwa-register.tsx");
 const appVersion = await read("app/app-version.ts");
@@ -37,6 +48,8 @@ const publicVersion = JSON.parse(versionMetadata);
 check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:0') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
+check("Departures use source-age-aware actual/scheduled timestamps for filtering and sorting",board.includes('boardPredictionFresh(updatedAt,now,stale)') && board.includes("boardEventTime(entry,boardLive)") && board.includes("boardEventTime(a,boardLive)") && board.includes("actual={boardDisplayActual(entry,boardLive)}") && board.includes("realtime={boardLive&&entry.realtime}") && boardTiming.includes("age<=150_000"));
+check("Mobile train popup does not repeat the train and route header",trainCockpitCss.includes(".app-shell .train-inspector .train-header h2") && trainCockpitCss.includes('>.service-pill') && trainCockpitCss.includes("display:none") && inspector.includes("train-cockpit-route"));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
 check("Brand, route and disruption colours stay separate",css.includes('--route-focus:var(--accent)') && css.includes('--status-disruption:var(--danger)'));
 // A transport hub must not acquire fictional passenger volume.
@@ -66,7 +79,26 @@ check("V40 mobile station first layer is reduced",(page.includes('mobileTitle={s
 check("Live board hides aggregate and duplicate status noise",!board.includes('{visibleEntries.length} Fahrten') && !board.includes('{boardStats.realtime} mit Echtzeit') && !board.includes('Bis 500 Min.') && !board.includes("statusText(entry)") && board.includes('!entry.canceled && entry.alerts?.length ? <small>Betriebshinweis</small> : null'));
 check("Tablet, phone and desktop ownership agree",page.includes('(min-width: 1024px)') && css.includes("(max-width:1023px)"));
 check("Mobile bottom navigation stays above safe area",css.includes("--bottom-navigation:calc(60px + env(safe-area-inset-bottom") && navigation.includes("MobileNavigation"));
-check("V53 mobile More has three core actions; map controls are separate",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && page.includes("Weitere Kartenoptionen"));
+check("V54 mobile More keeps three core actions while advanced map controls live in Settings",page.includes('className="simple-more-popover map-menu-popover detached"') && ["Profil & Einstellungen","App & Updates","Hilfe & Daten"].every(label=>page.includes(label)) && !page.includes("map-menu-actions") && !page.includes("Weitere Kartenoptionen") && settingsDialog.includes("Kartendarstellung") && settingsDialog.includes("onShowTrails") && settingsDialog.includes("onOverviewRoutesVisible"));
+check("V54 remembers compact font with an accessible size selector",page.includes('useState<"compact" | "normal" | "large">("compact")') && settingsDialog.includes("Kompakt (Standard)") && v54Styles.includes(".settings-scale-choice"));
+check("Moving radar windows invalidate cached data even with unchanged station IDs",liveRadarHook.includes("data.coverageKey===key") && liveRadarHook.includes("radarCoverageKey(station)"));
+check("V54 idle train marker glides only for bounded continuous position changes",liveMapRenderer.includes("jump<=.5") && liveMapRenderer.includes("mapIsMoving") && liveMapRenderer.includes("pauseMarkerGlide") && liveMapRenderer.includes("map.off('movestart'") && trainMotionCss.includes("rail-marker-glide"));
+check("V55 selected markers stay visible and highlight before follow",page.includes("selectedId:selectedLiveTrip?.tripId") && liveMapRenderer.includes("trip.tripId!==options.selectedId") && liveMapRenderer.includes("?\x27 selected\x27"));
+check("V55 train tap opens route cockpit with model speed and follow button",inspector.includes("train-cockpit-speed") && inspector.includes("Geschwindigkeit · Modell") && inspector.includes("Auf Karte verfolgen") && trainCockpitCss.includes(".train-cockpit-route"));
+check("V55 HUD refreshes the model speed with correct freshness gating",page.includes("<TrainRadarHud") && trainHud.includes("realtimeModelSpeed(trip,now)") && trainHud.includes("sourceFreshness") && trainHud.includes("km/h · Modell"));
+check("V55 full-trip forecasts refresh independently of radar and expire",inspector.includes("setDetailsUpdatedAt(result.length?new Date():null)") && inspector.includes("window.setInterval(()=>{void load();},60_000)") && inspector.includes('const detailFresh=detailState==="ready"') && inspector.includes("fresh={detailFresh}") && inspector.includes("detailFresh&&stop.realtime"));
+check("V55 next-stop arrival uses independently fresh prediction or timetable",inspector.includes('upcomingArrival.isFreshPrediction?"Echtzeitprognose":"Fahrplan"') && inspector.includes("upcomingArrival.expected??upcomingArrival.planned"));
+const boardTime = await read("app/board-time.ts");
+check("V55 board platform updates follow source freshness across rows, details and filters",boardTime.includes("function boardDisplayPlatform(") && board.includes("actual={shownPlatform}") && board.includes("boardDisplayPlatform({platform:stop.track") && board.includes("boardDisplayPlatform(entry,boardLive)"));
+check("V55 animated train markers only represent recent successful radar source data",page.includes("radarUpdatedAtMs:liveUpdatedAt?.getTime()??null") && liveMapHook.includes("const fresh=radarStatus==='ready'") && liveMapHook.includes("age<=90_000") && liveMapHook.includes("enabled&&fresh?trips:[]") && page.includes("Zugpositionen ausgeblendet"));
+check("V55 never mislabels speed as GPS telemetry",inspector.includes("Kein GPS / Tacho") && trainCockpitCss.includes("prefers-reduced-motion") && trainCockpitCss.includes("forced-colors"));
+check("V54 paused tracking never pulses in success green",trainMotionCss.includes(".train-tracking-map-pulse.is-stale") && trainMotionCss.includes(".train-follow-state.is-paused") && inspector.includes('className={canStartTracking?"train-follow-state":"train-follow-state is-paused"}'));
+check("V54 motion respects OS and in-app reduced-motion preferences",trainMotionCss.includes("@media (prefers-reduced-motion:reduce)") && trainMotionCss.includes('html[data-motion="reduced"] .leaflet-marker-pane') && trainMotionCss.includes("train-progress-line>i") && trainMotionCss.includes("train-hud-enter"));
+check("V54 sheet opening uses compositor opacity, not animated blur",mobileMotionCss.includes("@keyframes v54-sheet-reveal {from {opacity:.72;}to {opacity:1;}}") && !mobileMotionCss.includes("filter:blur(4px)"));
+check("V54 has a single camera-follow owner, preserving mobile offset",!liveMapHook.includes("mapRef.current?.panTo(") && page.includes("const centre=map.unproject(") && page.includes("map.panTo(centre,"));
+check("Expired or stale trips cannot be newly followed; stop remains possible",page.includes("activeEstimatedPosition(trip,Date.now())") && inspector.includes('disabled={!tracked&&!canStartTracking}') && inspector.includes("Verfolgung pausiert"));
+check("V54 station tab buttons stay at least 44px despite inherited !important rules",stationSheetCss.includes("min-height:44px!important; height:44px;") && stationSheetCss.includes("grid-template-rows:44px 44px;"));
+check("V54 compact rows keep touch target semantics",v54Styles.includes("min-height:44px") && v54Styles.includes(".mobile-navigation") && v54Styles.includes("safe-area-inset-bottom"));
 check("V45 board uses compact public station names without redundant via/status rows",board.includes("compactStationLabel") && !board.includes('<span className="board-via">') && !board.includes("statusText(entry)"));
 check("Standalone website is professional, transparent and service-first",
   website.includes('APP_VERSION_LABEL') &&
