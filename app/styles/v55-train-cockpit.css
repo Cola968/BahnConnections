@@ -143,3 +143,15 @@ html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!im
 @media(forced-colors:active) {
   .train-arrival-time>time.superseded {text-decoration:line-through;forced-color-adjust:auto;}
 }
+
+/* Review fix: readable schedule / ETA labels on compact 320–390px phones. */
+.train-arrival-title>span {font-size:.71rem}
+.train-arrival-title>b {font-size:.79rem}
+.train-arrival-time>small {font-size:.69rem;line-height:1.25}
+.train-arrival-footer>small {font-size:.67rem;line-height:1.35}
+.train-arrival-status {font-size:.7rem;min-height:25px}
+@media(max-width:350px) {
+  .train-arrival-time>small {font-size:.66rem}
+  .train-arrival-time>time {font-size:clamp(1.19rem,5.5vw,1.36rem)}
+  .train-arrival-footer>small {font-size:.63rem}
+}
