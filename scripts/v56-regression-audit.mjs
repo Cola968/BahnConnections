@@ -129,7 +129,7 @@ const appBoardSource=source("app/live-board.tsx");
 assert.match(appBoardSource,/const requestSignal=AbortSignal\.any\(\[signal,AbortSignal\.timeout\(22_000\)\]\)/,"Board refresh must not hang indefinitely in a visible tab");
 assert.match(appBoardSource,/const tripSignal=signal\?AbortSignal\.any\(\[signal,AbortSignal\.timeout\(15_000\)\]\):AbortSignal\.timeout\(15_000\)/,"One stuck trip detail request must not block batched previews");
 const timedSignal=AbortSignal.timeout(20);
-await new Promise(resolve=>timedSignal.addEventListener("abort",resolve,{once:true}));
+await new Promise(resolve=>{ const keepAlive=setTimeout(resolve,100); timedSignal.addEventListener("abort",()=>{clearTimeout(keepAlive);resolve();},{once:true}); });
 assert.equal(timedSignal.aborted,true,"Native timeout signals must cancel pending client fetches");
 const listing=source("app/live-board.tsx");
 assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
