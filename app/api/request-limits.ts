@@ -1,5 +1,6 @@
 export class RequestInputError extends Error {
-  constructor(message:string,public readonly status:400|413=400){super(message);this.name="RequestInputError";}
+  readonly status:400|413;
+  constructor(message:string,status:400|413=400){super(message);this.name="RequestInputError";this.status=status;}
 }
 /** Reject oversized JSON before invoking expensive external journey planning APIs. */
 export async function readLimitedJson(request:Request,maxBytes=32_768):Promise<unknown> {
