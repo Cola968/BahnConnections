@@ -85,6 +85,9 @@ assert.match(trips,/tripId\.length > 500/);
 assert.match(trips,/AbortSignal\.timeout\(12_000\)/);
 const boardApi=source("app/api/stations/[id]/board/route.ts");
 assert.match(boardApi,/Ungültiger Abfragezeitpunkt/);
+assert.match(boardApi,/query\.get\("verify"\)==="0"/,"Notice-only board callers should not trigger expensive independent verification");
+assert.match(source("app/station-disruptions.tsx"),/url\.searchParams\.set\("verify","0"\)/,"Lightweight notice requests must opt out of independent DB verification");
+
 const services=source("app/api/stations/[id]/services/route.ts");
 assert.match(services,/AbortSignal\.timeout\(12_000\)/);
 assert.match(services,/Promise\.allSettled/);
