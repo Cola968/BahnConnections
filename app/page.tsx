@@ -1235,7 +1235,7 @@ export default function Home() {
               <button type="button" onClick={() => {setSettingsInitialTab("profile");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
-              <a href="/changelog"><UiIcon name="info"/><span><b>Was ist neu?</b><small>Änderungen der aktuellen Beta</small></span><UiIcon name="arrow"/></a>
+
               <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
