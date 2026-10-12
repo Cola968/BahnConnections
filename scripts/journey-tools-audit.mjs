@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {sortJourneys,journeyText,journeyCalendar,journeyCalendarLinks,walkingMinutes,shiftPlannerDay} from '../app/journey-tools.ts';
+import {sortJourneys,journeyText,journeyCalendar,journeyCalendarLinks,journeyDateRange,walkingMinutes,shiftPlannerDay} from '../app/journey-tools.ts';
 assert.equal(shiftPlannerDay('2026-10-24T08:15',1),'2026-10-25T08:15','DST does not move local departure hour');
 assert.equal(shiftPlannerDay('2026-12-31T23:59',1),'2027-01-01T23:59');
 assert.equal(shiftPlannerDay('2026-03-01T08:00',-1),'2026-02-28T08:00');
@@ -7,6 +7,8 @@ assert.equal(shiftPlannerDay('2026-02-30T08:00',1),null);assert.equal(shiftPlann
 const start='2026-10-12T12:00:00Z',end='2026-10-12T14:00:00Z';
 const leg={name:'ICE 123',category:'fern',from:{name:'Berlin; Hbf,\nBEGIN:VEVENT',track:'4'},to:{name:'München Hbf'},startTime:start,endTime:end,durationSeconds:7200,realtime:true,cancelled:false};
 const base={id:'test',startTime:start,endTime:end,scheduledStartTime:start,scheduledEndTime:end,durationSeconds:7200,transfers:0,cancelled:false,legs:[leg],transitLegs:[leg],updatedAt:start,warnings:['Daten können unvollständig sein'],sourceLabel:'Testquelle'};
+assert.equal(journeyDateRange({...base,startTime:'2026-10-12T18:03:00Z',endTime:'2026-10-12T22:48:00Z'}),'12.10.2026 → 13.10.2026');
+assert.equal(journeyDateRange({...base,startTime:'invalid'}),'Datum unbekannt');
 const fast={...base,id:'fast',durationSeconds:3600,transfers:2},cancelled={...fast,id:'cancelled',cancelled:true},walk={...base,id:'walk',legs:[leg,{...leg,category:'walk',durationSeconds:121}]};
 const input=[base,cancelled,fast];
 assert.deepEqual(sortJourneys(input,'duration').map(j=>j.id),['fast','test','cancelled']);

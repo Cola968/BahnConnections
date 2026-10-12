@@ -23,5 +23,5 @@ assert.match(filter,/name="search"/);
 assert.match(settings,/initialTab/);
 assert.match(settings,/\/changelog/);
 assert.match(page,/header-avatar/);
-assert.match(read("app/changelog/page.tsx"),/Vorschau/);
+assert.match(read("app/changelog/page.tsx"),/Aktuelle Version:.*APP_VERSION_LABEL/);
 console.log("V56 station notices, direct filters, Changelog and avatar integration OK.");

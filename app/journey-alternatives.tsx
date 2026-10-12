@@ -2,7 +2,7 @@
 
 import type { LiveJourney } from "./live-journey";
 import {useState} from "react";
-import {sortJourneys,walkingMinutes,type JourneySort} from "./journey-tools";
+import {sortJourneys,walkingMinutes,journeyDateRange,type JourneySort} from "./journey-tools";
 import { formatDuration } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { compactStationLabel } from "./transit-style";
@@ -23,7 +23,7 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
     <label className="journey-sort">Vergleichen nach<select value={order} onChange={event=>setOrder(event.target.value as JourneySort)}><option value="recommended">Empfehlung der Suche</option><option value="arrival">Früheste Ankunft</option><option value="duration">Kürzeste Reisezeit</option><option value="changes">Wenigste Umstiege</option><option value="walking">Wenigster Fußweg</option></select></label>
     <div>{alternatives.slice(0,limit).map(journey => <button type="button" key={journey.id} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onSelect(journey); }}>
       <em>{label(journey,journeys[0])}</em>
-      <small>{new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'medium'}).format(new Date(journey.startTime))} · Abfahrt</small>
+      <small>{journeyDateRange(journey)}</small>
       <JourneyTimeRange journey={journey} />
       <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
       <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}</small>

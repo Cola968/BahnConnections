@@ -15,6 +15,7 @@ import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
 import { JourneyExport } from "./journey-export";
+import { journeyDateRange } from "./journey-tools";
 import { NetworkNotice } from "./network-notice";
 import { realtimeTooltip } from "./realtime-tooltip";
 import { readPreference, readPreferenceJson, readPreferenceIds } from "./local-preferences";
@@ -1291,6 +1292,7 @@ export default function Home() {
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{stationDisplayName(selectedJourneyStart.name)} → {stationDisplayName(selectedJourneyTarget.name)}</span></div>
             <NetworkNotice/>
             <div className="journey-mobile-overview">
+              <p className="journey-date-range">{journeyDateRange(journey)}</p>
               <div className="journey-mobile-route">
                 <JourneyTimeRange journey={journey} />
                 <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>

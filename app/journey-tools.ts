@@ -1,6 +1,12 @@
 import type { LiveJourney } from './live-journey';
 
 export type JourneySort='recommended'|'arrival'|'duration'|'changes'|'walking';
+export function journeyDateRange(journey:LiveJourney):string {
+  if(!Number.isFinite(Date.parse(journey.startTime))||!Number.isFinite(Date.parse(journey.endTime)))return 'Datum unbekannt';
+  const format=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'medium'});
+  const start=format.format(new Date(journey.startTime)),end=format.format(new Date(journey.endTime));
+  return start===end?start:`${start} → ${end}`;
+}
 /** Shift a local calendar date while preserving wall-clock time across DST. */
 export function shiftPlannerDay(value:string,days:number):string|null {
   const match=/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})$/.exec(value);
