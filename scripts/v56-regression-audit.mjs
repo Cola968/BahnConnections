@@ -4,6 +4,9 @@ import { boardDisplayActual, boardDisplayPlatform, boardEventTime, boardPredicti
 import { boardDedupeKey } from "../app/board-dedup.ts";
 import { trainArrivalView } from "../app/train-arrival.ts";
 import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
+import { matchesBoardDelayFilter } from "../app/board-delay-filter.ts";
+import { decodeRouteSegment } from "../app/api/decode-route-segment.ts";
+import { writePreference } from "../app/local-preferences.ts";
 
 const schedule="2026-10-25T02:30:00+02:00";
 const delayed="2026-10-25T02:40:00+02:00";
@@ -23,6 +26,30 @@ assert.equal(current.delayMinutes,10);
 assert.match(current.status,/Verspätung/);
 const unknown=deriveRealtimePresentation({scheduled:schedule,realtime:true});
 assert.equal(unknown.kind,"unknown");
+
+// A positive confirmed delay is delayed, even if it is only +1 minute.
+const point="2026-10-12T10:00:00Z";
+for(const minutes of [1,4,5,11,30]){
+  const state=deriveRealtimePresentation({scheduled:point,actual:new Date(Date.parse(point)+minutes*60_000).toISOString(),realtime:true});
+  assert.equal(matchesBoardDelayFilter("delayed",state),true,`+${minutes} must be delayed`);
+  assert.equal(matchesBoardDelayFilter("ontime",state),false);
+}
+const zero=deriveRealtimePresentation({scheduled:point,actual:point,realtime:true});
+assert.equal(matchesBoardDelayFilter("ontime",zero),true);
+assert.equal(matchesBoardDelayFilter("delayed",zero),false);
+const early=deriveRealtimePresentation({scheduled:point,actual:"2026-10-12T09:59:00Z",realtime:true});
+assert.equal(matchesBoardDelayFilter("ontime",early),false);
+assert.equal(matchesBoardDelayFilter("delayed",early),false);
+const canceled=deriveRealtimePresentation({scheduled:point,cancelled:true});
+assert.equal(matchesBoardDelayFilter("canceled",canceled),true);
+assert.equal(matchesBoardDelayFilter("delayed",canceled),false);
+assert.equal(matchesBoardDelayFilter("ontime",deriveRealtimePresentation({scheduled:point})),false);
+assert.equal(decodeRouteSegment("%XX"),null,"Invalid percent escapes cannot crash route handlers");
+assert.equal(decodeRouteSegment("trip%3A123"),"trip:123");
+assert.equal(writePreference({setItem(){throw new Error("SecurityError");}},"pin","[]"),false,"Denied storage is optional");
+let wrote="";
+assert.equal(writePreference({setItem(_key,value){wrote=value;}},"pin","[\"ice\"]"),true);
+assert.equal(wrote,"[\"ice\"]");
 
 const serviceA={kind:"departure",plannedWhen:schedule,plannedPlatform:"5",direction:"Potsdam",provenance:"Berlin",line:{name:"RE1",routeId:"re1",product:"regional"}};
 const serviceB={...serviceA,line:{name:"RE7",routeId:"re7",product:"regional"}};
@@ -63,7 +90,8 @@ assert.match(inspector,/remainingArrivalMinutes/);
 assert.match(inspector,/realtime=\{sourceCurrent&&trip\.realTime\}/);
 assert.match(inspector,/detailState!=="loading"&&stops\.length>0&&<ol/);
 const listing=source("app/live-board.tsx");
-assert.match(listing,/delay!==0/,"Pünktlich filter must not contain +1 to +4 minutes");
+assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
+assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
 const update=source("app/pwa-register.tsx");
 assert.match(update,/Storage can be blocked in private browsing/);
