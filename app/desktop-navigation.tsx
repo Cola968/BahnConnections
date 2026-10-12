@@ -26,15 +26,16 @@ export function DesktopNavigation({ value, onChange, language="de" }: { value: D
 export function MobileNavigation({ value, onChange, onMore, moreOpen, language="de" }: { value: DesktopView; onChange: (view: DesktopView) => void; onMore: () => void; moreOpen: boolean;language?:"de"|"en" }) {
   const secondaryActive = moreOpen || value === "stats" || value === "settings";
   const selectedIndex = secondaryActive ? 3 : Math.max(0,mobileDestinations.findIndex(item => item.view === value));
-  return <nav className="mobile-navigation" aria-label="Mobile Hauptnavigation" style={{ "--mobile-nav-index":selectedIndex, "--mobile-nav-offset":`${selectedIndex*100}%` } as CSSProperties}>
+  return <nav className="mobile-navigation" aria-label={language==="en"?"Main navigation":"Mobile Hauptnavigation"} style={{ "--mobile-nav-index":selectedIndex, "--mobile-nav-offset":`${selectedIndex*100}%` } as CSSProperties}>
     <GlassScene className="mobile-nav-glass-material" material="regular" motion="reduced" aria-hidden="true">
       <GlassContent><span className="mobile-nav-glass-content" /></GlassContent>
       <GlassSurface className="mobile-nav-glass-surface" radius={22} refraction={8} interactive={false} />
     </GlassScene>
     {mobileDestinations.map(({ view, label, icon }) => {
       const active=!moreOpen && value===view;
-      return <button key={view} type="button" className={active ? "active" : ""} aria-current={active ? "page" : undefined} aria-label={language==="en"?({connections:"Plan",map:"Map",departures:"Departures"} as Record<string,string>)[view]:(view === "connections" ? "Planen" : label)} onClick={() => onChange(view)}>
-        <span className="mobile-nav-icon"><UiIcon name={icon} /></span><span className="mobile-nav-label">{view === "connections" ? "Planen" : label}</span>
+      const displayLabel=language==="en"?({connections:"Plan",map:"Map",departures:"Departures"} as Record<string,string>)[view]:(view==="connections"?"Planen":label);
+      return <button key={view} type="button" className={active ? "active" : ""} aria-current={active ? "page" : undefined} aria-label={displayLabel} onClick={() => onChange(view)}>
+        <span className="mobile-nav-icon"><UiIcon name={icon} /></span><span className="mobile-nav-label">{displayLabel}</span>
       </button>;
     })}
     <button type="button" onClick={onMore} className={secondaryActive ? "active" : ""} aria-current={!moreOpen && secondaryActive ? "page" : undefined} aria-expanded={moreOpen} aria-controls="more-menu">
