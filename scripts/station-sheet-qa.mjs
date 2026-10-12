@@ -48,6 +48,17 @@ async function screenshot(name) {
   const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
 }
+let incidentFixtureMode=false;
+function incidentTimetable(requestUrl){
+  const kind=new URL(requestUrl).searchParams.get('kind');
+  const when=new Date(Date.now()+35*60_000).toISOString();
+  const scheduled=new Date(Date.now()+30*60_000).toISOString();
+  const place=kind==='arrival'?{arrival:when,scheduledArrival:scheduled}:{departure:when,scheduledDeparture:scheduled};
+  return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
+    ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
+    : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
+       {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true}]};
+}
 function timetable() {
   const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
   return {source:'Station-sheet UI fixture',updatedAt:new Date().toISOString(),warnings:[],verification:{status:'matched'},stopTimes:Array.from({length:30},(_,i)=>{
@@ -70,7 +81,7 @@ try {
     const message=JSON.parse(String(event.data));
     if(message.method==='Fetch.requestPaused') {
       const path=new URL(message.params.request.url).pathname;
-      const payload=path.endsWith('/board')?timetable():path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
+      const payload=path.endsWith('/board')?(incidentFixtureMode?incidentTimetable(message.params.request.url):timetable()):path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
         path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
         path.endsWith('/services')?{routes:[],stopTimes:[],source:'UI fixture',updatedAt:new Date().toISOString(),warnings:[]}:
         path.includes('/api/trips/')?{trip:{legs:[]}}:[];
@@ -165,6 +176,29 @@ try {
       await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       assert.equal(await evaluate("document.querySelector('.station-section-tabs button:first-child').getAttribute('aria-selected')"),'true','Keyboard subnavigation');
+    }
+    if(!baseline&&width===390&&theme==='light'){
+      // A real Chromium interaction trace, with both arrival and departure fixtures.
+      incidentFixtureMode=true;
+      await click('#station-tab-disruptions');
+      for(let attempt=0;attempt<70;attempt++){
+        if(await evaluate("document.querySelectorAll('.incident-card').length===3"))break;
+        await pause(100);
+      }
+      assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
+      await evaluate("document.querySelector('.incidents-filters').scrollIntoView({block:'center'})");
+      await click('.incidents-filters button:nth-child(2)');
+      assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Construction category should filter notice cards');
+      await click('.incidents-filters button:first-child');
+      await evaluate("document.querySelector('.incidents-search input').scrollIntoView({block:'center'})");
+      await click('.incidents-search input');
+      await command('Input.insertText',{text:'S7'});
+      await pause(150);
+      assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Line search should find arrival notices');
+      assert.match(await evaluate("document.querySelector('.incident-card h3').textContent"),/Signalstörung/);
+      await screenshot('390-light-incidents-search');
+      incidentFixtureMode=false;
+      await click('#station-tab-live');
     }
   }
   if(!baseline)for(const width of [320,390]) {
