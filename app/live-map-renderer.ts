@@ -6,7 +6,7 @@ import { headingDegrees } from './train-inspector-data';
 import { railDistanceKm } from './rail-geometry';
 
 export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;selectedId?:string|null;radarStatus?:'loading'|'ready'|'stale'|'error';radarUpdatedAtMs?:number|null;appearance?:string};
-type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;signature:string;trail:Leaflet.Polyline|null};
+type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;members:LiveTrip[];signature:string;trail:Leaflet.Polyline|null};
 type Desired={id:string;position:[number,number];trip:LiveTrip|null;members:LiveTrip[]};
 
 /** Marker identity belongs to a trip, not a React render or animation tick. */
@@ -54,15 +54,16 @@ export class LiveMapRenderer {
         const item=desired[cursor++];if(!item)break;
         let entry=this.entries.get(item.id);
         if(!entry){
-          const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?'<div class="live-train-marker glyph"><i></i></div>':'<div class="live-cluster"><b></b><small>Züge</small></div>',iconSize:item.trip?[22,22]:[42,42],iconAnchor:item.trip?[11,11]:[21,21]})}).addTo(this.layer);
-          entry={marker,trip:null,signature:'',trail:null};this.entries.set(item.id,entry);
+          const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?'<div class="live-train-marker glyph"><i></i></div>':'<div class="live-cluster"><b></b><small>Züge</small></div>',iconSize:item.trip?[40,40]:[42,42],iconAnchor:item.trip?[20,20]:[21,21]})}).addTo(this.layer);
+          entry={marker,trip:null,members:[],signature:'',trail:null};this.entries.set(item.id,entry);
           const current=entry;
-          const activate=()=>{if(current.trip)this.select(current.trip);else this.map.setView(current.marker.getLatLng(),10,{animate:false});};
+          const activate=()=>{if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
           marker.on('click',activate);
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
         }
         if(item.trip){const highlighted=item.trip.tripId===options.selectedId||item.trip.tripId===options.trackedId;entry.marker.setZIndexOffset(item.trip.tripId===options.trackedId?1450:highlighted?1250:900);}
+        entry.members=item.members;
         const old=entry.marker.getLatLng();
         const changed=old.lat!==item.position[0]||old.lng!==item.position[1];
         const icon=entry.marker.getElement();

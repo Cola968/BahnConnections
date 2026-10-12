@@ -81,6 +81,11 @@ function lineBadge(line: StationLine) {
     const publicName=line.shortName.match(/^(RE|RB|MEX|IRE)\s*(\d{1,3}[A-Z]?)(?=\b|\s|\()/i);
     return publicName ? `${publicName[1].toUpperCase()}${publicName[2].toUpperCase()}` : (line.shortName.match(/^(RE|RB|MEX|IRE)/i)?.[0]?.toUpperCase() ?? line.shortName.slice(0,10));
   }
+  const match=line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)\s*(\d{1,5}[A-Z]?)(?:\b|$)/i);
+  if(match)return `${match[1].toUpperCase()} ${match[2]}`;
+  const prefix=line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)\b/i)?.[0]?.toUpperCase();
+  const number=line.destinations.find(destination=>/^\d{1,5}[A-Z]?$/.test(destination.trim()));
+  if(prefix&&number)return `${prefix} ${number.trim()}`;
   return line.shortName.match(/^(ICE|IC|EC|ECE|RJX?|TGV|NJ|EN|FLX)/i)?.[0]?.toUpperCase() ?? (line.mode === "HIGHSPEED_RAIL" ? "ICE" : "FV");
 }
 
@@ -328,14 +333,14 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
           const details = routeDetails[line.key] ?? [];
           const detailState = routeStates[line.key];
           const expanded = expandedKey === line.key;
-          const destinations=line.destinations.map(destination=>compactStationLabel(destination)??destination);
+          const destinations=line.destinations.map(destination=>compactStationLabel(destination)??destination).filter(destination=>!/^\d{1,5}[A-Z]?$/.test(destination.trim())&&!/^(?:Hbf|Hauptbahnhof)\s*(?:\(.*\))?$/i.test(destination.trim()));
           const numberedRail=line.category === "fern" || line.category === "regional";
-          const primary=destinations[0] ?? (numberedRail ? line.shortName : line.longName || line.shortName);
+          const primary=destinations[0] ?? (numberedRail ? "Richtung unbekannt" : line.longName || line.shortName);
           const secondary=destinations.slice(1,3).join(" · ") + (destinations.length>3 ? ` · +${destinations.length-3} weitere` : "");
           return <article className={`station-line-item ${expanded ? "expanded" : ""}`} key={line.key}>
             <button className={`station-line-row ${line.category}`} onClick={() => void toggleLine(line)} aria-expanded={expanded} aria-label={`${line.shortName}${line.destinations.length ? ": " + line.destinations.join(" · ") : ""}`}>
               <span className={`service-logo ${line.category}`} style={serviceBadgeStyle(line.category, line.routeColor, line.routeTextColor, line.shortName, `${station.state ?? ""} ${station.name} ${line.operator}`)}>{lineBadge(line)}</span>
-              <span className="station-line-copy"><b>{primary}</b><small title={line.destinations.join(" · ")}>{line.category === "fern" && destinations.length > 0 && <><strong>{line.shortName}</strong>{" · "}</>}{secondary || (destinations.length ? {fern:"Fernverkehr",regional:"Regionalverkehr",sbahn:"S-Bahn",ubahn:"U-Bahn",tram:"Tram"}[line.category] : line.longName || "Keine weitere Fahrt")}</small></span>
+              <span className="station-line-copy"><b>{primary}</b><small title={line.destinations.join(" · ")}>{secondary || (destinations.length ? {fern:"Fernverkehr",regional:"Regionalverkehr",sbahn:"S-Bahn",ubahn:"U-Bahn",tram:"Tram"}[line.category] : line.longName || "Keine weitere Fahrt")}</small></span>
               <span className="station-line-next">{line.nextTime && <time>{lineTime(line.nextTime)}</time>}<UiIcon name="chevron" style={expanded ? {transform:"rotate(180deg)"} : undefined} /></span>
             </button>
             {expanded && <div className="station-line-routes">

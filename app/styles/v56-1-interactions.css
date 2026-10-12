@@ -1,0 +1,93 @@
+/* V56.1 – interaction-first polish. Keep train markers tappable and direction understandable. */
+.app-shell .live-train-wrap {cursor:pointer!important;pointer-events:auto!important;display:flex!important;align-items:center;justify-content:center;width:40px!important;height:40px!important;outline-offset:2px;touch-action:manipulation}
+.app-shell .live-train-wrap .live-train-marker.glyph {position:relative;pointer-events:none;width:23px;height:23px;flex:none;border-width:2px;overflow:visible;transition:box-shadow .18s ease,scale .2s ease}
+.app-shell .live-train-wrap .live-train-marker.glyph::after {content:"";position:absolute;top:50%;left:50%;width:9px;height:11px;background:currentColor;clip-path:polygon(50% 0,100% 100%,50% 76%,0 100%);transform:translate(-50%,-50%) rotate(var(--train-heading,0deg)) translateY(-15px);transform-origin:center center;filter:drop-shadow(0 1px 1px #17212a80);opacity:.96}
+.app-shell .live-train-wrap:focus-visible {outline:3px solid var(--action);border-radius:50%}
+.app-shell .live-train-wrap:hover .live-train-marker.glyph {scale:1.1;box-shadow:0 0 0 3px color-mix(in srgb,var(--action) 20%,transparent),0 4px 12px #13262e55}
+.app-shell .live-train-wrap .live-train-marker.glyph.tracked::after,.app-shell .live-train-wrap .live-train-marker.glyph.selected::after{width:11px;height:13px}
+.app-shell .live-cluster-wrap {cursor:pointer!important;touch-action:manipulation}
+.app-shell .map-filters-v57 {display:flex!important;flex-direction:column;gap:14px;padding:16px!important;max-width:min(390px,calc(100vw - 22px));background:var(--paper)!important;border:1px solid var(--line-subtle)!important;border-radius:20px!important;box-shadow:0 16px 48px #11283129;max-height:calc(100dvh - 140px);overflow-y:auto}
+.app-shell .map-filters-v57 .map-menu-dismiss{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:0}
+.app-shell .map-filters-v57 .map-menu-dismiss>div{display:grid;flex:1;min-width:0;gap:4px}
+.app-shell .map-filters-v57 .map-menu-dismiss strong{font-size:1.05rem;letter-spacing:-.025em}
+.app-shell .map-filters-v57 .map-menu-dismiss small{color:var(--muted);font-size:.73rem}
+.app-shell .map-filters-v57 .map-menu-dismiss>.map-filter-close,.app-shell .simple-more-popover .map-menu-dismiss>button{display:grid!important;place-items:center!important;min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important;line-height:0!important;padding:0!important;margin:0!important;border-radius:12px!important;border:1px solid var(--line-subtle)!important;background:var(--glass-clear)!important}
+.app-shell .map-filters-v57 .map-menu-dismiss>.map-filter-close svg,.app-shell .simple-more-popover .map-menu-dismiss>button svg{display:block;width:22px;height:22px;margin:0;position:static!important;transform:none!important}
+.app-shell .map-filter-master{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 3px;border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
+.app-shell .map-filter-master>span{display:grid;gap:3px;flex:1}
+.app-shell .map-filter-master b{font-size:.86rem}
+.app-shell .map-filter-master small{font-size:.75rem;color:var(--muted)}
+.app-shell .map-filter-master input{appearance:auto!important;width:20px;height:20px;accent-color:var(--action);cursor:pointer}
+.app-shell .map-filter-section{display:grid;gap:9px}
+.app-shell .map-filter-label{font-size:.76rem;font-weight:700;color:var(--muted)}
+.app-shell .map-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.app-shell .map-filter-grid button{display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;min-height:43px;min-width:0;padding:7px 5px;border:1px solid var(--line-subtle);border-radius:11px;background:var(--glass-clear);color:var(--ink);font-size:.77rem;font-weight:600}
+.app-shell .map-filter-grid button.active{border-color:var(--action);background:color-mix(in srgb,var(--action) 9%,var(--paper))}
+.app-shell .map-filter-grid button svg{width:12px;height:12px;color:var(--action);flex:none}
+.app-shell .map-filter-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.app-shell .map-filter-status button{min-height:42px;padding:8px 5px;border-radius:11px;border:1px solid var(--line-subtle);background:var(--glass-clear);font-size:.8rem;color:var(--ink)}
+.app-shell .map-filter-status button.active{border-color:var(--action);color:var(--action);font-weight:750;background:color-mix(in srgb,var(--action) 8%,var(--paper))}
+.app-shell .map-filter-footer{display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid var(--line-subtle)}
+.app-shell .map-filter-footer button{min-height:44px;min-width:0;padding:9px 13px;border-radius:12px;font-weight:650;font-size:.81rem}
+.app-shell .map-filter-footer button:first-child{border:0;background:transparent;color:var(--muted)}
+.app-shell .map-filter-footer button:last-child{display:flex;gap:7px;align-items:center;justify-content:center;flex:1;border:1px solid var(--action);background:var(--action);color:white}
+.app-shell .map-filter-footer svg{width:16px;height:16px}
+.app-shell .station-line-row{grid-template-columns:max-content minmax(0,1fr) minmax(36px,max-content)!important;column-gap:10px!important;min-height:69px!important;padding:10px 0!important;align-items:center!important}
+.app-shell .station-line-row>.service-logo{grid-column:1!important;grid-row:1!important;min-width:48px!important;max-width:116px!important;width:auto!important;height:29px!important;padding:0 9px!important;margin:0!important;align-self:center!important;font-size:.75rem!important;white-space:nowrap}
+.app-shell .station-line-copy{grid-column:2!important;grid-row:1!important;min-width:0}
+.app-shell .station-line-copy b{font-weight:650;font-size:.87rem;line-height:1.4}
+.app-shell .station-line-copy small{font-size:.73rem;line-height:1.35;color:var(--muted)}
+.app-shell .station-line-next{grid-column:3!important;grid-row:1!important;justify-content:center!important;align-self:center!important;gap:3px!important}
+.app-shell .board-service{display:flex;flex-direction:row!important;align-items:center!important;gap:5px!important}
+.app-shell .board-service>b{font-size:.75rem;white-space:nowrap}
+.app-shell .line-route-detail>header{align-items:center;gap:8px}
+.app-shell .line-route-detail>header>.service-logo{min-width:45px;width:auto;max-width:110px;padding:0 8px}
+.app-shell .incidents-source{padding:8px 11px;border:0;border-radius:10px;background:var(--glass-clear);font-size:.75rem}
+.app-shell .incident-card {border-radius:14px;background:var(--paper);padding:14px;border-top:1px solid var(--line-subtle);border-right:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
+.app-shell .incident-card-top{align-items:center;gap:6px}
+.app-shell .incident-card-top>small{border:1px solid var(--line-subtle);padding:4px 7px;border-radius:7px;background:var(--glass-clear);font-weight:720;color:var(--ink);font-size:.76rem}
+.app-shell .incident-card h3{font-size:.93rem;margin:8px 0 10px;letter-spacing:-.012em}
+.app-shell .incident-context{display:grid;grid-template-columns:1fr;gap:7px;border-top:1px solid var(--line-subtle);padding-top:10px}
+.app-shell .incident-context>span{display:flex;gap:9px;align-items:baseline;overflow-wrap:anywhere;font-size:.81rem}
+.app-shell .incident-context b{font-size:.72rem;font-weight:620;color:var(--muted);flex:0 0 56px}
+.app-shell .incident-detail{font-size:.81rem;line-height:1.45;color:var(--ink);margin:10px 0}
+.app-shell .incident-card>small{margin-top:9px}
+.app-shell .station-walk-result{padding:12px;margin:10px 0;border:1px solid var(--line-subtle);border-radius:12px;display:grid;gap:7px;font-size:.82rem}
+.app-shell .station-walk-result small{color:var(--muted)}
+.app-shell .station-walk-result details summary{min-height:40px;display:flex;align-items:center;font-weight:600;cursor:pointer}
+.app-shell .station-walk-result ol{padding-left:20px;line-height:1.5;font-size:.8rem}
+.app-shell .station-walk-result button{min-height:40px;color:var(--action);background:transparent;border:0;text-align:left}
+.app-shell .station-walk-action>button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid var(--line-subtle);border-radius:12px;background:var(--glass-clear);color:var(--ink);font-weight:650}
+.app-shell .planner-origin-heading{display:flex!important;align-items:center;justify-content:space-between;gap:10px;min-height:34px}
+.app-shell .planner-origin-location{display:flex;align-items:center;gap:5px;min-height:32px!important;padding:4px 7px!important;border:0!important;border-radius:8px!important;color:var(--action)!important;background:transparent!important;font-size:.76rem!important;font-weight:670!important}
+.app-shell .planner-origin-location svg{width:15px;height:15px}
+.app-shell .planner-origin-location:active{background:var(--glass-clear)!important}
+.app-shell .plan-button[aria-busy="true"] svg{animation:bc-clock-turn 1.6s linear infinite}
+@keyframes bc-clock-turn{to{transform:rotate(360deg)}}
+@keyframes bc-sheet-enter{from{opacity:.4;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bc-soft-appear{from{opacity:0}to{opacity:1}}
+.app-shell .map-filters-v57,.app-shell .simple-more-popover{animation:bc-sheet-enter .2s cubic-bezier(.2,.8,.25,1) both}
+.app-shell .incident-card{animation:bc-soft-appear .28s ease both}
+.app-shell .station-line-row,.app-shell .map-filter-grid button,.app-shell .map-filter-status button,.app-shell .mobile-navigation button svg{transition:background-color .2s ease,box-shadow .2s ease,transform .22s cubic-bezier(.2,.8,.2,1)}
+.app-shell .station-line-row:active{background:color-mix(in srgb,var(--action) 5%,var(--paper));transform:scale(.99)}
+.app-shell .mobile-navigation button.active svg{transform:scale(1.1)}
+.app-shell .map-filter-grid button:active,.app-shell .map-filter-status button:active{transform:scale(.96)}
+@media(max-width:480px){.app-shell .map-filters-v57{width:min(360px,calc(100vw - 26px));padding:14px!important;gap:12px}.app-shell .map-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell .station-line-row{gap:8px!important}.app-shell .station-line-row>.service-logo{padding:0 6px!important;font-size:.69rem!important}.app-shell .station-line-copy b{font-size:.82rem}}
+@media(prefers-reduced-motion:reduce){.app-shell .plan-button[aria-busy="true"] svg,.app-shell .map-filters-v57,.app-shell .simple-more-popover,.app-shell .incident-card{animation:none!important}.app-shell .station-line-row,.app-shell .map-filter-grid button,.app-shell .map-filter-status button,.app-shell .mobile-navigation button svg{transition:none!important}}
+html[data-motion="reduced"] .app-shell .plan-button svg,html[data-motion="reduced"] .app-shell .incident-card{animation:none!important}
+
+/* Installation remains as an update utility, not a promotional standalone page. */
+.install-page.install-v56.install-v56-compact{padding:clamp(14px,6vh,42px) 12px!important;background:var(--soft);align-items:start}
+.install-page.install-v56-compact .install-v56-card{max-width:540px!important;box-shadow:0 8px 25px rgba(18,32,44,.07)!important;padding:clamp(18px,4vw,30px)!important}
+.install-page.install-v56-compact .install-v56-navigation{margin-bottom:22px}
+.install-page.install-v56-compact .install-compact-header{display:flex;gap:13px;align-items:center;margin-bottom:25px}
+.install-page.install-v56-compact .install-compact-header .install-v56-logo{width:42px;height:42px;border-radius:12px;flex:none}
+.install-page.install-v56-compact .install-compact-header>div{display:grid;gap:4px}
+.install-page.install-v56-compact .install-compact-header h1{font-size:1.25rem!important;line-height:1.15!important;letter-spacing:-.024em;margin:0!important;color:#1b3041}
+.install-page.install-v56-compact .install-compact-header p{font-size:.76rem;color:#637786;margin:0}
+.install-page.install-v56-compact .install-actions,.install-page.install-v56-compact .install-status{gap:10px}
+.install-page.install-v56-compact .install-actions>.install-update-panel{padding:14px!important;margin:0!important;border:1px solid #d8e2e7!important;border-left:3px solid #b9c7d0!important;border-radius:12px!important}
+.install-page.install-v56-compact .install-update-panel>b{font-size:.91rem}
+.install-page.install-v56-compact .install-update-panel>span{display:block;font-size:.81rem;line-height:1.5}
+.install-page.install-v56-compact .install-steps{padding:14px;font-size:.81rem}
+.install-page.install-v56-compact .install-v56-faq{margin-top:20px}

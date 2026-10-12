@@ -207,6 +207,8 @@ export default function Home() {
   const [boardOnly, setBoardOnly] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [fontScale, setFontScale] = useState<"compact" | "normal" | "large">("compact");
+  const [language,setLanguage]=useState<"de"|"en">("de");
+  const [pendingPlannerLocation,setPendingPlannerLocation]=useState(false);
   const [liveVisible, setLiveVisible] = useState(false);
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
@@ -349,11 +351,21 @@ export default function Home() {
     // the inspector marks it as not currently verified rather than silently closing.
     setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
   });
+  useEffect(()=>{if(!preferencesReady)return;document.documentElement.lang=language;try{localStorage.setItem("bahnconnections-language",language);}catch{/* optional */}},[language,preferencesReady]);
+  useEffect(()=>{
+    if(!pendingPlannerLocation)return;
+    if(geoStatus==="error"){const t=window.setTimeout(()=>setPendingPlannerLocation(false),0);return()=>window.clearTimeout(t);}
+    if(!nearestStation)return;
+    const t=window.setTimeout(()=>{invalidatePlanner();setStartId(nearestStation.station.id);setStartSearch(stationDisplayName(nearestStation.station.name));setPendingPlannerLocation(false);},0);
+    return()=>window.clearTimeout(t);
+  // nearestStation already tracks the actual resolved GPS location.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[pendingPlannerLocation,nearestStation,geoStatus]);
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
     setSelectedLiveTrip(trip); setTrackedTripId(null); setTrackedRadarAnchor(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
-    setMobileSheetState(window.matchMedia("(max-width:1023px)").matches?"half":"expanded");
+    setMobileSheetState("expanded");
   }, []);
   const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
@@ -396,6 +408,7 @@ export default function Home() {
         setTheme(readPreference(localStorage,"bahnconnections-theme") === "dark" ? "dark" : "light");
         setHighContrast(readPreference(localStorage,"bahnconnections-contrast") === "high");
         setFontScale((value=>value==="normal"||value==="large"?value:"compact")(readPreference(localStorage,"bahnconnections-font")));
+        setLanguage(readPreference(localStorage,"bahnconnections-language")==="en"?"en":"de");
         setMinimalMode(readPreference(localStorage,"bahnconnections-minimal") === "1");
         setSavedRoutes(parseSavedRoutes(readPreferenceJson(localStorage,SAVED_ROUTES_KEY)));
         setProfile(parseLocalProfile(readPreferenceJson(localStorage,"bahnconnections-profile")));
@@ -539,6 +552,19 @@ export default function Home() {
     const drawRoute = (route: Route, from: string, to: string, featured = false, muted = false) => {
       const path = routePath(route, from, to);
       if (path.length < 2) return;
+      // Route badges describe a curated line, not the position of a specific train.
+      // Open a real station panel instead of updating an invisible route selection.
+      const openRouteAt=(at:[number,number])=>{
+        const nearest=path.reduce((best,station)=>{
+          const distance=(station.lat-at[0])**2+(station.lon-at[1])**2;
+          return distance<best.distance?{station,distance}:best;
+        },{station:path[0],distance:Number.POSITIVE_INFINITY}).station;
+        if(!nearest)return;
+        setSelectedId(nearest.id);setSearch(nearest.name);setJourney(null);setSelectedLiveTrip(null);
+        setRouteInfo(route.id);setStationPanel("destinations");setSidebarCollapsed(false);
+        setExploreOpen(false);setStatsOpen(false);setActiveView("departures");setMobileSheetState("expanded");
+        map.flyTo([nearest.lat,nearest.lon],Math.max(map.getZoom(),9),{animate:!prefersReducedMotion(),duration:.4});
+      };
       const trackGeometry = trackRouterRef.current?.geometry(path);
       const segments = trackGeometry?.segments ?? [];
       if (!segments.length) return;
@@ -551,7 +577,7 @@ export default function Home() {
           opacity: featured ? .96 : muted ? .14 : minimalMode ? .28 : .84, lineCap: "round", lineJoin: "round",
         }).addTo(layer);
         line.bindTooltip(routeElement(route.id, `${route.operator} · ${coverage}% der Strecke mit DB-Geometrie belegt · etwa ${route.frequency} Zugpaare/Tag`), { sticky: true });
-        line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        line.on("click", event => openRouteAt([event.latlng.lat,event.latlng.lng]));
       }
       const labelPoints = [...segments].sort((left, right) => right.length - left.length)[0];
       if (showRouteLabels && !minimalMode && !muted && routeZoom >= 6 && labelPoints.length > 1) {
@@ -562,7 +588,7 @@ export default function Home() {
           .setLatLng(anchor)
           .setContent(routeBadgeElement(route))
           .addTo(layer);
-        label.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        label.on("click", () => openRouteAt(anchor));
       }
     };
 
@@ -934,7 +960,8 @@ export default function Home() {
   }
 
   function toggleLiveCategory(category: LiveTrainCategory) {
-    setLiveCategories((current) => current.includes(category) ? (current.length === 1 ? current : current.filter((item) => item !== category)) : [...current, category]);
+    setLiveVisible(true);setLiveView("trains");
+    setLiveCategories((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category]);
   }
 
   function togglePlannerCategory(category: PlannerCategory) {
@@ -1184,7 +1211,7 @@ export default function Home() {
         <button type="button" className="brand" onClick={resetMap} aria-label="BahnConnections Startansicht">
           <span className="brand-mark">B</span><span className="brand-name">BahnConnections</span><span className="beta">{APP_VERSION_LABEL}</span>
         </button>
-        <DesktopNavigation value={desktopView} onChange={navigate} />
+        <DesktopNavigation value={desktopView} onChange={navigate} language={language} />
         <SmartSearch stations={allStations} value={search} onChange={setSearch} onSelect={selectStation} favoriteIds={favoriteIds} liveTransit />
         <div className="header-actions">
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
@@ -1202,17 +1229,7 @@ export default function Home() {
 
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
         <div ref={mapElementRef} className="map-canvas" />
-        {!boardOnly && <div className="location-tools" aria-label="Standort und Fußweg">
-          <button type="button" className={`location-trigger ${geoStatus}`} onClick={()=>startLocation()} aria-label={geoPosition ? "Eigenen Standort auf Karte zentrieren" : "Live-Standort aktivieren"} title={geoPosition ? "Zu meinem Standort" : "Standort freigeben"}><span><UiIcon name="location" /></span><b>{geoStatus === "locating" ? "Suche Standort" : geoPosition ? "Mein Standort" : "Standort"}</b></button>
-          {geoPosition && <button type="button" className="location-stop" onClick={stopLocation} aria-label="Standortverfolgung beenden" title="Standort ausschalten">×</button>}
-          {geoPosition && selected && <button type="button" className="location-walk" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>{walkStatus === "loading" ? "Fußweg lädt …" : "Fußweg hierher"}</button>}
-          {geoPosition && !selected && nearestStation && <button type="button" className="location-nearest" onClick={() => selectStation(nearestStation.station)} title={`${Math.round(nearestStation.distance)} m Luftlinie`}>Nächster Bahnhof: {nearestStation.station.name}</button>}
-          {geoMessage && <span className="location-message" role="status">{geoMessage}</span>}
-        </div>}
-        {!boardOnly && (walkStatus === "ready" || walkStatus === "error" || (walkStatus === "loading" && walkTargetId)) && <div className="walking-card" role="status">
-          <div className="walking-card-head"><span aria-hidden="true">↗</span><div><strong>Fußweg {stationById.get(walkTargetId ?? "")?.name ? `nach ${stationById.get(walkTargetId ?? "")!.name}` : "zum Bahnhof"}</strong><small>{walkRoute ? `${Math.ceil(walkRoute.durationSeconds / 60)} Min. · ${(walkRoute.distanceMeters / 1000).toLocaleString("de-DE", { maximumFractionDigits:1 })} km · Wegekarte` : walkMessage}</small></div><button type="button" onClick={() => { walkRequestRef.current?.abort(); setWalkRoute(null); setWalkTargetId(null); setWalkStatus("idle"); setWalkMessage(""); }} aria-label="Fußweg schließen">×</button></div>
-          {walkRoute && <><details className="walking-steps"><summary>Wegbeschreibung {walkRoute.steps.length ? `· ${walkRoute.steps.length} Schritte` : ""}</summary>{walkRoute.steps.length ? <ol>{walkRoute.steps.map((step, index) => <li key={`${step.instruction}-${index}`}><span>{step.instruction}</span><small>{step.distanceMeters} m</small></li>)}</ol> : <p>Für diesen Weg liegen keine einzelnen Abbiegehinweise vor. Folge der blauen Route auf der Karte.</p>}</details><small className="walking-source">{walkRoute.source} · Standort und Fußweg nicht als Live-Verkehrslage geprüft</small><button type="button" className="walking-refresh" onClick={() => { const station = stationById.get(walkTargetId ?? ""); if (station) void requestWalk(station); }}>Ab aktuellem Standort neu berechnen</button></>}
-        </div>}
+        {/* GPS location and walking directions now live inside route search and station information. */}
 
         {!focusMode && <>
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
@@ -1222,13 +1239,16 @@ export default function Home() {
           </div>
           {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – Zugpositionen ausgeblendet" : "Radar derzeit nicht erreichbar"}</p>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
-          {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
-            <div className="map-menu-dismiss"><strong>Kartenfilter</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
-            <span>Live-Züge</span><div className="popover-buttons"><button className={liveVisible && liveView === "trains" ? "active" : ""} onClick={() => { setLiveVisible(true); setLiveView("trains"); }}>An</button><button className={!liveVisible ? "active" : ""} onClick={() => setLiveVisible(false)}>Aus</button></div>
-            <span>Zugarten</span><div className="popover-buttons"><button className={liveCategories.includes("fern") ? "active fern" : ""} onClick={() => toggleLiveCategory("fern")}>ICE/IC</button><button className={liveCategories.includes("regional") ? "active regional" : ""} onClick={() => toggleLiveCategory("regional")}>RE/RB</button><button className={liveCategories.includes("sbahn") ? "active sbahn" : ""} onClick={() => toggleLiveCategory("sbahn")}>S-Bahn</button><button className={liveCategories.includes("ubahn") ? "active ubahn" : ""} onClick={() => toggleLiveCategory("ubahn")}>U-Bahn</button><button className={liveCategories.includes("tram") ? "active tram" : ""} onClick={() => toggleLiveCategory("tram")}>Tram</button></div>
-            <label>Status<select aria-label="Pünktlichkeitsfilter" value={liveStatusFilter} onChange={(event) => setLiveStatusFilter(event.target.value as LiveStatusFilter)}><option value="all">Alle</option><option value="delayed">Verspätet</option><option value="ontime">Pünktlich</option></select></label>
-            
-            
+          {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached map-filters-v57" id="map-view-menu" role="dialog" aria-label="Kartenfilter">
+            <div className="map-menu-dismiss"><div><strong>{language==="en"?"Map filters":"Kartenansicht"}</strong><small>{liveVisible ? visibleLiveTrips.length+(language==="en"?" trains selected":" Züge in der Auswahl") : language==="en"?"Train radar off":"Zugradar deaktiviert"}</small></div><button type="button" className="map-filter-close" onClick={()=>setLiveFiltersOpen(false)} aria-label="Kartenfilter schließen"><UiIcon name="close"/></button></div>
+            <label className="map-filter-master"><span><b>{language==="en"?"Show live trains":"Live-Züge anzeigen"}</b><small>{language==="en"?"Estimated positions":"Positionen sind geschätzt"}</small></span><input type="checkbox" checked={liveVisible} onChange={event=>{setLiveVisible(event.target.checked);if(event.target.checked)setLiveView("trains");}}/></label>
+            <div className="map-filter-section"><div className="map-filter-label">{language==="en"?"Train types":"Zugarten"}</div><div className="map-filter-grid">
+              {([["fern","ICE / IC"],["regional","RE / RB"],["sbahn","S-Bahn"],["ubahn","U-Bahn"],["tram","Tram"]] as const).map(([id,label])=><button type="button" key={id} className={liveCategories.includes(id)?"active":""} aria-pressed={liveCategories.includes(id)} onClick={()=>toggleLiveCategory(id)}>{label}{liveCategories.includes(id)&&<UiIcon name="check"/>}</button>)}
+            </div></div>
+            <div className="map-filter-section"><div className="map-filter-label">{language==="en"?"Punctuality":"Pünktlichkeit"}</div><div className="map-filter-status" role="group" aria-label="Pünktlichkeit">
+              {([["all",language==="en"?"All":"Alle"],["delayed",language==="en"?"Delayed":"Verspätet"],["ontime",language==="en"?"On time":"Pünktlich"]] as const).map(([id,label])=><button type="button" key={id} className={liveStatusFilter===id?"active":""} aria-pressed={liveStatusFilter===id} onClick={()=>{setLiveVisible(true);setLiveView("trains");setLiveStatusFilter(id);}}>{label}</button>)}
+            </div></div>
+            <div className="map-filter-footer"><button type="button" onClick={()=>{setLiveVisible(true);setLiveView("trains");setLiveCategories(["fern","regional","sbahn","ubahn","tram"]);setLiveStatusFilter("all");}}>{language==="en"?"Reset":"Zurücksetzen"}</button><button type="button" onClick={()=>setLiveFiltersOpen(false)}>{language==="en"?"Show map":"Karte anzeigen"} <UiIcon name="arrow"/></button></div>
           </div>}
           {moreMenuOpen && <button type="button" className="map-menu-backdrop" aria-label="Mehr-Menü schließen" onClick={() => setMoreMenuOpen(false)} />}
           {moreMenuOpen && <div className="simple-more-popover map-menu-popover detached" id="more-menu" role="dialog" aria-label="Mehr">
@@ -1251,7 +1271,9 @@ export default function Home() {
           routes={savedRoutes} onSave={saveCurrentRoute} onOpenRoute={openSavedRoute} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))}
           saveMessage={routeSaveMessage} message={journeyMessage} state={plannerState}
           search={{
-            stations:plannerStations, favoriteIds,
+            stations:plannerStations, favoriteIds, language,
+            onUseLocation:()=>{if(nearestStation){invalidatePlanner();setStartId(nearestStation.station.id);setStartSearch(stationDisplayName(nearestStation.station.name));setPendingPlannerLocation(false);}else{setPendingPlannerLocation(true);startLocation(false);}},
+            locationLabel:nearestStation?.station.name,locationLoading:pendingPlannerLocation,
             start:{ value:startSearch, onChange:(value) => { invalidatePlanner(); setStartSearch(value); setStartId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setStartId(station.id); setStartSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             target:{ value:targetSearch, onChange:(value) => { invalidatePlanner(); setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             departure:journeyDeparture, onDeparture:(value) => { invalidatePlanner(); setJourneyDeparture(value); },
@@ -1274,7 +1296,7 @@ export default function Home() {
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
             {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
-            <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
+            <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus==="loading"}><UiIcon name="location"/> {walkStatus==="loading"?"Fußweg wird berechnet …":"Fußweg ab meinem Standort"}</button>{walkTargetId===selected.id&&walkStatus==="ready"&&walkRoute&&<div className="station-walk-result" role="status"><b>{Math.ceil(walkRoute.durationSeconds/60)} Min. zu Fuß · {(walkRoute.distanceMeters/1000).toLocaleString("de-DE",{maximumFractionDigits:1})} km</b><small>Route auf der Karte markiert</small><details><summary>Wegbeschreibung</summary><ol>{walkRoute.steps.map((step,i)=><li key={i}>{step.instruction} · {step.distanceMeters} m</li>)}</ol></details><button type="button" onClick={()=>{setWalkRoute(null);setWalkTargetId(null);setWalkStatus("idle");}}>Route schließen</button></div>}{walkStatus==="error"&&walkMessage&&<small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
 
 <StationStats station={selected} boardSummary={boardSummary} lineSummary={stationLineSummary} /></div>}
@@ -1342,8 +1364,8 @@ export default function Home() {
 
       </section>
 
-      {settingsOpen && <SettingsDialog initialTab={settingsInitialTab} savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
-      {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
+      {settingsOpen && <SettingsDialog initialTab={settingsInitialTab} savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} language={language} onLanguage={setLanguage} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
+      {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} language={language} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setHelpOpen(false)}>

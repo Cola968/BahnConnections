@@ -25,6 +25,7 @@ import "./styles/v55-train-cockpit.css";
 import "./styles/v56-experience.css";
 import "./styles/v56-feature-polish.css";
 import "./styles/v56-travel-tools.css";
+import "./styles/v56-1-interactions.css";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
