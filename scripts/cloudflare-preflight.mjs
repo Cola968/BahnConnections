@@ -30,6 +30,7 @@ assert.ok(sitesVite.includes("configPath: './.openai/wrangler-sites-local.jsonc'
 assert.ok(sitesVite.includes("config: localBindingConfig"));
 assert.equal(sitesWorker.name,"sites-project");
 assert.equal(sitesWorker.compatibility_flags,undefined,"Avoid duplicate nodejs_compat in Sites local runtime");
+assert.ok(sitesWorker.compatibility_date <= "2026-05-22","Sites local Miniflare does not support newer compatibility dates");
 
 const pkg=JSON.parse(text("package.json"));
 assert.equal(pkg.scripts["build:cloudflare"],"vite build --config vite.cloudflare.config.ts");
