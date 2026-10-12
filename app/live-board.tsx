@@ -2,7 +2,8 @@
 
 import { boardDelayStatistics } from "./board-statistics";
 import { boardDedupeKey } from "./board-dedup";
-import { readPreferenceIds } from "./local-preferences";
+import { readPreferenceIds, writePreference } from "./local-preferences";
+import { matchesBoardDelayFilter, type BoardDelayFilter } from "./board-delay-filter";
 import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
@@ -22,7 +23,6 @@ import { trimRepeatedStationLoop } from "./trip-trimming";
 type BoardMode = "departures" | "arrivals";
 type BoardKind = "departure" | "arrival";
 type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn" | "tram";
-type DelayFilter = "all" | "ontime" | "delayed" | "canceled";
 type SortMode = "time" | "delay" | "platform" | "product";
 type BoardWindow = 60 | 120 | 180 | 240 | 500;
 type BoardVerificationStatus = "matched" | "different" | "inconclusive" | "unavailable" | "pending";
@@ -390,10 +390,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if (productFilter === "ubahn" && productName !== "ubahn") return false;
       if (productFilter === "tram" && productName !== "tram") return false;
       const delayState=deriveRealtimePresentation({scheduled:entry.plannedWhen,actual:boardDisplayActual(entry,boardLive),realtime:entry.realtime&&boardLive,cancelled:entry.canceled});
-      const delay=delayState.delayMinutes;
-      if(delayFilter==="ontime"&&(entry.canceled||delay!==0))return false;
-      if(delayFilter==="delayed"&&(entry.canceled||delay===null||delay<5))return false;
-      if (delayFilter === "canceled" && !entry.canceled) return false;
+      if (!matchesBoardDelayFilter(delayFilter,delayState)) return false;
       const platform = boardDisplayPlatform(entry,boardLive) ?? entry.plannedPlatform ?? "";
       if (platformFilter !== "all" && platform !== platformFilter) return false;
       if (normalisedQuery && ![entry.line?.name, entry.direction, entry.provenance, platform].filter(Boolean).join(" ").toLocaleLowerCase("de").includes(normalisedQuery)) return false;
@@ -512,7 +509,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     const key = entryKey(entry);
     setPinned((current) => {
       const next = current.includes(key) ? current.filter((item) => item !== key) : [key, ...current].slice(0, 30);
-      localStorage.setItem("bahnconnections-pinned-trips", JSON.stringify(next));
+      writePreference(localStorage,"bahnconnections-pinned-trips",JSON.stringify(next));
       return next;
     });
   }
