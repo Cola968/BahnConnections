@@ -29,7 +29,7 @@ export function PlannerPanel(props:PlannerPanelProps) {
         {props.saveMessage&&<p role="status" className="settings-message">{props.saveMessage}</p>}
         <SavedRoutesPanel routes={props.routes} onOpen={props.onOpenRoute} onRemove={props.onRemoveRoute}/>
       </details>
-      {props.nearbyLabel&&<button type="button" className="planner-nearby settings-link" onClick={props.onNearby}>Ab nächstem Bahnhof · {props.nearbyLabel}</button>}
+
     </div>
     <div className="planner-footer"><PlannerSearchAction {...search}/></div>
   </aside>;
