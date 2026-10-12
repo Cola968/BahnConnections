@@ -202,7 +202,10 @@ html[data-theme="dark"] {
   .app-shell.has-primary-panel .topbar>.station-search { display:none!important; }
 }
 /* Shared journey links are secondary actions with a legible copy fallback. */
-.app-shell .planner-share-status { margin:8px 0 4px; font-size:.75rem; line-height:1.5; color:var(--muted); overflow-wrap:anywhere; }
+.app-shell .planner-share-action { display:flex; align-items:center; gap:10px; min-width:0; margin:7px 0 9px; }
+.app-shell .planner-share-action button { min-height:40px; border:0; background:transparent; color:var(--action); font-size:.8125rem; font-weight:650; text-decoration:underline; text-underline-offset:3px; }
+.app-shell .planner-share-action button:disabled { opacity:.5; text-decoration:none; }
+.app-shell .planner-share-action p { min-width:0; margin:0; color:var(--muted); font-size:.75rem; line-height:1.4; overflow-wrap:anywhere; }
 .app-shell .explore-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .app-shell .explore-actions>button { flex:1 1 120px; min-height:44px; }
 /* Respect reduced transparency, forced colors, and reduced motion. */
