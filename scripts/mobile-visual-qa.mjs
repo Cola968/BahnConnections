@@ -522,7 +522,7 @@ try {
         horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
         bounds:rect?{left:rect.left,right:rect.right}:null};
     })()`);
-    if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min.'||
+    if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min. Verspätung'||
       !(inspected.speed??'').includes('km/h')||!inspected.canFollow||inspected.mobileSheet!=='half'||
       inspected.horizontalOverflow||!inspected.bounds||inspected.bounds.left<-1||inspected.bounds.right>391)
       throw new Error('Rail radar inspector regression: '+JSON.stringify(inspected));
