@@ -26,7 +26,8 @@ html[data-theme="dark"] {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
-.app-shell :is(.board-mode-tabs button,.board-filter-toggle,.board-filter-close,.board-more,
+/* Compact timetable tabs remain 40px tall; 44px here would steal a visible row. */
+.app-shell :is(.board-filter-close,.board-more,
   .board-filter-panel button,.map-menu-popover button,.train-action-row button,
   .train-stops-header button,.station-section-tabs button,.mobile-navigation>button) {
   min-height: var(--bc-interactive);
