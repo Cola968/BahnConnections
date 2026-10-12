@@ -6,6 +6,7 @@ import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.t
 import { pointOnTrip,activeEstimatedPosition,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
 import { normaliseTrainStops,nextTrainStopIndex,headingDegrees,cardinalDirection,sourceFreshness } from '../app/train-inspector-data.ts';
 import { trainArrivalView } from '../app/train-arrival.ts';
+import { trainArrivalView } from '../app/train-arrival.ts';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 // Distinguish genuine realtime predictions from the base timetable.
 const scheduled='2026-10-11T12:00:00Z',predicted='2026-10-11T12:08:00Z';
@@ -81,6 +82,35 @@ assert.equal(realtimeModelSpeed({...trip,departure:'invalid'},halfway),null,'Bro
 assert.equal(realtimeModelSpeed({...trip,arrival:'2026-10-11T12:00:01Z'},halfway),null,'Implausible durations cannot yield attractive false speeds');
 assert.equal(segmentAverageSpeed({...trip,distance:0}),null);assert.equal(segmentAverageSpeed({...trip,distance:1e9}),null);
 
+
+
+const referenceTime='2026-10-11T12:00:00Z';
+const onTime=trainArrivalView({scheduled:referenceTime,actual:referenceTime,realtime:true,fresh:true});
+assert.equal(onTime.plannedLabel,'14:00','Times must be consistently shown in Germany timezone');
+assert.equal(onTime.expectedLabel,'14:00','On-time real-time forecast stays visible rather than disappearing');
+assert.equal(onTime.delayMinutes,0,'A verified on-time arrival has zero delay');
+assert.equal(onTime.status,'Pünktlich');
+const delayed=trainArrivalView({scheduled:referenceTime,actual:'2026-10-11T12:07:00Z',realtime:true,fresh:true});
+assert.equal(delayed.delayMinutes,7,'Late forecast displays actual +7 minute delay');
+assert.equal(delayed.status,'+7 Min.');
+const early=trainArrivalView({scheduled:referenceTime,actual:'2026-10-11T11:56:00Z',realtime:true,fresh:true});
+assert.equal(early.delayMinutes,-4,'Early arrivals must not be relabelled on-time');
+assert.equal(early.status,'4 Min. früher');
+const stale=trainArrivalView({scheduled:referenceTime,actual:'2026-10-11T12:07:00Z',realtime:true,fresh:false});
+assert.equal(stale.plannedLabel,'14:00','Stale predictions retain known scheduled arrival');
+assert.equal(stale.expected,null,'Stale predicted arrival must not be marketed as live');
+assert.equal(stale.delayMinutes,null,'Do not show a current delay from a stale forecast');
+const timetable=trainArrivalView({scheduled:referenceTime,actual:referenceTime,realtime:false,fresh:true});
+assert.equal(timetable.plannedLabel,'14:00');
+assert.equal(timetable.expected,null,'No realtime feed means no confirmed expected time');
+assert.equal(timetable.status,'Nur Fahrplan');
+const missingForecast=trainArrivalView({scheduled:referenceTime,realtime:true,fresh:true});
+assert.equal(missingForecast.expected,null,'Missing prediction is not replaced with a fiction');
+assert.match(missingForecast.status,/Echtzeitprognose fehlt/);
+const missingSchedule=trainArrivalView({actual:'2026-10-11T12:03:00Z',realtime:true,fresh:true});
+assert.equal(missingSchedule.planned,null,'No fake scheduled time when the feed omits it');
+assert.equal(missingSchedule.expectedLabel,'14:03');
+assert.equal(missingSchedule.delayMinutes,null,'Cannot compute delay without scheduled arrival');
 
 const fullStops=normaliseTrainStops([
   {mode:'LONG_DISTANCE',realTime:true,from:{name:'Berlin Hbf',departure:'2026-10-11T12:00:00Z'},to:{name:'Südkreuz',arrival:'2026-10-11T12:05:00Z'}},
