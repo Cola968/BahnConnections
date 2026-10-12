@@ -724,7 +724,7 @@ export default function Home() {
   }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme, leafletRef, mapRef, stationLayerRef]);
 
   useLiveMap(mapReady,leafletRef,mapRef,liveLayerRef,visibleLiveTrips,liveVisible,
-    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,selectedId:selectedLiveTrip?.tripId??null,appearance:`${theme}:${highContrast}`},selectLiveTrip);
+    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,selectedId:selectedLiveTrip?.tripId??null,radarStatus:liveState,radarUpdatedAtMs:liveUpdatedAt?.getTime()??null,appearance:`${theme}:${highContrast}`},selectLiveTrip);
 
   // Camera follow is deliberate: map dragging stops tracking. The point is always
   // interpolated from rail geometry, never treated as a reported GPS location.
@@ -1176,9 +1176,9 @@ export default function Home() {
           <div ref={liveToolbarRef} className="live-map-toolbar compact-toolbar" aria-label="Kartenwerkzeuge">
             <button type="button" className={liveFiltersOpen ? "map-menu-trigger active" : "map-menu-trigger"} onClick={() => { setLiveFiltersOpen((value) => !value); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu"><UiIcon name="layers" />Ansicht</button>
             {desktopWorkspace && <button type="button" onClick={showGermany}>Deutschland</button>}
-            <span className="sr-only" aria-live="polite">{!liveVisible ? "Live-Daten nicht aktiv" : liveState === "loading" ? "Live-Daten werden geladen" : liveState === "error" ? "Live-Daten nicht erreichbar" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live-Daten · ${visibleLiveTrips.length} Züge`}</span>
+            <span className="sr-only" aria-live="polite">{!liveVisible ? "Live-Daten nicht aktiv" : liveState === "loading" ? "Live-Daten werden geladen" : liveState === "error" ? "Live-Daten nicht erreichbar" : liveState === "stale" ? "Radardaten veraltet" : !visibleLiveTrips.some(trip => trip.realTime) ? "Keine Echtzeitdaten" : `Live-Daten · ${visibleLiveTrips.length} Züge`}</span>
           </div>
-          {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – letzter bekannter Stand" : "Radar derzeit nicht erreichbar"}</p>}
+          {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – Zugpositionen ausgeblendet" : "Radar derzeit nicht erreichbar"}</p>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached" id="map-view-menu" role="dialog" aria-label="Kartenansicht einstellen">
             <div className="map-menu-dismiss"><strong>Kartenfilter</strong><button type="button" onClick={() => setLiveFiltersOpen(false)} aria-label="Ansicht schließen"><UiIcon name="close" /></button></div>
