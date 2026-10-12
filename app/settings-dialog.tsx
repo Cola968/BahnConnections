@@ -113,12 +113,7 @@ export function SettingsDialog(p:Props) {
           <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
         </section>
         <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="layers"/> Kartendarstellung</h3><p>Selten benötigte Kartenoptionen.</p></div><Toggle label="Fernverkehrsnetz" checked={p.overviewRoutesVisible} onChange={p.onOverviewRoutesVisible}/><Toggle label="Liniennamen" checked={p.showRouteLabels} onChange={p.onShowRouteLabels}/><Toggle label="Zugspur" checked={p.showTrails} onChange={p.onShowTrails}/></section>
-        <section className="settings-group v53-app-info">
-          <div className="settings-section-heading"><h3><UiIcon name="layers"/> App & Updates</h3><p>Version, Installation und Aktualisierungen.</p></div>
-          <div className="v53-version-row"><span><b>Webversion</b><small>Updates werden über die Website bereitgestellt.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
-          <a href="/changelog" className="v53-settings-link"><UiIcon name="info"/><span>Was ist neu? · Changelog</span></a>
-          <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>Installation und Updates</span></a>
-        </section>
+
       </>}
 
       {tab==="about" && <>
