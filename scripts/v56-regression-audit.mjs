@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { boardDisplayActual, boardDisplayPlatform, boardEventTime, boardPredictionFresh } from "../app/board-time.ts";
+import { boardDedupeKey } from "../app/board-dedup.ts";
 import { trainArrivalView } from "../app/train-arrival.ts";
 import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
 
@@ -23,6 +24,11 @@ assert.match(current.status,/Verspätung/);
 const unknown=deriveRealtimePresentation({scheduled:schedule,realtime:true});
 assert.equal(unknown.kind,"unknown");
 
+const serviceA={kind:"departure",plannedWhen:schedule,plannedPlatform:"5",direction:"Potsdam",provenance:"Berlin",line:{name:"RE1",routeId:"re1",product:"regional"}};
+const serviceB={...serviceA,line:{name:"RE7",routeId:"re7",product:"regional"}};
+assert.notEqual(boardDedupeKey(serviceA),boardDedupeKey(serviceB),"Different lines at same time/platform cannot collapse");
+assert.notEqual(boardDedupeKey(serviceA),boardDedupeKey({...serviceA,plannedWhen:delayed}),"Another departure minute is distinct");
+assert.equal(boardDedupeKey({...serviceA,tripId:"trip-1"}),boardDedupeKey({...serviceB,tripId:"trip-1"}),"A stable tripId takes precedence");
 const source=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const search=source("app/api/stations/search/route.ts");
 assert.match(search,/query\.length > 100/);
