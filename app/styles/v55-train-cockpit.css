@@ -126,3 +126,13 @@ html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!im
   .train-arrival-time>time {font-size:clamp(1.2rem,5.5vw,1.36rem);}
   .train-arrival-footer>small {font-size:.63rem;}
 }
+
+/* Keep the first-screen mobile inspector focused on useful data, not repeated headings. */
+.train-inspector .train-header {padding:2px 0 5px!important;}
+.train-inspector .train-header .train-position-note {font-size:.72rem;line-height:1.3;margin:2px 0 0;}
+@media(max-width:699px) {
+ .train-inspector .train-header {padding:0 0 4px!important;}
+ .train-inspector .train-heading-row {margin-bottom:3px;}
+ .train-inspector .train-cockpit {gap:8px;}
+ .train-inspector .train-arrival-panel {margin-top:0;}
+}
