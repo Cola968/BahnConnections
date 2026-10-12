@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { PanelTools, type MobileSheetState, type PanelControls } from "./panel-tools";
 import { RealtimeTime } from "./realtime-time";
-import { deriveRealtimePresentation } from "./realtime-presentation";
+import { trainArrivalView } from "./train-arrival";
+import { TrainArrivalPanel } from "./train-arrival-panel";
 import { activeEstimatedPosition, liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
 import { compactStationLabel } from "./transit-style";
 import { cardinalDirection, headingDegrees, nextTrainStopIndex, normaliseTrainStops, sourceFreshness, type TrainStop } from "./train-inspector-data";
@@ -61,17 +62,20 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const past=pointOnTrip(trip,Math.max(0,progress-.006));
   const heading=headingDegrees(past,future);
   const compass=cardinalDirection(heading);
-  const realtime=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
   const freshness=sourceFreshness(radarUpdatedAt,now,inRadar);
-  const modelSpeed = freshness==="current" && radarStatus==="ready" ? realtimeModelSpeed(trip,now) : null;
-  const canStartTracking = freshness==="current" && radarStatus==="ready" && activeEstimatedPosition(trip,now)!==null;
+  const sourceCurrent=freshness==="current" && radarStatus==="ready";
+  const arrival=trainArrivalView({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime,fresh:sourceCurrent});
+  const modelSpeed = sourceCurrent ? realtimeModelSpeed(trip,now) : null;
+  const canStartTracking = sourceCurrent && activeEstimatedPosition(trip,now)!==null;
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
-  const remaining=validDate(trip.arrival);
+  const remaining=validDate(arrival.expected??arrival.planned??undefined);
   const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
   const nextIndex=nextTrainStopIndex(stops,now);
   const upcoming=nextIndex>=0?stops[nextIndex]:null;
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
   const from=stationName(trip.from.name),to=stationName(trip.to.name);
+  const finalStop=detailState==="ready" ? stops.at(-1) : undefined;
+  const showDestination=Boolean(finalStop && !finalStop.cancelled && stationName(finalStop.name)!==to);
 
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Zugradar" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
@@ -82,7 +86,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
           <span className={`train-source-tag ${freshness}`}><i aria-hidden="true"/>{statusText}</span>
         </div>
         <h2>{from} <span aria-hidden="true">→</span> {to}</h2>
-        <p>{position?"Position anhand der Haltezeiten geschätzt":"Keine belastbare Position verfügbar"}</p>
+        <p>{sourceCurrent&&position?"Position anhand der Haltezeiten geschätzt":"Keine aktuelle Positionsschätzung"}</p>
       </div>
 
       {tracked&&<div className={canStartTracking?"train-follow-state":"train-follow-state is-paused"} role="status"><span className="train-follow-dot" aria-hidden="true"/> {canStartTracking?`Kartenkamera folgt ${trip.name}`:"Verfolgung pausiert: keine aktuelle Positionsprognose"} <small>{canStartTracking?"Manuell verschieben beendet die Verfolgung":"Erneute Radardaten abwarten oder Verfolgung beenden"}</small></div>}
@@ -94,6 +98,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
           <div className="train-cockpit-track" aria-hidden="true"><i/><UiIcon name="train"/><i/></div>
           <div><small>Nach</small><b>{to}</b></div>
         </div>
+        <TrainArrivalPanel destination={to} scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime} fresh={sourceCurrent}/>
         <div className="train-cockpit-bottom">
           <div className="train-cockpit-speed"><small>Geschwindigkeit · Modell</small><strong>{modelSpeed===null?"—":modelSpeed}<em>km/h</em></strong><span>{modelSpeed===null?"Kein gültiger Echtzeit-Schätzwert":"Aus Streckenlänge und prognostizierter Fahrzeit"}</span></div>
           <div className="train-cockpit-provenance"><b>{modelSpeed===null?"Keine Messung":"Modellschätzung"}</b><small>Kein GPS / Tacho</small><small>{radarUpdatedAt&&radarStatus==="ready"&&freshness==="current"?`Datenstand ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt)}`:"Keine frischen Radar-Daten"}</small></div>
@@ -105,16 +110,17 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       </div>
       <div className="train-hero-stats">
         <div className="train-metric"><small>Ø Abschnitt</small><strong>{speed===null?"—":speed} <em>km/h</em></strong><span>{speed===null?"Keine Distanzangabe":"Aus Distanz und Fahrzeit berechnet"}</span></div>
-        <div className="train-metric"><small>Ankunft Abschnitt</small><strong>{clock(trip.arrival)}</strong><span>{etaMinutes===null?"Keine Zeitangabe":etaMinutes===0?"Fahrzeit abgelaufen":`in etwa ${etaMinutes} Min.`}</span></div>
-        <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${realtime.tone}`}>{realtime.delayMinutes===null?"—":realtime.delayMinutes>0?`+${realtime.delayMinutes} Min.`:`${realtime.delayMinutes} Min.`}</strong><span>{realtime.delayMinutes===null?"Keine bestätigte Prognose":trip.realTime?"Prognose der Ankunft":"Fahrplanangabe"}</span></div>
+        <div className="train-metric"><small>Bis zum nächsten Halt</small><strong>{etaMinutes===null?"—":etaMinutes===0?"0":etaMinutes} <em>{etaMinutes===null?"":"Min."}</em></strong><span>{etaMinutes===null?"Keine Ankunftszeit":etaMinutes===0?"Ankunftszeit erreicht":arrival.isFreshPrediction?"Laut aktueller Prognose":"Nach Fahrplan"}</span></div>
+        <div className="train-metric"><small>Verspätung</small><strong className={`train-delay-${arrival.tone}`}>{arrival.delayMinutes===null?"—":arrival.delayMinutes>0?`+${arrival.delayMinutes} Min.`:arrival.delayMinutes<0?`${arrival.delayMinutes} Min.`:"0 Min."}</strong><span>{arrival.delayMinutes===null?"Keine aktuelle Verspätungsprognose":arrival.delayMinutes===0?"Pünktlich laut Prognose":arrival.delayMinutes<0?"Früher als geplant":"Aktuelle Ankunftsprognose"}</span></div>
       </div>
 
       <section className="train-progress-panel" aria-label="Verlauf des aktuellen Abschnitts">
-        <div className="train-progress-head"><b>Unterwegs</b><span>{position?`${Math.round(progress*100)} % geschätzt`:"Position unbekannt"}</span></div>
-        <div className="train-progress-line" role="progressbar" aria-valuenow={position?Math.round(progress*100):undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Geschätzter Fortschritt zwischen zwei Halten"><i style={{width:`${position?progress*100:0}%`}}/>{position&&<span style={{left:`${progress*100}%`}}><UiIcon name="train"/></span>}</div>
+        <div className="train-progress-head"><b>Unterwegs</b><span>{sourceCurrent&&position?`${Math.round(progress*100)} % geschätzt`:"Position nicht aktuell"}</span></div>
+        <div className="train-progress-line" role="progressbar" aria-valuenow={sourceCurrent&&position?Math.round(progress*100):undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Geschätzter Fortschritt zwischen zwei Halten"><i style={{width:`${sourceCurrent&&position?progress*100:0}%`}}/>{sourceCurrent&&position&&<span style={{left:`${progress*100}%`}}><UiIcon name="train"/></span>}</div>
         <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime} compact/></div></div>
       </section>
 
+      {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={sourceCurrent}/>}
       <section className="train-stops-section">
         <div className="train-stops-header"><div><b>Fahrtverlauf</b><small>{detailState==="loading"?"Wird geladen …":detailState==="ready"?`${stops.length} gemeldete Halte`:"Fahrtverlauf nicht verfügbar"}</small></div>{detailState==="ready"&&stops.length>6&&<button onClick={()=>setShowAllStops(x=>!x)} type="button">{showAllStops?"Weniger":"Alle Halte"}</button>}</div>
         {upcoming&&<div className="train-next-stop"><UiIcon name="location"/><span><small>Nächster gemeldeter Halt</small><b>{stationName(upcoming.name)}</b></span><strong>{clock(upcoming.arrival??upcoming.departure)}</strong></div>}
