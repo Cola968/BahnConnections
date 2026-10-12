@@ -41,7 +41,7 @@ export function PwaRegister() {
       const installPath = payload?.installPath || fallbackInstallPath(label);
       const hasNewVersion = Boolean(waiting) || Boolean(version && isNewerAppVersion(version, APP_VERSION));
       if (!hasNewVersion) return;
-      if (window.localStorage.getItem(DISMISSED_UPDATE_KEY) === label) return;
+      try { if (window.localStorage.getItem(DISMISSED_UPDATE_KEY) === label) return; } catch { /* Storage can be blocked in private browsing. */ }
       setNotice({ label, installPath, waiting:waiting ?? undefined });
     };
 
@@ -133,7 +133,7 @@ export function PwaRegister() {
   };
 
   const dismiss = () => {
-    window.localStorage.setItem(DISMISSED_UPDATE_KEY, notice.label);
+    try { window.localStorage.setItem(DISMISSED_UPDATE_KEY, notice.label); } catch { /* Dismissal still works for this session. */ }
     setNotice(null);
   };
 
