@@ -99,6 +99,7 @@ check("V55 never renders stale intermediate stop times as realtime",
   inspector.includes('realtime={stop.realtime&&detailsCurrent}') &&
   inspector.includes('actual={stop.realtime&&detailsCurrent?') &&
   inspector.includes('const arrival=trainArrivalView(') && inspector.includes('nextTrainStopIndex(stops,now,detailsCurrent)'));
+check("V55 review: positive delays and initial radar loading are described accurately",arrivalLogic.includes('Min. Verspätung') && inspector.includes('radarStatus==="loading"?"Radardaten laden"') && inspector.includes("Echtzeit veraltet · Fahrplanbasis"));
 check("V55 selected markers stay visible and highlight before follow",page.includes("selectedId:selectedLiveTrip?.tripId") && liveMapRenderer.includes("trip.tripId!==options.selectedId") && liveMapRenderer.includes("?\x27 selected\x27"));
 check("V55 train tap opens route cockpit with model speed and follow button",inspector.includes("train-cockpit-speed") && inspector.includes("Geschwindigkeit · Modell") && inspector.includes("Auf Karte verfolgen") && trainCockpitCss.includes(".train-cockpit-route"));
 check("V55 HUD refreshes the model speed with correct freshness gating",page.includes("<TrainRadarHud") && trainHud.includes("realtimeModelSpeed(trip,now)") && trainHud.includes("sourceFreshness") && trainHud.includes("km/h · Modell"));
