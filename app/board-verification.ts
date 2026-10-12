@@ -35,6 +35,21 @@ export function safeBoardAlertHeaders(value:unknown):string[] {
   return result;
 }
 
+/** Do not mark malformed or missing provider timestamps as real-time updates. */
+export function safeBoardMetadata(raw: unknown):{source:string;updatedAt?:string;warnings:string[]} {
+  const record=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw as Record<string,unknown>:{};
+  const suppliedSource=typeof record.source==="string"?record.source.trim().replace(/\s+/g," "):"";
+  const source=suppliedSource.slice(0,100)||"Transitous / MOTIS";
+  const suppliedTimestamp=record.updatedAt;
+  const updatedAt=typeof suppliedTimestamp==="string"&&Number.isFinite(Date.parse(suppliedTimestamp))
+    ? suppliedTimestamp : undefined;
+  const warnings=Array.isArray(record.warnings)
+    ? record.warnings.filter((value):value is string=>typeof value==="string")
+      .map(value=>value.trim().replace(/\s+/g," ").slice(0,240))
+      .filter(Boolean).slice(0,12) : [];
+  return {source,updatedAt,warnings};
+}
+
 export type DbBoardRow = { tripId?:string; when?:string; plannedWhen?:string; direction?:string; cancelled?:boolean; line?:{ name?:string; product?:string } };
 
 export type BoardCrossCheck = {
