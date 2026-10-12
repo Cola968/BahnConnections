@@ -75,3 +75,19 @@
 @media(max-width:480px){.app-shell .map-filters-v57{width:min(360px,calc(100vw - 26px));padding:14px!important;gap:12px}.app-shell .map-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell .station-line-row{gap:8px!important}.app-shell .station-line-row>.service-logo{padding:0 6px!important;font-size:.69rem!important}.app-shell .station-line-copy b{font-size:.82rem}}
 @media(prefers-reduced-motion:reduce){.app-shell .plan-button[aria-busy="true"] svg,.app-shell .map-filters-v57,.app-shell .simple-more-popover,.app-shell .incident-card{animation:none!important}.app-shell .station-line-row,.app-shell .map-filter-grid button,.app-shell .map-filter-status button,.app-shell .mobile-navigation button svg{transition:none!important}}
 html[data-motion="reduced"] .app-shell .plan-button svg,html[data-motion="reduced"] .app-shell .incident-card{animation:none!important}
+
+/* Installation remains as an update utility, not a promotional standalone page. */
+.install-page.install-v56.install-v56-compact{padding:clamp(14px,6vh,42px) 12px!important;background:var(--soft);align-items:start}
+.install-page.install-v56-compact .install-v56-card{max-width:540px!important;box-shadow:0 8px 25px rgba(18,32,44,.07)!important;padding:clamp(18px,4vw,30px)!important}
+.install-page.install-v56-compact .install-v56-navigation{margin-bottom:22px}
+.install-page.install-v56-compact .install-compact-header{display:flex;gap:13px;align-items:center;margin-bottom:25px}
+.install-page.install-v56-compact .install-compact-header .install-v56-logo{width:42px;height:42px;border-radius:12px;flex:none}
+.install-page.install-v56-compact .install-compact-header>div{display:grid;gap:4px}
+.install-page.install-v56-compact .install-compact-header h1{font-size:1.25rem!important;line-height:1.15!important;letter-spacing:-.024em;margin:0!important;color:#1b3041}
+.install-page.install-v56-compact .install-compact-header p{font-size:.76rem;color:#637786;margin:0}
+.install-page.install-v56-compact .install-actions,.install-page.install-v56-compact .install-status{gap:10px}
+.install-page.install-v56-compact .install-actions>.install-update-panel{padding:14px!important;margin:0!important;border:1px solid #d8e2e7!important;border-left:3px solid #b9c7d0!important;border-radius:12px!important}
+.install-page.install-v56-compact .install-update-panel>b{font-size:.91rem}
+.install-page.install-v56-compact .install-update-panel>span{display:block;font-size:.81rem;line-height:1.5}
+.install-page.install-v56-compact .install-steps{padding:14px;font-size:.81rem}
+.install-page.install-v56-compact .install-v56-faq{margin-top:20px}
