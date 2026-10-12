@@ -77,7 +77,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
   const from=stationName(trip.from.name),to=stationName(trip.to.name);
   const finalStop=detailState==="ready" ? stops.at(-1) : undefined;
-  const showDestination=Boolean(finalStop && !finalStop.cancelled && stationName(finalStop.name)!==to);
+  const showDestination=Boolean(finalStop && stationName(finalStop.name)!==to);
 
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Zugradar" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
@@ -122,7 +122,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime&&sourceCurrent} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime&&sourceCurrent} compact/></div></div>
       </section>
 
-      {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={detailsCurrent}/>}
+      {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={detailsCurrent} cancelled={finalStop.cancelled}/>}
       <section className="train-stops-section">
         <div className="train-stops-header"><div><b>Fahrtverlauf</b><small>{detailState==="loading"?"Wird geladen …":detailState==="ready"?`${stops.length} gemeldete Halte`:"Fahrtverlauf nicht verfügbar"}</small></div>{detailState==="ready"&&stops.length>6&&<button onClick={()=>setShowAllStops(x=>!x)} type="button">{showAllStops?"Weniger":"Alle Halte"}</button>}</div>
         {upcoming&&<div className="train-next-stop"><UiIcon name="location"/><span><small>Nächster gemeldeter Halt</small><b>{stationName(upcoming.name)}</b></span><strong>{clock(upcoming.arrival??upcoming.departure)}</strong></div>}
