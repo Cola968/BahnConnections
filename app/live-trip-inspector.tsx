@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { PanelTools, type MobileSheetState, type PanelControls } from "./panel-tools";
 import { RealtimeTime } from "./realtime-time";
+import { formatRealtimeTime } from "./realtime-presentation";
 import { trainArrivalView } from "./train-arrival";
 import { TrainArrivalPanel } from "./train-arrival-panel";
 import { activeEstimatedPosition, liveTripProgress, pointOnTrip, segmentAverageSpeed, realtimeModelSpeed, type LiveTrip } from "./live-trains";
@@ -23,7 +24,7 @@ type Props={
   inRadar:boolean;
 };
 const validDate=(time?:string)=>{const n=Date.parse(time??"");return Number.isFinite(n)?n:null;};
-const clock=(value?:string)=>{const n=validDate(value);return n===null?"–":new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(n);};
+const clock=(value?:string)=>formatRealtimeTime(value);
 const stationName=(name?:string)=>compactStationLabel(name)??name??"Unbekannt";
 
 export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClose,tracked,onTrack,radarUpdatedAt,radarStatus,inRadar}:Props) {
@@ -129,7 +130,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         {detailState==="ready"&&<ol className="train-stop-list">{visibleStops.map((stop,index)=>{
           const isNext=stop===upcoming;const time=stop.arrival??stop.departure;
           const past=validDate(time);const occurred=past!==null&&past<now-60000;
-          return <li key={`${stop.name}-${index}-${time??""}`} className={isNext?"next":stop.cancelled?"cancelled":occurred?"passed":""}><i aria-hidden="true"/><span><b>{stationName(stop.name)}</b><small>{stop.cancelled?"Halt entfällt":isNext?"Nächster Halt":stop.platform?`Gleis ${stop.platform}`:""}</small></span><RealtimeTime scheduled={stop.scheduledArrival??stop.scheduledDeparture} actual={stop.arrival??stop.departure} realtime={stop.realtime&&sourceCurrent} cancelled={stop.cancelled} compact/></li>;
+          return <li key={`${stop.name}-${index}-${time??""}`} className={isNext?"next":stop.cancelled?"cancelled":occurred?"passed":""}><i aria-hidden="true"/><span><b>{stationName(stop.name)}</b><small>{stop.cancelled?"Halt entfällt":isNext?"Nächster Halt":stop.platform?`Gleis ${stop.platform}`:""}</small></span><RealtimeTime scheduled={stop.scheduledArrival??stop.scheduledDeparture??(!stop.realtime?(stop.arrival??stop.departure):undefined)} actual={stop.realtime&&sourceCurrent?(stop.arrival??stop.departure):undefined} realtime={stop.realtime&&sourceCurrent} cancelled={stop.cancelled} compact/></li>;
         })}</ol>}
       </section>
       <details className="train-data-disclosure"><summary>Datenquelle & Genauigkeit</summary><p>Transitous/MOTIS liefert Halte und – wo vorhanden – Echtzeitprognosen. Position, Richtung und der aktuelle Geschwindigkeits-Schätzwert entstehen aus Streckengeometrie und prognostizierten Haltezeiten. Der km/h-Wert ist ein Modell, keine gemessene Momentangeschwindigkeit und nicht fahrzeugspezifische Telemetrie. Ohne gültige Echtzeitdaten bleibt er leer.</p><small>Radar aktualisiert: {radarUpdatedAt?new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt):"unbekannt"} · Status: {radarStatus}</small></details>
