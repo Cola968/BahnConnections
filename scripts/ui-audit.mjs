@@ -96,16 +96,16 @@ check("V55 only current radar feeds animate trains; selected trains survive filt
   page.includes('trip.tripId===selectedLiveTrip?.tripId||trip.tripId===trackedTripId') &&
   page.includes('radarReady:liveState==="ready"'));
 check("V55 never renders stale intermediate stop times as realtime",
-  inspector.includes('realtime={stop.realtime&&sourceCurrent}') &&
-  inspector.includes('actual={stop.realtime&&sourceCurrent?') &&
-  inspector.includes('const arrival=trainArrivalView('));
+  inspector.includes('realtime={stop.realtime&&detailsCurrent}') &&
+  inspector.includes('actual={stop.realtime&&detailsCurrent?') &&
+  inspector.includes('const arrival=trainArrivalView(') && inspector.includes('nextTrainStopIndex(stops,now,detailsCurrent)'));
 check("V55 selected markers stay visible and highlight before follow",page.includes("selectedId:selectedLiveTrip?.tripId") && liveMapRenderer.includes("trip.tripId!==options.selectedId") && liveMapRenderer.includes("?\x27 selected\x27"));
 check("V55 train tap opens route cockpit with model speed and follow button",inspector.includes("train-cockpit-speed") && inspector.includes("Geschwindigkeit · Modell") && inspector.includes("Auf Karte verfolgen") && trainCockpitCss.includes(".train-cockpit-route"));
 check("V55 HUD refreshes the model speed with correct freshness gating",page.includes("<TrainRadarHud") && trainHud.includes("realtimeModelSpeed(trip,now)") && trainHud.includes("sourceFreshness") && trainHud.includes("km/h · Modell"));
 check("V55 planned vs expected time strikes through only when different",arrivalPanel.includes("superseded") && trainCockpitCss.includes("text-decoration:line-through") && arrivalPanel.includes("arrival.delayMinutes!==0"));
 check("V55 midnight arrival changes carry a day offset",arrivalLogic.includes("expectedDayOffset") && arrivalPanel.includes("train-arrival-day") && trainCockpitCss.includes(".train-arrival-time.expected .train-arrival-day"));
 check("V55 stale or timetable-only arrival is not mislabeled as realtime",arrivalLogic.includes("expected??planned") && arrivalPanel.includes("Ankunft (Fahrplan)") && inspector.includes('fresh={sourceCurrent}'));
-check("V55 independently validates complete-trip data and cancelled destination",inspector.includes("detailUpdatedAt") && inspector.includes("detailsCurrent") && inspector.includes("fresh={detailsCurrent} cancelled={finalStop.cancelled}") && arrivalLogic.includes('input.cancelled ? "Halt entfällt"'));
+check("V55 independently validates complete-trip data and cancelled destination",inspector.includes("detailUpdatedAt") && inspector.includes("detailsCurrent") && inspector.includes("window.setInterval(()=>void load(false),60_000)") && inspector.includes("fresh={detailsCurrent} cancelled={finalStop.cancelled}") && arrivalLogic.includes('input.cancelled ? "Halt entfällt"'));
 check("V55 never mislabels speed as GPS telemetry",inspector.includes("Kein GPS / Tacho") && trainCockpitCss.includes("prefers-reduced-motion") && trainCockpitCss.includes("forced-colors"));
 check("V54 paused tracking never pulses in success green",trainMotionCss.includes(".train-tracking-map-pulse.is-stale") && trainMotionCss.includes(".train-follow-state.is-paused") && inspector.includes('className={canStartTracking?"train-follow-state":"train-follow-state is-paused"}'));
 check("V54 motion respects OS and in-app reduced-motion preferences",trainMotionCss.includes("@media (prefers-reduced-motion:reduce)") && trainMotionCss.includes('html[data-motion="reduced"] .leaflet-marker-pane') && trainMotionCss.includes("train-progress-line>i") && trainMotionCss.includes("train-hud-enter"));
