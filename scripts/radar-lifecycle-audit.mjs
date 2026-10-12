@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { VisibilityPoller } from '../app/visibility-poller.ts';
 import { radarCoverageKey } from '../app/radar-coverage.ts';
+import { trainArrivalView } from '../app/train-arrival.ts';
 import { readBoardStream } from '../app/board-stream.ts';
 import { readPreferenceIds,readPreferenceJson } from '../app/local-preferences.ts';
 import { pointOnTrip,activeEstimatedPosition,trailForTrip,segmentAverageSpeed,realtimeModelSpeed,matchesLiveStatus } from '../app/live-trains.ts';
@@ -47,6 +48,52 @@ class Visibility extends EventTarget {hidden=false;}
 assert.equal(radarCoverageKey({id:'berlin',lat:52.00004,lon:13}),radarCoverageKey({id:'berlin',lat:52,lon:13}), 'Same rounded radar viewport keeps identity');
 assert.notEqual(radarCoverageKey({id:'berlin',lat:52,lon:13}),radarCoverageKey({id:'berlin',lat:52.015,lon:13}), 'Moving radar anchor invalidates same-station cached data');
 assert.notEqual(radarCoverageKey({id:'berlin',lat:52,lon:13}),radarCoverageKey({id:'hamburg',lat:52,lon:13}), 'Station changes invalidate cached data');
+// Arrival model: keep timetable and realtime meanings separate under all statuses.
+const scheduled="2026-10-12T14:30:00+02:00",later="2026-10-12T14:42:00+02:00";
+const late=trainArrivalView({scheduled,actual:later,realtime:true,fresh:true});
+assert.equal(late.plannedLabel,"14:30");
+assert.equal(late.expectedLabel,"14:42");
+assert.equal(late.delayMinutes,12);
+assert.equal(late.status,"+12 Min.");
+assert.equal(late.tone,"danger");
+assert.equal(late.expectedDayOffset,0);
+
+const onTime=trainArrivalView({scheduled,actual:scheduled,realtime:true,fresh:true});
+assert.equal(onTime.delayMinutes,0);
+assert.equal(onTime.status,"Pünktlich");
+assert.equal(onTime.expectedLabel,"14:30");
+
+const timetable=trainArrivalView({scheduled,actual:later,realtime:false,fresh:true});
+assert.equal(timetable.plannedLabel,"14:30");
+assert.equal(timetable.expectedLabel,"14:30","Never present unconfirmed actual as predicted arrival");
+assert.equal(timetable.expected,null);
+assert.equal(timetable.delayMinutes,null);
+assert.equal(timetable.status,"Nur Fahrplan");
+assert.equal(timetable.isFreshPrediction,false);
+
+const stale=trainArrivalView({scheduled,actual:later,realtime:true,fresh:false});
+assert.equal(stale.expected,null,"Stale prediction must disappear");
+assert.equal(stale.expectedLabel,"14:30","Display timetable only when realtime expires");
+assert.equal(stale.status,"Prognose derzeit nicht aktuell");
+assert.equal(stale.delayMinutes,null);
+
+const ahead=trainArrivalView({scheduled,actual:"2026-10-12T14:27:00+02:00",realtime:true,fresh:true});
+assert.equal(ahead.delayMinutes,-3);
+assert.equal(ahead.status,"3 Min. früher");
+const midnight=trainArrivalView({scheduled:"2026-10-12T23:55:00+02:00",actual:"2026-10-13T00:12:00+02:00",realtime:true,fresh:true});
+assert.equal(midnight.expectedDayOffset,1,"Different local German dates need visible rollover");
+assert.equal(midnight.delayMinutes,17);
+const missingScheduled=trainArrivalView({actual:later,realtime:true,fresh:true});
+assert.equal(missingScheduled.planned,null);
+assert.equal(missingScheduled.expectedLabel,"14:42");
+assert.equal(missingScheduled.delayMinutes,null);
+assert.equal(missingScheduled.status,"Prognose ohne Sollvergleich");
+const cancelled=trainArrivalView({scheduled,actual:later,realtime:true,fresh:true,cancelled:true});
+assert.equal(cancelled.expected,null);
+assert.equal(cancelled.expectedLabel,"–");
+assert.equal(cancelled.status,"Halt entfällt");
+assert.equal(cancelled.tone,"danger");
+
 const visibility=new Visibility(),signals=[];
 const poller=new VisibilityPoller(async signal=>{signals.push(signal);await new Promise(resolve=>signal.addEventListener('abort',resolve,{once:true}));},10,visibility);
 assert.equal(signals.length,1);
