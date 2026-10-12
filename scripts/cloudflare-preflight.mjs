@@ -32,6 +32,7 @@ assert.ok(pkg.devDependencies["@cloudflare/vite-plugin"]);
 const workflow=text(".github/workflows/cloudflare-workers.yml");
 assert.ok(workflow.includes("workflow_dispatch:"),"Deployment must be explicitly triggerable");
 assert.ok(workflow.includes("CLOUDFLARE_DEPLOY_ENABLED"),"Automatic deployment must be opt-in");
+assert.ok(workflow.includes("github.ref == 'refs/heads/main'"),"Production deployments must be restricted to main");
 assert.ok(workflow.includes("CLOUDFLARE_API_TOKEN")&&workflow.includes("CLOUDFLARE_ACCOUNT_ID"));
 assert.ok(workflow.includes("pnpm build:cloudflare"));
 assert.ok(workflow.includes("--dry-run"),"Pull-request validation must never publish");
