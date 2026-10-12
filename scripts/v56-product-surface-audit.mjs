@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {extractStationNotices} from "../app/station-disruptions-data.ts";
+import {extractStationNotices,filterStationNotices,noticeCategoryCounts} from "../app/station-disruptions-data.ts";
 const alerts=[
  {tripId:"r1",displayName:"RE1",place:{departure:"2026-10-12T17:00:00Z"},alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
  {tripId:"r2",displayName:"RE2",alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
@@ -14,6 +14,14 @@ assert.deepEqual(notices[0].lines,["RE1","RE2"]);
 assert.ok(notices.some(item=>item.kind==="cancellation"));
 assert.ok(notices.some(item=>item.kind==="incident"));
 assert.deepEqual(extractStationNotices([{tripId:"only",displayName:"S2"}]),[],"No incidents without source alerts/cancellations.");
+const counts=noticeCategoryCounts(notices);
+assert.deepEqual(counts,{all:3,construction:1,cancellation:1,incident:1},"Category totals must use unique notices");
+assert.equal(filterStationNotices(notices,"construction","re2").length,1,"Search must match all grouped rail lines, not only the first");
+assert.equal(filterStationNotices(notices,"cancellation","").length,1);
+assert.equal(filterStationNotices(notices,"incident","signal").length,1);
+assert.equal(filterStationNotices(notices,"all","Keine passende Störung").length,0);
+assert.equal(filterStationNotices(notices,"all","  ").length,3,"Blank search must not hide reports");
+
 const malformedNotices=extractStationNotices([{tripId:"faulty",displayName:"S7",alerts:[
   null,{headerText:{translation:"wrong"}},{headerText:{translation:[null, {text:123}, {text:" Signalstörung "}]}},
   {descriptionText:{translation:[]}},
@@ -23,6 +31,13 @@ assert.equal(malformedNotices[0].headline,"Signalstörung");
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const page=read("app/page.tsx"), filter=read("app/live-board.tsx"),settings=read("app/settings-dialog.tsx");
 assert.match(page,/StationDisruptions/);
+const incidentPage=read("app/station-disruptions.tsx");
+assert.match(incidentPage,/placeholder="Linie, Störung oder Ziel suchen"/,"Incident search needs an accessible text field");
+assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters must actually change the visible incidents");
+assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
+assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
+assert.match(incidentPage,/Letzte erfolgreiche Abfrage/,"Stale last-known reports must disclose their source freshness");
+
 assert.match(filter,/board-filter-apply/);
 assert.match(filter,/board-status-pills/);
 assert.match(filter,/name="search"/);
