@@ -573,14 +573,14 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           <label>Status<select value={delayFilter} onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}><option value="all">Alle Lagen</option><option value="ontime">Pünktlich</option><option value="delayed">Ab +5 Min.</option><option value="canceled">Nur Ausfälle</option></select></label>
           <label>Gleis<select value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select></label>
           <label>Zeitraum<select value={windowMinutes} onChange={(event) => setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">60 Minuten</option><option value="120">120 Minuten</option><option value="180">180 Minuten</option><option value="240">240 Minuten</option><option value="500">500 Minuten</option></select></label>
-          <label>Sortierung<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}><option value="time">Abfahrtszeit</option><option value="delay">Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
+          <label>Sortierung<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}><option value="time">{mode === "arrivals" ? "Ankunftszeit" : "Abfahrtszeit"}</option><option value="delay">Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
         <div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div>
         <button type="button" className="board-filter-reset" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Filter zurücksetzen</button>
       </div>}
 
       <div className="board-table">
-        <div className="board-table-head"><span /><span>Zug / Bus</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
+        <div className="board-table-head"><span /><span>Zug / Linie</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
         {status === "loading" && <div className="board-skeleton" aria-label="Live-Daten werden geladen">{[1,2,3,4,5].map((item) => <div key={item}><i /><span><i /><i /></span><span><i /><i /></span></div>)}</div>}
         {status === "error" && <div className="board-state error"><b>Live-Tafel gerade nicht erreichbar.</b><span>{statusMessage.startsWith("Keine eindeutige Haltestellen-ID") ? statusMessage : "Live-Daten derzeit unvollständig. Karte und Fahrplanmodell bleiben verfügbar."}</span><button onClick={() => setRefreshToken((value) => value + 1)}>Erneut laden</button></div>}
         {status === "ready" && (
@@ -612,7 +612,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                 </article>
               );
             })}
-            {!visibleEntries.length && <div className="board-state">Keine passenden Fahrten in den nächsten {windowMinutes} Minuten.</div>}
+            {!visibleEntries.length && <div className="board-state board-empty-state" role="status"><b>{entries.length ? "Keine Fahrten mit diesen Filtern" : "Keine Fahrten verfügbar"}</b><span>{entries.length ? "Ändere Filter oder Zeitraum, um weitere Verbindungen zu sehen." : "Für diese Station wurden momentan keine Fahrten geliefert."}</span>{entries.length ? <button type="button" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Alle Fahrten anzeigen</button> : <button type="button" onClick={() => setRefreshToken(value => value + 1)}>Erneut laden</button>}</div>}
             {displayedEntries.length < visibleEntries.length && <button className="board-more" onClick={() => setDisplayLimit((value) => value + 50)}>Weitere 50 Fahrten anzeigen <span>{displayedEntries.length}/{visibleEntries.length}</span></button>}
           </div>
         )}
