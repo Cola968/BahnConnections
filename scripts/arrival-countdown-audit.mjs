@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import {remainingArrivalMinutes} from "../app/arrival-countdown.ts";
+const now=Date.parse("2026-10-12T12:00:00Z");
+assert.equal(remainingArrivalMinutes("2026-10-12T12:11:01Z",now,true),12);
+assert.equal(remainingArrivalMinutes("2026-10-12T12:11:01Z",now,false),null,"Stale radar cannot advertise a countdown");
+assert.equal(remainingArrivalMinutes("2026-10-12T11:59:59Z",now,true),null,"An elapsed ETA does not confirm arrival");
+assert.equal(remainingArrivalMinutes("2026-10-12T12:00:00Z",now,true),0);
+for(const value of [null,undefined,"","invalid"])assert.equal(remainingArrivalMinutes(value,now,true),null);
+assert.equal(remainingArrivalMinutes("2026-10-12T12:11:01Z",NaN,true),null);
+console.log("Arrival ETA: recent, stale, past, missing and invalid tests passed.");
