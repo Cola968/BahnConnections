@@ -1,1 +1,1 @@
-<resources><color name="brand_red">#EC0016</color><color name="brand_red_dark">#B00012</color><color name="navigation_light">#FFFFFF</color><color name="navigation_dark">#101316</color></resources>
+<resources><color name="brand_red">#EC0016</color><color name="brand_red_dark">#B00012</color><color name="system_surface_light">#E7EFF0</color><color name="system_surface_dark">#101316</color><color name="navigation_light">#E7EFF0</color><color name="navigation_dark">#101316</color></resources>
