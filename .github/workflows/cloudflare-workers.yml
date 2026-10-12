@@ -66,8 +66,9 @@ jobs:
     name: Publish standalone Worker (opt-in)
     needs: validate
     if: >-
-      (github.event_name == 'workflow_dispatch' && inputs.publish == true) ||
-      (github.event_name == 'push' && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true')
+      github.ref == 'refs/heads/main' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.publish == true) ||
+      (github.event_name == 'push' && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 18
     environment: cloudflare-production
