@@ -698,7 +698,7 @@ try {
     if(await evaluate(`document.documentElement.dataset.motion`) !== 'reduced') throw new Error('Reduced motion preference did not apply');
     await tap('.settings-toggle:nth-of-type(3)');
     await screenshot(width+'-settings-display');
-    await tap('.settings-tabs button:nth-child(3)');
+    await tap('.settings-tabs button[data-settings-tab="plans"]');
     if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
     await screenshot(width+'-settings-plans');
     if(width===320) {

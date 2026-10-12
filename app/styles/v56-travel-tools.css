@@ -6,9 +6,8 @@
 .journey-export summary {min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;}
 .journey-export p {font-size:.8rem;line-height:1.5;overflow-wrap:anywhere;}
 .journey-export-actions {display:grid;gap:8px;grid-template-columns:minmax(0,1fr);}
-.journey-export-actions button {min-height:44px;white-space:normal;overflow-wrap:anywhere;padding:10px;border:1px solid var(--line-subtle);border-radius:10px;background:var(--paper);color:var(--ink);}
+.journey-export-actions :is(button,a) {min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;font:inherit;white-space:normal;overflow-wrap:anywhere;padding:10px;border:1px solid var(--line-subtle);border-radius:10px;background:var(--paper);color:var(--ink);}
 .journey-export-actions button:disabled {opacity:.55;cursor:not-allowed;}
-.journey-export textarea {width:100%;min-height:150px;box-sizing:border-box;}
 .network-notice {background:var(--paper);color:var(--ink);padding:10px;border-left:3px solid var(--action);font-size:.85rem;line-height:1.4;margin-bottom:12px;overflow-wrap:anywhere;}
 /* At short mobile heights the search shares the header row. Reserve the actual
    84px occupied by map options + profile instead of the historical 44px. */

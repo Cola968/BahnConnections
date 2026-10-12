@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {sortJourneys,journeyText,journeyCalendar,walkingMinutes,shiftPlannerDay} from '../app/journey-tools.ts';
+import {sortJourneys,journeyText,journeyCalendar,journeyCalendarLinks,walkingMinutes,shiftPlannerDay} from '../app/journey-tools.ts';
 assert.equal(shiftPlannerDay('2026-10-24T08:15',1),'2026-10-25T08:15','DST does not move local departure hour');
 assert.equal(shiftPlannerDay('2026-12-31T23:59',1),'2027-01-01T23:59');
 assert.equal(shiftPlannerDay('2026-03-01T08:00',-1),'2026-02-28T08:00');
@@ -19,4 +19,18 @@ const text=journeyText(base);assert.ok(text.includes('Momentaufnahme'));assert.o
 const calendar=journeyCalendar(base,new Date(start));assert.ok(calendar.includes('DTSTART:20261012T120000Z\r\n'));assert.ok(calendar.includes('DTEND:20261012T140000Z\r\n'));assert.equal(calendar.split('\r\n').filter(line=>line==='BEGIN:VEVENT').length,1,'External station text cannot inject events');assert.ok(calendar.includes('STATUS:TENTATIVE'));assert.ok(!calendar.includes('BEGIN:VALARM'));
 const long=journeyCalendar({...base,warnings:['Ä'.repeat(200)]});assert.ok(long.split('\r\n').every(line=>Buffer.byteLength(line,'utf8')<=75),'UTF-8 folding respects 75 octets');
 assert.throws(()=>journeyCalendar(cancelled));assert.throws(()=>journeyCalendar({...base,scheduledEndTime:start}));assert.throws(()=>journeyCalendar({...base,scheduledStartTime:'invalid'}));
+const links=journeyCalendarLinks({...base,startTime:'2026-10-12T12:11:00Z',endTime:'2026-10-12T14:11:00Z'});
+const google=new URL(links.google),outlook=new URL(links.outlook);
+assert.equal(google.origin,'https://calendar.google.com');
+assert.equal(google.searchParams.get('dates'),'20261012T120000Z/20261012T140000Z','Calendar uses scheduled times despite delay');
+assert.equal(google.searchParams.get('location'),leg.from.name,'Station names are URL encoded without injecting parameters');
+assert.equal(google.searchParams.get('stz'),'Europe/Berlin');
+assert.equal(outlook.searchParams.get('startdt'),start.replace('00Z','00.000Z'));
+assert.equal(outlook.searchParams.get('allday'),'false');
+assert.throws(()=>journeyCalendarLinks(cancelled));
+assert.throws(()=>journeyCalendarLinks({...base,scheduledEndTime:start}));
+const cancelledLeg={...base,transitLegs:[{...leg,cancelled:true}]};
+assert.throws(()=>journeyCalendarLinks(cancelledLeg));assert.throws(()=>journeyCalendar(cancelledLeg));
+const dst=journeyCalendarLinks({...base,scheduledStartTime:'2026-10-25T02:30:00+02:00',scheduledEndTime:'2026-10-25T02:30:00+01:00'});
+assert.equal(new URL(dst.google).searchParams.get('dates'),'20261025T003000Z/20261025T013000Z');
 console.log('Journey tools: ranking, cancellation, immutable sorting, text provenance, calendar UTC/escaping/folding and invalid times passed.');

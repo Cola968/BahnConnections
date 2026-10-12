@@ -1,6 +1,6 @@
 # V56.0 · Reife-Beta: zuverlässiger Zugradar, mobile Bedienung, teilbare Fahrten
 
-- **Reisen mitnehmen:** Kalenderdatei mit Fahrplanzeiten, Reiseübersicht als Text und Kopieren mit manueller Alternative. Ausgefallene Verbindungen werden nicht als Kalenderreise exportiert.
+- **Kalender:** Reise direkt als vorausgefüllten Termin in Google Kalender oder Outlook öffnen; ICS-Import für Apple und andere Kalender. Im Kalender speichern, mit Fahrplanzeiten und Hinweis auf spätere Reiseänderungen. Textdownload und Kopieren entfernt. Ausgefallene Abschnitte sperren den Kalenderimport.
 - **Verbindungen vergleichen:** Sortierung nach Ankunft, Dauer, Umstiegen oder Fußweg; Fußwegdauer und Zeitunterschied zur gewählten Reise sichtbar.
 - **Planer:** Einen Tag früher/später bei gleicher Uhrzeit; Reiseoptionen gezielt zurücksetzen, ohne Start und Ziel neu eingeben zu müssen.
 - **Offline-Hinweis:** In Planung und Reiseansicht klarer Hinweis auf fehlende Verbindung und möglicherweise veraltete Daten.
