@@ -45,6 +45,7 @@ export function StationDisruptions({station}:{station:Station}){
      const url=new URL("/api/stations/"+encodeURIComponent(id)+"/board",window.location.origin);
      url.searchParams.set("n","175");
      url.searchParams.set("kind",kind);
+     url.searchParams.set("verify","0");
      const response=await fetch(url,{signal:requestSignal,cache:"no-store"});
      if(!response.ok)throw new Error("Hinweise "+kind+" HTTP "+response.status);
      const payload=await response.json() as {stopTimes?:unknown;warnings?:unknown};
