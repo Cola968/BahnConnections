@@ -102,4 +102,4 @@ jobs:
             exit 0
           fi
           curl --fail --silent --show-error --retry 5 --retry-delay 3 --max-time 20             "${CLOUDFLARE_WORKER_URL%/}/version.json" |
-            node -e 'let text="";process.stdin.on("data",x=>text+=x);process.stdin.on("end",()=>{const v=JSON.parse(text);if(v.version!=="55.0")process.exit(1);console.log("BahnConnections "+v.label+" deployed");})'
+            node -e 'let text="";process.stdin.on("data",x=>text+=x);process.stdin.on("end",()=>{const v=JSON.parse(text),expected=require("./public/version.json");if(v.version!==expected.version)process.exit(1);console.log("BahnConnections "+v.label+" deployed");})'
