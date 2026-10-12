@@ -38,6 +38,7 @@ check("General station markers recede behind the selected journey",page.includes
 check("Station-trip realtime summary stays conservative",page.includes('function tripRealtimeLabel') && page.includes('"Echtzeit teilweise verfügbar"') && !page.includes('stationTrip.realtime ? "Echtzeitfahrt"'));
 const realtime = await read("app/realtime-presentation.ts");
 const realtimeTime = await read("app/realtime-time.tsx");
+const boardTiming = await read("app/board-time.ts");
 const realtimePlatform = await read("app/realtime-platform.tsx");
 const pwaRegister = await read("app/pwa-register.tsx");
 const appVersion = await read("app/app-version.ts");
@@ -47,6 +48,8 @@ const publicVersion = JSON.parse(versionMetadata);
 check("Pure shared realtime thresholds and unknown status",realtime.includes('greenThrough:0') && realtime.includes('warningThrough:10') && realtime.includes('if (!scheduled || !actual) return base') && !realtime.includes('fetch('));
 check("Journey and board use the same time and platform components",[page,board].every(source => source.includes('<RealtimeTime') && source.includes('<RealtimePlatform')));
 check("Delay semantics include text, struck-through schedule and accessible labels",realtimeTime.includes('<del className="realtime-time__planned">') && realtimeTime.includes('realtimeStatusLabel(state)') && realtimeTime.includes('<span className="sr-only">{accessibleLabel}</span>') && !realtimeTime.includes('role="img"') && realtimePlatform.includes('<span className="sr-only">{state.label}</span>') && !realtimePlatform.includes('role="img"'));
+check("Departures use source-age-aware actual/scheduled timestamps for filtering and sorting",board.includes('boardPredictionFresh(updatedAt,now,stale)') && board.includes("boardEventTime(entry,boardLive)") && board.includes("boardEventTime(a,boardLive)") && board.includes("actual={boardDisplayActual(entry,boardLive)}") && board.includes("realtime={boardLive&&entry.realtime}") && boardTiming.includes("age<=150_000"));
+check("Mobile train popup does not repeat the train and route header",trainCockpitCss.includes(".app-shell .train-inspector .train-header h2") && trainCockpitCss.includes('>.service-pill') && trainCockpitCss.includes("display:none") && inspector.includes("train-cockpit-route"));
 check("No redundant Soll block in stop lists",!page.includes('className="planned-time"') && !board.includes('Soll {time(planned)}'));
 check("Brand, route and disruption colours stay separate",css.includes('--route-focus:var(--accent)') && css.includes('--status-disruption:var(--danger)'));
 // A transport hub must not acquire fictional passenger volume.
