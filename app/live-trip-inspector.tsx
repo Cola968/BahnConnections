@@ -43,7 +43,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
     // Its own age must decide whether destination/stop forecasts are current.
     let disposed=false;
     let pending:AbortController|null=null;
-    queueMicrotask(()=>{if(!disposed)return;setDetailState("loading");setStops([]);setShowAllStops(false);setDetailsUpdatedAt(null);});
+    queueMicrotask(()=>{if(disposed)return;setDetailState("loading");setStops([]);setShowAllStops(false);setDetailsUpdatedAt(null);});
     async function load(){
       if(disposed || document.hidden || pending)return;
       const controller=new AbortController();
