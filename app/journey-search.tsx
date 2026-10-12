@@ -11,7 +11,7 @@ type SearchOptions = { arriveBy:boolean; maxChanges:0|1|2|3|4|5; transferMinutes
 export type JourneySearchProps = {
   actionPlacement?:"inline"|"footer";
   stations:Station[]; favoriteIds:string[]; start:StationField; target:StationField;
-  departure:string; onDeparture:(value:string) => void; onSwap:() => void;
+  departure:string; onDeparture:(value:string) => void; onNow:() => void; onSwap:() => void;
   categories:PlannerCategory[]; onCategory:(category:PlannerCategory) => void;
   options:SearchOptions; onOptions:(options:Partial<SearchOptions>) => void;
   loading:boolean; canSearch:boolean; onSearch:() => void; onDiscover:() => void; onReset:() => void;
@@ -44,7 +44,8 @@ export function JourneySearch(props:JourneySearchProps) {
     </div>
     <div className="planner-time-row">
       <div className={`planner-time-mode ${options.arriveBy ? "arrive-by" : "depart-by"}`} role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" aria-pressed={!options.arriveBy} className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" aria-pressed={options.arriveBy} className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
-      <div className="planner-departure"><label><span className="planner-date-label">Datum & Zeit</span><span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} aria-label="Datum und Uhrzeit eingeben" /></span></label></div>
+      <button type="button" className="planner-now" onClick={props.onNow} aria-label="Abfahrt auf jetzt setzen">Jetzt abfahren</button>
+      <div className="planner-departure"><label><span className="planner-date-label">Datum & Zeit</span><span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="60" value={props.departure} onChange={event => props.onDeparture(event.target.value)} aria-label="Datum und Uhrzeit eingeben" /></span></label></div>
     </div>
     {props.actionPlacement !== "footer" && <PlannerSearchAction {...props}/>}
     <details className="filter-drawer route-options">
