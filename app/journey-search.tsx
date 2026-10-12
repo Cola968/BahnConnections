@@ -11,6 +11,7 @@ type StationField = { value:string; onChange:(value:string) => void; onSelect:(s
 type SearchOptions = { arriveBy:boolean; maxChanges:0|1|2|3|4|5; transferMinutes:number; wheelchair:boolean; bike:boolean };
 export type JourneySearchProps = {
   actionPlacement?:"inline"|"footer";
+  onUseLocation?:()=>void; locationLabel?:string; locationLoading?:boolean; language?:"de"|"en";
   stations:Station[]; favoriteIds:string[]; start:StationField; target:StationField;
   departure:string; onDeparture:(value:string) => void; onNow:() => void; onSwap:() => void;
   categories:PlannerCategory[]; onCategory:(category:PlannerCategory) => void;
@@ -40,13 +41,13 @@ export function JourneySearch(props:JourneySearchProps) {
   return <>
     <div className="planner-core">
     <div className="route-search-pair">
-      <div><span>Von</span><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.start} variant="route" placeholder="Startbahnhof" ariaLabel="Startbahnhof suchen" liveTransit /></div>
+      <div><div className="planner-origin-heading"><span>{props.language==="en"?"From":"Von"}</span>{props.onUseLocation&&<button type="button" className="planner-origin-location" disabled={props.locationLoading} onClick={props.onUseLocation}><UiIcon name="location"/>{props.locationLoading?"Standort …":props.language==="en"?"Near me":"Mein Standort"}</button>}</div><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.start} variant="route" placeholder={props.language==="en"?"Starting station":"Startbahnhof"} ariaLabel="Startbahnhof suchen" liveTransit /></div>
       <button type="button" className="swap-button" onClick={props.onSwap} aria-label="Start und Ziel tauschen"><UiIcon name="swap" width="18" height="18" /></button>
-      <div><span>Nach</span><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.target} variant="route" placeholder="Zielbahnhof" ariaLabel="Zielbahnhof suchen" liveTransit /></div>
+      <div><span>{props.language==="en"?"To":"Nach"}</span><SmartSearch stations={props.stations} favoriteIds={props.favoriteIds} {...props.target} variant="route" placeholder={props.language==="en"?"Destination":"Zielbahnhof"} ariaLabel="Zielbahnhof suchen" liveTransit /></div>
     </div>
     <div className="planner-time-row">
       <div className={`planner-time-mode ${options.arriveBy ? "arrive-by" : "depart-by"}`} role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" aria-pressed={!options.arriveBy} className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" aria-pressed={options.arriveBy} className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
-      <button type="button" className="planner-now" onClick={props.onNow} aria-label="Abfahrt auf jetzt setzen">Jetzt abfahren</button>
+      <button type="button" className="planner-now" onClick={props.onNow} aria-label="Abfahrt auf jetzt setzen">{props.language==="en"?"Leave now":"Jetzt abfahren"}</button>
       <div className="planner-departure"><label><span className="planner-date-label">Datum & Zeit</span><span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="60" value={props.departure} onChange={event => props.onDeparture(event.target.value)} aria-label="Datum und Uhrzeit eingeben" /></span></label></div>
     </div>
     <div className="planner-share-action"><button type="button" onClick={props.onShare} disabled={!props.canSearch}>Reiseplanung teilen</button>{props.shareMessage&&<p role="status">{props.shareMessage}</p>}</div>
@@ -72,5 +73,5 @@ export function JourneySearch(props:JourneySearchProps) {
 }
 
 export function PlannerSearchAction(props:JourneySearchProps) {
-  return <button type="button" className="plan-button" aria-busy={props.loading} onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.loading ? "Suche läuft …" : "Verbindungen suchen"}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>;
+  return <button type="button" className="plan-button" aria-busy={props.loading} onClick={props.onSearch} disabled={props.loading || !props.canSearch}>{props.language==="en"?(props.loading?"Searching …":"Find connections"):(props.loading ? "Suche läuft …" : "Verbindungen suchen")}<UiIcon name={props.loading ? "clock" : "arrow"} /></button>;
 }
