@@ -1,7 +1,7 @@
 "use client";
 
 import { boardDelayStatistics } from "./board-statistics";
-import { safeBoardAlertHeaders } from "./board-verification";
+import { safeBoardAlertHeaders, safeBoardMetadata } from "./board-verification";
 import { boardDedupeKey } from "./board-dedup";
 import { readPreferenceIds, writePreference } from "./local-preferences";
 import { matchesBoardDelayFilter, type BoardDelayFilter } from "./board-delay-filter";
@@ -226,7 +226,8 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
     alerts:safeBoardAlertHeaders(entry.alerts),
     line: { name: safeBoardText(entry.displayName) || safeBoardText(entry.routeShortName), product: product(safeBoardText(entry.mode)), routeId:safeBoardText(entry.routeId), color:safeBoardText(entry.routeColor), textColor:safeBoardText(entry.routeTextColor) },
   }));
-  return { entries, source:payload.source ?? "Transitous / MOTIS", updatedAt:payload.updatedAt, warnings:payload.warnings ?? [], verificationStatus:payload.verification?.status ?? "unavailable", verificationMessage:payload.verification?.message };
+  const metadata=safeBoardMetadata(payload);
+  return { entries, ...metadata, verificationStatus:payload.verification?.status ?? "unavailable", verificationMessage:payload.verification?.message };
 }
 
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
@@ -356,10 +357,11 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           if(signal.aborted)return;clearTimeout(reset);hasRows=board.entries.length>0;boardHasRows.current=hasRows;
           setEntries(deduplicate(board.entries));setSourceLabel(board.source);setSourceWarnings(board.warnings);
           setVerificationStatus(board.verificationStatus);setVerificationMessage(board.verificationMessage??"");
-          setUpdatedAt(board.updatedAt?new Date(board.updatedAt):new Date());setStale(false);setStatusMessage("");setStatus("ready");
+          setUpdatedAt(board.updatedAt?new Date(board.updatedAt):null);setStale(false);setStatusMessage("");setStatus("ready");
         },payload=>{
           if(signal.aborted)return;
-          setSourceLabel(payload.source??"Transitous / MOTIS");setSourceWarnings(payload.warnings??[]);
+          const verificationMetadata=safeBoardMetadata(payload);
+          setSourceLabel(verificationMetadata.source);setSourceWarnings(verificationMetadata.warnings);
           setVerificationStatus(payload.verification?.status??"unavailable");setVerificationMessage(payload.verification?.message??"");
         });
       } catch(error) {
