@@ -31,6 +31,7 @@ export function boardDisplayActual(entry:BoardTimeInput,fresh:boolean):string|un
 
 /** Never keep a realtime platform change labeled as current after its source expires. */
 export function boardDisplayPlatform(entry:{platform?:string|null;plannedPlatform?:string|null;realtime?:boolean},fresh:boolean):string|undefined {
-  if(fresh||!entry.realtime)return entry.platform??undefined;
-  return undefined;
+  if(fresh||!entry.realtime)return entry.platform?.trim()||entry.plannedPlatform?.trim()||undefined;
+  // A stale platform change is no longer evidence of the current platform.
+  return entry.plannedPlatform?.trim()||undefined;
 }
