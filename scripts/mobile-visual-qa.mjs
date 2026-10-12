@@ -686,7 +686,7 @@ try {
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
     if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
-    else await tap('[aria-label="Einstellungen und Profil"]');
+    else await tap('.profile-open');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const name=document.querySelector('.profile-form input[autocomplete="nickname"]');const home=document.querySelector('.profile-form input[list="home-station-suggestions"]');if(!name||!home)throw new Error('Profile name or home-station input missing');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;for(const [input,value] of [[name,'Alex Bahn'],[home,'Berlin Hbf']]){setter.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));}})()`);
     await tap('.profile-form button[type="submit"]');
@@ -746,7 +746,7 @@ try {
     await command('Page.reload');
     await waitFor(`performance.timeOrigin>${oldOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell[data-preferences-ready="true"]'))`,'Route reload failed');
     if(width<1024){await tap('.mobile-navigation button:last-of-type');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
-    else await tap('[aria-label="Einstellungen und Profil"]');
+    else await tap('.profile-open');
     await waitFor(`Boolean(document.querySelector('.settings-dialog .saved-routes li'))`,'Saved route not restored');
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
     await pause(200);
@@ -777,7 +777,7 @@ try {
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
   await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
-  await tap('[aria-label="Einstellungen und Profil"]');
+  await tap('.profile-open');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);
