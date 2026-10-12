@@ -14,8 +14,8 @@ function validBody(value:unknown):value is Omit<LiveJourneyRequest,"signal"> {
   return validStation(b.from)&&validStation(b.to)&&typeof b.departure==="string"
     &&b.departure.length<=80&&Number.isFinite(Date.parse(b.departure))
     &&typeof b.arriveBy==="boolean"
-    &&Number.isInteger(b.maxTransfers)&&Number(b.maxTransfers)>=0&&Number(b.maxTransfers)<=8
-    &&Number.isInteger(b.minTransferMinutes)&&Number(b.minTransferMinutes)>=0&&Number(b.minTransferMinutes)<=60
+    &&typeof b.maxTransfers==="number"&&Number.isInteger(b.maxTransfers)&&Number(b.maxTransfers)>=0&&Number(b.maxTransfers)<=8
+    &&typeof b.minTransferMinutes==="number"&&Number.isInteger(b.minTransferMinutes)&&Number(b.minTransferMinutes)>=0&&Number(b.minTransferMinutes)<=60
     &&Array.isArray(b.categories)&&b.categories.length<=5
     &&b.categories.every(category=>typeof category==="string"&&ALLOWED_CATEGORIES.has(category as PlannerCategory));
 }
