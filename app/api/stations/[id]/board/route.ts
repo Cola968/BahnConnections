@@ -1,3 +1,4 @@
+import { decodeRouteSegment } from "../../../decode-route-segment";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
@@ -71,7 +72,7 @@ async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival
 
 export async function GET(request: Request, context: { params:Promise<{ id:string }> }) {
   const { id } = await context.params;
-  const stopId = decodeURIComponent(id);
+  const stopId = decodeRouteSegment(id);
   if (!stopId || stopId.length > 500) return Response.json({ stopTimes:[], warnings:["Ungültige Haltestellen-ID"] }, { status:400 });
   const query = new URL(request.url).searchParams;
   const updatedAt = new Date().toISOString();
