@@ -17,7 +17,7 @@ const late=trainArrivalView({scheduled,actual:later,realtime:true,fresh:true});
 assert.equal(late.plannedLabel,"14:30");
 assert.equal(late.expectedLabel,"14:42");
 assert.equal(late.delayMinutes,12);
-assert.equal(late.status,"+12 Min.");
+assert.equal(late.status,"+12 Min. Verspätung");
 assert.equal(late.tone,"danger");
 assert.equal(late.expectedDayOffset,0);
 

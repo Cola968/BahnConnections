@@ -47,7 +47,7 @@ export function trainArrivalView(input: TrainArrivalInput): TrainArrivalView {
     ? delayMinutes===null ? "Prognose ohne Sollvergleich"
       : delayMinutes<0 ? `${Math.abs(delayMinutes)} Min. früher`
       : delayMinutes===0 ? "Pünktlich"
-      : `+${delayMinutes} Min.`
+      : `+${delayMinutes} Min. Verspätung`
     : input.realtime && !input.fresh ? "Prognose derzeit nicht aktuell"
     : planned ? "Nur Fahrplan" : "Keine Ankunftszeit";
   const tone = input.cancelled ? "danger" : expected && delayMinutes!==null
