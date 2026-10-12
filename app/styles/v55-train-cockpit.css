@@ -114,3 +114,15 @@ html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!im
   .train-arrival-panel {background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}
   .train-arrival-panel :is(time,b,small,span) {color:CanvasText!important;}
 }
+
+/* Readable arrival labels on 320-390px phones and reduced content overlap. */
+.train-arrival-title>span {font-size:.71rem;}
+.train-arrival-title>b {font-size:.79rem;}
+.train-arrival-time>small {font-size:.7rem;line-height:1.25;}
+.train-arrival-footer>small {font-size:.67rem;}
+.train-arrival-status {font-size:.7rem;min-height:25px;}
+@media (max-width:350px) {
+  .train-arrival-time>small {font-size:.67rem;}
+  .train-arrival-time>time {font-size:clamp(1.2rem,5.5vw,1.36rem);}
+  .train-arrival-footer>small {font-size:.63rem;}
+}
