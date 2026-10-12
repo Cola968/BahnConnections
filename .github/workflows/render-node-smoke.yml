@@ -48,3 +48,17 @@ jobs:
           node -e 'const v=require("/tmp/version.json");if(v.version!=="55.0")process.exit(1);console.log("V55 release "+v.version)'
           curl -fSL --max-time 30 -o /tmp/landing.html "http://127.0.0.1:4175/"
           grep -qi 'Bahn' /tmp/landing.html
+
+      - name: Verify real Render V55 deployment (HTTPS + server API)
+        run: |
+          set -euo pipefail
+          target="https://bahnconnections-v55.onrender.com"
+          for i in $(seq 1 12); do
+            if curl --fail --silent --show-error --max-time 30 "${target}/version.json" -o /tmp/render-version.json; then break; fi
+            sleep 5
+          done
+          node -e 'const v=require("/tmp/render-version.json");if(v.version!=="55.0")process.exit(1);console.log("Public Render V"+v.version+" verified");'
+          curl --fail --silent --show-error --location --max-time 60 "${target}/" -o /tmp/render-home.html
+          grep -qi "Bahn" /tmp/render-home.html
+          curl --fail --silent --show-error --location --max-time 40 "${target}/api/subscription" -o /tmp/render-subscription.json
+          node -e 'const s=require("/tmp/render-subscription.json");if(!s.plans)process.exit(1);console.log("Public subscription API responds (billing disabled)");'
