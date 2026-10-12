@@ -25,7 +25,7 @@ assert.ok(!/\bfrom\s+["\x27][^"\x27]*hosting\.json/.test(vite),"Standalone build
 
 // The original ChatGPT Sites environment must remain isolated from the root Worker.
 const sitesVite=text("vite.config.ts");
-const sitesWorker=JSON.parse(text(".openai/wrangler-sites-local.jsonc").replace(/^\\s*\\/\\/.*$/gm,""));
+const sitesWorker=JSON.parse(text(".openai/wrangler-sites-local.jsonc").split("\n").filter(line=>!line.trimStart().startsWith("//")).join("\n"));
 assert.ok(sitesVite.includes("configPath: './.openai/wrangler-sites-local.jsonc'"));
 assert.ok(sitesVite.includes("config: localBindingConfig"));
 assert.equal(sitesWorker.name,"sites-project");
