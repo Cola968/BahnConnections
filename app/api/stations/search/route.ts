@@ -5,6 +5,7 @@ type GeocodeStop = { type?:string; id?:string; name?:string; lat?:number; lon?:n
 export async function GET(request: Request) {
   const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
   const updatedAt = new Date().toISOString();
+  if (query.length > 100) return Response.json({ stations:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:["Suchbegriff zu lang."] }, { status:400 });
   if (query.length < 2) return Response.json({ stations:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"schedule", warnings:[] });
   try {
     const url = new URL("https://api.transitous.org/api/v1/geocode");
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
     url.searchParams.set("mode", RAIL_MODES);
     url.searchParams.set("language", "de");
     url.searchParams.set("numResults", "12");
-    const response = await fetch(url, { headers:transitousRequestHeaders() });
+    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(10_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const payload = await response.json() as GeocodeStop[];
     const stations = payload.filter((item) => item.type === "STOP" && item.id && item.name && Number.isFinite(item.lat) && Number.isFinite(item.lon)).map((item) => ({
