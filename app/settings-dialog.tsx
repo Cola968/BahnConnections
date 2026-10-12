@@ -18,6 +18,7 @@ type Props={
   onClose:()=>void;profile:LocalProfile;onProfile:(profile:LocalProfile)=>boolean;
   stations:Station[];onHomeStation:(station:Station)=>void;favoriteCount:number;
   theme:"light"|"dark";onTheme:(theme:"light"|"dark")=>void;
+  language:"de"|"en";onLanguage:(language:"de"|"en")=>void;
   highContrast:boolean;onContrast:(value:boolean)=>void;fontScale:"compact"|"normal"|"large";onFontScale:(value:"compact"|"normal"|"large")=>void;
   reducedMotion:boolean;onReducedMotion:(value:boolean)=>void;
   autoLocation:boolean;onAutoLocation:(value:boolean)=>void;onRequestLocation:()=>void;
@@ -101,9 +102,10 @@ export function SettingsDialog(p:Props) {
 
       {tab==="settings" && <>
         <section className="settings-group">
-          <div className="settings-section-heading"><h3><UiIcon name="sun"/> Darstellung</h3><p>Helligkeit, Lesbarkeit und Bewegung.</p></div>
+          <div className="settings-section-heading"><h3><UiIcon name="sun"/> {p.language==="en"?"Appearance":"Darstellung"}</h3><p>{p.language==="en"?"Theme, readability and motion.":"Helligkeit, Lesbarkeit und Bewegung."}</p></div>
           <div className="theme-choice" aria-label="Farbschema">{(["light","dark"] as const).map(theme=><button key={theme} aria-pressed={p.theme===theme} className={p.theme===theme ? "active" : ""} onClick={()=>p.onTheme(theme)}><UiIcon name={theme==="light"?"sun":"moon"}/><span>{theme==="light"?"Hell":"Dunkel"}</span></button>)}</div>
           <label className="settings-scale-choice"><span><b>Schriftgröße</b><small>Standard ist jetzt kompakt, jederzeit veränderbar</small></span><select value={p.fontScale} onChange={event=>p.onFontScale(event.target.value as "compact"|"normal"|"large")}><option value="compact">Kompakt (Standard)</option><option value="normal">Normal</option><option value="large">Groß</option></select></label>
+          <label className="settings-scale-choice"><span><b>{p.language==="en"?"Language":"Sprache"}</b><small>{p.language==="en"?"English UI (beta) · navigation and journey planner":"Sprache der App-Oberfläche"}</small></span><select aria-label="Sprache wählen" value={p.language} onChange={e=>p.onLanguage(e.target.value==="en"?"en":"de")}><option value="de">Deutsch</option><option value="en">English (Beta)</option></select></label>
           <Toggle label="Hoher Kontrast" description="Stärkere Trennung von Text und Flächen" checked={p.highContrast} onChange={p.onContrast}/>
           <Toggle label="Animationen reduzieren" description="Weniger Bewegung bei Sheets und Navigation" checked={p.reducedMotion} onChange={p.onReducedMotion}/>
         </section>
