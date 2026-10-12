@@ -191,21 +191,22 @@ const safeBoardText=(value:unknown):string|undefined=>typeof value==="string"?va
 
 type BoardPayload = { type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
 async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal, onPrimary:(board:ReturnType<typeof boardResult>)=>void, onVerification:(payload:BoardPayload)=>void) {
-  const stopId = await requireTransitousStopId(station, signal);
+  const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(22_000)]);
+  const stopId = await requireTransitousStopId(station, requestSignal);
   const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/board`, window.location.origin);
   url.searchParams.set("n", "1400");
   url.searchParams.set("kind", kind);
   url.searchParams.set("stream","1");
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal:requestSignal });
   if(!response.ok)throw new Error(`Live-Dienst ${response.status}`);
   if(response.headers.get("Content-Type")?.includes("application/x-ndjson")) {
     let received=false;
-    await readBoardStream<BoardPayload>(response,signal,payload=>{
+    await readBoardStream<BoardPayload>(response,requestSignal,payload=>{
       if(payload.type==="board"){received=true;onPrimary(boardResult(payload,kind));}
       else if(payload.type==="verification")onVerification(payload);
     });
     if(!received)throw new Error("Keine Tafelzeilen empfangen");
-  } else {const payload=await response.json() as BoardPayload;signal.throwIfAborted();onPrimary(boardResult(payload,kind));}
+  } else {const payload=await response.json() as BoardPayload;requestSignal.throwIfAborted();onPrimary(boardResult(payload,kind));}
 }
 function boardResult(payload:BoardPayload,kind:BoardKind) {
   const arrivals=kind==="arrival";
@@ -232,7 +233,8 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
 
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(tripId)}`, window.location.origin);
-  const response = await fetch(url, { signal });
+  const tripSignal=signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000);
+  const response = await fetch(url, { signal:tripSignal });
   if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
   const envelope = await response.json() as { trip?: { legs?: TripLeg[] } };
   const payload = envelope.trip ?? {};
