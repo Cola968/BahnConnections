@@ -128,10 +128,10 @@ const primary=encoder.encode(JSON.stringify({type:'board',destination:'München'
 const umlaut=primary.indexOf(195);streamController.enqueue(primary.slice(0,umlaut+1));streamController.enqueue(primary.slice(umlaut+1));
 await pause(1);assert.equal(records.length,1,'Primary rows arrive before verification completes');assert.equal(records[0].destination,'München');
 streamController.enqueue(encoder.encode('{"type":"verification","status":"inconclusive"}\n'));streamController.close();await read;assert.equal(records.length,2);
-let cancelled=false;
-const pendingStream=new ReadableStream({cancel(){cancelled=true;}}),abort=new AbortController();
+let streamCancelled=false;
+const pendingStream=new ReadableStream({cancel(){streamCancelled=true;}}),abort=new AbortController();
 const aborted=readBoardStream(new Response(pendingStream),abort.signal,()=>assert.fail('Aborted stream must not publish'));
-abort.abort();await assert.rejects(aborted,{name:'AbortError'});assert.equal(cancelled,true);
+abort.abort();await assert.rejects(aborted,{name:'AbortError'});assert.equal(streamCancelled,true);
 const store={getItem:key=>({'bad':'{"invalid":true}','broken':'{','ids':'[1,"berlin","berlin",null,"hamburg"]'})[key]??null};
 assert.deepEqual(readPreferenceIds(store,'bad'),[]);assert.equal(readPreferenceJson(store,'broken'),null);assert.deepEqual(readPreferenceIds(store,'ids'),['berlin','hamburg']);assert.deepEqual(readPreferenceIds({getItem(){throw Error('denied');}},'ids'),[]);
 console.log('Radar lifecycle: visibility, abort, geometry truth, 5-minute threshold, streaming and damaged storage passed.');
