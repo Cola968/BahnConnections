@@ -1,3 +1,15 @@
+# V56.0 · Reife-Beta: zuverlässiger Zugradar, mobile Bedienung, teilbare Fahrten
+
+- Die bestätigten V55.1-Verbesserungen sind integriert: Bei kurzer Höhe keine überlappende Header-Suche; Desktop-Linien mit lesbaren Spalten und sichtbaren Fernverkehrskennungen.
+- Vollständiges Zurücksetzen der Planeroptionen beim Schließen; „Jetzt abfahren“ setzt den aktuellen Zeitpunkt, ohne aktive Filter zu verlieren.
+- Nur eine als Modell deklarierte Zuggeschwindigkeit. Abgelaufene Soll-/Prognosezeit ist kein Nachweis einer Ankunft; der Countdown bleibt bei fehlender aktueller Datenbasis leer.
+- Reisestrecken mit Start, Ziel, Zeitpunkt, Optionen und Verkehrsmittelfilter als Link teilen und auf einem anderen Gerät wieder öffnen. Ohne Online-Konto.
+- Bahnhofstafeln: stabilere Fahrtidentität ohne Quellen-ID, korrekte Verspätungsfilter, Rücksetzen leerer Filter, Gleis-Fallback auf den Planwert und klarer Hinweis auf veraltete Echtzeit.
+- Robustere externe Aufrufe: Timeouts, Abbruch, Eingabegrenzen und unabhängige Teilantworten für Stationen, Linien, Verbindungen, Fahrtverläufe und Fußwege.
+- Mobile Oberfläche überarbeitet: Kontrast und große Schrift, kompakte Fahrtzeilen, Tastaturfokus, reduzierte Bewegung und verständliche Fehlerzustände.
+- Neue Regressionstests für Ankunftsgrenzen, Deep Links, Request-Größen und Datenidentität im GitHub-Quality-Workflow.
+- **Noch kein Produktionsrelease**: V56 muss vor einer Auslieferung vollständige CI- und reale Android-/PWA-Tests bestehen.
+
 # V55.0 · Zugradar, Ankunft und Datenfrische
 
 - Kompaktes Zugradar-Fenster mit Zug, Strecke, Fahrplanankunft, erwarteter Ankunft, Prognoseabweichung und direkter Kartenverfolgung.
