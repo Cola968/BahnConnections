@@ -696,9 +696,9 @@ try {
     if(profile?.name!=='Alex Bahn'||profile?.homeStationId!=='berlin') throw new Error('Profile was not saved');
     await screenshot(width+'-settings-profile');
     await tap('.settings-tabs button:nth-child(2)');
-    await tap('.settings-toggle:nth-of-type(3)');
-    if(await evaluate(`document.documentElement.dataset.motion`) !== 'reduced') throw new Error('Reduced motion preference did not apply');
-    await tap('.settings-toggle:nth-of-type(3)');
+    await evaluate(`(() => { const toggle=[...document.querySelectorAll('.settings-toggle')].find(node=>node.textContent.includes('Animationen reduzieren'));if(!toggle)throw new Error('Motion setting missing');toggle.querySelector('input')?.click(); })()`);
+    await waitFor(`document.documentElement.dataset.motion==='reduced'`,'Reduced motion preference did not apply');
+    await evaluate(`(() => { const toggle=[...document.querySelectorAll('.settings-toggle')].find(node=>node.textContent.includes('Animationen reduzieren'));toggle.querySelector('input')?.click(); })()`);
     await screenshot(width+'-settings-display');
     await tap('.settings-tabs button[data-settings-tab="plans"]');
     if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
