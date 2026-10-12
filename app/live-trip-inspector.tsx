@@ -41,20 +41,43 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   },[]);
   useEffect(()=>{
     const controller=new AbortController();
-    async function load(){
-      setDetailState("loading");setDetailUpdatedAt(null);setStops([]);setShowAllStops(false);
+    let busy=false;
+    async function load(initial:boolean){
+      if(controller.signal.aborted||busy||document.hidden)return;
+      busy=true;
+      if(initial){setDetailState("loading");setDetailUpdatedAt(null);setStops([]);setShowAllStops(false);}
       try {
-        if(!trip.tripId || trip.tripId.length>500)throw new Error("Keine abrufbare Fahrt-ID");
-        const response=await fetch(`/api/trips/transitous/${encodeURIComponent(trip.tripId)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(16000)]),cache:"no-store"});
+        if(!trip.tripId||trip.tripId.length>500)throw new Error("Keine abrufbare Fahrt-ID");
+        const response=await fetch(`/api/trips/transitous/${encodeURIComponent(trip.tripId)}`,{
+          signal:AbortSignal.any([controller.signal,AbortSignal.timeout(16000)]),cache:"no-store",
+        });
         if(!response.ok)throw new Error(`Fahrtverlauf HTTP ${response.status}`);
         const data=await response.json() as {trip?:{legs?:unknown}};
         const raw=data.trip?.legs;
         const result=normaliseTrainStops(Array.isArray(raw)?raw:[]);
-        if(!controller.signal.aborted){setStops(result);setDetailUpdatedAt(result.length?new Date():null);setDetailState(result.length?"ready":"error");}
-      }catch{if(!controller.signal.aborted)setDetailState("error");}
+        if(!controller.signal.aborted){
+          setStops(result);
+          setDetailUpdatedAt(result.length?new Date():null);
+          setDetailState(result.length?"ready":"error");
+        }
+      }catch{
+        if(!controller.signal.aborted){
+          setDetailUpdatedAt(null);
+          if(initial)setDetailState("error");
+        }
+      }finally{busy=false;}
     }
-    void load();
-    return()=>controller.abort();
+    void load(true);
+    // Separate full-trip data can age independently of the map radar.
+    // Poll only while this inspector is mounted and the tab is visible.
+    const interval=window.setInterval(()=>void load(false),60_000);
+    const onVisibility=()=>{if(!document.hidden)void load(false);};
+    document.addEventListener("visibilitychange",onVisibility);
+    return()=>{
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange",onVisibility);
+      controller.abort();
+    };
   },[trip.tripId]);
 
   const progress=liveTripProgress(trip,now);
@@ -73,12 +96,12 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const statusText=!inRadar?"Außerhalb Radarbereich":radarStatus!=="ready"||freshness==="old"?"Radar-Daten veraltet":freshness==="current"?(trip.realTime?"Echtzeitprognose":"Fahrplan"):"Radar nicht verfügbar";
   const remaining=validDate(arrival.expected??arrival.planned??undefined);
   const etaMinutes=remaining===null?null:Math.max(0,Math.ceil((remaining-now)/60000));
-  const nextIndex=nextTrainStopIndex(stops,now);
+  const nextIndex=nextTrainStopIndex(stops,now,detailsCurrent);
   const upcoming=nextIndex>=0?stops[nextIndex]:null;
   const visibleStops=showAllStops?stops:stops.length>6?[...stops.slice(0,2),...stops.slice(Math.max(2,nextIndex-1),Math.max(2,nextIndex-1)+4)].filter((stop,index,array)=>array.findIndex(candidate=>candidate===stop)===index):stops;
   const from=stationName(trip.from.name),to=stationName(trip.to.name);
   const finalStop=detailState==="ready" ? stops.at(-1) : undefined;
-  const showDestination=Boolean(finalStop && stationName(finalStop.name)!==to);
+  const showDestination=Boolean(finalStop && stops.length<150 && stationName(finalStop.name)!==to);
 
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector" data-tracking={tracked?"true":"false"} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Zugradar" mobileTitle={trip.name} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState} mobileSummary={`${from} → ${to}`} />
@@ -120,7 +143,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       <section className="train-progress-panel" aria-label="Verlauf des aktuellen Abschnitts">
         <div className="train-progress-head"><b>Unterwegs</b><span>{sourceCurrent&&position?`${Math.round(progress*100)} % geschätzt`:"Position nicht aktuell"}</span></div>
         <div className="train-progress-line" role="progressbar" aria-valuenow={sourceCurrent&&position?Math.round(progress*100):undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Geschätzter Fortschritt zwischen zwei Halten"><i style={{width:`${sourceCurrent&&position?progress*100:0}%`}}/>{sourceCurrent&&position&&<span style={{left:`${progress*100}%`}}><UiIcon name="train"/></span>}</div>
-        <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture??(!trip.realTime?trip.departure:undefined)} actual={sourceCurrent&&trip.realTime?trip.departure:undefined} realtime={sourceCurrent&&trip.realTime} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival??(!trip.realTime?trip.arrival:undefined)} actual={sourceCurrent&&trip.realTime?trip.arrival:undefined} realtime={sourceCurrent&&trip.realTime} compact/></div></div>
+        <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture??(!trip.realTime?trip.departure:undefined)} actual={sourceCurrent&&trip.realTime?trip.departure:undefined} realtime={sourceCurrent&&trip.realTime} compact/></div><div><small>Nächster Halt / Abschnittsziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival??(!trip.realTime?trip.arrival:undefined)} actual={sourceCurrent&&trip.realTime?trip.arrival:undefined} realtime={sourceCurrent&&trip.realTime} compact/></div></div>
       </section>
 
       {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={detailsCurrent} cancelled={finalStop.cancelled}/>}
