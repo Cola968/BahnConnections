@@ -1,8 +1,9 @@
+import { decodeRouteSegment } from "../../../decode-route-segment";
 import { transitousRequestHeaders } from "../../../../transitous";
 
 export async function GET(request: Request, context: { params:Promise<{ source:string; id:string }> }) {
   const { source, id } = await context.params;
-  const tripId = decodeURIComponent(id);
+  const tripId = decodeRouteSegment(id);
   const updatedAt = new Date().toISOString();
   try {
     if (source !== "transitous") return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:["Fahrtquelle nicht unterstützt"] }, { status:400 });
