@@ -62,6 +62,15 @@ const scheduleFallback=trainArrivalView({actual:scheduled,realtime:false,fresh:f
 assert.equal(scheduleFallback.expected,null);
 assert.equal(scheduleFallback.plannedLabel,"14:30");
 
+const timeNow=Date.parse("2026-10-12T12:03:00Z");
+const stopSelection=[
+  {name:"Halt A",scheduledArrival:"2026-10-12T11:59:00Z",arrival:"2026-10-12T12:10:00Z",realtime:true,cancelled:false},
+  {name:"Halt B",scheduledArrival:"2026-10-12T12:20:00Z",arrival:"2026-10-12T12:20:00Z",realtime:true,cancelled:false},
+];
+assert.equal(nextTrainStopIndex(stopSelection,timeNow,true),0,"Fresh predictions can delay the next predicted stop");
+assert.equal(nextTrainStopIndex(stopSelection,timeNow,false),1,"Stale predictions must not shift the next stop past its scheduled time");
+assert.equal(nextTrainStopIndex(stopSelection.map(stop=>({...stop,cancelled:true})),timeNow,false),-1,"Cancelled stops are never the next arrival");
+
 const visibility=new Visibility(),signals=[];
 const poller=new VisibilityPoller(async signal=>{signals.push(signal);await new Promise(resolve=>signal.addEventListener('abort',resolve,{once:true}));},10,visibility);
 assert.equal(signals.length,1);
