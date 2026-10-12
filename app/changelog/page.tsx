@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
  {version:"V56.0",date:"In Entwicklung · Beta",current:true,lead:"Weniger Reibung, mehr Verlässlichkeit.",tags:["Bedienung","Daten","Reiseplanung"],changes:[
