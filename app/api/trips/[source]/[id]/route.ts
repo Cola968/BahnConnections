@@ -1,18 +1,19 @@
 import { transitousRequestHeaders } from "../../../../transitous";
 
-export async function GET(_request: Request, context: { params:Promise<{ source:string; id:string }> }) {
+export async function GET(request: Request, context: { params:Promise<{ source:string; id:string }> }) {
   const { source, id } = await context.params;
   const tripId = decodeURIComponent(id);
   const updatedAt = new Date().toISOString();
   try {
-    if (source !== "transitous") throw new Error(`Fahrtquelle ${source} wird für Detailabrufe nicht unterstützt`);
+    if (source !== "transitous") return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:["Fahrtquelle nicht unterstützt"] }, { status:400 });
+    if (!tripId || tripId.length > 500) return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:["Ungültige Fahrt-ID"] }, { status:400 });
     const url = new URL("https://api.transitous.org/api/v6/trip");
     url.searchParams.set("tripId", tripId);
     url.searchParams.set("withScheduledSkippedStops", "true");
     url.searchParams.set("detailedLegs", "true");
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
-    const response = await fetch(url, { headers:transitousRequestHeaders() });
+    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(12_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const trip = await response.json() as { legs?:{ realTime?:boolean; cancelled?:boolean }[] };
     const hasRealtime = (trip.legs ?? []).some((leg) => leg.realTime);
