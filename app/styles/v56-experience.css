@@ -201,6 +201,10 @@ html[data-theme="dark"] {
 @media (max-width:1023px) and (max-height:520px) {
   .app-shell.has-primary-panel .topbar>.station-search { display:none!important; }
 }
+/* Shared journey links are secondary actions with a legible copy fallback. */
+.app-shell .planner-share-status { margin:8px 0 4px; font-size:.75rem; line-height:1.5; color:var(--muted); overflow-wrap:anywhere; }
+.app-shell .explore-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.app-shell .explore-actions>button { flex:1 1 120px; min-height:44px; }
 /* Respect reduced transparency, forced colors, and reduced motion. */
 @media (prefers-reduced-transparency: reduce) {
   .app-shell :is(.mobile-navigation,.mobile-sheet-panel,.map-menu-popover.detached) {
