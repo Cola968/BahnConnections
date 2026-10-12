@@ -40,6 +40,46 @@ const alternativeLeg = { ...fixtureLeg,name:'ICE 1207',tripId:'qa-ice-1207',star
 const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alternativeLeg.startTime,endTime:alternativeLeg.endTime,legs:[alternativeLeg],transitLegs:[alternativeLeg] };
 
 let activeJourneys = [fixtureJourney,alternativeJourney];
+let radarFixtureEnabled=false;
+
+/** Fully deterministic map/train API fixture with an active, bounded rail segment. */
+function encodedRailLine(points) {
+  let previousLat=0,previousLon=0;
+  const parts=[];
+  function append(value) {
+    let bits=value<0?~(value<<1):(value<<1);
+    do {
+      let chunk=bits&0x1f;
+      bits>>=5;
+      if(bits)chunk|=0x20;
+      parts.push(String.fromCharCode(chunk+63));
+    } while(bits);
+  }
+  for(const [lat,lon] of points) {
+    const latitude=Math.round(lat*1e4),longitude=Math.round(lon*1e4);
+    append(latitude-previousLat);append(longitude-previousLon);
+    previousLat=latitude;previousLon=longitude;
+  }
+  return parts.join('');
+}
+const radarPolyline=encodedRailLine([[52.5251,13.3694],[52.517,13.366],[52.505,13.3658],[52.492,13.3653],[52.475,13.3653]]);
+function radarFixture() {
+  const now=Date.now();
+  return [{
+    trips:[{tripId:'qa-ice-241',displayName:'ICE 241'}],
+    mode:'HIGHSPEED_RAIL',
+    realTime:true,
+    from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694},
+    to:{name:'Berlin Südkreuz',lat:52.475,lon:13.3653},
+    departure:new Date(now-120_000).toISOString(),
+    arrival:new Date(now+240_000).toISOString(),
+    scheduledDeparture:new Date(now-120_000).toISOString(),
+    scheduledArrival:new Date(now+120_000).toISOString(),
+    distance:5600,
+    polyline:radarPolyline,
+  }];
+}
+
 await mkdir(outputDirectory, { recursive:true });
 const edge = spawn(edgePath, [
   "--headless=new",
@@ -107,7 +147,7 @@ try {
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/board') ? boardFixture()
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
-        : requestUrl.pathname.endsWith('/map/trips') ? []
+        : requestUrl.pathname.endsWith('/map/trips') ? (radarFixtureEnabled ? radarFixture() : [])
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
         : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
         : { journeys:activeJourneys,source:"Mobile-QA-Fixture",updatedAt:fixtureJourney.updatedAt,realtimeStatus:"live",warnings:[] };
@@ -449,6 +489,65 @@ try {
   await screenshot('390-more-simple');
   await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
+
+  const radarChecks=[];
+  if (useJourneyFixture) {
+    // This interaction was previously untested: the radar fixture was always [].
+    // Run an active ICE segment on the existing actual Leaflet map at phone width.
+    radarFixtureEnabled=true;
+    await setViewport(390,844);
+    await tap('.mobile-navigation button:nth-of-type(3)');
+    await waitFor("Boolean(document.querySelector('.station-card'))","Radar QA needs a selected station");
+    await tap('.mobile-navigation button:first-of-type');
+    await tap('.mobile-map-view-button');
+    await tap('.live-filter-popover .popover-buttons button:first-child');
+    await tap('.map-menu-dismiss button');
+    await waitFor("Boolean(document.querySelector('.live-train-wrap,.live-cluster-wrap'))","Rail radar markers missing");
+    if(!await evaluate("Boolean(document.querySelector('.live-train-wrap'))")) {
+      await tap('.live-cluster-wrap');
+      await waitFor("Boolean(document.querySelector('.live-train-wrap'))","Zoom did not expose selectable train marker");
+    }
+    await tap('.live-train-wrap');
+    await waitFor("Boolean(document.querySelector('.train-inspector .train-cockpit'))","Train tap did not open its inspector");
+    const inspected=await evaluate(`(() => {
+      const sheet=document.querySelector('.train-inspector'),planned=sheet?.querySelector('.train-arrival-time:not(.expected) time'),
+        expected=sheet?.querySelector('.train-arrival-time.expected time'),status=sheet?.querySelector('.train-arrival-status'),
+        speed=sheet?.querySelector('.train-cockpit-speed strong'),follow=sheet?.querySelector('.track-button');
+      const rect=sheet?.getBoundingClientRect();
+      return {train:sheet?.textContent.includes('ICE 241'),
+        plan:planned?.textContent.trim(),expected:expected?.textContent.trim(),
+        status:status?.textContent.trim(),speed:speed?.textContent.trim(),
+        follow:follow?.textContent.trim(),canFollow:!follow?.disabled,
+        mobileSheet:document.querySelector('.app-shell')?.dataset.mobileSheet,
+        horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
+        bounds:rect?{left:rect.left,right:rect.right}:null};
+    })()`);
+    if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min.'||
+      !/km\\/h/.test(inspected.speed??'')||!inspected.canFollow||inspected.mobileSheet!=='half'||
+      inspected.horizontalOverflow||!inspected.bounds||inspected.bounds.left<-1||inspected.bounds.right>391)
+      throw new Error('Rail radar inspector regression: '+JSON.stringify(inspected));
+    await screenshot('390-live-train-inspector');
+    await tap('.train-inspector .track-button');
+    await waitFor("Boolean(document.querySelector('.train-radar-hud'))","Follow did not open radar HUD");
+    const follow=await evaluate(`(() => {
+      const hud=document.querySelector('.train-radar-hud');
+      return {speed:hud?.querySelector('.train-hud-speed')?.textContent,
+        train:hud?.textContent.includes('ICE 241'),
+        active:document.querySelector('.train-inspector')?.dataset.tracking,
+        stop:!hud?.querySelector('button')?.disabled,
+        overflow:document.documentElement.scrollWidth>innerWidth+1};
+    })()`);
+    if(!follow.train||follow.active!=='true'||!follow.stop||follow.overflow||!follow.speed?.includes('Modell'))
+      throw new Error('Follow camera/HUD regression: '+JSON.stringify(follow));
+    await screenshot('390-live-train-follow');
+    await tap('.train-radar-hud button');
+    if(await evaluate("Boolean(document.querySelector('.train-radar-hud'))"))throw new Error('Follow stop did not dismiss tracking HUD');
+    await tap('.train-inspector .mobile-sheet-actions button:last-child');
+    if(await evaluate("Boolean(document.querySelector('.train-inspector'))"))throw new Error('Train sheet close did not work');
+    radarFixtureEnabled=false;
+    radarChecks.push({width:390,inspected,follow,close:true});
+  }
+
   const realtimeChecks = [];
   if (useJourneyFixture) {
     await setViewport(320,700);
@@ -743,7 +842,7 @@ try {
 
 
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
+  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } catch(error) {
