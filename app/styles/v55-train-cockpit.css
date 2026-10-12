@@ -114,3 +114,32 @@ html[data-motion="reduced"] .train-arrival-time.expected>time {animation:none!im
   .train-arrival-panel {background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}
   .train-arrival-panel :is(time,b,small,span) {color:CanvasText!important;}
 }
+
+/* Stop-to-stop rail radar: show the replaced timetable time unmistakably. */
+.train-arrival-time>time.superseded {
+  color:#aec0c5;
+  text-decoration:line-through;
+  text-decoration-color:rgba(247,171,158,.9);
+  text-decoration-thickness:2px;
+  text-decoration-skip-ink:none;
+}
+.train-arrival-time.expected .train-arrival-day {
+  display:inline-flex;
+  justify-self:end;
+  color:#ffdb94;
+  font-size:.67rem;
+  font-weight:760;
+  letter-spacing:.005em;
+}
+.train-arrival-panel.secondary .train-arrival-time>time.superseded {
+  color:var(--muted);
+  text-decoration-color:var(--danger);
+}
+.train-arrival-panel.secondary .train-arrival-time.expected .train-arrival-day {color:var(--warning);}
+@media(max-width:350px) {
+  .train-arrival-panel .train-arrival-time>time {font-size:clamp(1.05rem,6vw,1.3rem);}
+  .train-arrival-title>b {font-size:.68rem;}
+}
+@media(forced-colors:active) {
+  .train-arrival-time>time.superseded {text-decoration:line-through;forced-color-adjust:auto;}
+}
