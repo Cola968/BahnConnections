@@ -34,6 +34,7 @@ jobs:
       - run: pnpm audit:board
       - run: pnpm audit:transport
       - run: pnpm audit:planner
+      - run: node scripts/journey-tools-audit.mjs
       - run: pnpm audit:radar
       - run: pnpm audit:map
       - run: pnpm build

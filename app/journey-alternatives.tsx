@@ -1,6 +1,8 @@
 "use client";
 
 import type { LiveJourney } from "./live-journey";
+import {useState} from "react";
+import {sortJourneys,walkingMinutes,type JourneySort} from "./journey-tools";
 import { formatDuration } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { compactStationLabel } from "./transit-style";
@@ -13,15 +15,19 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
   journeys:LiveJourney[]; selected:LiveJourney; limit:number; label:(journey:LiveJourney, first:LiveJourney) => string;
   onSelect:(journey:LiveJourney) => void; onMore:() => void;
 }) {
-  const alternatives = journeys.filter(journey => journey.id !== selected.id);
+  const [order,setOrder]=useState<JourneySort>('recommended');
+  const alternatives = sortJourneys(journeys.filter(journey => journey.id !== selected.id),order);
   if (!alternatives.length) return null;
   return <details className="journey-alternatives">
     <summary>Andere Verbindungen <span>{alternatives.length}<UiIcon name="chevron" width="16" height="16" /></span></summary>
+    <label className="journey-sort">Vergleichen nach<select value={order} onChange={event=>setOrder(event.target.value as JourneySort)}><option value="recommended">Empfehlung der Suche</option><option value="arrival">Früheste Ankunft</option><option value="duration">Kürzeste Reisezeit</option><option value="changes">Wenigste Umstiege</option><option value="walking">Wenigster Fußweg</option></select></label>
     <div>{alternatives.slice(0,limit).map(journey => <button type="button" key={journey.id} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onSelect(journey); }}>
       <em>{label(journey,journeys[0])}</em>
+      <small>{new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'medium'}).format(new Date(journey.startTime))} · Abfahrt</small>
       <JourneyTimeRange journey={journey} />
       <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
       <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}</small>
+      <small>{walkingMinutes(journey)} Min. Fußweg · {Math.round((journey.durationSeconds-selected.durationSeconds)/60)>0?'+':''}{Math.round((journey.durationSeconds-selected.durationSeconds)/60)} Min. gegenüber Auswahl{journey.cancelled?' · Ausfall':''}</small>
     </button>)}{alternatives.length > limit && <button type="button" className="journey-more" onClick={onMore}>Weitere Verbindungen anzeigen</button>}</div>
   </details>;
 }

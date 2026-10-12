@@ -14,6 +14,8 @@ import { UiIcon } from "./ui-icon";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
+import { JourneyExport } from "./journey-export";
+import { NetworkNotice } from "./network-notice";
 import { realtimeTooltip } from "./realtime-tooltip";
 import { readPreference, readPreferenceJson, readPreferenceIds } from "./local-preferences";
 import { useLeafletMap } from "./use-leaflet-map";
@@ -1257,6 +1259,7 @@ export default function Home() {
             onSwap:() => { invalidatePlanner(); setStartId(targetId); setStartSearch(targetSearch); setTargetId(startId); setTargetSearch(startSearch); setJourneyMessage(""); setPlannerState("idle"); },
             categories:plannerCategories, onCategory:togglePlannerCategory,
             options:{ arriveBy, maxChanges, transferMinutes, wheelchair:wheelchairRouting, bike:bikeRequired },
+            onResetOptions:()=>{invalidatePlanner();setMaxChanges(5);setTransferMinutes(0);setWheelchairRouting(false);setBikeRequired(false);setPlannerCategories(["fern","regional","sbahn","ubahn","tram"]);},
             onOptions:(options) => { invalidatePlanner(); if (options.arriveBy !== undefined) setArriveBy(options.arriveBy); if (options.maxChanges !== undefined) setMaxChanges(options.maxChanges); if (options.transferMinutes !== undefined) setTransferMinutes(options.transferMinutes); if (options.wheelchair !== undefined) setWheelchairRouting(options.wheelchair); if (options.bike !== undefined) setBikeRequired(options.bike); },
             loading:plannerState === "loading", canSearch:Boolean(startId && targetId && startId !== targetId && journeyDeparture), onSearch:() => void runPlanner(), onDiscover:surpriseMe, onReset:resetMap,
           }}/>}
@@ -1286,6 +1289,7 @@ export default function Home() {
             <PanelTools controls={journeyControls} label="Verbindung" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${stationDisplayName(selectedJourneyStart.name)} → ${stationDisplayName(selectedJourneyTarget.name)}`} />
             <div className="panel-body">
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{stationDisplayName(selectedJourneyStart.name)} → {stationDisplayName(selectedJourneyTarget.name)}</span></div>
+            <NetworkNotice/>
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
                 <JourneyTimeRange journey={journey} />
@@ -1295,6 +1299,7 @@ export default function Home() {
               <button type="button" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }} aria-label="Suche und Reiseoptionen ändern">Ändern</button>
             </div>
             <JourneyAlternatives journeys={journeyOptions} selected={journey} limit={journeyOptionLimit} label={journeyOptionLabel} onSelect={chooseJourney} onMore={() => setJourneyOptionLimit(value => value + 8)} />
+            <JourneyExport key={journey.id} journey={journey}/>
             <div className="journey-legs live-legs">
               {journey.transitLegs.map((leg, index) => {
                 const forecast=occupancyForecast(leg.startTime, leg.name);

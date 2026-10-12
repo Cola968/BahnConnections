@@ -1,5 +1,10 @@
 # V56.0 · Reife-Beta: zuverlässiger Zugradar, mobile Bedienung, teilbare Fahrten
 
+- **Reisen mitnehmen:** Kalenderdatei mit Fahrplanzeiten, Reiseübersicht als Text und Kopieren mit manueller Alternative. Ausgefallene Verbindungen werden nicht als Kalenderreise exportiert.
+- **Verbindungen vergleichen:** Sortierung nach Ankunft, Dauer, Umstiegen oder Fußweg; Fußwegdauer und Zeitunterschied zur gewählten Reise sichtbar.
+- **Planer:** Einen Tag früher/später bei gleicher Uhrzeit; Reiseoptionen gezielt zurücksetzen, ohne Start und Ziel neu eingeben zu müssen.
+- **Offline-Hinweis:** In Planung und Reiseansicht klarer Hinweis auf fehlende Verbindung und möglicherweise veraltete Daten.
+- **Responsive Header:** Mobile Suche bleibt im Suchdock; bei kurzen Querformaten ist Platz für beide Karten-/Profilbuttons reserviert.
 - **Störungen & Baustellen:** Neuer Bahnhof-Reiter und Schnelleinstieg über „Mehr“; Meldungen aus Transitous/MOTIS, Gruppierung identischer Hinweise, Trennung von Baustellen/Ausfällen/Betriebshinweisen, mit Quellenbegrenzung und Fehlerzuständen. Keine erfundenen Netzinformationen.
 - **Tafelfilter:** Kompakte Suchzeile mit korrekter Icon-Ausrichtung, Verkehrsmittel-Chips mit Zählung, direkte Statusfilter, passende Gliederung und Ergebnisknopf. Schließen/Zurücksetzen bleiben erreichbar.
 - **Changelog:** Neue lesbare Seite `/changelog` mit Veröffentlichungsstatus je Version und klarer Trennung von Entwicklungsbranch und öffentlicher Version.
