@@ -1,14 +1,13 @@
-import tailwindcss from "@tailwindcss/postcss";
+import tailwindcss from "@tailwindcss/vite";
 import vinext from "vinext";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 /**
- * Full-stack Node.js build for Render.
- * Intentionally does not load @cloudflare/vite-plugin or @openai/sites-vite-plugin.
- * This leaves the existing Sites and standalone Cloudflare Workers builds intact.
+ * Node.js production server for Render.
+ * Separate from ChatGPT Sites and Cloudflare Workers builds.
+ * @tailwindcss/vite handles @import "tailwindcss" for Vite Node builds.
  */
 export default defineConfig({
-  css: { postcss: { plugins: [tailwindcss()] } },
-  plugins: [vinext(), nitro()],
+  plugins: [tailwindcss(), vinext(), nitro()],
 });
