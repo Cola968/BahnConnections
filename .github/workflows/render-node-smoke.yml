@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   render-node:
-    name: Build and run V55 Node app
+    name: Build and run Node app
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -32,7 +32,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:render
-      - name: Start Node server and check V55 PWA + root page
+      - name: Start Node server and check candidate PWA + root page
         run: |
           export HOST=0.0.0.0
           export PORT=4175
@@ -43,11 +43,11 @@ jobs:
             if curl -sSf "http://127.0.0.1:4175/version.json" >/tmp/version.json; then break; fi
             sleep 2
           done
-          node -e 'const v=require("/tmp/version.json");if(v.version!=="55.0")process.exit(1);console.log("V55 release "+v.version)'
+          node -e 'const a=require("/tmp/version.json");const expected=require("./public/version.json");if(a.version!==expected.version||a.label!==expected.label)process.exit(1);console.log("Candidate "+a.label+" verified")'
           curl -fSL --max-time 30 -o /tmp/landing.html "http://127.0.0.1:4175/"
           grep -qi 'Bahn' /tmp/landing.html
 
-      - name: Verify real Render V55 deployment (HTTPS + server API)
+      - name: Check current public Render deployment independently
         run: |
           set -euo pipefail
           target="https://bahnconnections-v55.onrender.com"
@@ -55,7 +55,7 @@ jobs:
             if curl --fail --silent --show-error --max-time 30 "${target}/version.json" -o /tmp/render-version.json; then break; fi
             sleep 5
           done
-          node -e 'const v=require("/tmp/render-version.json");if(v.version!=="55.0")process.exit(1);console.log("Public Render V"+v.version+" verified");'
+          node -e 'const v=require("/tmp/render-version.json");const candidate=require("./public/version.json");if(typeof v.version!=="string"||!v.version.match(/^[0-9]+[.][0-9]+/))process.exit(1);console.log("Public Render V"+v.version+"; candidate "+candidate.label+" (not yet necessarily deployed)");'
           curl --fail --silent --show-error --location --max-time 60 "${target}/" -o /tmp/render-home.html
           grep -qi "Bahn" /tmp/render-home.html
           curl --fail --silent --show-error --location --max-time 40 "${target}/api/subscription" -o /tmp/render-subscription.json

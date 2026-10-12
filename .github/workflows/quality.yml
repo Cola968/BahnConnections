@@ -24,11 +24,17 @@ jobs:
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
+      - run: pnpm audit:v56
+      - run: pnpm audit:arrival
+      - run: pnpm audit:links
+      - run: pnpm audit:input
+      - run: pnpm audit:surfaces
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
       - run: pnpm audit:transport
       - run: pnpm audit:planner
+      - run: node scripts/journey-tools-audit.mjs
       - run: pnpm audit:radar
       - run: pnpm audit:map
       - run: pnpm build

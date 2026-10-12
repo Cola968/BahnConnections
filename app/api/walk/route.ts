@@ -1,12 +1,13 @@
 import { transitousRequestHeaders } from "../../transitous";
+import { readLimitedJson, RequestInputError } from "../request-limits";
 import { distanceMeters, parseWalkingRoute } from "../../walking-route";
 
 export async function POST(request: Request) {
   const updatedAt = new Date().toISOString();
   let body: { from?: { lat?: number; lon?: number }; to?: { lat?: number; lon?: number } };
-  try { body = await request.json(); } catch { return Response.json({ error:"Ungültige Anfrage", updatedAt }, { status:400 }); }
-  const from = body.from;
-  const to = body.to;
+  try { body = await readLimitedJson(request) as typeof body; } catch(error) { return Response.json({ error:error instanceof Error ? error.message : "Ungültige Anfrage", updatedAt }, { status:error instanceof RequestInputError ? error.status : 400 }); }
+  const from = body?.from;
+  const to = body?.to;
   if (!from || !to || !Number.isFinite(from.lat) || !Number.isFinite(from.lon) || !Number.isFinite(to.lat) || !Number.isFinite(to.lon) || Math.abs(from.lat!) > 90 || Math.abs(to.lat!) > 90 || Math.abs(from.lon!) > 180 || Math.abs(to.lon!) > 180) {
     return Response.json({ error:"Ungültige Standortkoordinaten", updatedAt }, { status:400 });
   }
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
   url.searchParams.set("maxDirectTime", "7200");
   url.searchParams.set("detailedLegs", "true");
   try {
-    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.timeout(15_000), cache:"no-store" });
+    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]), cache:"no-store" });
     if (!response.ok) throw new Error(`Routendienst ${response.status}`);
     const route = parseWalkingRoute(await response.json(), from as { lat:number; lon:number }, to as { lat:number; lon:number }, updatedAt);
     if (!route) return Response.json({ error:"Kein verlässlicher Fußweg mit Straßengeometrie gefunden.", updatedAt, source:"Transitous / MOTIS" }, { status:404, headers:{ "Cache-Control":"no-store" } });

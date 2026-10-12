@@ -1,9 +1,10 @@
 "use client";
 
-export type StationPanel = "live" | "destinations" | "stats";
+export type StationPanel = "live" | "destinations" | "stats" | "disruptions";
 const sections: { value: StationPanel; label: string }[] = [
   { value:"live", label:"Tafel" },
   { value:"destinations", label:"Linien" },
+  { value:"disruptions", label:"Störungen" },
   { value:"stats", label:"Info" },
 ];
 

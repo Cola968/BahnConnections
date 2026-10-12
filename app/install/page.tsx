@@ -1,19 +1,14 @@
-/* eslint-disable @next/next/no-html-link-for-pages -- vinext's client Link currently throws during mobile navigation; native links stay usable without hydration. */
-import { InstallClient } from "./install-client";
-
-export default function InstallPage() {
-  return (
-    <main className="install-page">
-      <section className="install-card">
-        <a href="/" className="install-back">← Zur Karte</a>
-        <div className="install-brand"><span>B</span><b>BahnConnections</b></div>
-        <p className="install-kicker">MOBILE APP</p>
-        <h1>Fahrplan und Karte direkt auf deinem Startbildschirm.</h1>
-        <p className="install-intro">Die Web-App wird ohne App-Store installiert und öffnet sich anschließend wie eine eigenständige App. Neue Versionen können später direkt über den Update-Hinweis in BahnConnections geladen werden. Live-Daten benötigen weiterhin eine Internetverbindung.</p>
-        <InstallClient />
-        <div className="install-features"><article><b>Live-Tafel</b><span>Abfahrten, Ankünfte, Gleise, Verspätungen und Ausfälle.</span></article><article><b>Ganze Fahrt</b><span>Alle Halte mit Zeiten und exaktem Verlauf direkt in der Karte.</span></article><article><b>Alle Bahnarten</b><span>Fernverkehr, Regio, S-Bahn und U-Bahn in einer Oberfläche.</span></article></div>
-        <p className="install-note">Hinweis: BahnConnections ist ein unabhängiges Informationsangebot und keine offizielle App der Deutschen Bahn.</p>
-      </section>
-    </main>
-  );
+/* eslint-disable @next/next/no-html-link-for-pages -- native links remain usable before hydration. */
+import {InstallClient} from "./install-client";
+import {APP_VERSION_LABEL} from "../app-version";
+export default function InstallPage(){
+ return <main className="install-page install-v56"><section className="install-card install-v56-card">
+  <nav className="install-v56-navigation"><a href="/">← Zur Bahnkarte</a><a href="/changelog">Was ist neu? ↗</a></nav>
+  <div className="install-v56-identity"><span className="install-v56-logo">B</span><div><strong>BahnConnections</strong><small>App & Aktualisierungen</small></div><span className="install-v56-version">{APP_VERSION_LABEL}</span></div>
+  <h1>Immer dabei.<br/><span>Ganz ohne App Store.</span></h1>
+  <p className="install-v56-description">BahnConnections lässt sich direkt zum Startbildschirm hinzufügen. Die Web-App aktualisiert sich über dieselbe Website.</p>
+  <InstallClient/>
+  <details className="install-v56-faq"><summary>Wie funktionieren Updates und Offline-Nutzung?</summary><p>Installierte Web-Apps beziehen Updates automatisch von ihrer ursprünglichen Webadresse. Eine unter einer anderen Adresse installierte App aktualisiert sich dadurch nicht. Live-Züge und aktuelle Abfahrten benötigen Internet; gespeicherte Seiten sind keine Live-Daten.</p></details>
+  <small className="install-v56-disclaimer">Unabhängiges Projekt · Keine offizielle App der Deutschen Bahn.</small>
+ </section></main>;
 }

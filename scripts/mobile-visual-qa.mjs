@@ -388,7 +388,7 @@ try {
     const actions=document.querySelector('.header-actions')?.getBoundingClientRect();
     return { searchRight:search?.right ?? 0, actionsLeft:actions?.left ?? 0, actionsWidth:actions?.width ?? 0, overlap:Boolean(search&&actions&&search.right>actions.left-4) };
   })()`);
-  if (landscapeChrome.actionsWidth > 52 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
+  if (landscapeChrome.actionsWidth > 92 || landscapeChrome.overlap) throw new Error('Header-Aktionen überdecken im Querformat die Suche: '+JSON.stringify(landscapeChrome));
   const landscapeStops = await evaluate(`(() => {const left=document.querySelector('.mobile-sheet-panel').getBoundingClientRect().left; const mapRight=document.querySelector('.map-canvas').getBoundingClientRect().right; return Array.from(document.querySelectorAll('path.live-journey-stop')).map(el=>({right:Math.min(mapRight,el.getBoundingClientRect().right),left}));})()`);
   if (landscapeStops.some(stop=>stop.right>stop.left+2)) throw new Error('Journey-Halte liegen im Querformat unter dem seitlichen Sheet');
   await screenshot("844-landscape");
@@ -479,11 +479,11 @@ try {
     const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
     return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
   })()`);
-  if (!simpleMore || simpleMore.count !== 3) throw new Error('Mehr-Menü ist nicht auf drei Kernaktionen reduziert: '+JSON.stringify(simpleMore));
+  if (!simpleMore || simpleMore.count !== 4) throw new Error('Mehr-Menü ist nicht auf vier Kernaktionen begrenzt: '+JSON.stringify(simpleMore));
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Profil & Einstellungen','App & Updates','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
@@ -522,7 +522,7 @@ try {
         horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
         bounds:rect?{left:rect.left,right:rect.right}:null};
     })()`);
-    if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min.'||
+    if(!inspected.train||!inspected.plan||!inspected.expected||inspected.plan===inspected.expected||inspected.status!=='+2 Min. Verspätung'||
       !(inspected.speed??'').includes('km/h')||!inspected.canFollow||inspected.mobileSheet!=='half'||
       inspected.horizontalOverflow||!inspected.bounds||inspected.bounds.left<-1||inspected.bounds.right>391)
       throw new Error('Rail radar inspector regression: '+JSON.stringify(inspected));
@@ -656,7 +656,7 @@ try {
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
         if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
-        await tap('.station-section-tabs button:nth-child(3)');
+        await tap('.station-section-tabs button:nth-child(4)');
         await matrixCapture('station-info');
         await tap(nav(2));
         await matrixCapture('planner');
@@ -686,7 +686,7 @@ try {
   for(const width of [320,390,1440]) {
     await setViewport(width, width<1024 ? 844 : 900);
     if(width<1024) {await tap('.mobile-navigation button:last-of-type');await tap('.simple-more-list>button:first-child');}
-    else await tap('[aria-label="Einstellungen und Profil"]');
+    else await tap('.settings-trigger');
     await waitFor(`Boolean(document.querySelector('.settings-dialog[open]'))`,'Settings dialog missing');
     await evaluate(`(() => {const name=document.querySelector('.profile-form input[autocomplete="nickname"]');const home=document.querySelector('.profile-form input[list="home-station-suggestions"]');if(!name||!home)throw new Error('Profile name or home-station input missing');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;for(const [input,value] of [[name,'Alex Bahn'],[home,'Berlin Hbf']]){setter.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));}})()`);
     await tap('.profile-form button[type="submit"]');
@@ -698,7 +698,7 @@ try {
     if(await evaluate(`document.documentElement.dataset.motion`) !== 'reduced') throw new Error('Reduced motion preference did not apply');
     await tap('.settings-toggle:nth-of-type(3)');
     await screenshot(width+'-settings-display');
-    await tap('.settings-tabs button:nth-child(3)');
+    await tap('.settings-tabs button[data-settings-tab="plans"]');
     if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
     await screenshot(width+'-settings-plans');
     if(width===320) {
@@ -746,7 +746,7 @@ try {
     await command('Page.reload');
     await waitFor(`performance.timeOrigin>${oldOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.app-shell[data-preferences-ready="true"]'))`,'Route reload failed');
     if(width<1024){await tap('.mobile-navigation button:last-of-type');await waitFor(`Boolean(document.querySelector('.simple-more-list'))`,'More menu not hydrated');await tap('.simple-more-list>button:first-child');}
-    else await tap('[aria-label="Einstellungen und Profil"]');
+    else await tap('.settings-trigger');
     await waitFor(`Boolean(document.querySelector('.settings-dialog .saved-routes li'))`,'Saved route not restored');
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
     await pause(200);
@@ -777,7 +777,7 @@ try {
   const firstOrigin=await evaluate(`performance.timeOrigin`);
   await command('Page.reload');
   await waitFor(`performance.timeOrigin > ${firstOrigin} && document.readyState==='complete' && Boolean(document.querySelector('.location-trigger.active'))`,'Granted location did not auto-activate');
-  await tap('[aria-label="Einstellungen und Profil"]');
+  await tap('.settings-trigger');
   await tap('.settings-tabs button:nth-child(2)');
   const accuracy=await evaluate(`document.querySelector('.settings-content').textContent`);
   if(!accuracy.includes('3200')) throw new Error('Location accuracy was artificially capped: '+accuracy);

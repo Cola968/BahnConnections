@@ -62,7 +62,7 @@ assert.equal(boardEventTime({plannedWhen:"not-date",when:"bad",realtime:true},tr
 assert.equal(boardEventTime({plannedWhen:"2026-10-25T02:30:00+02:00",when:"2026-10-25T02:30:00+01:00",realtime:true},true),Date.parse("2026-10-25T01:30:00Z"),"DST hour must sort as absolute instant");
 const platform={plannedPlatform:"3",platform:"7",realtime:true};
 assert.equal(boardDisplayPlatform(platform,true),"7","Fresh platform change must remain visible");
-assert.equal(boardDisplayPlatform(platform,false),undefined,"Expired realtime platform must not look current");
+assert.equal(boardDisplayPlatform(platform,false),"3","Expired realtime platform falls back to planned track, never the old prediction");
 assert.equal(boardDisplayPlatform({...platform,realtime:false},false),"7","Scheduled platform remains visible without realtime");
 assert.equal(boardDisplayPlatform({platform:"7",realtime:true},false),undefined,"Unknown timetable platform cannot become verified old actual");
 

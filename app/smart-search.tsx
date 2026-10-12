@@ -231,7 +231,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
       <input ref={inputRef} role="combobox" aria-label={ariaLabel}
         aria-autocomplete="list" aria-expanded={open&&!mobilePickerOpen} aria-controls={suggestionsId}
         aria-activedescendant={open&&!mobilePickerOpen&&suggestions[activeIndex]?suggestionsId+"-"+activeIndex:undefined}
-        autoComplete="off" autoCorrect="off" spellCheck={false}
+        maxLength={100} autoComplete="off" autoCorrect="off" spellCheck={false}
         value={variant==="header"&&!open?compactStationLabel(value)??value:value}
         onFocus={event=>{
           const input=event.currentTarget;setOpen(true);
@@ -261,7 +261,7 @@ export function SmartSearch({ stations, value, onChange, onSelect, favoriteIds, 
           <input ref={dialogInputRef} role="combobox" aria-label={ariaLabel}
             aria-autocomplete="list" aria-expanded={true} aria-controls={suggestionsId}
             aria-activedescendant={suggestions[activeIndex]?suggestionsId+"-"+activeIndex:undefined}
-            autoComplete="off" autoCorrect="off" spellCheck={false} value={value}
+            maxLength={100} autoComplete="off" autoCorrect="off" spellCheck={false} value={value}
             onChange={event=>{onChange(event.target.value);setOpen(true);setActiveIndex(0);}}
             onKeyDown={keydown} placeholder={placeholder??"Bahnhof suchen"} />
           {value&&<button type="button" aria-label="Suche leeren"

@@ -22,11 +22,12 @@ type Props={
   reducedMotion:boolean;onReducedMotion:(value:boolean)=>void;
   autoLocation:boolean;onAutoLocation:(value:boolean)=>void;onRequestLocation:()=>void;
   locationStatus:string;locationAccuracy?:number;
+  initialTab?:"profile"|"settings"|"about"|"plans";
   showTrails:boolean;onShowTrails:(value:boolean)=>void;showRouteLabels:boolean;onShowRouteLabels:(value:boolean)=>void;overviewRoutesVisible:boolean;onOverviewRoutesVisible:(value:boolean)=>void;
 };
 export function SettingsDialog(p:Props) {
   const dialog=useRef<HTMLDialogElement>(null);
-  const [tab,setTab]=useState<"profile"|"settings"|"plans">("profile");
+  const [tab,setTab]=useState<"profile"|"settings"|"about"|"plans">(p.initialTab??"profile");
   const [name,setName]=useState(p.profile.name);
   const [homeText,setHomeText]=useState(p.profile.homeStationName || p.stations.find(station=>station.id===p.profile.homeStationId)?.name || "");
   const [favoriteLine,setFavoriteLine]=useState(p.profile.favoriteLine);
@@ -59,7 +60,7 @@ export function SettingsDialog(p:Props) {
       setAvatarDataUrl(data);setMessage("Profilbild ausgewählt. Bitte speichern.");
     } catch {setMessage("Bild konnte nicht verarbeitet werden.");}
   }
-  const tabIndex=tab==="profile"?0:tab==="settings"?1:2;
+  const tabIndex=tab==="profile"?0:tab==="settings"?1:tab==="about"?2:3;
   const locationText=`${p.locationStatus}${p.locationAccuracy!==undefined ? ` · ±${Math.round(p.locationAccuracy)} m` : ""}`;
 
   return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
@@ -68,21 +69,21 @@ export function SettingsDialog(p:Props) {
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
     </header>
     <nav className="settings-tabs" aria-label="Einstellungsbereiche" style={{"--settings-tab-index":tabIndex,"--settings-tab-offset":`${tabIndex*100}%`} as CSSProperties}>
-      {([["profile","Profil","user"],["settings","App","settings"],["plans","Plus","star"]] as const).map(([id,label,icon])=><button type="button" key={id} aria-pressed={tab===id} className={tab===id ? "active" : ""} onClick={()=>setTab(id)}><UiIcon name={icon}/><span>{label}</span></button>)}
+      {([["profile","Profil","user"],["settings","Design","settings"],["about","App","layers"],["plans","Plus","star"]] as const).map(([id,label,icon])=><button type="button" key={id} data-settings-tab={id} aria-pressed={tab===id} className={tab===id ? "active" : ""} onClick={()=>setTab(id)}><UiIcon name={icon}/><span>{label}</span></button>)}
       <i className="settings-tab-indicator" aria-hidden="true"/>
     </nav>
 
     <div className="settings-content" key={tab}>
       {tab==="profile" && <>
         <div className="profile-overview profile-overview-v53">
-          <span className="profile-avatar" aria-hidden={!p.profile.avatarDataUrl}>{p.profile.avatarDataUrl ? <img src={p.profile.avatarDataUrl} alt="Dein Profilbild"/> : p.profile.initials||<UiIcon name="user"/>}</span>
+          <span className="profile-avatar" aria-hidden={!avatarDataUrl}>{avatarDataUrl ? <img src={avatarDataUrl} alt="Dein Profilbild · Vorschau"/> : (name.trim().split(/\s+/).map(item=>item[0]).slice(0,2).join("").toLocaleUpperCase("de")||<UiIcon name="user"/>)}</span>
           <div><h3>{p.profile.name||"Dein Profil"}</h3><p>{p.favoriteCount} Favoriten{(homeStation?.name || p.profile.homeStationName) ? ` · ${homeStation?.name || p.profile.homeStationName}` : ""}{p.profile.favoriteLine ? ` · ${p.profile.favoriteLine}` : ""}</p></div>
         </div>
         <div className="profile-quick-stats" aria-label="Dein Überblick"><span><UiIcon name="star"/><strong>{p.favoriteCount}</strong><small>Favoriten</small></span><span><UiIcon name="route"/><strong>{p.savedRoutes.length}</strong><small>Pendelstrecken</small></span><span><UiIcon name="location"/><strong>{homeStation||p.profile.homeStationName?"1":"0"}</strong><small>Heimatbahnhof</small></span></div>
         <div className="settings-section-heading settings-profile-intro"><h3><UiIcon name="user"/> Dein Profil</h3><p>Diese Daten bleiben lokal auf deinem Gerät.</p></div>
         <form onSubmit={save} className="profile-form">
           <label><span>Name</span><input autoComplete="nickname" maxLength={40} value={name} onChange={event=>setName(event.target.value)} placeholder="Wie heißt du?"/></label>
-          <label className="profile-photo-picker"><span>Profilbild (nur auf diesem Gerät)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>void choosePhoto(event.target.files?.[0])}/>{avatarDataUrl && <button type="button" className="settings-link" onClick={()=>setAvatarDataUrl("")}>Bild entfernen</button>}</label>
+          <label className="profile-photo-picker"><span>Profilbild (auch im App-Header sichtbar)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>void choosePhoto(event.target.files?.[0])}/>{avatarDataUrl && <button type="button" className="settings-link" onClick={()=>setAvatarDataUrl("")}>Bild entfernen</button>}<small>Das Bild wird nach „Speichern“ oben rechts angezeigt und bleibt auf diesem Gerät.</small></label>
           <label><span>Heimatbahnhof</span><input type="text" list="home-station-suggestions" maxLength={100} value={homeText} onChange={event=>setHomeText(event.target.value)} placeholder="Bahnhof eingeben, z. B. Berlin Hbf"/><datalist id="home-station-suggestions">{suggestions.map(station=><option key={station.id} value={station.name}/>)}</datalist><small>Passende Bahnhöfe können direkt geöffnet werden.</small></label>
           <label><span>Lieblingslinie (optional)</span><input type="text" maxLength={24} value={favoriteLine} onChange={event=>setFavoriteLine(event.target.value)} placeholder="z. B. S7, RE1 oder ICE"/></label>
           <button type="submit" className="settings-primary">Speichern</button>
@@ -112,13 +113,31 @@ export function SettingsDialog(p:Props) {
           <Toggle label="Automatisch aktivieren" description="Nur wenn die Browser-Freigabe bereits erteilt ist" checked={p.autoLocation} onChange={p.onAutoLocation}/>
         </section>
         <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="layers"/> Kartendarstellung</h3><p>Selten benötigte Kartenoptionen.</p></div><Toggle label="Fernverkehrsnetz" checked={p.overviewRoutesVisible} onChange={p.onOverviewRoutesVisible}/><Toggle label="Liniennamen" checked={p.showRouteLabels} onChange={p.onShowRouteLabels}/><Toggle label="Zugspur" checked={p.showTrails} onChange={p.onShowTrails}/></section>
-        <section className="settings-group v53-app-info">
-          <div className="settings-section-heading"><h3><UiIcon name="layers"/> App & Updates</h3><p>Version, Installation und Aktualisierungen.</p></div>
-          <div className="v53-version-row"><span><b>Webversion</b><small>Updates werden über die Website bereitgestellt.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
-          <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>Installation und Updates öffnen</span></a>
-        </section>
+
       </>}
 
+      {tab==="about" && <>
+        <section className="settings-group">
+          <div className="settings-section-heading"><h3><UiIcon name="info"/> BahnConnections</h3><p>Version, Änderungen und Installation auf einem Blick.</p></div>
+          <div className="v53-version-row"><span><b>Webversion</b><small>Öffentliche und vorbereitete Version können sich unterscheiden.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
+          <a href="/changelog" className="v53-settings-link"><UiIcon name="arrow"/><span>Was ist neu? · Changelog</span></a>
+          <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>App installieren & Updates</span></a>
+        </section>
+        <section className="settings-group">
+          <div className="settings-section-heading"><h3><UiIcon name="user"/> Deine Daten</h3><p>Favoriten, Profilbild und Pendelstrecken sind lokal gespeichert und nicht automatisch zwischen Geräten synchronisiert.</p></div>
+          <button className="settings-link" type="button" onClick={()=>{
+            const backup={exportedAt:new Date().toISOString(),appVersion:APP_VERSION_LABEL,profile:p.profile,routeCount:p.savedRoutes.length,routes:p.savedRoutes};
+            const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+            const url=URL.createObjectURL(blob);
+            const anchor=document.createElement("a");anchor.href=url;anchor.download="bahnconnections-meine-daten.json";anchor.click();
+            window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+            setMessage("Lokale Profildaten und Pendelstrecken exportiert.");
+          }}><UiIcon name="arrow"/> Profildaten und Pendelstrecken exportieren</button>
+          <p className="settings-note">Dieser Export enthält auch dein Profilbild, sofern gespeichert. Bewahre die Datei geschützt auf. Ein Import ist noch nicht verfügbar.</p>
+          {message&&<p className="settings-message" role="status">{message}</p>}
+        </section>
+        <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="location"/> Quellen & Transparenz</h3><p>Fahrplandaten werden von externen Verkehrsdatendiensten geladen. Ohne aktuelle Quelle zeigen wir keine bestätigte Pünktlichkeit.</p></div><p className="settings-note">Baustellen und Störungen werden nur für den gewählten Bahnhof und die aus der Quelle gemeldeten Fahrten angezeigt. Keine Garantie einer vollständigen Netzübersicht.</p></section>
+      </>}
       {tab==="plans" && <>
         <div className="settings-section-heading"><h3><UiIcon name="star"/> BahnConnections Plus</h3><p>Ein Überblick über aktuelle und geplante Funktionen. Die Basis bleibt kostenlos.</p></div>
         <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={"plan-card "+plan.id} key={plan.id}>

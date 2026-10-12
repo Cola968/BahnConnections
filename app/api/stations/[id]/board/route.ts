@@ -72,6 +72,7 @@ async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival
 export async function GET(request: Request, context: { params:Promise<{ id:string }> }) {
   const { id } = await context.params;
   const stopId = decodeURIComponent(id);
+  if (!stopId || stopId.length > 500) return Response.json({ stopTimes:[], warnings:["Ungültige Haltestellen-ID"] }, { status:400 });
   const query = new URL(request.url).searchParams;
   const updatedAt = new Date().toISOString();
   try {
@@ -86,7 +87,9 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     url.searchParams.set("mode", RAIL_MODES);
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
-    if (query.get("time")) url.searchParams.set("time", query.get("time")!);
+    const requestedTime=query.get("time");
+    if (requestedTime && (!Number.isFinite(Date.parse(requestedTime)) || requestedTime.length>80)) return Response.json({ stopTimes:[], warnings:["Ungültiger Abfragezeitpunkt"] }, { status:400 });
+    if (requestedTime) url.searchParams.set("time", requestedTime);
     const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const stopTimes = ((await response.json()) as { stopTimes?:TransitousBoardRow[] }).stopTimes ?? [];

@@ -13,7 +13,7 @@ const delayed=trainArrivalView({scheduled,actual:predicted,realtime:true,fresh:t
 assert.equal(delayed.plannedLabel,'14:00');
 assert.equal(delayed.expectedLabel,'14:08');
 assert.equal(delayed.delayMinutes,8);
-assert.equal(delayed.status,'+8 Min.');
+assert.equal(delayed.status,'+8 Min. Verspätung');
 assert.equal(delayed.tone,'warning');
 assert.equal(delayed.isFreshPrediction,true);
 const punctual=trainArrivalView({scheduled,actual:scheduled,realtime:true,fresh:true});

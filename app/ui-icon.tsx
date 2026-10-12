@@ -21,6 +21,8 @@ const paths = {
   train: <><rect x="6" y="3" width="12" height="15" rx="3" /><path d="M6 10h12M9 21l2-3m4 3-2-3M12 3v7M9 14h.01M15 14h.01" /></>,
   check: <path d="m4 12 5 5L20 6"/>,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>,
+  refresh: <><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5 9a8 8 0 0 1 13-3l2 2M4 16l2 2a8 8 0 0 0 13-3"/></>,
+  alert: <><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5m0 4h.01"/></>,
 } as const;
 
 export type IconName = keyof typeof paths;

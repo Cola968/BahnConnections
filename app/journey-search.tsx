@@ -5,16 +5,18 @@ import { SmartSearch } from "./smart-search";
 import { UiIcon } from "./ui-icon";
 import type { Station } from "./network-data";
 import type { PlannerCategory } from "./live-journey";
+import {shiftPlannerDay} from "./journey-tools";
 
 type StationField = { value:string; onChange:(value:string) => void; onSelect:(station:Station) => void };
 type SearchOptions = { arriveBy:boolean; maxChanges:0|1|2|3|4|5; transferMinutes:number; wheelchair:boolean; bike:boolean };
 export type JourneySearchProps = {
   actionPlacement?:"inline"|"footer";
   stations:Station[]; favoriteIds:string[]; start:StationField; target:StationField;
-  departure:string; onDeparture:(value:string) => void; onSwap:() => void;
+  departure:string; onDeparture:(value:string) => void; onNow:() => void; onSwap:() => void;
   categories:PlannerCategory[]; onCategory:(category:PlannerCategory) => void;
-  options:SearchOptions; onOptions:(options:Partial<SearchOptions>) => void;
+  options:SearchOptions; onOptions:(options:Partial<SearchOptions>) => void; onResetOptions:()=>void;
   loading:boolean; canSearch:boolean; onSearch:() => void; onDiscover:() => void; onReset:() => void;
+  onShare:() => void; shareMessage?:string;
 };
 
 function readableLocalDateTime(value:string) {
@@ -44,8 +46,11 @@ export function JourneySearch(props:JourneySearchProps) {
     </div>
     <div className="planner-time-row">
       <div className={`planner-time-mode ${options.arriveBy ? "arrive-by" : "depart-by"}`} role="group" aria-label="Abfahrts- oder Ankunftszeit"><button type="button" aria-pressed={!options.arriveBy} className={!options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:false})}>Abfahrt</button><button type="button" aria-pressed={options.arriveBy} className={options.arriveBy ? "active" : ""} onClick={() => props.onOptions({arriveBy:true})}>Ankunft</button></div>
-      <div className="planner-departure"><label><span className="planner-date-label">Datum & Zeit</span><span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="300" value={props.departure} onChange={event => props.onDeparture(event.target.value)} aria-label="Datum und Uhrzeit eingeben" /></span></label></div>
+      <button type="button" className="planner-now" onClick={props.onNow} aria-label="Abfahrt auf jetzt setzen">Jetzt abfahren</button>
+      <div className="planner-departure"><label><span className="planner-date-label">Datum & Zeit</span><span className="planner-date-control"><button type="button" className="planner-date-trigger" onClick={openDeparturePicker} aria-label={`${options.arriveBy ? "Ankunft" : "Abfahrt"} ändern: ${readableDeparture}`}><span>{readableDeparture}</span><UiIcon name="clock" width="18" height="18" /></button><input ref={departurePicker} className="planner-datetime-native" type="datetime-local" step="60" value={props.departure} onChange={event => props.onDeparture(event.target.value)} aria-label="Datum und Uhrzeit eingeben" /></span></label></div>
     </div>
+    <div className="planner-share-action"><button type="button" onClick={props.onShare} disabled={!props.canSearch}>Reiseplanung teilen</button>{props.shareMessage&&<p role="status">{props.shareMessage}</p>}</div>
+    <div className="planner-day-actions" role="group" aria-label="Reisetag wechseln">{([-1,1] as const).map(days=><button type="button" key={days} disabled={!shiftPlannerDay(props.departure,days)} onClick={()=>{const value=shiftPlannerDay(props.departure,days);if(value)props.onDeparture(value);}}>{days<0?'Einen Tag früher':'Einen Tag später'}</button>)}</div>
     {props.actionPlacement !== "footer" && <PlannerSearchAction {...props}/>}
     <details className="filter-drawer route-options">
       <summary><b>Optionen</b><small>{activeFilters ? `${activeFilters} aktiv` : "Alle Verkehrsmittel"}</small></summary>
@@ -59,6 +64,8 @@ export function JourneySearch(props:JourneySearchProps) {
         <label className="planner-check"><input type="checkbox" checked={options.bike} onChange={event => props.onOptions({bike:event.target.checked})} /><span><b>Fahrrad mitnehmen</b><small>Nur Fahrten mit gemeldeter Mitnahme</small></span></label>
       </div>
     <div className="explore-actions"><button type="button" onClick={props.onDiscover}>Ziel entdecken</button><button type="button" onClick={props.onReset}>Karte zurücksetzen</button></div>
+    <button type="button" className="settings-link" onClick={props.onResetOptions}>Reiseoptionen zurücksetzen</button>
+
     </details>
     </div>
   </>;

@@ -6,6 +6,7 @@ import { stationPassengerInfo } from "./station-passengers";
 import { PlannerPanel } from "./planner-panel";
 import { usePanelHistory } from "./use-panel-history";
 import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
+import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
@@ -13,6 +14,9 @@ import { UiIcon } from "./ui-icon";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
+import { JourneyExport } from "./journey-export";
+import { journeyDateRange } from "./journey-tools";
+import { NetworkNotice } from "./network-notice";
 import { realtimeTooltip } from "./realtime-tooltip";
 import { readPreference, readPreferenceJson, readPreferenceIds } from "./local-preferences";
 import { useLeafletMap } from "./use-leaflet-map";
@@ -33,6 +37,7 @@ import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
 import { StationMapRenderer } from "./station-map-renderer";
 import { StationLines, type StationLineSummary } from "./station-lines";
+import { StationDisruptions } from "./station-disruptions";
 import { compactStationLabel, serviceBadgeStyle, serviceColors } from "./transit-style";
 import {
   estimateMinutes,
@@ -187,7 +192,7 @@ export default function Home() {
   const [bikeRequired, setBikeRequired] = useState(false);
   const [journeyMessage, setJourneyMessage] = useState("");
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
-  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats">("live");
+  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
   const [helpOpen, setHelpOpen] = useState(false);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
@@ -196,6 +201,7 @@ export default function Home() {
   const [curatedAliases, setCuratedAliases] = useState<Record<string, Pick<Station, "mergedCodes" | "mergedCount" | "passengerBand">>>({});
   const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>([]);
   const [routeSaveMessage,setRouteSaveMessage]=useState("");
+  const [shareMessage,setShareMessage]=useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [boardOnly, setBoardOnly] = useState(false);
@@ -219,6 +225,7 @@ export default function Home() {
   const [stationTrip, setStationTrip] = useState<BoardMapTrip | null>(null);
   const [stationTrips, setStationTrips] = useState<BoardMapTrip[]>([]);
   const [settingsOpen,setSettingsOpen]=useState(false);
+  const [settingsInitialTab,setSettingsInitialTab]=useState<"profile"|"settings"|"about"|"plans">("profile");
   const [profile,setProfile]=useState<LocalProfile>(parseLocalProfile(null));
   const [reducedMotion,setReducedMotion]=useState(false);
   const [autoLocation,setAutoLocation]=useState(true);
@@ -231,6 +238,7 @@ export default function Home() {
   const [journeyOptionLimit, setJourneyOptionLimit] = useState(8);
   const [mobileSheetState, setMobileSheetState] = useState<MobileSheetState>("half");
   const stationLinkAppliedRef = useRef(false);
+  const plannerLinkAppliedRef = useRef(false);
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
   const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
@@ -429,6 +437,24 @@ export default function Home() {
       .catch((error) => { if ((error as Error).name !== "AbortError") setExtraStations([]); });
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if(plannerLinkAppliedRef.current)return;
+    const parsed=parsePlannerLink(window.location.href);
+    if(!parsed)return;
+    const from=stationById.get(parsed.from),to=stationById.get(parsed.to);
+    if(!from||!to)return;
+    const timer=window.setTimeout(()=>{
+      plannerLinkAppliedRef.current=true;
+      setStartId(from.id);setStartSearch(stationDisplayName(from.name));
+      setTargetId(to.id);setTargetSearch(stationDisplayName(to.name));
+      setJourneyDeparture(parsed.departure);setArriveBy(parsed.arriveBy);
+      setMaxChanges(parsed.maxChanges);setTransferMinutes(parsed.transferMinutes);
+      setWheelchairRouting(parsed.wheelchair);setBikeRequired(parsed.bike);setPlannerCategories(parsed.categories);
+      setActiveView("connections");setExploreOpen(true);setMobileSheetState("half");
+    },0);
+    return()=>window.clearTimeout(timer);
+  },[stationById]);
 
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("station");
@@ -1042,12 +1068,28 @@ export default function Home() {
     } : { padding:[80,80], maxZoom:12, animate:false });
   }
 
+  async function shareCurrentPlanner() {
+    try {
+      const url=buildPlannerLink(window.location.origin,{from:startId,to:targetId,departure:journeyDeparture,
+        arriveBy,maxChanges,transferMinutes,wheelchair:wheelchairRouting,bike:bikeRequired,categories:plannerCategories});
+      if(navigator.share){
+        try {await navigator.share({title:"BahnConnections – Reiseplanung",url});setShareMessage("Link geteilt.");return;}
+        catch(error){if((error as Error)?.name==="AbortError")return;}
+      }
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);setShareMessage("Reiseplanungs-Link kopiert.");return;}
+      setShareMessage(`Link: ${url}`);
+    } catch {setShareMessage("Teilen nicht möglich. Bitte Start, Ziel und Zeitpunkt prüfen.");}
+  }
+
   function resetMap() {
     plannerRequestRef.current?.abort(); walkRequestRef.current?.abort(); pendingWalkTargetRef.current = null;
     setPlannerState("idle"); setJourneyEndpoints(null); setJourneyOptionLimit(8);
+    setJourneyDeparture(""); setArriveBy(false); setMaxChanges(5); setTransferMinutes(0);
+    setWheelchairRouting(false); setBikeRequired(false);
+    setPlannerCategories(["fern", "regional", "sbahn", "ubahn", "tram"]);
     setStartId("berlin"); setStartSearch("Berlin Hbf");
     setTargetId("muenchen"); setTargetSearch("München Hbf");
-    setRouteSaveMessage("");
+    setRouteSaveMessage(""); setShareMessage("");
     setMobileSheetHeight(null); setStationPanel("live"); setSidebarCollapsed(false);
     setActiveView("map");
     setViewMenuOpen(false); setLiveFiltersOpen(false); setMoreMenuOpen(false);
@@ -1148,7 +1190,7 @@ export default function Home() {
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
           <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setMoreMenuOpen(false); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
-          <button className="round-button settings-trigger" onClick={()=>setSettingsOpen(true)} aria-label="Einstellungen und Profil">{profile.avatarDataUrl ? <img className="header-avatar" src={profile.avatarDataUrl} alt=""/> : profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
+          <button className="round-button settings-trigger" onClick={()=>{setSettingsInitialTab("profile");setSettingsOpen(true);}} aria-label="Profil und Einstellungen öffnen">{profile.avatarDataUrl ? <img className="header-avatar" src={profile.avatarDataUrl} alt=""/> : profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
         </div>
       </header>
 
@@ -1193,8 +1235,10 @@ export default function Home() {
             <div className="map-menu-dismiss"><strong>Mehr</strong><button type="button" onClick={() => setMoreMenuOpen(false)} aria-label="Mehr schließen"><UiIcon name="close" /></button></div>
             
             <div className="simple-more-list">
-              <button type="button" onClick={() => {setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
-              <a href="/install"><UiIcon name="layers"/><span><b>App & Updates</b><small>Installieren, Version und Aktualisierung</small></span><UiIcon name="arrow"/></a>
+              <button type="button" onClick={() => {setSettingsInitialTab("profile");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
+              <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
+              <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
+
               <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
@@ -1211,9 +1255,12 @@ export default function Home() {
             start:{ value:startSearch, onChange:(value) => { invalidatePlanner(); setStartSearch(value); setStartId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setStartId(station.id); setStartSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             target:{ value:targetSearch, onChange:(value) => { invalidatePlanner(); setTargetSearch(value); setTargetId(""); setJourneyMessage(""); setPlannerState("idle"); }, onSelect:(station) => { invalidatePlanner(); if (station.id.startsWith("motis:")) setLiveSearchStations(current => current.some(item => item.id === station.id) ? current : [...current, station]); setTargetId(station.id); setTargetSearch(stationDisplayName(station.name)); setJourneyMessage(""); setPlannerState("idle"); } },
             departure:journeyDeparture, onDeparture:(value) => { invalidatePlanner(); setJourneyDeparture(value); },
+            onNow:() => { invalidatePlanner(); setArriveBy(false); setJourneyDeparture(localDateTimeValue(new Date())); },
+            onShare:()=>{void shareCurrentPlanner();}, shareMessage,
             onSwap:() => { invalidatePlanner(); setStartId(targetId); setStartSearch(targetSearch); setTargetId(startId); setTargetSearch(startSearch); setJourneyMessage(""); setPlannerState("idle"); },
             categories:plannerCategories, onCategory:togglePlannerCategory,
             options:{ arriveBy, maxChanges, transferMinutes, wheelchair:wheelchairRouting, bike:bikeRequired },
+            onResetOptions:()=>{invalidatePlanner();setMaxChanges(5);setTransferMinutes(0);setWheelchairRouting(false);setBikeRequired(false);setPlannerCategories(["fern","regional","sbahn","ubahn","tram"]);},
             onOptions:(options) => { invalidatePlanner(); if (options.arriveBy !== undefined) setArriveBy(options.arriveBy); if (options.maxChanges !== undefined) setMaxChanges(options.maxChanges); if (options.transferMinutes !== undefined) setTransferMinutes(options.transferMinutes); if (options.wheelchair !== undefined) setWheelchairRouting(options.wheelchair); if (options.bike !== undefined) setBikeRequired(options.bike); },
             loading:plannerState === "loading", canSearch:Boolean(startId && targetId && startId !== targetId && journeyDeparture), onSearch:() => void runPlanner(), onDiscover:surpriseMe, onReset:resetMap,
           }}/>}
@@ -1225,6 +1272,7 @@ export default function Home() {
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}><LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} /></div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
+            {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
             {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
             <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus === "loading"}>↗ Fußweg von meinem Standort</button><small>{geoPosition ? `Standortgenauigkeit etwa ${Math.round(geoPosition.accuracy)} m · Route bei Bedarf aktualisieren` : "Standortfreigabe beim ersten Antippen · Koordinaten für die Route an Transitous"}</small>{walkStatus === "error" && walkMessage && <small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
@@ -1242,8 +1290,10 @@ export default function Home() {
             <PanelTools controls={journeyControls} label="Verbindung" onClose={resetMap} mobileState={mobileSheetState} onMobileStateChange={setMobileSheetState} mobileTitle={primaryJourneyLeg?.name ?? "Verbindung"} mobileSummary={`${stationDisplayName(selectedJourneyStart.name)} → ${stationDisplayName(selectedJourneyTarget.name)}`} />
             <div className="panel-body">
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{stationDisplayName(selectedJourneyStart.name)} → {stationDisplayName(selectedJourneyTarget.name)}</span></div>
+            <NetworkNotice/>
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
+                <p className="journey-date-range">{journeyDateRange(journey)}</p>
                 <JourneyTimeRange journey={journey} />
                 <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
                 {journey.cancelled && <small className="journey-disruption" role="status">Ausfall · Fahrtabschnitte prüfen</small>}
@@ -1251,6 +1301,7 @@ export default function Home() {
               <button type="button" onClick={() => { setExploreOpen(true); setMobileSheetState("expanded"); }} aria-label="Suche und Reiseoptionen ändern">Ändern</button>
             </div>
             <JourneyAlternatives journeys={journeyOptions} selected={journey} limit={journeyOptionLimit} label={journeyOptionLabel} onSelect={chooseJourney} onMore={() => setJourneyOptionLimit(value => value + 8)} />
+            <JourneyExport key={journey.id} journey={journey}/>
             <div className="journey-legs live-legs">
               {journey.transitLegs.map((leg, index) => {
                 const forecast=occupancyForecast(leg.startTime, leg.name);
@@ -1291,7 +1342,7 @@ export default function Home() {
 
       </section>
 
-      {settingsOpen && <SettingsDialog savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
+      {settingsOpen && <SettingsDialog initialTab={settingsInitialTab} savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
       {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (
