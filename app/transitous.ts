@@ -1,4 +1,4 @@
-import { APP_VERSION } from "./app-version";
+import { APP_VERSION } from "./app-version.ts";
 import { chooseStationMatch } from "./station-match.ts";
 import type { Station } from "./network-data";
 
