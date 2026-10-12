@@ -28,7 +28,7 @@ const cancel=extractStationNotices([{tripId:"ICE-208",displayName:"ICE 208 (4844
 assert.equal(cancel[0].lines[0],"ICE 208");
 assert.equal(cancel[0].direction,"Hamburg Hbf");
 assert.equal(cancel[0].journey,"Berlin Hbf → Hamburg Hbf");
-const renderer=read("app/live-map-renderer.ts"),search=read("app/journey-search.ts"),css=read("app/styles/v56-1-interactions.css");
+const renderer=read("app/live-map-renderer.ts"),search=read("app/journey-search.tsx"),css=read("app/styles/v56-1-interactions.css");
 assert.match(renderer,/current\.members\.length===1/,"Single-train clusters should open inspector on tap");
 assert.match(renderer,/iconSize:item\.trip\?\[40,40\]/,"Train taps must have a usable touch target");
 assert.match(renderer,/--train-heading/,"Train heading must be taken from course geometry");
