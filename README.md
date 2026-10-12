@@ -4,11 +4,11 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-## V44.0 · Simpler More & Cleaner Board
+## V55.0 · Zugradar und Ankunftsprognosen
 
-V44.0 reduziert die sichtbare Bedienoberfläche weiter. Der mobile Tab „Mehr“ ist jetzt ein eigenes, kurzes Menü mit nur drei Kernpunkten: Darstellung, App & Updates sowie Hilfe & Daten. Technische Kartenfilter und Netzoptionen liegen nicht mehr im allgemeinen Mehr-Menü, sondern ausschließlich hinter der Kartenansicht; seltene Kartenoptionen sind dort zusätzlich eingeklappt.
+Die geplante V55.0 ergänzt ein Flightradar-ähnliches Zugfenster mit Fahrplan-/Prognoseankunft, Verspätungsstatus und Kartenverfolgung. Wo aktuelle Haltezeitprognosen und Streckengeometrie vorliegen, erscheint eine daraus berechnete **Modellgeschwindigkeit**. Es gibt keine GPS-Fahrzeugortung und keinen gemessenen Live-Tachowert. Bei fehlenden oder veralteten Daten muss der Status das ausdrücklich sagen.
 
-Die Abfahrtstafel zeigt öffentliche Bahnhofsnamen statt technischer Haltestellenbezeichnungen. Zusätze wie „Zugang über den Bahnhofsvorplatz“ werden entfernt und „Hauptbahnhof“ wird in der kompakten Tafelansicht zu „Hbf“. Doppelte Ausfalltexte unter dem Ziel entfallen, da der rote Echtzeitstatus bereits eindeutig ist. Zeilen wurden zusätzlich etwas kompakter abgestimmt.
+Die mobile Bedienung wird kompakter. Die App trennt planmäßige Abfahrtszeiten von aktuellen Prognosen, zeigt im Zugfenster beide Zeiten und pausiert überalterte Verfolgung. Vor Veröffentlichung müssen Browser- und Echtgeräteprüfungen sowie die Nutzungsrechte der Live-Datenquellen geklärt sein.
 
 ## Funktionen
 
