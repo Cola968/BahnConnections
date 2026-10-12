@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { boardDisplayActual, boardDisplayPlatform, boardEventTime, boardPredictionFresh } from "../app/board-time.ts";
 import { boardDedupeKey } from "../app/board-dedup.ts";
-import { validTransitousBoardRows } from "../app/board-verification.ts";
+import { validTransitousBoardRows, safeBoardAlertHeaders } from "../app/board-verification.ts";
 import { trainArrivalView } from "../app/train-arrival.ts";
 import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
 import { matchesBoardDelayFilter } from "../app/board-delay-filter.ts";
@@ -50,6 +50,12 @@ const cleanRows=validTransitousBoardRows([null,undefined,{}, {place:null}, {plac
 assert.equal(cleanRows.length,1,"One malformed stop must not blank the board");
 assert.equal(cleanRows[0].realTime,true);
 assert.deepEqual(validTransitousBoardRows({not:"an array"}),[]);
+assert.deepEqual(safeBoardAlertHeaders([
+  null, "bad", {headerText:{translation:"not-array"}},
+  {headerText:{translation:[null,{text:123},{text:"  Signalstörung   auf Linie   S7  "}]}},
+  {header:" Gleiswechsel "},
+  {header:{unsafe:true}},
+]),["Signalstörung auf Linie S7","Gleiswechsel"],"Malformed third-party alerts cannot erase the station board");
 assert.equal(decodeRouteSegment("%XX"),null,"Invalid percent escapes cannot crash route handlers");
 assert.equal(decodeRouteSegment("trip%3A123"),"trip:123");
 assert.equal(writePreference({setItem(){throw new Error("SecurityError");}},"pin","[]"),false,"Denied storage is optional");
