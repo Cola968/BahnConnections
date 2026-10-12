@@ -21,7 +21,7 @@ const worker = read("public/sw.js");
 const changelog = read("CHANGELOG.md");
 const manifest = read("app/manifest.ts");
 const transitous = read("app/transitous.ts");
-verify(transitous.includes('import { APP_VERSION } from "./app-version"'), "Transitous User-Agent must use the current app version.");
+verify(transitous.includes('import { APP_VERSION } from "./app-version.ts"'), "Transitous User-Agent must use the current app version.");
 verify(transitous.includes("https://github.com/Cola968/BahnConnections"), "Transitous User-Agent needs a public contact URL.");
 verify(!transitous.includes('"BahnConnections/16"'), "Outdated User-Agent may not be shipped.");
 
