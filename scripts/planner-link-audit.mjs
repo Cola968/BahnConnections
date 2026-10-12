@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import {buildPlannerLink,parsePlannerLink} from "../app/planner-deep-link.ts";
+const trip={from:"berlin",to:"muenchen",departure:"2026-10-12T17:10",arriveBy:true,maxChanges:0,transferMinutes:12,wheelchair:true,bike:true,categories:["fern","regional"]};
+const url=buildPlannerLink("https://bahn.example",trip);
+assert.deepEqual(parsePlannerLink(url),trip);
+assert.ok(!url.includes("http%3A"),"Share links must remain human-readable");
+assert.equal(parsePlannerLink("https://bahn.example/?from=berlin&to=muenchen&at=oops"),null);
+assert.equal(parsePlannerLink("https://bahn.example/?from=berlin&to=muenchen&at=2026-10-12T17%3A10&modes=fern,unknown"),null);
+assert.equal(parsePlannerLink("https://bahn.example/?from=berlin&to=muenchen&at=2026-10-12T17%3A10&changes=999"),null);
+assert.deepEqual(parsePlannerLink(buildPlannerLink("https://bahn.example",{...trip,arriveBy:false,maxChanges:5,transferMinutes:0,wheelchair:false,bike:false,categories:["fern","regional","sbahn","ubahn","tram"]})).categories,["fern","regional","sbahn","ubahn","tram"]);
+console.log("Shareable planner link: verified roundtrip and input boundaries");
