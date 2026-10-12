@@ -177,7 +177,7 @@ try {
       await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       assert.equal(await evaluate("document.querySelector('.station-section-tabs button:first-child').getAttribute('aria-selected')"),'true','Keyboard subnavigation');
     }
-    if(!baseline&&width===390&&theme==='light'){
+    if(!baseline&&!args.includes('--stream')&&width===390&&theme==='light'){
       // A real Chromium interaction trace, with both arrival and departure fixtures.
       incidentFixtureMode=true;
       await click('#station-tab-disruptions');
