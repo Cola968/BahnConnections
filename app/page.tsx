@@ -552,6 +552,19 @@ export default function Home() {
     const drawRoute = (route: Route, from: string, to: string, featured = false, muted = false) => {
       const path = routePath(route, from, to);
       if (path.length < 2) return;
+      // Route badges describe a curated line, not the position of a specific train.
+      // Open a real station panel instead of updating an invisible route selection.
+      const openRouteAt=(at:[number,number])=>{
+        const nearest=path.reduce((best,station)=>{
+          const distance=(station.lat-at[0])**2+(station.lon-at[1])**2;
+          return distance<best.distance?{station,distance}:best;
+        },{station:path[0],distance:Number.POSITIVE_INFINITY}).station;
+        if(!nearest)return;
+        setSelectedId(nearest.id);setSearch(nearest.name);setJourney(null);setSelectedLiveTrip(null);
+        setRouteInfo(route.id);setStationPanel("destinations");setSidebarCollapsed(false);
+        setExploreOpen(false);setStatsOpen(false);setActiveView("departures");setMobileSheetState("expanded");
+        map.flyTo([nearest.lat,nearest.lon],Math.max(map.getZoom(),9),{animate:!prefersReducedMotion(),duration:.4});
+      };
       const trackGeometry = trackRouterRef.current?.geometry(path);
       const segments = trackGeometry?.segments ?? [];
       if (!segments.length) return;
@@ -564,7 +577,7 @@ export default function Home() {
           opacity: featured ? .96 : muted ? .14 : minimalMode ? .28 : .84, lineCap: "round", lineJoin: "round",
         }).addTo(layer);
         line.bindTooltip(routeElement(route.id, `${route.operator} · ${coverage}% der Strecke mit DB-Geometrie belegt · etwa ${route.frequency} Zugpaare/Tag`), { sticky: true });
-        line.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        line.on("click", event => openRouteAt([event.latlng.lat,event.latlng.lng]));
       }
       const labelPoints = [...segments].sort((left, right) => right.length - left.length)[0];
       if (showRouteLabels && !minimalMode && !muted && routeZoom >= 6 && labelPoints.length > 1) {
@@ -575,7 +588,7 @@ export default function Home() {
           .setLatLng(anchor)
           .setContent(routeBadgeElement(route))
           .addTo(layer);
-        label.on("click", () => { setRouteInfo(route.id); setStationPanel("destinations"); setExploreOpen(false); setStatsOpen(false); setMobileSheetState("expanded"); });
+        label.on("click", () => openRouteAt(anchor));
       }
     };
 
