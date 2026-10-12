@@ -349,9 +349,11 @@ export default function Home() {
   }, []);
   const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
-    if (!liveCategories.includes(trip.category)) return false;
-    return matchesLiveStatus(trip, liveStatusFilter);
-  }), [liveCategories, liveStatusFilter, liveTrips]);
+    // A passenger-selected vehicle should not disappear behind other map filters.
+    if(trip.tripId===selectedLiveTrip?.tripId||trip.tripId===trackedTripId)return true;
+    if(!liveCategories.includes(trip.category))return false;
+    return matchesLiveStatus(trip,liveStatusFilter);
+  }),[liveCategories,liveStatusFilter,liveTrips,selectedLiveTrip?.tripId,trackedTripId]);
 
   useEffect(() => {
     if (journeyDeparture) return;
@@ -724,7 +726,7 @@ export default function Home() {
   }, [connections, curatedAliases, curatedStates, extraStations, filteredRoutes, highlightedStopIds, journey, mapReady, mapViewportToken, mapZoom, minimalMode, overviewRoutesVisible, routeInfo, selected, selectedId, stationImportance, theme, leafletRef, mapRef, stationLayerRef]);
 
   useLiveMap(mapReady,leafletRef,mapRef,liveLayerRef,visibleLiveTrips,liveVisible,
-    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,selectedId:selectedLiveTrip?.tripId??null,appearance:`${theme}:${highContrast}`},selectLiveTrip);
+    {zoom:mapZoom,view:liveView,trails:showTrails,trackedId:trackedTripId,selectedId:selectedLiveTrip?.tripId??null,radarReady:liveState==="ready",radarUpdatedAtMs:liveUpdatedAt?.getTime()??null,appearance:`${theme}:${highContrast}`},selectLiveTrip);
 
   // Camera follow is deliberate: map dragging stops tracking. The point is always
   // interpolated from rail geometry, never treated as a reported GPS location.
