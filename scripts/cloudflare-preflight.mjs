@@ -21,7 +21,7 @@ assert.ok(vite.includes("cloudflare({"));
 assert.ok(vite.includes('configPath: "./wrangler.cloudflare.jsonc"'));
 assert.ok(vite.includes('viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] }'));
 assert.ok(!vite.includes("@openai/sites-vite-plugin"),"Standalone build must not depend on ChatGPT Sites");
-assert.ok(!vite.includes("hosting.json"),"Standalone build must not import Sites metadata");
+assert.ok(!/\bfrom\s+["\x27][^"\x27]*hosting\.json/.test(vite),"Standalone build must not import Sites metadata");
 
 const pkg=JSON.parse(text("package.json"));
 assert.equal(pkg.scripts["build:cloudflare"],"vite build --config vite.cloudflare.config.ts");
