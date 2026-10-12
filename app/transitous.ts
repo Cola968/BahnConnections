@@ -36,7 +36,7 @@ export async function resolveTransitousStopId(station: Station, signal?: AbortSi
     url.searchParams.set("mode", RAIL_MODES);
     url.searchParams.set("language", "de");
     url.searchParams.set("numResults", "12");
-    const response = await fetch(url, { signal, headers:transitousRequestHeaders() });
+    const response = await fetch(url, { signal:signal ? AbortSignal.any([signal,AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000), headers:transitousRequestHeaders() });
     if (!response.ok) return null;
     const payload = await response.json() as GeocodeStop[];
     const candidates = payload.filter((item): item is GeocodeStop & { id:string; lat:number; lon:number } => item.type === "STOP" && Boolean(item.id) && Number.isFinite(item.lat) && Number.isFinite(item.lon));
