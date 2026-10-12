@@ -431,7 +431,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       realtimeStatus:!boardLive ? "stale" : scoped.some((entry) => entry.realtime) ? "live" : "schedule",
       warnings:[...sourceWarnings, ...(!boardLive ? ["Echtzeitprognosen nicht aktuell; nur belastbare Fahrplanzeiten werden angezeigt."] : [])],
     };
-  }, [boardLive,entries, now, sourceWarnings, stale, station.id, updatedAt]);
+  }, [boardLive,entries, now, sourceWarnings, station.id, updatedAt]);
 
   useEffect(() => { if (status === "ready") onSummary?.(summary); }, [onSummary, status, summary]);
 
