@@ -30,6 +30,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const [now,setNow]=useState(()=>Date.now());
   const [stops,setStops]=useState<TrainStop[]>([]);
   const [detailState,setDetailState]=useState<"loading"|"ready"|"error">("loading");
+  const [detailUpdatedAt,setDetailUpdatedAt]=useState<Date|null>(null);
   const [showAllStops,setShowAllStops]=useState(false);
   useEffect(()=>{
     const refresh=()=>{if(!document.hidden)setNow(Date.now());};
@@ -40,7 +41,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   useEffect(()=>{
     const controller=new AbortController();
     async function load(){
-      setDetailState("loading");setStops([]);setShowAllStops(false);
+      setDetailState("loading");setDetailUpdatedAt(null);setStops([]);setShowAllStops(false);
       try {
         if(!trip.tripId || trip.tripId.length>500)throw new Error("Keine abrufbare Fahrt-ID");
         const response=await fetch(`/api/trips/transitous/${encodeURIComponent(trip.tripId)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(16000)]),cache:"no-store"});
@@ -48,7 +49,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         const data=await response.json() as {trip?:{legs?:unknown}};
         const raw=data.trip?.legs;
         const result=normaliseTrainStops(Array.isArray(raw)?raw:[]);
-        if(!controller.signal.aborted){setStops(result);setDetailState(result.length?"ready":"error");}
+        if(!controller.signal.aborted){setStops(result);setDetailUpdatedAt(result.length?new Date():null);setDetailState(result.length?"ready":"error");}
       }catch{if(!controller.signal.aborted)setDetailState("error");}
     }
     void load();
@@ -64,6 +65,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const compass=cardinalDirection(heading);
   const freshness=sourceFreshness(radarUpdatedAt,now,inRadar);
   const sourceCurrent=freshness==="current" && radarStatus==="ready";
+  const detailsCurrent=detailState==="ready" && sourceFreshness(detailUpdatedAt,now,true)==="current";
   const arrival=trainArrivalView({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime,fresh:sourceCurrent});
   const modelSpeed = sourceCurrent ? realtimeModelSpeed(trip,now) : null;
   const canStartTracking = sourceCurrent && activeEstimatedPosition(trip,now)!==null;
@@ -117,10 +119,10 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       <section className="train-progress-panel" aria-label="Verlauf des aktuellen Abschnitts">
         <div className="train-progress-head"><b>Unterwegs</b><span>{sourceCurrent&&position?`${Math.round(progress*100)} % geschätzt`:"Position nicht aktuell"}</span></div>
         <div className="train-progress-line" role="progressbar" aria-valuenow={sourceCurrent&&position?Math.round(progress*100):undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Geschätzter Fortschritt zwischen zwei Halten"><i style={{width:`${sourceCurrent&&position?progress*100:0}%`}}/>{sourceCurrent&&position&&<span style={{left:`${progress*100}%`}}><UiIcon name="train"/></span>}</div>
-        <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime} compact/></div></div>
+        <div className="train-endpoints"><div><small>Letzter Halt / Start</small><b>{from}</b><RealtimeTime scheduled={trip.scheduledDeparture} actual={trip.departure} realtime={trip.realTime&&sourceCurrent} compact/></div><div><small>Nächster Halt / Ziel</small><b>{to}</b><RealtimeTime scheduled={trip.scheduledArrival} actual={trip.arrival} realtime={trip.realTime&&sourceCurrent} compact/></div></div>
       </section>
 
-      {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={sourceCurrent}/>}
+      {showDestination&&finalStop&&<TrainArrivalPanel secondary heading="Fahrtziel (laut Fahrtdaten)" destination={stationName(finalStop.name)} scheduled={finalStop.scheduledArrival??finalStop.scheduledDeparture} actual={finalStop.arrival??finalStop.departure} realtime={finalStop.realtime} fresh={detailsCurrent}/>}
       <section className="train-stops-section">
         <div className="train-stops-header"><div><b>Fahrtverlauf</b><small>{detailState==="loading"?"Wird geladen …":detailState==="ready"?`${stops.length} gemeldete Halte`:"Fahrtverlauf nicht verfügbar"}</small></div>{detailState==="ready"&&stops.length>6&&<button onClick={()=>setShowAllStops(x=>!x)} type="button">{showAllStops?"Weniger":"Alle Halte"}</button>}</div>
         {upcoming&&<div className="train-next-stop"><UiIcon name="location"/><span><small>Nächster gemeldeter Halt</small><b>{stationName(upcoming.name)}</b></span><strong>{clock(upcoming.arrival??upcoming.departure)}</strong></div>}
@@ -129,7 +131,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         {detailState==="ready"&&<ol className="train-stop-list">{visibleStops.map((stop,index)=>{
           const isNext=stop===upcoming;const time=stop.arrival??stop.departure;
           const past=validDate(time);const occurred=past!==null&&past<now-60000;
-          return <li key={`${stop.name}-${index}-${time??""}`} className={isNext?"next":stop.cancelled?"cancelled":occurred?"passed":""}><i aria-hidden="true"/><span><b>{stationName(stop.name)}</b><small>{stop.cancelled?"Halt entfällt":isNext?"Nächster Halt":stop.platform?`Gleis ${stop.platform}`:""}</small></span><RealtimeTime scheduled={stop.scheduledArrival??stop.scheduledDeparture} actual={stop.arrival??stop.departure} realtime={stop.realtime} cancelled={stop.cancelled} compact/></li>;
+          return <li key={`${stop.name}-${index}-${time??""}`} className={isNext?"next":stop.cancelled?"cancelled":occurred?"passed":""}><i aria-hidden="true"/><span><b>{stationName(stop.name)}</b><small>{stop.cancelled?"Halt entfällt":isNext?"Nächster Halt":stop.platform?`Gleis ${stop.platform}`:""}</small></span><RealtimeTime scheduled={stop.scheduledArrival??stop.scheduledDeparture} actual={stop.arrival??stop.departure} realtime={stop.realtime&&detailsCurrent} cancelled={stop.cancelled} compact/></li>;
         })}</ol>}
       </section>
       <details className="train-data-disclosure"><summary>Datenquelle & Genauigkeit</summary><p>Transitous/MOTIS liefert Halte und – wo vorhanden – Echtzeitprognosen. Position, Richtung und der aktuelle Geschwindigkeits-Schätzwert entstehen aus Streckengeometrie und prognostizierten Haltezeiten. Der km/h-Wert ist ein Modell, keine gemessene Momentangeschwindigkeit und nicht fahrzeugspezifische Telemetrie. Ohne gültige Echtzeitdaten bleibt er leer.</p><small>Radar aktualisiert: {radarUpdatedAt?new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(radarUpdatedAt):"unbekannt"} · Status: {radarStatus}</small></details>
