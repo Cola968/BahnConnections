@@ -23,6 +23,7 @@
     "audit:billing": "node scripts/billing-audit.mjs",
     "audit:planner": "node scripts/planner-logic-audit.mjs",
     "audit:release": "node scripts/release-readiness-audit.mjs",
+    "audit:v56": "node scripts/v56-regression-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
