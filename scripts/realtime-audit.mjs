@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { boardEventTime,boardDisplayActual,boardPredictionFresh } from "../app/board-time.ts";
+import { boardEventTime,boardDisplayActual,boardDisplayPlatform,boardPredictionFresh } from "../app/board-time.ts";
 
 import { deriveRealtimePresentation as derive, derivePlatformPresentation, formatRealtimeTime, realtimeAccessibleLabel, realtimeStatusLabel } from "../app/realtime-presentation.ts";
 
@@ -60,5 +60,11 @@ assert.equal(boardEventTime({...departure,plannedWhen:null},false),null,"No sche
 assert.equal(new Date(boardEventTime({...departure,realtime:false},false)).toISOString(),"2026-10-12T08:05:00.000Z");
 assert.equal(boardEventTime({plannedWhen:"not-date",when:"bad",realtime:true},true),null);
 assert.equal(boardEventTime({plannedWhen:"2026-10-25T02:30:00+02:00",when:"2026-10-25T02:30:00+01:00",realtime:true},true),Date.parse("2026-10-25T01:30:00Z"),"DST hour must sort as absolute instant");
+const platform={plannedPlatform:"3",platform:"7",realtime:true};
+assert.equal(boardDisplayPlatform(platform,true),"7","Fresh platform change must remain visible");
+assert.equal(boardDisplayPlatform(platform,false),undefined,"Expired realtime platform must not look current");
+assert.equal(boardDisplayPlatform({...platform,realtime:false},false),"7","Scheduled platform remains visible without realtime");
+assert.equal(boardDisplayPlatform({platform:"7",realtime:true},false),undefined,"Unknown timetable platform cannot become verified old actual");
+
 
 console.log(JSON.stringify({ checkedAt:new Date().toISOString(), checks, unknownAndSchedule:true, cancellations:true, midnightAndDst:true, platforms:true },null,2));
