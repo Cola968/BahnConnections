@@ -18,7 +18,7 @@ export function TrainArrivalPanel({destination,heading="Nächster Halt",secondar
       <span className="train-arrival-arrow" aria-hidden="true">→</span>
       <div className="train-arrival-time expected">
         <small>{input.cancelled?"Ankunft entfällt":arrival.isFreshPrediction?"Erwartete Ankunft":"Ankunft (Fahrplan)"}</small>
-        <time className={`tone-${arrival.tone}`} dateTime={arrival.expected??arrival.planned??undefined}>{arrival.expectedLabel}</time>
+        <time className={`tone-${arrival.tone}`} dateTime={input.cancelled?undefined:arrival.expected??arrival.planned??undefined}>{arrival.expectedLabel}</time>
         {arrival.expectedDayOffset!==null&&arrival.expectedDayOffset!==0&&<small className="train-arrival-day">{arrival.expectedDayOffset>0?`+${arrival.expectedDayOffset} Tag${arrival.expectedDayOffset!==1?"e":""}`:`${arrival.expectedDayOffset} Tag${arrival.expectedDayOffset!==-1?"e":""}`}</small>}
       </div>
     </div>
