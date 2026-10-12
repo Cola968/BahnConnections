@@ -1,6 +1,7 @@
 "use client";
 
 import { boardDelayStatistics } from "./board-statistics";
+import { boardDedupeKey } from "./board-dedup";
 import { readPreferenceIds } from "./local-preferences";
 import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
@@ -176,13 +177,13 @@ function serviceQuality(entry: BoardEntry) {
 }
 
 function entryKey(entry: BoardEntry) {
-  return [entry.kind, entry.tripId ?? entry.line?.name, entry.plannedWhen, entry.direction, entry.provenance].join("|");
+  return boardDedupeKey(entry);
 }
 
 function deduplicate(entries: BoardEntry[]) {
   const unique = new Map<string, BoardEntry>();
   for (const entry of entries) {
-    const key = entry.tripId ? `${entry.kind}|${entry.tripId}|${entry.plannedWhen}` : [entry.kind, entry.plannedWhen, entry.plannedPlatform, entry.direction, entry.provenance, entry.line?.product].join("|");
+    const key = boardDedupeKey(entry);
     const current = unique.get(key);
     if (!current || serviceQuality(entry) > serviceQuality(current)) unique.set(key, entry);
   }
@@ -209,7 +210,9 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal,
 }
 function boardResult(payload:BoardPayload,kind:BoardKind) {
   const arrivals=kind==="arrival";
-  const entries = (payload.stopTimes ?? []).map((entry): BoardEntry => ({
+  // One malformed row must not blank the complete live board.
+  const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object") : [];
+  const entries = validRows.map((entry): BoardEntry => ({
     tripId: entry.tripId,
     kind,
     when: arrivals ? entry.place.arrival : entry.place.departure,
