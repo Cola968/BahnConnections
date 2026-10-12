@@ -24,6 +24,7 @@ jobs:
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
+      - run: pnpm audit:v56
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
