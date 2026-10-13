@@ -1,0 +1,63 @@
+# Bahnhofsradar und mobile Zugansicht – Rework-Bericht
+
+Stand: 13. Oktober 2026. Ausgangspunkt: V56.2 auf `main`, Commit `b9abd32`. Rework-Branch: `feat/v57-mobile-station-radar`. Dieser Bericht beschreibt den neuen Quellstand; er ist keine Bestätigung einer Veröffentlichung auf Sites oder Render.
+
+## Was sich für Fahrgäste ändert
+
+Die Zugansicht beginnt mit dem tatsächlichen Start- und Zielbahnhof der gesamten Fahrt. Darunter stehen der nächste Halt und die Ankunft am Ziel. Der vollständige Haltverlauf ist eine durchgehend scrollbare Liste: keine Begrenzung auf sechs Halte, kein zusätzlicher Schalter zum Freigeben weiterer Halte. Lange Stationsnamen dürfen umbrechen, Zeitangaben behalten ihren Platz. Der Kopf mit Schließen und Vergrößern bleibt außerhalb des scrollenden Inhalts.
+
+Das bisherige große Cockpit hat dieselben Angaben mehrfach dargestellt und den aktuellen Streckenabschnitt als Hauptverbindung gezeigt. Die neue Ansicht entfernt diese Wiederholungen, die große Geschwindigkeitszahl und die zusätzliche Kompasskarte. Modellgeschwindigkeit, Positionsqualität und Datenstand sind unter „Position & Datenquelle“ zugänglich. Die Ankunft am Ziel wird aus dem letzten Halt der Fahrt gelesen, nicht aus dem nächsten Radarabschnitt.
+
+Auf der Karte gibt es einen Richtungspfeil vor dem Zug. Das zusätzliche dreieckige Symbol in der Mitte entfällt. Wenn keine Richtung ermittelt werden kann, wird kein erfundener Richtungspfeil gezeigt. Die Position bleibt eine Schätzung anhand der gelieferten Strecke und Haltezeiten, keine GPS-Ortung. Die vorhandene sanfte Markerbewegung bleibt auf plausible, zusammenhängende Positionsänderungen begrenzt; reduzierte Animationen werden berücksichtigt.
+
+„Alle“, „Ankommend“ und „Abgehend“ beziehen sich auf den ausgewählten Bahnhof. „Alle“ bedeutet alle bestätigten Bahnhofshalte innerhalb des aktuellen Radarangebots, einschließlich ankommender und bereits abgefahrener Fahrten. Es bedeutet nicht alle Züge Deutschlands. Zugart und Verspätungsfilter können zusätzlich eingeschränkt werden. Die Karte gleicht exakte Fahrt-IDs mit Ankunfts- und Abfahrtstafel dieses Bahnhofs ab. Eine ähnliche Linienbezeichnung oder räumliche Nähe allein reicht nicht mehr aus.
+
+## Gefundene Fehler und Korrekturen
+
+| Fehler | Nachweis und Korrektur |
+| --- | --- |
+| Ein S2 zwischen Humboldthain und Nordbahnhof erschien beim Bahnhof Berlin Hbf, obwohl kein Halt bestätigt war. | Der neue UI-Test scheiterte vor der Änderung an genau dieser Fahrt. Der Radarfilter verwendet jetzt die Fahrt-IDs der Bahnhofstafeln. Nicht bestätigte oder ausgefallene Halte werden ausgeschlossen. |
+| Der Zugkopf zeigte nur den aktuellen Abschnitt statt der gesamten Fahrt. | Ein Testzug mit neun Halten zeigt Hamburg Hbf → München Hbf. Zusätzlich wurde live der ICE 379 Berlin Hbf → Karlsruhe Hbf mit acht Halten im Browser geöffnet. |
+| Lange Fahrtverläufe verloren ihren Zielhalt nach 150 Einträgen. | Ein Datentest mit 153 Halten bewahrt jetzt den letzten Halt. |
+| Derselbe Bahnhof erschien zweimal an einem Abschnittsübergang mit Aufenthaltszeit. | Ankunft und Abfahrt werden zu einem Halt zusammengeführt; Gleis und beide Zeiten bleiben erhalten. |
+| Fehler beim Aktualisieren konnten alte Angaben weiter als aktuelle Prognose darstellen. | Der letzte Verlauf bleibt lesbar, Echtzeitfarben werden neutralisiert, ein erneuter Abruf ist möglich. Der Fehler- und Wiederherstellungsweg ist im Browser mit HTTP 502 geprüft. |
+| Beim Schließen konnten Auswahl und Verfolgungszustand zurückbleiben. | X setzt Zugauswahl, Verfolgung, Bahnhof, Fahrtgeometrie und Richtungsfilter zurück. Der UI-Test prüft, dass kein Zugpanel, Bahnhofspanel oder Verfolgungs-HUD zurückbleibt. |
+| Der Wechsel vom Handyformat zum Desktop konnte eine Verbindung ohne Desktop-Seitenlayout lassen. | Der Test reproduzierte den Fehler bei 1024 Pixeln. Die Layoutzuständigkeit wird zusätzlich beim Resize aktualisiert. Der erneute Lauf erreicht die Desktopprüfungen erfolgreich. |
+| Ein Zug mit mehrminütigem Bahnhofshalt konnte zwischen beiden Richtungsfiltern verschwinden. | Ein zusätzlicher Datentest reproduzierte fünf Minuten Aufenthalt. Züge am Bahnsteig gehören während des Aufenthalts zu beiden Ansichten. |
+
+## Testumfang und Aussagekraft
+
+Die Tests bedienen die tatsächlichen gerenderten Oberflächen in Chromium/Edge. Kontrollierte Fahrplanantworten machen Ausfälle, +11 Minuten, lange Namen und Richtungszuordnung reproduzierbar. Sie beweisen die UI- und Verarbeitungslogik; sie beweisen keine flächendeckende Qualität des externen Fahrplananbieters. Die Liveprüfung mit dem ICE 379 ergänzt diese kontrollierten Fälle.
+
+| Bereich | Prüfung |
+| --- | --- |
+| Neues Bahnhofsradar | Exakte Haltzuordnung; beide Richtungen; Alle zurücksetzen; fremde Fahrt ausschließen; vollständiger Verlauf; bereitgestellte Strecke auf Karte; Abruffehler, Retry; Verfolgung und X. |
+| Neue Zugansicht | 320×640, 360×780, 390×430, 430×932, 768×1024 und 1440×900; keine horizontal überstehenden Panelinhalte. |
+| Planung | 46 Interaktionsfälle, einschließlich Suchauswahl, kurzer Bildschirmhöhe, Optionen, Datumswahl, Zurücknavigation und Wechsel zwischen Handy und Desktop. |
+| Zeit- und Farblogik | Pünktlich, früher, kleine Verspätungen, +11 bis +45, Ausfall, unbekannte Zeiten, veraltete Prognosen, Gleisänderung und Zeitzonenwechsel. |
+| Fahrtdaten | Zusammenführung gemeinsamer Abschnittsgrenzen; 153 Halte; ungültige IDs und Zeiten; ausgefallene Bahnhofshalte. |
+| Bestehende Funktionen | Gemeinsame Audits für Fahrplan, Tafeln, Linienfarben, Kalenderdateien, gespeicherte Routen, Kartenlebenszyklus, Eingabevalidierung, Produktoberflächen und geschlossene nicht konfigurierte Bezahlfunktionen. |
+
+Die alten Quelltextprüfungen auf Cockpit-Klassennamen wurden durch Tests der sichtbaren neuen Bedienabläufe ersetzt. Die neuen Fahrt- und Bahnhofsradartests sind Teil des GitHub-Qualitätsworkflows. Das verhindert, dass eine spätere Änderung wieder nur die veralteten CSS-Namen erfüllt, während das eigentliche Produktverhalten kaputtgeht.
+
+Der breite Browserlauf hat 120 Kombinationen aus Format, Thema und Ansicht, 24 Echtzeitszenarien, acht Profil-/Einstellungs-/Routenfälle, 49 weitere Layoutaufnahmen und vier Websiteprüfungen erfolgreich abgeschlossen. Der ergänzende Radar-Stresstest hält 180 Marker mit je 6.000 Geometriepunkten bei vierfach verlangsamter CPU stabil: kein Austausch der Marker beim Tick, längste gemessene Hauptthread-Aufgabe 57 ms. TypeScript, Produktionsbuild und 16 Daten-/Quellstandaudits waren erfolgreich; Lint meldet zwei bereits vorhandene Hinweise zur Bildoptimierung und keine Fehler.
+
+Im Windows-Test musste der Headless-Browser vor Pollingprüfungen ausdrücklich in den Vordergrund gesetzt werden. Eine verdeckte Seite pausiert ihre Abrufe absichtlich. Diese Korrektur am Testaufbau darf nicht als produktiver Fahrplanfehler ausgegeben werden.
+
+## Grenzen, die sichtbar bleiben müssen
+
+Die Karte bekommt nur die Fahrten, die der Radaranbieter für die aktuelle Umgebung liefert. Der Abgleich kann keine fehlende Fahrt erzeugen. Die Bahnhofstafeln werden getrennt aktualisiert. Wenn die Haltprüfung fehlschlägt, werden unbestätigte Züge ausgeblendet und der Fehler angezeigt. Die Zahl ist daher keine Garantie für jeden tatsächlich fahrenden Zug.
+
+Wenn der Anbieter keinen vollständigen Verlauf liefert, bezeichnet die Oberfläche ihre vorhandenen Daten ausdrücklich als Abschnitt. Wenn keine belastbare Streckengeometrie vorliegt, gibt es keine frei erfundene Verbindungslinie und keinen Schalter für eine angeblich vollständige Kartenstrecke. Fehlende Zeiten werden nicht durch die Ankunft am nächsten Halt ersetzt.
+
+Die kleinen Bildschirmhöhen simulieren den Platzverlust durch eine Tastatur. Das ersetzt keinen Test auf echter Android- oder iOS-Hardware mit deren Browser, Tastatur und Safe Area. Ebenso ersetzen die Kalenderausschnitt- und ICS-Tests keine bestätigte Speicherung in einem persönlichen Google-/Apple-/Outlook-Konto. Bezahlvorgänge und persönliche Standortfreigaben sind nicht als echte Transaktion durchgeführt worden.
+
+## Nächste sinnvolle Erweiterungen
+
+1. **Reise beobachten:** Ein gespeicherter Zug mit sichtbarem Datenstand, Gleisänderungen und Hinweisen bei Ausfall; Pushmeldungen erst mit zuverlässigem Backend und klarer Einwilligung.
+2. **Umstieg absichern:** Tatsächliche Umsteigezeit, Ankunftsgleis, Abfahrtsgleis und eine nachvollziehbare Warnung, wenn der Anschluss gefährdet ist. Keine frei geschätzte Gehzeit ohne Stationsdaten.
+3. **Offline-Reiseübersicht:** Letzte gespeicherte Verbindung und ihre Halte verfügbar halten, ausdrücklich mit altem Datenstand. Offlinewerte dürfen keine grünen Echtzeitversprechen bekommen.
+4. **Geräteprüfung:** Die wichtigsten Wege auf realen Android- und iOS-Geräten mit eingeblendeter Tastatur, großer Schrift, Screenreader und Hoch-/Querformat testen.
+5. **Gezielte Animationen:** Kurze Rückmeldung bei Richtungswechsel und beim Öffnen einer Fahrt; ruhiges Hervorheben des nächsten Halts. Keine dauernden Pulse, Kamerafahrten oder Blur-Animationen, die Bedienung und Akkulaufzeit belasten.
+
+Die gestalterische Orientierung ist eine klare Trennung zwischen Kartenbeobachtung und Reisekette. Als Referenzen dienten die [digitale Reisebegleitung der DB](https://www.bahn.de/service/fahrplaene/digitale-reisebegleitung) und die [Such- und Filterübersicht von Flightradar24](https://www.flightradar24.com/blog/inside-flightradar24/new-flightradar24-search/). Die Umsetzung übernimmt keine fremden Markenbestandteile.

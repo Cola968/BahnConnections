@@ -57,7 +57,7 @@ export class LiveMapRenderer {
           const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?'<div class="live-train-marker glyph"><i></i></div>':'<div class="live-cluster"><b></b><small>Züge</small></div>',iconSize:item.trip?[40,40]:[42,42],iconAnchor:item.trip?[20,20]:[21,21]})}).addTo(this.layer);
           entry={marker,trip:null,members:[],signature:'',trail:null};this.entries.set(item.id,entry);
           const current=entry;
-          const activate=()=>{if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
+          const activate=()=>{current.marker.closeTooltip();if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
           marker.on('click',activate);
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
@@ -85,13 +85,16 @@ export class LiveMapRenderer {
             const before=pointOnTrip(trip,Math.max(0,progress-.004));
             const after=pointOnTrip(trip,Math.min(1,progress+.004));
             const heading=headingDegrees(before,after);
-            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg`);
+            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg;--train-direction-visible:1`);
             else glyph.removeAttribute("style");
           }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}:${options.selectedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}${options.selectedId===trip.tripId?' selected':''}`;
+          if(trip.tripId===options.selectedId||trip.tripId===options.trackedId)entry.marker.unbindTooltip();
+          else if(entry.trip!==trip||!entry.marker.getTooltip()){
+            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11],className:'live-train-tooltip'});
+          }
           if(entry.trip!==trip){
-            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11]});
             element?.setAttribute('aria-label',`${trip.name}. Position geschätzt, keine GPS-Ortung. ${realtimeAccessibleLabel(state)} Details öffnen.`);
           }
           entry.signature=signature;entry.trip=trip;

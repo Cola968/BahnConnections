@@ -1,0 +1,93 @@
+{
+  "checkedAt": "2026-10-13T15:27:41.423Z",
+  "baseline": false,
+  "checks": [
+    {
+      "name": "station-membership",
+      "ids": [
+        "qa-outbound",
+        "qa-inbound"
+      ]
+    },
+    {
+      "name": "inbound-outbound-all",
+      "passed": true
+    },
+    {
+      "name": "single-front-arrow",
+      "passed": true
+    },
+    {
+      "name": "full-route",
+      "stops": 9
+    },
+    {
+      "name": "full-route-map",
+      "passed": true
+    },
+    {
+      "name": "failed-refresh-retains-route-and-retry",
+      "passed": true
+    },
+    {
+      "name": "responsive",
+      "width": 320,
+      "height": 640,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "responsive",
+      "width": 360,
+      "height": 780,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "responsive",
+      "width": 390,
+      "height": 430,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "responsive",
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "responsive",
+      "width": 768,
+      "height": 1024,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "responsive",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "panelOverflow": false,
+      "bodyOverflow": false,
+      "inside": true
+    },
+    {
+      "name": "tracking-close",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "realDevice": false
+}

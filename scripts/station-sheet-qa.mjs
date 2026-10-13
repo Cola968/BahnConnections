@@ -114,6 +114,7 @@ try {
     await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:theme}]});
     const themeScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('bahnconnections-theme',${JSON.stringify(theme)});localStorage.setItem('bahnconnections-font','normal');`});
     await command('Page.navigate',{url:new URL('/?station=berlin',base).href});
+    await command('Page.bringToFront');
     for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(150);}
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
     if(args.includes('--stream')){
@@ -181,6 +182,7 @@ try {
       // A real Chromium interaction trace, with both arrival and departure fixtures.
       incidentFixtureMode=true;
       await click('#station-tab-disruptions');
+      await command('Page.bringToFront');
       for(let attempt=0;attempt<70;attempt++){
         if(await evaluate("document.querySelectorAll('.incident-card').length===3"))break;
         await pause(100);

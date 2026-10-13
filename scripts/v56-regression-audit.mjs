@@ -107,11 +107,7 @@ assert.match(searchComponent,/Jetzt abfahren/);
 const stationLines=source("app/station-lines.tsx");
 assert.match(stationLines,/station-line-copy/);
 const inspector=source("app/live-trip-inspector.tsx");
-assert.match(inspector,/Retain the last itinerary/);
 assert.doesNotMatch(inspector,/segmentAverageSpeed/);
-assert.match(inspector,/remainingArrivalMinutes/);
-assert.match(inspector,/realtime=\{sourceCurrent&&trip\.realTime\}/);
-assert.match(inspector,/detailState!=="loading"&&stops\.length>0&&<ol/);
 let activeDetailRequests=0,maxDetailRequests=0;
 const observedBatchSizes=[];
 const outputs=await inBatches(Array.from({length:19},(_,i)=>i),6,async value=>{

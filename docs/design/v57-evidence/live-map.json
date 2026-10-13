@@ -1,0 +1,15 @@
+{
+  "fixture": true,
+  "baseline": false,
+  "cpuSlowdown": 4,
+  "count": 180,
+  "pointsPerTrip": 6000,
+  "requests": 1,
+  "retained": 180,
+  "mutations": 0,
+  "maxTask": 57,
+  "blockingTime": 10,
+  "longTasks": 3,
+  "maxFrameGap": 70.09999999999854,
+  "markers": 180
+}
