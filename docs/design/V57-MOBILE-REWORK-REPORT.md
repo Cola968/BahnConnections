@@ -77,3 +77,13 @@ Kontrollierte Testdaten, lokale Vorschau:
 ![Kompakte Radargruppe](v57-evidence/390-compact-radar.png)
 
 ![Neue Eingabefelder](v57-evidence/390-refined-planner.png)
+
+## Weitere Korrekturen: Störungsbezug und Mexikoplatz
+
+Der Störungsfeed übernimmt nur nachweislich betriebliche Einschränkungen oder Ausfälle. Allgemeine Informationen und ausdrücklich wirkungslose Meldungen erzeugen keine betroffenen Linien. Strukturierte Anbieterwirkungen werden berücksichtigt. Gemeinsame Hinweise behalten alle betroffenen Linien; eine unterschiedliche Fahrt, Richtung oder Zeit wird nicht der ersten Fahrt entnommen und pauschal auf andere Linien übertragen. Die bisherige Begrenzung auf neun Linien beziehungsweise 35 Meldungen wurde entfernt.
+
+Die Bahnhofssuche erkennt denselben vollständigen Namen bei vorangestelltem oder nachgestelltem Ortsnamen. Live überprüft: „Berlin Mexikoplatz“ wird als „S Mexikoplatz (Berlin)“ gemeldet, de-VBB_de:11000:900050301. Die geografische Schranke und die Ablehnung mehrdeutiger Treffer bleiben bestehen. Statistik, Verfolgung und Verfügbarkeit einer Zugauswahl nutzen nun dieselbe geprüfte Menge von Bahnhofshalten wie die Karte.
+
+Validierung: 16 Audits erfolgreich, TypeScript und Produktionsbuild erfolgreich, Bahnhofsradar-Regressionsprüfung erfolgreich, Bahnhofsblatt mit Störungsfilter/Suche in 390 px und beiden Farbschemata erfolgreich. Neue Fälle: umgestellter Ortsname, fremder/weit entfernter Bahnhof, reine Information, ausdrücklich keine Störung, strukturierte Umleitung und zwölf gemeinsam betroffene Linien. Ein veralteter Quelltexttest erwartete die früheren 40-px-Marker und blockierte den vorigen CI-Lauf; er prüft jetzt die vorhandene 44-px-Bedienfläche.
+
+12ui hat vier echte Entwürfe erzeugt. Variante A ist als Grundlage ausgewählt (ruhige Liste, kompakte Kennzeichen, Details hinter einem Aufklappen). Der kostenpflichtige responsive Export ist noch **nicht ausgeführt**: Die automatische Freigabeprüfung verlangt eine zusätzliche Kostenfreigabe, Obergrenze 0,55 USD. Daher ist der vollständige visuelle Rework dieses Tabs in diesem Stand noch offen. Der lokale Entwurf liegt unter work/12ui-station-disruptions/candidates/A.png; das ignorierte Designkit wird nicht ins Repository aufgenommen.

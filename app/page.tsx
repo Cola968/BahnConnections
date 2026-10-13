@@ -383,13 +383,14 @@ export default function Home() {
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState("half");
   }, []);
-  const currentTrackedTrip = trackedTripId ? liveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const stationRadar = useStationRadar(selected,liveVisible);
-  const visibleLiveTrips = useMemo(() => liveTrips.filter((trip) => {
-    if(stationRadar.status!=="ready" || !matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
+  const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
+  const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
+  const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
+    if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
     if (!liveCategories.includes(trip.category)) return false;
     return matchesLiveStatus(trip, liveStatusFilter);
-  }), [liveCategories, liveStatusFilter, liveTrips,stationRadar.calls,stationRadar.status,radarDirection]);
+  }), [liveCategories, liveStatusFilter, stationLiveTrips,stationRadar.calls,radarDirection]);
 
   useEffect(() => {
     if (journeyDeparture) return;
@@ -804,7 +805,7 @@ export default function Home() {
     const update=()=>{
       if(document.hidden)return;
       if(liveState!=="ready"||!liveUpdatedAt||Date.now()-liveUpdatedAt.getTime()>90_000)return;
-      const trip=liveTrips.find(candidate=>candidate.tripId===trackedTripId);
+      const trip=stationLiveTrips.find(candidate=>candidate.tripId===trackedTripId);
       if(!trip)return;
       const position=activeEstimatedPosition(trip,Date.now());
       if(!position)return;
@@ -817,7 +818,7 @@ export default function Home() {
     };
     update();const interval=window.setInterval(update,4000);
     return()=>{window.clearInterval(interval);map.off("dragstart",stopOnDrag);};
-  },[trackedTripId,mapReady,liveTrips,liveState,liveUpdatedAt,mapRef]);
+  },[trackedTripId,mapReady,stationLiveTrips,liveState,liveUpdatedAt,mapRef]);
 
 
   function startLocation(recenter=true) {
@@ -1317,7 +1318,7 @@ export default function Home() {
         ) : null}
         {!statsOpen && !plannerVisible && !journey && !selectedLiveTrip && selected && sidebarCollapsed && <button className="sidebar-restore right" onClick={() => setSidebarCollapsed(false)}><span>{selected.name}</span><b>Live-Tafel öffnen</b></button>}
 
-        <NetworkStats open={statsOpen} onClose={resetMap} stations={allStations} liveTrips={liveTrips} selectedStation={selected} liveUpdatedAt={liveUpdatedAt} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
+        <NetworkStats open={statsOpen} onClose={resetMap} stations={allStations} liveTrips={stationLiveTrips} selectedStation={selected} liveUpdatedAt={liveUpdatedAt} mobileSheetState={mobileSheetState} onMobileSheetState={setMobileSheetState} />
 
         {journey && !departuresView && !statsOpen && !plannerVisible && selectedJourneyStart && selectedJourneyTarget && (
           <section className="journey-card floating-panel mobile-sheet-panel" style={journeyControls.style} onScroll={markPanelScroll}>
@@ -1368,7 +1369,7 @@ export default function Home() {
 
         {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>setTrackedTripId(null)}/>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && liveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
+          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && stationLiveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
