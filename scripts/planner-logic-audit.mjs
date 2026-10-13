@@ -7,6 +7,10 @@ const result=boardDelayStatistics([{scheduled:planned,actual:late,realtime:true}
 assert.deepEqual(result,{delaySamples:1,delayed6:1,delayed15:0,delayed30:0,averageDelay:10});
 assert.equal(boardDelayStatistics([{scheduled:planned,realtime:true}]).averageDelay,null);
 const berlin={name:'Berlin Hbf',lat:52.5251,lon:13.3694};
+const mexiko={name:'Berlin Mexikoplatz',lat:52.43672366,lon:13.23344751};
+assert.equal(chooseStationMatch(mexiko,[{name:'S Mexikoplatz (Berlin)',lat:52.437164,lon:13.23206,id:'mexiko'}])?.id,'mexiko','City suffix and prefix identify the same rail stop');
+assert.equal(chooseStationMatch(mexiko,[{name:'S Nikolassee (Berlin)',lat:mexiko.lat,lon:mexiko.lon}]),null,'Nearby unrelated stop must never be accepted');
+assert.equal(chooseStationMatch(mexiko,[{name:'S Mexikoplatz (Berlin)',lat:51,lon:13}]),null,'Word order must not relax geographic verification');
 assert.equal(chooseStationMatch(berlin,[{name:'Berlin Ostbahnhof',lat:52.5251,lon:13.3694,id:'wrong'},{name:'Berlin Hauptbahnhof (S+U)',lat:52.5255,lon:13.3697,id:'right'}]).id,'right');
 assert.equal(chooseStationMatch(berlin,[{name:'Berlin Ostbahnhof',lat:52.5251,lon:13.3694}]),null);
 assert.equal(chooseStationMatch(berlin,[{...berlin,lat:52.52,lon:13.37},{...berlin,lat:52.53,lon:13.37}]),null,'Equally close distinct stations are ambiguous');

@@ -34,16 +34,29 @@ export class LiveMapRenderer {
   sync(trips:LiveTrip[],options:LiveMapOptions,at=Date.now()){
     const generation=++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);
     const desired:Desired[]=[];
-    const groups=new Map<string,Desired>();
+    const groups=new Map<string,Desired & {screen:Leaflet.Point}>();
     for(const trip of trips){
       const position=activeEstimatedPosition(trip,at);if(!position)continue;
       if((options.zoom<10||options.view==='stress') && trip.tripId!==options.selectedId && trip.tripId!==options.trackedId){
-        const id=`cluster:${Math.round(position[0]*18)}:${Math.round(position[1]*18)}`;
-        const group=groups.get(id);if(group){group.members.push(trip);group.position[0]+=position[0];group.position[1]+=position[1];}
-        else groups.set(id,{id,position:[...position],trip:null,members:[trip]});
+        // Group by visible spacing, including neighbouring grid cells. Fixed
+        // geographic buckets can leave overlapping bubbles when zoomed out.
+        const screen=this.map.project(position,options.zoom),x=Math.floor(screen.x/48),y=Math.floor(screen.y/48);
+        const id=`cluster:${x}:${y}`;
+        let group=groups.get(id);
+        for(let dx=-1;!group&&dx<=1;dx++)for(let dy=-1;!group&&dy<=1;dy++){
+          const neighbour=groups.get(`cluster:${x+dx}:${y+dy}`);
+          if(neighbour&&neighbour.screen.distanceTo(screen)<48)group=neighbour;
+        }
+        if(group){group.members.push(trip);group.position[0]+=position[0];group.position[1]+=position[1];}
+        else groups.set(id,{id,position:[...position],trip:null,members:[trip],screen});
       }else desired.push({id:trip.tripId,position,trip,members:[trip]});
     }
-    for(const group of groups.values()){group.position[0]/=group.members.length;group.position[1]/=group.members.length;desired.push(group);}
+    for(const group of groups.values()){
+      group.position[0]/=group.members.length;group.position[1]/=group.members.length;
+      // A single train is a train, never a count bubble.
+      if(group.members.length===1){group.trip=group.members[0];group.id=group.trip.tripId;}
+      desired.push(group);
+    }
     const ids=new Set(desired.map(item=>item.id));
     for(const [id,entry]of this.entries)if(!ids.has(id)){this.layer.removeLayer(entry.marker);if(entry.trail)this.layer.removeLayer(entry.trail);this.entries.delete(id);}
     const styles=options.trails?getComputedStyle(document.documentElement):null;
@@ -54,10 +67,11 @@ export class LiveMapRenderer {
         const item=desired[cursor++];if(!item)break;
         let entry=this.entries.get(item.id);
         if(!entry){
-          const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?'<div class="live-train-marker glyph"><i></i></div>':'<div class="live-cluster"><b></b><small>Züge</small></div>',iconSize:item.trip?[40,40]:[42,42],iconAnchor:item.trip?[20,20]:[21,21]})}).addTo(this.layer);
+          const railGlyph='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="15" rx="4"/><path d="M6 10h12M12 3v7M8 21l2-3m6 3-2-3"/><path d="M9 14h.01M15 14h.01"/></svg>';
+          const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?`<div class="live-train-marker glyph"><i>${railGlyph}</i></div>`:`<div class="live-cluster">${railGlyph}<b></b></div>`,iconSize:[44,44],iconAnchor:[22,22]})}).addTo(this.layer);
           entry={marker,trip:null,members:[],signature:'',trail:null};this.entries.set(item.id,entry);
           const current=entry;
-          const activate=()=>{if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
+          const activate=()=>{current.marker.closeTooltip();if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
           marker.on('click',activate);
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
@@ -85,13 +99,16 @@ export class LiveMapRenderer {
             const before=pointOnTrip(trip,Math.max(0,progress-.004));
             const after=pointOnTrip(trip,Math.min(1,progress+.004));
             const heading=headingDegrees(before,after);
-            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg`);
+            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg;--train-direction-visible:1`);
             else glyph.removeAttribute("style");
           }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}:${options.selectedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}${options.selectedId===trip.tripId?' selected':''}`;
+          if(trip.tripId===options.selectedId||trip.tripId===options.trackedId)entry.marker.unbindTooltip();
+          else if(entry.trip!==trip||!entry.marker.getTooltip()){
+            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11],className:'live-train-tooltip'});
+          }
           if(entry.trip!==trip){
-            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11]});
             element?.setAttribute('aria-label',`${trip.name}. Position geschätzt, keine GPS-Ortung. ${realtimeAccessibleLabel(state)} Details öffnen.`);
           }
           entry.signature=signature;entry.trip=trip;

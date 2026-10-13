@@ -40,6 +40,7 @@ jobs:
       - run: pnpm audit:planner
       - run: node scripts/journey-tools-audit.mjs
       - run: pnpm audit:radar
+      - run: node scripts/train-route-audit.mjs
       - run: pnpm audit:map
       - run: pnpm build
       - name: Responsive interaction and realtime screenshots
@@ -62,6 +63,7 @@ jobs:
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
           node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
           node scripts/planner-qa.mjs http://localhost:3000 work/planner-qa
+          node scripts/station-radar-qa.mjs http://localhost:3000 work/station-radar-qa
       - name: Live network sources
         continue-on-error: true
         run: timeout 180 pnpm audit:network > work/network-audit.json 2>&1
@@ -88,6 +90,7 @@ jobs:
             work/board-stream-qa/
             work/station-loading-qa/
             work/planner-qa/
+            work/station-radar-qa/
             work/bahnconnections-dev.log
             work/network-audit.json
             work/api-smoke.json

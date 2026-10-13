@@ -57,7 +57,9 @@ function incidentTimetable(requestUrl){
   return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
     ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
     : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
-       {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true}]};
+       {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true},
+       {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
+       {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
 }
 function timetable() {
   const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
@@ -114,6 +116,7 @@ try {
     await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:theme}]});
     const themeScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('bahnconnections-theme',${JSON.stringify(theme)});localStorage.setItem('bahnconnections-font','normal');`});
     await command('Page.navigate',{url:new URL('/?station=berlin',base).href});
+    await command('Page.bringToFront');
     for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(150);}
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
     if(args.includes('--stream')){
@@ -177,15 +180,40 @@ try {
       await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       assert.equal(await evaluate("document.querySelector('.station-section-tabs button:first-child').getAttribute('aria-selected')"),'true','Keyboard subnavigation');
     }
-    if(!baseline&&!args.includes('--stream')&&width===390&&theme==='light'){
+    if(!baseline&&!args.includes('--stream')){
       // A real Chromium interaction trace, with both arrival and departure fixtures.
       incidentFixtureMode=true;
       await click('#station-tab-disruptions');
+      await command('Page.bringToFront');
       for(let attempt=0;attempt<70;attempt++){
         if(await evaluate("document.querySelectorAll('.incident-card').length===3"))break;
         await pause(100);
       }
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
+      assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
+      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-affected .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+      await screenshot(`${width}-${theme}-incidents`);
+      if(width===390&&theme==='light'){
+        // A frozen, anonymous DOM capture for design comparison. Keep real rendered
+        // markup/styles; remove scripts so the visual tool cannot start live polling.
+        const html=await evaluate("(() => {const copy=document.documentElement.cloneNode(true);copy.querySelectorAll('script,link[rel=stylesheet],style').forEach(node=>node.remove());const style=document.createElement('style');style.textContent=[...document.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules].map(rule=>rule.cssText);}catch{return [];}}).join('\\n');copy.querySelector('head').append(style);return copy.outerHTML;})()");
+        await writeFile(join(output,'incidents-rendered.html'),'<!doctype html>'+html.replace('<head>',`<head><base href="${new URL('/',base).href}">`));
+      }
+      await evaluate("document.querySelector('.incident-disclosure summary').scrollIntoView({block:'center'})");
+      await click('.incident-disclosure summary');
+      assert.equal(await evaluate("document.querySelector('.incident-disclosure').open"),true,'Opening a notice reveals its details');
+      const noticeLayout=await evaluate(`(() => {
+        const root=document.querySelector('.station-incidents');
+        return {overflow:root.scrollWidth>root.clientWidth+1,collisions:[...root.querySelectorAll('.incident-disclosure summary')].some(row=>{
+          const [lines,copy,chevron]=[...row.children].map(e=>e.getBoundingClientRect());
+          return lines.right>copy.left+1||copy.right>chevron.left+1;
+        })};
+      })()`);
+      assert.equal(noticeLayout.overflow||noticeLayout.collisions,false,'Notice columns must never overlap or overflow: '+JSON.stringify(noticeLayout));
+      await screenshot(`${width}-${theme}-incidents-expanded`);
+      await click('.incident-disclosure summary');
+      assert.equal(await evaluate("document.querySelector('.incident-disclosure').open"),false,'Closing a notice restores the compact row');
       await evaluate("document.querySelector('.incidents-filters').scrollIntoView({block:'center'})");
       await click('.incidents-filters button:nth-child(2)');
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Construction category should filter notice cards');
@@ -196,7 +224,7 @@ try {
       await pause(150);
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Line search should find arrival notices');
       assert.match(await evaluate("document.querySelector('.incident-card h3').textContent"),/Signalstörung/);
-      await screenshot('390-light-incidents-search');
+      await screenshot(`${width}-${theme}-incidents-search`);
       incidentFixtureMode=false;
       await click('#station-tab-live');
     }

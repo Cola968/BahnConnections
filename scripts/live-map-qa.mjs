@@ -66,7 +66,7 @@ try {
     const m=JSON.parse(String(event.data));
     if(m.method==='Fetch.requestPaused'){
       const path=new URL(m.params.request.url).pathname;
-      const payload=path.endsWith('/map/trips')?(requests++,trips()):path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:[],updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
+      const payload=path.endsWith('/map/trips')?(requests++,trips()):path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:trips().map(t=>({tripId:t.trips[0].tripId,place:{arrival:t.arrival,departure:t.departure}})),updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
       void command('Fetch.fulfillRequest',{requestId:m.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(()=>{});return;
     }
     const p=pending.get(m.id);if(!p)return;clearTimeout(p.timer);pending.delete(m.id);if(m.error)p.rejectCommand(Error(m.error.message));else p.resolveCommand(m.result);

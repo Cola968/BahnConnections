@@ -1,3 +1,13 @@
+# V57.0 · Bahnhofsradar, vollständige Zugverläufe und mobile Störungsansicht
+
+- Radar auf bestätigte Halte am ausgewählten Bahnhof begrenzt, mit Alle/Ankommend/Abgehend.
+- Vollständiger Zugverlauf von Start bis Ziel, alle Halte und getrennte Zielankunft.
+- Kompakte Zugmarker mit Linien-/Verkehrsmittelfarben und genau einem vorderen Richtungspfeil.
+- X beendet Auswahl, Kartenstrecke und Verfolgung vollständig.
+- Neue Störungsansicht nach 12ui-Entwurf: nur betroffene Linien, Suche, Kategorien und aufklappbare Meldungen.
+- Berlin Mexikoplatz korrekt mit dem Anbieterbahnhof verknüpft; mobile Planerfelder besser getrennt.
+- Versionsanzeige, PWA-Update und Cache auf V57.0 abgestimmt.
+
 # V56.2 · Stabilität, Live-Tafeln und Störungszentrale
 
 - **Erweiterte Störungszentrale:** Meldungen aus Ankünften und Abfahrten, Suchfeld nach Linie, Ziel und Störungstext sowie getrennte Kategorien für Bauarbeiten, Ausfälle und sonstige Hinweise.

@@ -35,7 +35,7 @@ export function MobileNavigation({ value, onChange, onMore, moreOpen, language="
       const active=!moreOpen && value===view;
       const displayLabel=language==="en"?({connections:"Plan",map:"Map",departures:"Departures"} as Record<string,string>)[view]:(view==="connections"?"Planen":label);
       return <button key={view} type="button" className={active ? "active" : ""} aria-current={active ? "page" : undefined} aria-label={displayLabel} onClick={() => onChange(view)}>
-        <span className="mobile-nav-icon"><UiIcon name={icon} /></span><span className="mobile-nav-label">{displayLabel}</span>
+        <span className="mobile-nav-icon">{view==="connections"?<span className="mobile-nav-route-asset" aria-hidden="true"/>:<UiIcon name={icon} />}</span><span className="mobile-nav-label">{displayLabel}</span>
       </button>;
     })}
     <button type="button" onClick={onMore} className={secondaryActive ? "active" : ""} aria-current={!moreOpen && secondaryActive ? "page" : undefined} aria-expanded={moreOpen} aria-controls="more-menu">

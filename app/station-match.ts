@@ -18,7 +18,9 @@ export function chooseStationMatch<T extends NamedPoint>(station:NamedPoint,cand
     if(!Number.isFinite(item.lat)||!Number.isFinite(item.lon))return [];
     const name=stationNameKey(item.name),distance=stationDistanceMeters(station,item);
     // Never use proximity alone: neighbouring bus/rail stops can be closer.
-    const exact=name===key;
+    // Providers put the city before the name or in parentheses after it.
+    // Require the same complete words and the existing geographic bound.
+    const exact=name===key||name.split(' ').sort().join(' ')===key.split(' ').sort().join(' ');
     const qualified=key.length>=8&&name.length>=8&&(name.startsWith(key+' ')||key.startsWith(name+' '));
     return distance<=1200&&(exact||qualified)?[{item,distance,score:exact?2:1}]:[];
   }).sort((a,b)=>b.score-a.score||a.distance-b.distance);

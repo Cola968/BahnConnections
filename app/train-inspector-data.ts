@@ -1,6 +1,8 @@
 /** Normalised journey details provided by Transitous; never derived from a guessed route. */
 export type TrainStop = {
   name: string;
+  lat?:number;
+  lon?:number;
   arrival?: string;
   departure?: string;
   scheduledArrival?: string;
@@ -9,27 +11,33 @@ export type TrainStop = {
   cancelled: boolean;
   realtime: boolean;
 };
-type RawStop={name?:string;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;track?:string;cancelled?:boolean};
+type RawStop={name?:string;lat?:number;lon?:number;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;track?:string;cancelled?:boolean};
 type RawLeg={mode?:string;realTime?:boolean;cancelled?:boolean;from?:RawStop;to?:RawStop;intermediateStops?:RawStop[]};
 const RAIL_MODES=new Set(["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL","REGIONAL_FAST_RAIL","REGIONAL_RAIL","SUBURBAN","SUBWAY","TRAM"]);
 
 export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   const result:TrainStop[]=[];
   for(const leg of legs){
+    if(!leg || typeof leg!=="object")continue;
     if(!RAIL_MODES.has(leg.mode??""))continue;
-    for(const stop of [leg.from,...(leg.intermediateStops??[]),leg.to]){
-      if(!stop?.name)continue;
+    for(const [index,stop] of [leg.from,...(Array.isArray(leg.intermediateStops)?leg.intermediateStops:[]),leg.to].entries()){
+      if(typeof stop?.name!=="string" || !stop.name)continue;
       const time=stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture;
       const previous=result.at(-1);
-      if(previous?.name===stop.name && (previous.arrival??previous.departure??previous.scheduledArrival??previous.scheduledDeparture)===time){
+      if(previous?.name===stop.name && (index===0 || (previous.arrival??previous.departure??previous.scheduledArrival??previous.scheduledDeparture)===time)){
+        previous.arrival??=stop.arrival;
+        previous.departure=stop.departure??previous.departure;
+        previous.scheduledArrival??=stop.scheduledArrival;
+        previous.scheduledDeparture=stop.scheduledDeparture??previous.scheduledDeparture;
+        previous.platform=stop.track??previous.platform;
         previous.realtime=previous.realtime&&Boolean(leg.realTime);
         previous.cancelled=previous.cancelled||Boolean(stop.cancelled||leg.cancelled);
         continue;
       }
-      result.push({name:stop.name,arrival:stop.arrival,departure:stop.departure,scheduledArrival:stop.scheduledArrival,scheduledDeparture:stop.scheduledDeparture,platform:stop.track,cancelled:Boolean(stop.cancelled||leg.cancelled),realtime:Boolean(leg.realTime)});
+      result.push({name:stop.name,lat:stop.lat,lon:stop.lon,arrival:stop.arrival,departure:stop.departure,scheduledArrival:stop.scheduledArrival,scheduledDeparture:stop.scheduledDeparture,platform:stop.track,cancelled:Boolean(stop.cancelled||leg.cancelled),realtime:Boolean(leg.realTime)});
     }
   }
-  return result.slice(0,150);
+  return result;
 }
 export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
   return stops.findIndex(stop=>{

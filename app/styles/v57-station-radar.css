@@ -1,0 +1,133 @@
+/* One complete itinerary, one next-stop summary; scroll belongs to the sheet body. */
+.app-shell .train-inspector-v57 {background:var(--paper);border:1px solid var(--line-subtle);box-shadow:0 12px 40px #14263026}
+.app-shell .train-inspector-v57 .panel-body {padding:14px 16px 20px!important;overscroll-behavior:contain;scrollbar-gutter:stable}
+.train-route-header {display:grid;gap:12px;min-width:0}
+.train-route-identity {display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.train-route-identity .service-pill {min-width:44px;min-height:28px;padding:5px 9px;border-radius:7px;font-size:.85rem;font-weight:750}
+.train-route-status,.train-station-context {color:var(--muted);font-size:.73rem;line-height:1.4}
+.train-station-context {margin:0}
+.train-full-route {display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:10px;align-items:center}
+.train-full-route>div {display:grid;gap:5px;min-width:0}
+.train-full-route>div:last-child {text-align:right}
+.train-full-route small {font-size:.7rem;color:var(--muted)}
+.train-full-route b {font-size:clamp(1rem,4.1vw,1.23rem);line-height:1.3;overflow-wrap:anywhere;letter-spacing:-.025em}
+.train-full-route>svg {width:18px;height:18px;color:var(--muted)}
+.train-route-progress {height:4px;background:var(--line-subtle);border-radius:3px;overflow:hidden}
+.train-route-progress i {display:block;height:100%;background:var(--action);border-radius:inherit}
+.train-arrival-overview {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:14px 0;margin-top:12px;border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
+.train-arrival-overview>div {display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:6px}
+.train-arrival-overview small {color:var(--muted);font-size:.7rem;line-height:1.4}
+.train-arrival-overview b {font-size:.82rem;line-height:1.35;overflow-wrap:anywhere}
+.train-arrival-overview .realtime-time {font-size:1.16rem;margin-top:auto}
+.app-shell .train-inspector-v57 .train-action-row {display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:12px 0}
+.train-jump-next,.train-route-error button {min-height:44px;border:1px solid var(--line-subtle);border-radius:10px;background:var(--soft);color:var(--ink);font-size:.8rem;font-weight:650;padding:8px 12px;cursor:pointer}
+.live-train-tooltip {max-width:min(240px,calc(100vw - 40px));white-space:normal;overflow-wrap:anywhere}
+.train-tracking-caption {margin:4px 0;font-size:.75rem;color:var(--muted)}
+.train-inspector-v57 .train-stops-section {padding-top:14px;margin-top:0}
+.train-inspector-v57 .train-stops-header {align-items:center;gap:12px}
+.train-inspector-v57 .train-stops-header small {font-size:.74rem;color:var(--muted)}
+.train-inspector-v57 .train-stop-list {margin-top:10px;padding:0;list-style:none}
+.app-shell .train-inspector-v57 .train-stop-list li {display:grid;grid-template-columns:12px minmax(0,1fr) minmax(60px,auto);gap:10px;align-items:center;min-height:68px;padding:10px 6px;position:relative;border-radius:0;border-bottom:1px solid var(--line-subtle);opacity:1}
+.train-inspector-v57 .train-stop-list li>span {min-width:0;display:grid;gap:4px}
+.train-inspector-v57 .train-stop-list b {font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
+.train-inspector-v57 .train-stop-list small {font-size:.7rem;line-height:1.4}
+.train-inspector-v57 .train-stop-list li.passed>span:not(.realtime-time) {color:var(--muted)}
+.train-inspector-v57 .train-stop-list li.next {background:color-mix(in srgb,var(--action) 8%,var(--paper));border-radius:10px;border-bottom-color:transparent}
+.train-inspector-v57 .train-stop-list li>i {position:relative;display:block;width:8px;height:8px;border-radius:50%;background:var(--paper);border:2px solid var(--muted);margin:0;left:auto;top:auto}
+.train-inspector-v57 .train-stop-list li>i::after {content:'';position:absolute;top:9px;left:1px;width:2px;height:42px;background:var(--line-subtle)}
+.train-inspector-v57 .train-stop-list li:last-child>i::after {display:none}
+.train-inspector-v57 .train-stop-list li.next>i {border-color:var(--action);background:var(--action)}
+.train-route-error {padding:8px 0;color:var(--muted);font-size:.8rem;line-height:1.5}
+.train-inspector-v57 .train-data-disclosure {margin-top:12px}
+.station-radar-scope {position:absolute;z-index:620;top:calc(var(--app-header) + 10px);left:12px;width:min(350px,calc(100% - 24px));display:grid;gap:9px;padding:11px;background:var(--paper);border:1px solid var(--line-subtle);border-radius:16px;box-shadow:0 6px 22px #1726321f}
+.station-radar-scope>div:first-child {display:grid;gap:3px;min-width:0}
+.station-radar-scope b {font-size:.86rem;overflow-wrap:anywhere}
+.station-radar-scope small,.radar-filter-hint {color:var(--muted);font-size:.72rem;line-height:1.45}
+.radar-direction-control {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;border-radius:10px;background:var(--soft)}
+.radar-direction-control button {min-width:0;min-height:44px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:.78rem;font-weight:650;cursor:pointer}
+.radar-direction-control button[aria-pressed='true'] {color:var(--ink);background:var(--paper);box-shadow:0 1px 5px #14263016}
+.radar-direction-control button:focus-visible,.train-jump-next:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+/* The old rotated locomotive silhouette produced a second direction pointer. */
+.app-shell .live-train-wrap .live-train-marker.glyph i {position:static;transform:none;clip-path:none;width:17px;height:17px;border:0;border-radius:0;background:transparent}
+.live-train-marker.glyph i svg {display:block;width:100%;height:100%}
+.app-shell .live-train-wrap,.app-shell .live-cluster-wrap {width:44px!important;height:44px!important;display:flex!important;align-items:center;justify-content:center}
+.app-shell .live-train-wrap .live-train-marker.glyph {width:27px;height:27px;border-radius:9px;box-shadow:0 2px 5px #14263030;background:var(--train-mode-color,#087f8c);color:white}
+.live-train-marker.fern {--train-mode-color:#c81738}
+.live-train-marker.regional {--train-mode-color:#2563a6}
+.live-train-marker.sbahn {--train-mode-color:#16834b}
+.live-train-marker.ubahn {--train-mode-color:#185cc4}
+.live-train-marker.tram {--train-mode-color:#a53578}
+.app-shell .live-train-wrap .glyph.status-warning {border-color:var(--status-delay)}
+.app-shell .live-train-wrap .glyph.status-danger {border-color:var(--status-disruption)}
+.app-shell .live-cluster-wrap .live-cluster {display:flex;flex-direction:row;gap:5px;width:auto;min-width:38px;height:28px;padding:0 7px;border:1px solid var(--line-subtle);border-radius:9px;background:var(--paper);color:var(--ink);box-shadow:0 2px 6px #14263026;font-size:12px;line-height:1;font-weight:700}
+.live-cluster svg {width:15px;height:15px;flex:none;color:var(--muted)}
+.app-shell .live-cluster-wrap .live-cluster.late {border-bottom:3px solid var(--status-delay)}
+.app-shell .live-cluster-wrap .live-cluster.severe {border-bottom:3px solid var(--status-disruption)}
+.app-shell .live-train-wrap .glyph.selected,.app-shell .live-train-wrap .glyph.tracked {outline:2px solid var(--action);outline-offset:3px;box-shadow:0 2px 8px #14263030;transform:none}
+.app-shell .live-train-wrap .live-train-marker.glyph::before {content:none!important;display:none!important}
+.app-shell .live-train-wrap .live-train-marker.glyph::after {width:8px;height:8px;background:var(--train-mode-color,#087f8c);clip-path:polygon(50% 0,100% 100%,0 100%);transform:translate(-50%,-50%) rotate(var(--train-heading,0deg)) translateY(-20px);opacity:var(--train-direction-visible,0)}
+.app-shell .live-train-wrap .live-train-marker.glyph.selected::after,.app-shell .live-train-wrap .live-train-marker.glyph.tracked::after {width:8px;height:8px}
+@media(max-width:350px){.app-shell .train-inspector-v57 .panel-body {padding-inline:10px!important}.train-arrival-overview {gap:10px}.train-full-route {gap:6px}.train-inspector-v57 .train-stop-list li {gap:7px}}
+@media(max-width:1023px){.train-inspector-v57 .train-route-identity {display:none}}
+@media(max-height:550px){.station-radar-scope {top:calc(var(--app-header) + 6px);padding:7px;gap:4px}.station-radar-scope small {display:none}}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion='reduced']) .train-route-progress i {transition:width 3.7s linear}}
+
+/* Station names own a full row; the location action never competes with input text. */
+.app-shell .route-search-pair {padding-right:0}
+.app-shell .route-search-pair>div {display:flex;flex-direction:column;align-items:stretch;padding:5px 12px;min-width:0}
+.app-shell .route-search-pair>div>span {flex:none;padding-top:7px;font-size:.75rem}
+.app-shell .route-search-pair>div:last-child {padding-right:54px}
+.app-shell .planner-origin-heading {min-height:44px;gap:8px;color:var(--muted);font-size:.75rem}
+.app-shell .planner-origin-location {min-height:44px!important;padding:8px!important;font-size:.75rem!important;color:var(--muted)!important;font-weight:550!important}
+.app-shell .planner-origin-location:hover {color:var(--action)!important;background:var(--soft)!important}
+.app-shell .route-search-pair .route-station-search {width:100%;min-height:44px}
+.app-shell .route-search-pair .route-station-search input {padding-left:0}
+.app-shell .route-search-pair .swap-button {top:auto;bottom:5px;right:5px;background:var(--soft);border-radius:10px}
+@media(min-width:360px){.app-shell .planner-panel .planner-time-row {grid-template-columns:minmax(0,1fr) auto}.app-shell .planner-panel .planner-time-mode button {font-size:.82rem}.app-shell .planner-panel .planner-now {padding-inline:8px;font-size:.76rem}}
+
+/* 12ui candidate A: separated rows, line badges, pale disclosure surfaces.
+   The kit's token patch has no recurring deltas; use the app's accessible themes.
+   Flow sizing replaces the export's fixed coordinates for variable live reports. */
+.app-shell .station-incidents {padding:16px clamp(12px,2vw,20px) 24px;container-type:inline-size}
+.station-incidents .station-incidents-head {align-items:center;margin-bottom:20px}
+.station-incidents .station-incidents-head h2 {font-size:1.15rem;margin:0 0 5px}
+.station-incidents .station-incidents-head p {font-size:.75rem;line-height:1.5}
+.station-incidents .station-incidents-head button {width:44px;min-height:44px;flex:none;justify-content:center;padding:10px;background:transparent}
+.incidents-affected {margin-bottom:18px}
+.incidents-affected h3 {font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+.incidents-affected>div {display:flex;flex-wrap:wrap;gap:6px}
+.incident-line-badge {display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:28px;padding:4px 8px;border-radius:6px;font-size:.75rem;font-weight:750;line-height:1.3;overflow-wrap:anywhere;max-width:100%}
+.station-incidents .incidents-search-row {margin:0 0 10px;gap:8px}
+.station-incidents .incidents-search input {min-height:44px;border-radius:10px}
+.station-incidents .incidents-search-row>button {min-height:44px}
+.station-incidents .incidents-filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 16px}
+.station-incidents .incidents-filters button {min-height:44px;padding:8px 10px;border-radius:8px;font-size:.75rem}
+.station-incidents .incidents-filters button.active {color:var(--action);background:var(--soft);border-color:var(--action)}
+.station-incidents .incidents-total {font-size:.72rem;line-height:1.5;margin:0 0 14px}
+.station-incidents .incidents-list {display:block;border-top:1px solid var(--line-subtle)}
+.station-incidents .incident-card {padding:0;border:0;border-bottom:1px solid var(--line-subtle);border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+.incident-disclosure>summary {display:grid;grid-template-columns:minmax(42px,auto) minmax(0,1fr) 28px;align-items:start;gap:12px;list-style:none;padding:18px 0;cursor:pointer;min-height:64px}
+.incident-disclosure>summary::-webkit-details-marker {display:none}
+.incident-disclosure>summary:focus-visible,.incidents-provenance>summary:focus-visible {outline:2px solid var(--action);outline-offset:3px;border-radius:6px}
+.incident-row-lines {display:flex;flex-direction:column;gap:6px;max-width:82px;padding-right:12px;border-right:1px solid var(--line-subtle)}
+.incident-row-copy {display:flex;flex-direction:column;gap:6px;min-width:0}
+.incident-kind {font-size:.68rem;font-weight:750;color:var(--muted)}
+.cancellation .incident-kind {color:var(--action)}
+.station-incidents .incident-card h3 {margin:0;font-size:.9rem;line-height:1.45;font-weight:650;overflow-wrap:anywhere}
+.incident-direction {font-size:.75rem;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.incident-row-copy time {display:flex;gap:6px;align-items:center;font-size:.73rem;color:var(--muted);line-height:1.5}
+.incident-row-copy time svg {width:14px;height:14px;flex:none}
+.incident-chevron {display:grid;place-items:center;min-height:28px;color:var(--muted)}
+.incident-disclosure[open] .incident-chevron {transform:rotate(180deg)}
+.incident-expanded {background:var(--soft);padding:16px;margin:0 0 18px;border-radius:8px;font-size:.8rem;line-height:1.6;overflow-wrap:anywhere}
+.station-incidents .incident-expanded p {margin:0 0 10px;font-size:.8rem;line-height:1.6}
+.station-incidents .incident-expanded p:last-child {margin-bottom:0}
+.station-incidents .incident-context {border:0;padding:0;margin:0;display:block}
+.station-incidents .incident-context>span {display:flex;flex-direction:column;gap:5px;line-height:1.6}
+.station-incidents .incident-context b {font-size:.7rem;color:var(--muted)}
+.incidents-provenance {margin-top:18px;color:var(--muted);font-size:.73rem;line-height:1.6}
+.incidents-provenance>summary {min-height:44px;padding:12px 0;cursor:pointer}
+.incidents-provenance p {margin:0;padding:0 0 12px;overflow-wrap:anywhere}
+.mobile-nav-route-asset {width:22px;height:24px;background:currentColor;mask:url('/design/cutout-45-ff8aabc8a8fe.png') center/contain no-repeat}
+@container(max-width:300px){.incident-disclosure>summary {gap:8px;grid-template-columns:minmax(38px,auto) minmax(0,1fr) 20px}.incident-row-lines {padding-right:8px;max-width:70px}}
+@container(min-width:480px){.station-incidents .incidents-filters {grid-template-columns:repeat(4,minmax(0,1fr))}}
