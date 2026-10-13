@@ -42,6 +42,10 @@ try{
   await click('.mobile-navigation button:first-of-type');await click('.mobile-map-view-button');
   if(!await evaluate("document.querySelector('.map-filter-master input').checked"))await click('.map-filter-master input');
   await click('.map-menu-dismiss button');await waitFor("Boolean(document.querySelector('.live-train-wrap,.live-cluster-wrap'))",'Markers missing');
+  await waitFor("Array.from(document.querySelectorAll('.live-cluster b')).some(e=>Number(e.textContent)===2)",'Nearby trains must form a compact group at overview zoom');
+  const clusters=await evaluate("Array.from(document.querySelectorAll('.live-cluster')).map(e=>({count:Number(e.querySelector('b').textContent),text:e.textContent,icon:Boolean(e.querySelector('svg')),width:e.getBoundingClientRect().width}))");
+  assert.ok(clusters.every(c=>c.count>=2&&c.icon&&!c.text.includes('Züge')&&c.width<64),'Compact groups must contain multiple trains');
+  checks.push({name:'compact-groups-without-singleton-bubbles',clusters});await screenshot('390-compact-radar');
   const zoomPoint=await evaluate("(()=>{const r=document.querySelector('path.station-point.selected').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()");
   await command('Input.dispatchMouseEvent',{type:'mouseWheel',...zoomPoint,deltaY:-850,deltaX:0});await pause(1000);
   // Open a cluster to expose its members; the station scope must still apply.

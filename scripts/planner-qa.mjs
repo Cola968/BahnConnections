@@ -234,6 +234,12 @@ try {
       await evaluate(`document.documentElement.dataset.theme='${theme}';document.querySelector('.panel-body').scrollTop=0`);
       await pause(160);
       const m=await inspect(`${width}x${height}-${theme}`);
+      const origin=await evaluate(`(() => {
+        const input=document.querySelector('.route-search-pair input'),location=document.querySelector('.planner-origin-location');
+        const a=input.getBoundingClientRect(),b=location?.getBoundingClientRect();
+        return {inputWidth:a.width,locationHeight:b?.height,separateRow:!b||a.top>=b.bottom-1};
+      })()`);
+      if(!baseline&&(!origin.separateRow||origin.inputWidth<140||(origin.locationHeight??44)<44))throw new Error('Origin and location compete for space: '+JSON.stringify({width,theme,...origin}));
       if(!baseline&&!m.actionVisible)throw new Error('Primary action requires scrolling '+JSON.stringify(m));
       if(!baseline && width<=430) {
         const originalFont=await evaluate(`document.documentElement.dataset.font`);

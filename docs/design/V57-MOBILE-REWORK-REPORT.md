@@ -61,3 +61,19 @@ Die kleinen Bildschirmhöhen simulieren den Platzverlust durch eine Tastatur. Da
 5. **Gezielte Animationen:** Kurze Rückmeldung bei Richtungswechsel und beim Öffnen einer Fahrt; ruhiges Hervorheben des nächsten Halts. Keine dauernden Pulse, Kamerafahrten oder Blur-Animationen, die Bedienung und Akkulaufzeit belasten.
 
 Die gestalterische Orientierung ist eine klare Trennung zwischen Kartenbeobachtung und Reisekette. Als Referenzen dienten die [digitale Reisebegleitung der DB](https://www.bahn.de/service/fahrplaene/digitale-reisebegleitung) und die [Such- und Filterübersicht von Flightradar24](https://www.flightradar24.com/blog/inside-flightradar24/new-flightradar24-search/). Die Umsetzung übernimmt keine fremden Markenbestandteile.
+
+## Gestaltungsnachbesserung vom 13.10.2026
+
+Die gemeldeten „1 ZÜGE“-Kreise und das zusammengedrängte Startfeld sind überarbeitet. Einzelzüge bleiben auch bei kleinem Zoom Einzelzüge; nahe Positionen werden anhand ihres Bildschirmabstands in benachbarten Rasterzellen zusammengefasst. Gruppen tragen nur ein Bahnsymbol und die Anzahl. Ein ruhiger Hintergrund ersetzt die großflächige Statusfarbe. Einzelmarker haben ein eigenes SVG-Bahnsymbol, einen einzigen vorderen Richtungspfeil und eine 44 × 44 px große Bedienfläche. Ihre Grundfarbe unterscheidet Fernverkehr, Regionalverkehr, S-Bahn, U-Bahn und Tram; verspätete Fahrten erhalten zusätzlich einen gelben beziehungsweise roten Rand. Die Prognosefarben in den Zeiten bleiben erhalten.
+
+„Mein Standort“ steht mit der Beschriftung oberhalb des Startfelds. Der Bahnhof bekommt eine eigene volle Eingabezeile. Das Tauschen besitzt eine eigene Fläche neben dem Zielfeld. Ab 360 px stehen die Zeitwahl und „Jetzt abfahren“ nebeneinander, damit Datum und Uhrzeit in der normalen mobilen Ansicht sichtbar bleiben. Bei wenig Platz kann der Formularinhalt weiterhin scrollen, während die Suche erreichbar bleibt.
+
+Referenzen: [Flightradar24 Kartenbeschriftungen](https://www.flightradar24.com/blog/inside-flightradar24/new-flightradar24-com-label-options/) und [DB Navigator Verbindungssuche](https://www.bahn.de/service/mobile/db-navigator/verbindungssuche). Die Trennung zwischen Symbol, Beschriftung und Detailansicht ist unsere eigene Gestaltungsentscheidung.
+
+Erneut erfolgreich geprüft: TypeScript, Lint (zwei bestehende Bildhinweise), Produktionsbuild, Map-/Radar-Audits, 46 Planungsprüfungen über 13 Bildschirmgrößen und beide Farbschemata, Bahnhofsradar einschließlich Gruppierung/Zoom/Filter/Retry/Schließen und sechs Größen sowie Radar-Stresstest mit 180 stabilen Markern ohne DOM-Austausch. Ergänzte Regressionen prüfen die getrennten Flächen von Standortaktion und Startfeld sowie echte Mehrzuggruppen. Der vorherige GitHub-Qualitätslauf für 671c846 war erfolgreich; die Nachbesserung bekommt einen neuen Lauf. Keine Prüfung auf physischer Smartphone-Hardware.
+
+Kontrollierte Testdaten, lokale Vorschau:
+
+![Kompakte Radargruppe](v57-evidence/390-compact-radar.png)
+
+![Neue Eingabefelder](v57-evidence/390-refined-planner.png)
