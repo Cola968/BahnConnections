@@ -33,4 +33,4 @@ jobs:
             echo "::warning::Render service could not answer after the wake-up window."
             exit 1
           fi
-          node -e 'const fs=require("fs"); const v=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(!/^\\d+\\.\\d+/.test(String(v.version??"")))process.exit(1); console.log("BahnConnections V"+v.version+" responded.");' "$output"
+          node -e 'const fs=require("fs"); const v=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(!/^[0-9]+[.][0-9]+/.test(String(v.version??"")))process.exit(1); console.log("BahnConnections V"+v.version+" responded.");' "$output"
