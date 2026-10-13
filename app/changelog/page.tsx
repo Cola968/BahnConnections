@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V56.2",date:"12. Oktober 2026 · Beta",current:true,lead:"Bessere Störungsmeldungen und belastbarere Live-Tafeln.",tags:["Störungen","Echtzeit","Mobile"],changes:[
+ {version:"V57.0",date:"13. Oktober 2026 · Beta",current:true,lead:"Dein Bahnhof, der ganze Zugverlauf und eine ruhigere mobile Ansicht.",tags:["Bahnhofsradar","Störungen","Mobile"],changes:[
+  ["Nur passende Züge","Der Radar zeigt bestätigte Bahnhofshalte. Alle, Ankommend oder Abgehend direkt auswählen."],
+  ["Vom Start bis zum Ziel","Vollständige Fahrt mit allen gemeldeten Halten, nächstem Halt und Zielankunft."],
+  ["Klarere Kartenmarker","Kleine Bahnsymbole, passende Verkehrsmittelfarben und genau ein Richtungspfeil vor dem Zug."],
+  ["Störungen übersichtlich","Nur betroffene Linien, kompakte Meldungen und längere Details zum Aufklappen. Suche und Kategorien bleiben direkt erreichbar."],
+  ["Sauber schließen","X beendet Zugauswahl, Verfolgung und Kartenstrecke. Verbesserte Bahnhofserkennung und getrennte Planerfelder."]
+ ]},
+ {version:"V56.2",date:"12. Oktober 2026 · Beta",current:false,lead:"Bessere Störungsmeldungen und belastbarere Live-Tafeln.",tags:["Störungen","Echtzeit","Mobile"],changes:[
   ["Störungszentrale","Meldungen aus Ankünften und Abfahrten gemeinsam ansehen, nach Kategorie filtern oder nach Zuglinie und Ziel durchsuchen."],
   ["Automatisch aktuell","Bei geöffneter Ansicht werden Hinweise regelmäßig aktualisiert; bei Problemen bleibt der letzte erfolgreiche Stand sichtbar."],
   ["Zuverlässigere Bahnhofstafel","Echtzeit und Verspätungen ab +1 Minute korrekt einordnen, Fahrtverläufe sofort anzeigen und ungültige Quelldaten abfangen."],
