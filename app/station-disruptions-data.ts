@@ -29,21 +29,21 @@ export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<
    .filter((warning):warning is string=>typeof warning==="string").slice(0,3);
  return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
 }
-function clean(v:unknown){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,360):"";}
-function firstTranslation(value:unknown):string{
+function clean(v:unknown,max=360){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,max):"";}
+function firstTranslation(value:unknown,max=360):string{
  if(!value||typeof value!=="object"||Array.isArray(value))return "";
  const translations=(value as {translation?:unknown}).translation;
  if(!Array.isArray(translations))return "";
  for(const translation of translations){
   if(!translation||typeof translation!=="object")continue;
-  const text=clean((translation as {text?:unknown}).text);
+  const text=clean((translation as {text?:unknown}).text,max);
   if(text)return text;
  }
  return "";
 }
 function alertText(alert:Alert){
  const header=clean(alert.header)||firstTranslation(alert.headerText);
- const detail=firstTranslation(alert.descriptionText);
+ const detail=firstTranslation(alert.descriptionText,6000);
  return {header,detail};
 }
 function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":/ausfall|entfällt|ersatzverkehr|abgesagt/.test(s)?"cancellation":"incident";}

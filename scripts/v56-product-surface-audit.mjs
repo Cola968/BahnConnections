@@ -20,6 +20,8 @@ const shared=extractStationNotices(Array.from({length:12},(_,i)=>({displayName:'
 assert.equal(shared[0].lines.length,12,'All affected lines remain available');
 assert.equal(shared[0].journey,undefined,'Shared report cannot assign the first route to every line');
 assert.equal(shared[0].direction,undefined,'Shared report cannot assign the first destination to every line');
+const longDetail='Signalstörung. '+ 'Weitere Informationen zur Umleitung. '.repeat(30)+'Ersatzhalt am Bahnhofsvorplatz.';
+assert.equal(extractStationNotices([{displayName:'RE1',alerts:[{header:'Signalstörung',descriptionText:{translation:[{text:longDetail}]}}]}])[0].detail,longDetail,'Expanded reports must preserve longer provider details, including the replacement stop');
 const counts=noticeCategoryCounts(notices);
 assert.deepEqual(counts,{all:3,construction:1,cancellation:1,incident:1},"Category totals must use unique notices");
 assert.equal(filterStationNotices(notices,"construction","re2").length,1,"Search must match all grouped rail lines, not only the first");

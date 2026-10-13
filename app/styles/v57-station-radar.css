@@ -84,3 +84,50 @@
 .app-shell .route-search-pair .route-station-search input {padding-left:0}
 .app-shell .route-search-pair .swap-button {top:auto;bottom:5px;right:5px;background:var(--soft);border-radius:10px}
 @media(min-width:360px){.app-shell .planner-panel .planner-time-row {grid-template-columns:minmax(0,1fr) auto}.app-shell .planner-panel .planner-time-mode button {font-size:.82rem}.app-shell .planner-panel .planner-now {padding-inline:8px;font-size:.76rem}}
+
+/* 12ui candidate A: separated rows, line badges, pale disclosure surfaces.
+   The kit's token patch has no recurring deltas; use the app's accessible themes.
+   Flow sizing replaces the export's fixed coordinates for variable live reports. */
+.app-shell .station-incidents {padding:16px clamp(12px,2vw,20px) 24px;container-type:inline-size}
+.station-incidents .station-incidents-head {align-items:center;margin-bottom:20px}
+.station-incidents .station-incidents-head h2 {font-size:1.15rem;margin:0 0 5px}
+.station-incidents .station-incidents-head p {font-size:.75rem;line-height:1.5}
+.station-incidents .station-incidents-head button {width:44px;min-height:44px;flex:none;justify-content:center;padding:10px;background:transparent}
+.incidents-affected {margin-bottom:18px}
+.incidents-affected h3 {font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+.incidents-affected>div {display:flex;flex-wrap:wrap;gap:6px}
+.incident-line-badge {display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:28px;padding:4px 8px;border-radius:6px;font-size:.75rem;font-weight:750;line-height:1.3;overflow-wrap:anywhere;max-width:100%}
+.station-incidents .incidents-search-row {margin:0 0 10px;gap:8px}
+.station-incidents .incidents-search input {min-height:44px;border-radius:10px}
+.station-incidents .incidents-search-row>button {min-height:44px}
+.station-incidents .incidents-filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 16px}
+.station-incidents .incidents-filters button {min-height:44px;padding:8px 10px;border-radius:8px;font-size:.75rem}
+.station-incidents .incidents-filters button.active {color:var(--action);background:var(--soft);border-color:var(--action)}
+.station-incidents .incidents-total {font-size:.72rem;line-height:1.5;margin:0 0 14px}
+.station-incidents .incidents-list {display:block;border-top:1px solid var(--line-subtle)}
+.station-incidents .incident-card {padding:0;border:0;border-bottom:1px solid var(--line-subtle);border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+.incident-disclosure>summary {display:grid;grid-template-columns:minmax(42px,auto) minmax(0,1fr) 28px;align-items:start;gap:12px;list-style:none;padding:18px 0;cursor:pointer;min-height:64px}
+.incident-disclosure>summary::-webkit-details-marker {display:none}
+.incident-disclosure>summary:focus-visible,.incidents-provenance>summary:focus-visible {outline:2px solid var(--action);outline-offset:3px;border-radius:6px}
+.incident-row-lines {display:flex;flex-direction:column;gap:6px;max-width:82px;padding-right:12px;border-right:1px solid var(--line-subtle)}
+.incident-row-copy {display:flex;flex-direction:column;gap:6px;min-width:0}
+.incident-kind {font-size:.68rem;font-weight:750;color:var(--muted)}
+.cancellation .incident-kind {color:var(--action)}
+.station-incidents .incident-card h3 {margin:0;font-size:.9rem;line-height:1.45;font-weight:650;overflow-wrap:anywhere}
+.incident-direction {font-size:.75rem;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.incident-row-copy time {display:flex;gap:6px;align-items:center;font-size:.73rem;color:var(--muted);line-height:1.5}
+.incident-row-copy time svg {width:14px;height:14px;flex:none}
+.incident-chevron {display:grid;place-items:center;min-height:28px;color:var(--muted)}
+.incident-disclosure[open] .incident-chevron {transform:rotate(180deg)}
+.incident-expanded {background:var(--soft);padding:16px;margin:0 0 18px;border-radius:8px;font-size:.8rem;line-height:1.6;overflow-wrap:anywhere}
+.station-incidents .incident-expanded p {margin:0 0 10px;font-size:.8rem;line-height:1.6}
+.station-incidents .incident-expanded p:last-child {margin-bottom:0}
+.station-incidents .incident-context {border:0;padding:0;margin:0;display:block}
+.station-incidents .incident-context>span {display:flex;flex-direction:column;gap:5px;line-height:1.6}
+.station-incidents .incident-context b {font-size:.7rem;color:var(--muted)}
+.incidents-provenance {margin-top:18px;color:var(--muted);font-size:.73rem;line-height:1.6}
+.incidents-provenance>summary {min-height:44px;padding:12px 0;cursor:pointer}
+.incidents-provenance p {margin:0;padding:0 0 12px;overflow-wrap:anywhere}
+.mobile-nav-route-asset {width:22px;height:24px;background:currentColor;mask:url('/design/cutout-45-ff8aabc8a8fe.png') center/contain no-repeat}
+@container(max-width:300px){.incident-disclosure>summary {gap:8px;grid-template-columns:minmax(38px,auto) minmax(0,1fr) 20px}.incident-row-lines {padding-right:8px;max-width:70px}}
+@container(min-width:480px){.station-incidents .incidents-filters {grid-template-columns:repeat(4,minmax(0,1fr))}}

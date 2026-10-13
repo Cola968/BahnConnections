@@ -86,4 +86,32 @@ Die Bahnhofssuche erkennt denselben vollständigen Namen bei vorangestelltem ode
 
 Validierung: 16 Audits erfolgreich, TypeScript und Produktionsbuild erfolgreich, Bahnhofsradar-Regressionsprüfung erfolgreich, Bahnhofsblatt mit Störungsfilter/Suche in 390 px und beiden Farbschemata erfolgreich. Neue Fälle: umgestellter Ortsname, fremder/weit entfernter Bahnhof, reine Information, ausdrücklich keine Störung, strukturierte Umleitung und zwölf gemeinsam betroffene Linien. Ein veralteter Quelltexttest erwartete die früheren 40-px-Marker und blockierte den vorigen CI-Lauf; er prüft jetzt die vorhandene 44-px-Bedienfläche.
 
-12ui hat vier echte Entwürfe erzeugt. Variante A ist als Grundlage ausgewählt (ruhige Liste, kompakte Kennzeichen, Details hinter einem Aufklappen). Der kostenpflichtige responsive Export ist noch **nicht ausgeführt**: Die automatische Freigabeprüfung verlangt eine zusätzliche Kostenfreigabe, Obergrenze 0,55 USD. Daher ist der vollständige visuelle Rework dieses Tabs in diesem Stand noch offen. Der lokale Entwurf liegt unter work/12ui-station-disruptions/candidates/A.png; das ignorierte Designkit wird nicht ins Repository aufgenommen.
+## 12ui-Entwurf A integriert
+
+Variante A wurde nach der ausdrücklichen Kostenfreigabe als LayerDoc und responsives HTML exportiert. Der Störungs-Tab verwendet seine flache Listenstruktur: Linienkennzeichen, Trennlinien, Meldungsart, Überschrift, Zeitpunkt und ein Chevron zum Öffnen der hellen Detailfläche. Alle betroffenen Linien erscheinen direkt oberhalb der Liste; Meldungen ohne betriebliche Einschränkung erzeugen kein Kennzeichen. Die Farben kommen aus derselben Verkehrsmittel-/Linienpalette wie Tafel und Karte. Der Bahnhof wird nicht in jeder Meldung wiederholt. Datenherkunft und Aktualisierungsdetails sind als gesonderte Offenlegung erreichbar, Fehler und Teilansichten bleiben sofort sichtbar.
+
+Der Export dient als Layoutgrundlage für echte React-Daten, nicht als fertige Fahrplantafel. Seine festen Koordinaten und Höhen wurden in normale Grid-/Flex-Flüsse übertragen, damit lange Meldungen und unterschiedliche Linienzahlen Platz bekommen. Die vorhandenen funktionierenden Bahnhofstabs und Navigation übernehmen die entsprechenden Teile des Entwurfs. Das ausgeschnittene Routen-Icon wird als echtes, 11-KB großes Asset in der mobilen Navigation verwendet; die übrigen Iconrollen nutzen die vorhandenen zugänglichen SVGs. Die Ausgangs-Token-Datei enthält keine wiederkehrenden Änderungen. Systemschrift und Hell-/Dunkel-Themen bleiben erhalten; es wird keine zusätzliche Google-Schrift geladen. Einzelne Datum-, Fahrt- und Linienbeispiele aus dem Bild sind ausschließlich Referenzinhalt und werden durch Anbieterwerte ersetzt.
+
+Längere übersetzte Anbietertexte bleiben bis 6.000 Zeichen erhalten; vorher wurden bereits nach 360 Zeichen wichtige Angaben abgeschnitten. Details lassen sich mit dem nativen Details/summary-Element öffnen und schließen. Kategorien besitzen mindestens 44 px hohe, gleichmäßig angeordnete Bedienflächen. Der wiederholte Gesamtzähler entfällt ohne aktive Filter; bei einer Suche bleibt die Trefferzahl sichtbar.
+
+Validierung: neun Größen von 320 bis 1.920 px, jeweils hell und dunkel, mit kontrollierten Abfahrts-/Ankunftsmeldungen. Geprüft wurden nur betroffene Linien, Suche, Kategorien, Details öffnen/schließen, getrennte Text-/Badge-/Chevron-Spalten und horizontale Überläufe. Keine Überlappung in diesen Fällen. Der Bahnhofsradar-Regressionslauf bestätigt weiter Bahnhofshalte, genau einen Frontpfeil und vollständiges Beenden der Verfolgung. TypeScript, Produktionsbuild, Daten-/Transport-/Karten-/Routen-/Planer-Audits waren erfolgreich; Lint hat keine Fehler und zwei bestehende Bildhinweise. Der GitHub-Qualitätslauf für c477cde war erfolgreich. Ein neuer Lauf folgt für diesen Entwurf.
+
+Der erlaubte kostenlose Abschlussvergleich nutzt den unveränderten ursprünglichen LayerDoc und eine eingefrorene anonyme DOM-Aufnahme der tatsächlichen Browserdarstellung mit Testmeldungen. Das Einfrieren vermeidet einen Timeout durch laufende Karten-/Fahrplanabrufe. Die Aufnahme enthält die geladenen CSS-Regeln; eine anfängliche ungestaltete Aufnahme wurde verworfen. Das vollständige Kit liegt unter work/12ui-station-disruptions-final-alignment. Seine Zuordnung ist mit 27,7 % DOM- und 35,3 % Designüberdeckung schwach: Der Entwurf ist 1.536 px breit, die Aufnahme 390 px und enthält zusätzliche benötigte Suche und Kategorien. Die vorgeschlagenen auf 5–8 px skalierten Schriftgrößen und falschen Zuordnungen von Linienkennzeichen zu Uhrzeiten werden deshalb nicht übernommen. Die tatsächlichen mobilen und Desktopaufnahmen werden direkt mit Variante A verglichen; dies ist keine Behauptung einer pixelgleichen Umsetzung oder eines bestandenen 60-%-Abgleichs. Aus dem Vergleich übernommen: ruhige Trennung, helle Detailflächen, weniger wiederholte Angaben und eine gleichmäßige Filteranordnung.
+
+### 12ui-Kostenprotokoll
+
+| purchase | stage | invocation | price ceiling |
+| --- | --- | --- | --- |
+| `crt-3dc0e197ea80102d13f0a18942ecdc1e3c67131f` | draft | `improve` pid 8924, started 2026-10-13T18:03:24.491Z | $0.12 (stage ceiling) |
+| `b96f093b-ac60-4ab5-9e99-c1c71573a088` | convert | `improve` pid 38132, started 2026-10-13T18:10:10.956Z | $0.55 (stage ceiling, shared by 2 purchases) |
+| `ce7aa450-44e5-437f-bc8c-0c98b844061c` | convert | `improve` pid 38132, started 2026-10-13T18:10:10.956Z | $0.55 (stage ceiling, shared by 2 purchases) |
+
+Die Exportobergrenze 0,55 USD gilt zusammen für beide Convert-Einträge. Zusammen mit dem vorherigen Entwurf beträgt die protokollierte Gesamtobergrenze gerundet 0,67 USD; die tatsächliche Rechnung wird serverseitig abgerechnet. Die Abschlusskits haben keine Käufe. Designkits und Referenzbilder bleiben lokal ignoriert.
+
+Kontrollierte Testmeldungen, lokale Implementierung:
+
+![Neuer Störungs-Tab auf dem Handy](v57-evidence/390-12ui-incidents.png)
+
+![Geöffnete Meldung im dunklen Thema](v57-evidence/390-12ui-incidents-dark.png)
+
+![Störungs-Tab auf dem Desktop](v57-evidence/1440-12ui-incidents.png)
