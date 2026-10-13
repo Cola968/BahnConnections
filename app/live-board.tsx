@@ -2,6 +2,7 @@
 
 import { boardDelayStatistics } from "./board-statistics";
 import { safeBoardAlertHeaders, safeBoardMetadata } from "./board-verification";
+import {transitAlerts,type TransitAlert} from './transit-alerts';
 import { boardDedupeKey } from "./board-dedup";
 import { readPreferenceIds, writePreference } from "./local-preferences";
 import { matchesBoardDelayFilter, type BoardDelayFilter } from "./board-delay-filter";
@@ -75,7 +76,7 @@ export type BoardMapTrip = {
 };
 
 type TransitousEntry = {
-  place: { arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; scheduledTrack?: string; cancelled?: boolean };
+  place: { arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string; track?: string; scheduledTrack?: string; cancelled?: boolean; alerts?:TransitAlert[] };
   mode?: string;
   headsign?: string;
   tripFrom?: { name?: string };
@@ -224,7 +225,7 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
     realtime: entry.realTime===true,
     direction: compactStationLabel(safeBoardText(entry.headsign)) ?? compactStationLabel(safeBoardText(entry.tripTo?.name)) ?? compactStationLabel(safeBoardText(entry.routeLongName)),
     provenance: compactStationLabel(safeBoardText(entry.tripFrom?.name)),
-    alerts:safeBoardAlertHeaders(entry.alerts),
+    alerts:safeBoardAlertHeaders(transitAlerts(entry.alerts,entry.place.alerts)),
     line: { name: safeBoardText(entry.displayName) || safeBoardText(entry.routeShortName), product: product(safeBoardText(entry.mode)), routeId:safeBoardText(entry.routeId), color:safeBoardText(entry.routeColor), textColor:safeBoardText(entry.routeTextColor) },
   }));
   const metadata=safeBoardMetadata(payload);

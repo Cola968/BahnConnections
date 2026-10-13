@@ -51,7 +51,7 @@ export function StationDisruptions({station}:{station:Station}){
     // A station may have reports on arriving trains that are absent from its departure list.
     // Share the 350-row budget between both directions rather than doubling the load.
     const kinds=["departure","arrival"] as const;
-    const results=await Promise.allSettled(kinds.map(async kind=>{
+    const requests=kinds.map(async kind=>{
      const url=new URL("/api/stations/"+encodeURIComponent(id)+"/board",window.location.origin);
      url.searchParams.set("n","175");
      url.searchParams.set("kind",kind);
@@ -63,13 +63,20 @@ export function StationDisruptions({station}:{station:Station}){
       stopTimes:Array.isArray(payload?.stopTimes)?payload.stopTimes as NoticeStopTime[]:[],
       warnings:Array.isArray(payload?.warnings)?payload.warnings.filter((value):value is string=>typeof value==="string"):[]
      };
-    }));
+    });
+    if(station.country==='DE')requests.push((async()=>{
+     const response=await fetch('/api/stations/'+encodeURIComponent(id)+'/notices',{signal:requestSignal,cache:'no-store'});
+     if(!response.ok)throw new Error('Ergänzende regionale Störungsquelle nicht erreichbar');
+     const payload=await response.json() as {stopTimes?:unknown;warnings?:unknown};
+     return {stopTimes:Array.isArray(payload.stopTimes)?payload.stopTimes as NoticeStopTime[]:[],warnings:Array.isArray(payload.warnings)?payload.warnings.filter((item):item is string=>typeof item==='string'):[]};
+    })());
+    const results=await Promise.allSettled(requests);
     if(requestSignal.aborted)return;
     const merged=combineStationNoticeFeeds(results);
     if(!merged.successful)throw new Error("Keine Meldungsquellen erreichbar");
     const sourceWarnings=merged.warnings
       .filter(value=>!value.startsWith("DB-Gegenprüfung")).slice(0,2);
-    if(merged.partial)sourceWarnings.unshift("Teilansicht: Abfahrts- oder Ankunftsmeldungen waren nicht erreichbar.");
+    if(merged.partial)sourceWarnings.unshift("Teilansicht: Mindestens eine Fahrplan- oder Störungsquelle war nicht erreichbar.");
     setItems(extractStationNotices(merged.entries));
     setUpdated(new Date().toISOString());
     setWarning(sourceWarnings.join(" · "));
@@ -117,6 +124,6 @@ export function StationDisruptions({station}:{station:Station}){
     </div></details>
    </article>)}</div>
   </>}
-  <details className="incidents-provenance"><summary>Daten & Aktualisierung</summary><p>Hinweise aus Abfahrten und Ankünften am gewählten Bahnhof.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten. Das geladene Fahrplanfenster ist keine vollständige Übersicht aller Netzstörungen.</p></details>
+  <details className="incidents-provenance"><summary>Daten & Aktualisierung</summary><p>Hinweise aus Abfahrten und Ankünften am gewählten Bahnhof: Transitous / MOTIS, in Deutschland ergänzt durch VBB beziehungsweise DB transport.rest.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten. Das geladene Fahrplanfenster ist keine vollständige Übersicht aller Netzstörungen.</p></details>
  </section>;
 }

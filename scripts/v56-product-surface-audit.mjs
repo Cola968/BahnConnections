@@ -61,7 +61,7 @@ assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters 
 assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
 assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
 assert.match(incidentPage,/const kinds=\["departure","arrival"\] as const/,"Incident view must include arrivals, not departures only");
-assert.match(incidentPage,/Promise\.allSettled\(kinds\.map/,"One missing feed must not lose all incidents");
+assert.match(incidentPage,/Promise\.allSettled\(requests\)/,"One missing feed must not lose all incidents");
 assert.match(incidentPage,/combineStationNoticeFeeds\(results\)/,"Partial notices require an explicit, testable merge");
 
 assert.match(incidentPage,/Letzte erfolgreiche Abfrage/,"Stale last-known reports must disclose their source freshness");

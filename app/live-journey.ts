@@ -1,4 +1,5 @@
 import type { Station } from "./network-data";
+import {transitAlerts,transitAlertContent,type TransitAlert} from './transit-alerts.ts';
 import { compactStationLabel } from "./transit-style";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
@@ -84,6 +85,7 @@ export type LiveJourneyRequest = {
 };
 
 type ApiPlace = {
+  alerts?: TransitAlert[];
   name?: string;
   stopId?: string;
   lat?: number;
@@ -98,8 +100,8 @@ type ApiPlace = {
 };
 
 type ApiAlert = {
-  headerText?: { translation?: { text?: string }[] };
-  descriptionText?: { translation?: { text?: string }[] };
+  headerText?: unknown;
+  descriptionText?: unknown;
   header?: string;
   description?: string;
 };
@@ -164,14 +166,10 @@ function stop(place: ApiPlace | undefined, fallback: string): LiveJourneyStop {
   };
 }
 
-function alertText(value?: { translation?: { text?: string }[] }) {
-  return value?.translation?.find((item) => item.text)?.text;
-}
-
 function parseAlert(alert: ApiAlert): LiveJourneyAlert | null {
-  const header = alert.header ?? alertText(alert.headerText);
+  const {header,detail}=transitAlertContent(alert);
   if (!header) return null;
-  return { header, description: alert.description ?? alertText(alert.descriptionText) };
+  return { header, description: detail || undefined };
 }
 
 function uniqueStops(stops: LiveJourneyStop[]) {
@@ -189,7 +187,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
   const category = categoryForMode(leg.mode);
   const encoded = leg.legGeometry?.points;
   const points = encoded ? decodePolyline(encoded, leg.legGeometry?.precision ?? 6) : [] as [number, number][];
-  const alerts = (leg.alerts ?? []).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
+  const alerts = transitAlerts(leg.alerts,leg.from.alerts,leg.to.alerts,...(leg.intermediateStops??[]).map(item=>item.alerts)).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
   return {
     mode: leg.mode ?? "WALK",
     category,
@@ -212,7 +210,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
     cancelled: Boolean(leg.cancelled || from.cancelled || to.cancelled),
     bikesAllowed: leg.bikesAllowed,
     wheelchairAccessible: leg.wheelchairAccessible,
-    alerts,
+    alerts: alerts.filter((item,index,all)=>all.findIndex(other=>other.header===item.header&&other.description===item.description)===index),
   };
 }
 
