@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V56.1",date:"12. Oktober 2026 · Beta",current:true,lead:"Züge leichter antippen, Meldungen klarer lesen.",tags:["Zugradar","Karte","Mobile"],changes:[
+ {version:"V56.2",date:"12. Oktober 2026 · Beta",current:true,lead:"Bessere Störungsmeldungen und belastbarere Live-Tafeln.",tags:["Störungen","Echtzeit","Mobile"],changes:[
+  ["Störungszentrale","Meldungen aus Ankünften und Abfahrten gemeinsam ansehen, nach Kategorie filtern oder nach Zuglinie und Ziel durchsuchen."],
+  ["Automatisch aktuell","Bei geöffneter Ansicht werden Hinweise regelmäßig aktualisiert; bei Problemen bleibt der letzte erfolgreiche Stand sichtbar."],
+  ["Zuverlässigere Bahnhofstafel","Echtzeit und Verspätungen ab +1 Minute korrekt einordnen, Fahrtverläufe sofort anzeigen und ungültige Quelldaten abfangen."],
+  ["Weniger Wartezeiten","Fahrtdetails werden kontrolliert geladen und ausbleibende Netzantworten zeitlich begrenzt."],
+  ["Mobile Bedienung","Überarbeitete englische Navigation und verbesserte Tastaturbedienung der Tafelfilter."]
+ ]},
+ {version:"V56.1",date:"12. Oktober 2026 · Beta",current:false,lead:"Züge leichter antippen, Meldungen klarer lesen.",tags:["Zugradar","Karte","Mobile"],changes:[
   ["Zugmarker öffnen","Größere Touchbereiche und einzelne Zuggruppen öffnen die Fahrt direkt. Mobile Zugdetails sind sofort ausgeklappt."],
   ["Kartenfilter","Zugarten und Status direkt filtern, Trefferzahl sehen und die Auswahl zurücksetzen."],
   ["Klarere Störungsmeldungen","Gemeldete Linie, Fahrtrichtung und verfügbare Fahrtstrecke bei Störungen anzeigen."],

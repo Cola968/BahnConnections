@@ -5,6 +5,51 @@ export type TransitousBoardRow = {
   realTime?:boolean;
 };
 
+/** Ignore malformed external records individually instead of dropping the full board. */
+export function validTransitousBoardRows(input:unknown):TransitousBoardRow[] {
+  if(!Array.isArray(input))return [];
+  return input.filter((row):row is TransitousBoardRow => {
+    if(!row||typeof row!=="object"||Array.isArray(row))return false;
+    const place=(row as TransitousBoardRow).place;
+    return !!place&&typeof place==="object"&&!Array.isArray(place);
+  });
+}
+
+/** Read untrusted alert headers without assuming nested translation arrays exist. */
+export function safeBoardAlertHeaders(value:unknown):string[] {
+  if(!Array.isArray(value)) return [];
+  const result:string[]=[];
+  for(const raw of value) {
+    if(!raw||typeof raw!=="object"||Array.isArray(raw))continue;
+    const alert=raw as Record<string,unknown>;
+    const headerText=alert.headerText;
+    const translations=headerText&&typeof headerText==="object"&&!Array.isArray(headerText)
+      ? (headerText as {translation?:unknown}).translation : undefined;
+    const translated=Array.isArray(translations)
+      ? translations.find(row=>row&&typeof row==="object"&&typeof row.text==="string"&&row.text.trim())?.text : undefined;
+    const rawText=typeof alert.header==="string"&&alert.header.trim()?alert.header:translated;
+    if(typeof rawText!=="string")continue;
+    const text=rawText.trim().replace(/\s+/g," ").slice(0,240);
+    if(text)result.push(text);
+  }
+  return result;
+}
+
+/** Do not mark malformed or missing provider timestamps as real-time updates. */
+export function safeBoardMetadata(raw: unknown):{source:string;updatedAt?:string;warnings:string[]} {
+  const record=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw as Record<string,unknown>:{};
+  const suppliedSource=typeof record.source==="string"?record.source.trim().replace(/\s+/g," "):"";
+  const source=suppliedSource.slice(0,100)||"Transitous / MOTIS";
+  const suppliedTimestamp=record.updatedAt;
+  const updatedAt=typeof suppliedTimestamp==="string"&&Number.isFinite(Date.parse(suppliedTimestamp))
+    ? suppliedTimestamp : undefined;
+  const warnings=Array.isArray(record.warnings)
+    ? record.warnings.filter((value):value is string=>typeof value==="string")
+      .map(value=>value.trim().replace(/\s+/g," ").slice(0,240))
+      .filter(Boolean).slice(0,12) : [];
+  return {source,updatedAt,warnings};
+}
+
 export type DbBoardRow = { tripId?:string; when?:string; plannedWhen?:string; direction?:string; cancelled?:boolean; line?:{ name?:string; product?:string } };
 
 export type BoardCrossCheck = {

@@ -1,3 +1,12 @@
+# V56.2 · Stabilität, Live-Tafeln und Störungszentrale
+
+- **Erweiterte Störungszentrale:** Meldungen aus Ankünften und Abfahrten, Suchfeld nach Linie, Ziel und Störungstext sowie getrennte Kategorien für Bauarbeiten, Ausfälle und sonstige Hinweise.
+- **Automatische Aktualisierung:** Bahnhofsmeldungen werden bei geöffneter Ansicht regelmäßig erneuert. Bei Quellenfehlern bleibt die zuletzt erfolgreich geladene Liste mit deutlicher Warnung erhalten.
+- **Zuverlässigere Bahnhofstafel:** Verspätungen von +1 bis +4 Minuten korrekt filterbar; gespeicherte Fahrtverläufe werden beim Öffnen sichtbar. Fehlerhafte Anbieter-Zeilen, Warnungstexte und Aktualisierungszeiten werden defensiv verarbeitet.
+- **Weniger blockierende Anfragen:** Begrenzte parallele Fahrtdetail-Abfragen und Timeouts für Tafel sowie Fahrtdetails.
+- **Mobile & Barrierefreiheit:** Richtige englische Navigationsbeschriftung und zuverlässige Rückgabe des Tastaturfokus im Tafel-Filter.
+- **Qualitätssicherung:** Erweiterte Regressionstests und mobile Chromium-Interaktionsprüfungen. Reale Android-/iOS-/PWA-Gerätetests bleiben vor breiter Veröffentlichung offen.
+
 # V56.1 · Zugmarker, Kartenfilter und mobile Bedienung
 
 - Größere Touchbereiche für Zugmarker; einzelne Zuggruppen öffnen direkt die Fahrt. Mobile Zugdetails sind sofort ausgeklappt.

@@ -1,6 +1,7 @@
+import { decodeRouteSegment } from "../../../decode-route-segment";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
-import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
+import { compareBoardRows, validTransitousBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
 type TransitousPlace = { name?:string; lat?:number; lon?:number };
 type DbLocation = { id?:string; name?:string; type?:string; location?:{ latitude?:number; longitude?:number } };
@@ -71,7 +72,7 @@ async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival
 
 export async function GET(request: Request, context: { params:Promise<{ id:string }> }) {
   const { id } = await context.params;
-  const stopId = decodeURIComponent(id);
+  const stopId = decodeRouteSegment(id);
   if (!stopId || stopId.length > 500) return Response.json({ stopTimes:[], warnings:["Ungültige Haltestellen-ID"] }, { status:400 });
   const query = new URL(request.url).searchParams;
   const updatedAt = new Date().toISOString();
@@ -92,10 +93,16 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     if (requestedTime) url.searchParams.set("time", requestedTime);
     const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
-    const stopTimes = ((await response.json()) as { stopTimes?:TransitousBoardRow[] }).stopTimes ?? [];
-    const hasRealtime = stopTimes.some((item) => Boolean(item.realTime));
+    const responseData = await response.json() as { stopTimes?:unknown } | null;
+    const stopTimes = validTransitousBoardRows(responseData?.stopTimes);
+    const hasRealtime = stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
     const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    // The disruption screen needs route-specific alerts, not a second DB check
+    // for each direction. Streamed live boards retain full verification.
+    if(query.get("verify")==="0" && query.get("stream")!=="1"){
+      return Response.json({...primary,verification:{status:"unavailable",message:"DB-Gegenprüfung für diese Hinweisansicht nicht angefordert."}},{headers:{"Cache-Control":"no-store"}});
+    }
     const verificationController=new AbortController();
     const verificationSignal=AbortSignal.any([request.signal,verificationController.signal]);
     const verify = async () => {

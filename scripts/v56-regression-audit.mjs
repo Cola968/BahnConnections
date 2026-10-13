@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { boardDisplayActual, boardDisplayPlatform, boardEventTime, boardPredictionFresh } from "../app/board-time.ts";
 import { boardDedupeKey } from "../app/board-dedup.ts";
+import { validTransitousBoardRows, safeBoardAlertHeaders, safeBoardMetadata } from "../app/board-verification.ts";
 import { trainArrivalView } from "../app/train-arrival.ts";
 import { deriveRealtimePresentation } from "../app/realtime-presentation.ts";
+import { matchesBoardDelayFilter } from "../app/board-delay-filter.ts";
+import { decodeRouteSegment } from "../app/api/decode-route-segment.ts";
+import { writePreference } from "../app/local-preferences.ts";
+import { inBatches } from "../app/transitous.ts";
 
 const schedule="2026-10-25T02:30:00+02:00";
 const delayed="2026-10-25T02:40:00+02:00";
@@ -24,6 +29,48 @@ assert.match(current.status,/Verspätung/);
 const unknown=deriveRealtimePresentation({scheduled:schedule,realtime:true});
 assert.equal(unknown.kind,"unknown");
 
+// A positive confirmed delay is delayed, even if it is only +1 minute.
+const point="2026-10-12T10:00:00Z";
+for(const minutes of [1,4,5,11,30]){
+  const state=deriveRealtimePresentation({scheduled:point,actual:new Date(Date.parse(point)+minutes*60_000).toISOString(),realtime:true});
+  assert.equal(matchesBoardDelayFilter("delayed",state),true,`+${minutes} must be delayed`);
+  assert.equal(matchesBoardDelayFilter("ontime",state),false);
+}
+const zero=deriveRealtimePresentation({scheduled:point,actual:point,realtime:true});
+assert.equal(matchesBoardDelayFilter("ontime",zero),true);
+assert.equal(matchesBoardDelayFilter("delayed",zero),false);
+const early=deriveRealtimePresentation({scheduled:point,actual:"2026-10-12T09:59:00Z",realtime:true});
+assert.equal(matchesBoardDelayFilter("ontime",early),false);
+assert.equal(matchesBoardDelayFilter("delayed",early),false);
+const canceled=deriveRealtimePresentation({scheduled:point,cancelled:true});
+assert.equal(matchesBoardDelayFilter("canceled",canceled),true);
+assert.equal(matchesBoardDelayFilter("delayed",canceled),false);
+assert.equal(matchesBoardDelayFilter("ontime",deriveRealtimePresentation({scheduled:point})),false);
+const cleanRows=validTransitousBoardRows([null,undefined,{}, {place:null}, {place:[]}, {place:{departure:point},realTime:true}]);
+assert.equal(cleanRows.length,1,"One malformed stop must not blank the board");
+assert.equal(cleanRows[0].realTime,true);
+assert.deepEqual(validTransitousBoardRows({not:"an array"}),[]);
+assert.deepEqual(safeBoardAlertHeaders([
+  null, "bad", {headerText:{translation:"not-array"}},
+  {headerText:{translation:[null,{text:123},{text:"  Signalstörung   auf Linie   S7  "}]}},
+  {header:" Gleiswechsel "},
+  {header:{unsafe:true}},
+]),["Signalstörung auf Linie S7","Gleiswechsel"],"Malformed third-party alerts cannot erase the station board");
+assert.deepEqual(safeBoardMetadata({
+  source:{not:"a string"},updatedAt:"not an ISO timestamp",
+  warnings:[" Gleiswechsel  ",null,{},12,"", "Störung   im Netz"]
+}),{source:"Transitous / MOTIS",updatedAt:undefined,warnings:["Gleiswechsel","Störung im Netz"]},
+"Malformed board metadata must not cause an invalid-date crash or inject objects into rendered notices");
+assert.deepEqual(safeBoardMetadata({source:"Provider A",updatedAt:"2026-10-12T10:00:00Z",warnings:["Hinweis"]}),{
+  source:"Provider A",updatedAt:"2026-10-12T10:00:00Z",warnings:["Hinweis"]
+});
+assert.equal(decodeRouteSegment("%XX"),null,"Invalid percent escapes cannot crash route handlers");
+assert.equal(decodeRouteSegment("trip%3A123"),"trip:123");
+assert.equal(writePreference({setItem(){throw new Error("SecurityError");}},"pin","[]"),false,"Denied storage is optional");
+let wrote="";
+assert.equal(writePreference({setItem(_key,value){wrote=value;}},"pin","[\"ice\"]"),true);
+assert.equal(wrote,"[\"ice\"]");
+
 const serviceA={kind:"departure",plannedWhen:schedule,plannedPlatform:"5",direction:"Potsdam",provenance:"Berlin",line:{name:"RE1",routeId:"re1",product:"regional"}};
 const serviceB={...serviceA,line:{name:"RE7",routeId:"re7",product:"regional"}};
 assert.notEqual(boardDedupeKey(serviceA),boardDedupeKey(serviceB),"Different lines at same time/platform cannot collapse");
@@ -38,6 +85,9 @@ assert.match(trips,/tripId\.length > 500/);
 assert.match(trips,/AbortSignal\.timeout\(12_000\)/);
 const boardApi=source("app/api/stations/[id]/board/route.ts");
 assert.match(boardApi,/Ungültiger Abfragezeitpunkt/);
+assert.match(boardApi,/query\.get\("verify"\)==="0"/,"Notice-only board callers should not trigger expensive independent verification");
+assert.match(source("app/station-disruptions.tsx"),/url\.searchParams\.set\("verify","0"\)/,"Lightweight notice requests must opt out of independent DB verification");
+
 const services=source("app/api/stations/[id]/services/route.ts");
 assert.match(services,/AbortSignal\.timeout\(12_000\)/);
 assert.match(services,/Promise\.allSettled/);
@@ -62,9 +112,39 @@ assert.doesNotMatch(inspector,/segmentAverageSpeed/);
 assert.match(inspector,/remainingArrivalMinutes/);
 assert.match(inspector,/realtime=\{sourceCurrent&&trip\.realTime\}/);
 assert.match(inspector,/detailState!=="loading"&&stops\.length>0&&<ol/);
+let activeDetailRequests=0,maxDetailRequests=0;
+const observedBatchSizes=[];
+const outputs=await inBatches(Array.from({length:19},(_,i)=>i),6,async value=>{
+  activeDetailRequests++;
+  maxDetailRequests=Math.max(maxDetailRequests,activeDetailRequests);
+  await new Promise(resolve=>setTimeout(resolve,1));
+  activeDetailRequests--;
+  if(value===7)throw Error("Individual detail lookup failed");
+  return value;
+},(results,completed)=>{
+  observedBatchSizes.push([results.length,completed]);
+});
+assert.equal(maxDetailRequests,6,"At most six trip detail lookups run at once");
+assert.equal(outputs.length,19,"One bad train must not hide other results");
+assert.equal(outputs.filter(row=>row.status==="rejected").length,1);
+assert.deepEqual(observedBatchSizes,[[6,6],[6,12],[6,18],[1,19]]);
+const appBoardSource=source("app/live-board.tsx");
+assert.match(appBoardSource,/const requestSignal=AbortSignal\.any\(\[signal,AbortSignal\.timeout\(22_000\)\]\)/,"Board refresh must not hang indefinitely in a visible tab");
+assert.match(appBoardSource,/const tripSignal=signal\?AbortSignal\.any\(\[signal,AbortSignal\.timeout\(15_000\)\]\):AbortSignal\.timeout\(15_000\)/,"One stuck trip detail request must not block batched previews");
+const timedSignal=AbortSignal.timeout(20);
+await new Promise(resolve=>{ const keepAlive=setTimeout(resolve,100); timedSignal.addEventListener("abort",()=>{clearTimeout(keepAlive);resolve();},{once:true}); });
+assert.equal(timedSignal.aborted,true,"Native timeout signals must cancel pending client fetches");
 const listing=source("app/live-board.tsx");
-assert.match(listing,/delay!==0/,"Pünktlich filter must not contain +1 to +4 minutes");
+assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
+assert.match(listing,/\["delayed","Verspätet"\]/,"Positive-delay filter must not claim a five-minute threshold");
+assert.match(listing,/if\s*\(existing\)\s*\{\s*setTripDetailState\([^;]+;\s*if\s*\(existing\.points\.length\)/,"Opening an enriched trip must mark its cached stop details ready");
+
+assert.match(listing,/inBatches\(unresolved,\s*6/,"Resolve missing destinations with bounded six-wide batches");
+assert.match(listing,/const metadata=safeBoardMetadata\(payload\)/,"Board view must validate source metadata at the UI edge");
+assert.match(listing,/setUpdatedAt\(board\.updatedAt\?new Date\(board\.updatedAt\):null\)/,"Unknown update time may not masquerade as live data");
+assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe when storage is denied");
 assert.match(listing,/Alle Fahrten anzeigen/);
+assert.doesNotMatch(listing,/document\.querySelector<HTMLButtonElement>\("\.board-filter-toggle"\)/,"Filter dismissal must return focus to the current board rather than a globally selected hidden toolbar");
 const update=source("app/pwa-register.tsx");
 assert.match(update,/Storage can be blocked in private browsing/);
 const css=source("app/styles/v56-experience.css");

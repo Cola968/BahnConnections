@@ -9,3 +9,8 @@ export function readPreferenceIds(storage:Pick<Storage,'getItem'>,key:string):st
   const value=readPreferenceJson(storage,key);
   return Array.isArray(value)?[...new Set(value.filter((id):id is string=>typeof id==='string'&&id.length>0&&id.length<500))].slice(0,200):[];
 }
+
+/** Optional storage must never break board interactions in private browsing. */
+export function writePreference(storage:Pick<Storage,'setItem'>,key:string,value:string):boolean {
+  try{storage.setItem(key,value);return true;}catch{return false;}
+}

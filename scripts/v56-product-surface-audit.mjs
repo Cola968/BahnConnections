@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {extractStationNotices} from "../app/station-disruptions-data.ts";
+import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds} from "../app/station-disruptions-data.ts";
 const alerts=[
  {tripId:"r1",displayName:"RE1",place:{departure:"2026-10-12T17:00:00Z"},alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
  {tripId:"r2",displayName:"RE2",alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
@@ -14,9 +14,50 @@ assert.deepEqual(notices[0].lines,["RE1","RE2"]);
 assert.ok(notices.some(item=>item.kind==="cancellation"));
 assert.ok(notices.some(item=>item.kind==="incident"));
 assert.deepEqual(extractStationNotices([{tripId:"only",displayName:"S2"}]),[],"No incidents without source alerts/cancellations.");
+const counts=noticeCategoryCounts(notices);
+assert.deepEqual(counts,{all:3,construction:1,cancellation:1,incident:1},"Category totals must use unique notices");
+assert.equal(filterStationNotices(notices,"construction","re2").length,1,"Search must match all grouped rail lines, not only the first");
+assert.equal(filterStationNotices(notices,"cancellation","").length,1);
+assert.equal(filterStationNotices(notices,"incident","signal").length,1);
+assert.equal(filterStationNotices(notices,"all","Keine passende Störung").length,0);
+assert.equal(filterStationNotices(notices,"all","  ").length,3,"Blank search must not hide reports");
+const complete=combineStationNoticeFeeds([
+ {status:"fulfilled",value:{stopTimes:alerts.slice(0,2),warnings:[]}},
+ {status:"fulfilled",value:{stopTimes:alerts.slice(2),warnings:[]}}
+]);
+assert.equal(complete.entries.length,4,"Departure and arrival notice sources must be combined");
+assert.equal(complete.partial,false);
+assert.equal(extractStationNotices(complete.entries).length,3,"Duplicate alerts must still be grouped across both feeds");
+const half=combineStationNoticeFeeds([
+ {status:"fulfilled",value:{stopTimes:alerts.slice(0,2),warnings:["Unvollständig"]}},
+ {status:"rejected",reason:new Error("Arrival service timed out")}
+]);
+assert.equal(half.entries.length,2);
+assert.equal(half.partial,true,"Partial source failure must be disclosed");
+assert.equal(half.successful,1);
+assert.equal(combineStationNoticeFeeds([{status:"rejected",reason:"Offline"}]).successful,0);
+
+
+const malformedNotices=extractStationNotices([{tripId:"faulty",displayName:"S7",alerts:[
+  null,{headerText:{translation:"wrong"}},{headerText:{translation:[null, {text:123}, {text:" Signalstörung "}]}},
+  {descriptionText:{translation:[]}},
+]}]);
+assert.equal(malformedNotices.length,1,"Bad alerts cannot hide a valid disruption");
+assert.equal(malformedNotices[0].headline,"Signalstörung");
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const page=read("app/page.tsx"), filter=read("app/live-board.tsx"),settings=read("app/settings-dialog.tsx");
 assert.match(page,/StationDisruptions/);
+const incidentPage=read("app/station-disruptions.tsx");
+assert.match(incidentPage,/placeholder="Linie, Störung oder Ziel suchen"/,"Incident search needs an accessible text field");
+assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters must actually change the visible incidents");
+assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
+assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
+assert.match(incidentPage,/const kinds=\["departure","arrival"\] as const/,"Incident view must include arrivals, not departures only");
+assert.match(incidentPage,/Promise\.allSettled\(kinds\.map/,"One missing feed must not lose all incidents");
+assert.match(incidentPage,/combineStationNoticeFeeds\(results\)/,"Partial notices require an explicit, testable merge");
+
+assert.match(incidentPage,/Letzte erfolgreiche Abfrage/,"Stale last-known reports must disclose their source freshness");
+
 assert.match(filter,/board-filter-apply/);
 assert.match(filter,/board-status-pills/);
 assert.match(filter,/name="search"/);
@@ -38,6 +79,9 @@ assert.match(page,/setLiveVisible\(true\);setLiveView\("trains"\)/,"Selecting fi
 assert.match(search,/planner-origin-location/,"Location entry must live inside the planner");
 assert.doesNotMatch(page,/className="walking-card"/,"No intrusive floating walking popup");
 assert.match(settings,/bahnconnections-language|onLanguage/,"Language selector must be operable");
+const navigation=read("app/desktop-navigation.tsx");
+assert.match(navigation,/const displayLabel=/,"Mobile navigation needs a visible locale-aware label");
+assert.match(navigation,/mobile-nav-label">{displayLabel}/,"Displayed tab label should match accessible language");
 assert.match(css,/@keyframes bc-clock-turn/);
 assert.match(css,/prefers-reduced-motion/);
 console.log("V56 station notices, direct filters, Changelog and avatar integration OK.");

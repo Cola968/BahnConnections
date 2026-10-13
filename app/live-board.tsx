@@ -1,8 +1,10 @@
 "use client";
 
 import { boardDelayStatistics } from "./board-statistics";
+import { safeBoardAlertHeaders, safeBoardMetadata } from "./board-verification";
 import { boardDedupeKey } from "./board-dedup";
-import { readPreferenceIds } from "./local-preferences";
+import { readPreferenceIds, writePreference } from "./local-preferences";
+import { matchesBoardDelayFilter, type BoardDelayFilter } from "./board-delay-filter";
 import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
@@ -15,14 +17,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
 import { occupancyForecast } from "./occupancy";
 import { decodePolyline } from "./live-trains";
-import { cleanDestination, compactStationLabel, serviceBadgeStyle } from "./transit-style";
+import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
 import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
 import { trimRepeatedStationLoop } from "./trip-trimming";
 
 type BoardMode = "departures" | "arrivals";
 type BoardKind = "departure" | "arrival";
 type ProductFilter = "all" | "fern" | "regional" | "sbahn" | "ubahn" | "tram";
-type DelayFilter = "all" | "ontime" | "delayed" | "canceled";
 type SortMode = "time" | "delay" | "platform" | "product";
 type BoardWindow = 60 | 120 | 180 | 240 | 500;
 type BoardVerificationStatus = "matched" | "different" | "inconclusive" | "unavailable" | "pending";
@@ -121,10 +122,6 @@ type TripLeg = {
 
 type TripDetail = { stops: TripPlace[]; points: [number, number][]; segments: [number, number][][]; realtime: boolean; origin?: string; destination?: string; color?: string; textColor?: string };
 
-function alertHeader(alert: { header?: string; headerText?: { translation?: { text?: string }[] } }) {
-  return cleanDestination(alert.header) ?? cleanDestination(alert.headerText?.translation?.find((item) => item.text)?.text);
-}
-
 function delayMinutes(entry: BoardEntry, fresh:boolean) {
   if (!fresh || !entry.realtime || !entry.when || !entry.plannedWhen) return 0;
   return Math.max(0, Math.round((new Date(entry.when).getTime() - new Date(entry.plannedWhen).getTime()) / 60_000));
@@ -190,49 +187,54 @@ function deduplicate(entries: BoardEntry[]) {
   return [...unique.values()];
 }
 
+const safeBoardText=(value:unknown):string|undefined=>typeof value==="string"?value:undefined;
+
 type BoardPayload = { type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
 async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal, onPrimary:(board:ReturnType<typeof boardResult>)=>void, onVerification:(payload:BoardPayload)=>void) {
-  const stopId = await requireTransitousStopId(station, signal);
+  const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(22_000)]);
+  const stopId = await requireTransitousStopId(station, requestSignal);
   const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/board`, window.location.origin);
   url.searchParams.set("n", "1400");
   url.searchParams.set("kind", kind);
   url.searchParams.set("stream","1");
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal:requestSignal });
   if(!response.ok)throw new Error(`Live-Dienst ${response.status}`);
   if(response.headers.get("Content-Type")?.includes("application/x-ndjson")) {
     let received=false;
-    await readBoardStream<BoardPayload>(response,signal,payload=>{
+    await readBoardStream<BoardPayload>(response,requestSignal,payload=>{
       if(payload.type==="board"){received=true;onPrimary(boardResult(payload,kind));}
       else if(payload.type==="verification")onVerification(payload);
     });
     if(!received)throw new Error("Keine Tafelzeilen empfangen");
-  } else {const payload=await response.json() as BoardPayload;signal.throwIfAborted();onPrimary(boardResult(payload,kind));}
+  } else {const payload=await response.json() as BoardPayload;requestSignal.throwIfAborted();onPrimary(boardResult(payload,kind));}
 }
 function boardResult(payload:BoardPayload,kind:BoardKind) {
   const arrivals=kind==="arrival";
   // One malformed row must not blank the complete live board.
-  const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object") : [];
+  const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object" && !Array.isArray(entry.place)) : [];
   const entries = validRows.map((entry): BoardEntry => ({
-    tripId: entry.tripId,
+    tripId: safeBoardText(entry.tripId),
     kind,
-    when: arrivals ? entry.place.arrival : entry.place.departure,
-    plannedWhen: arrivals ? entry.place.scheduledArrival : entry.place.scheduledDeparture,
-    platform: entry.place.track,
-    plannedPlatform: entry.place.scheduledTrack,
-    canceled: entry.cancelled || entry.tripCancelled || entry.place.cancelled,
+    when: safeBoardText(arrivals ? entry.place.arrival : entry.place.departure),
+    plannedWhen: safeBoardText(arrivals ? entry.place.scheduledArrival : entry.place.scheduledDeparture),
+    platform: safeBoardText(entry.place.track),
+    plannedPlatform: safeBoardText(entry.place.scheduledTrack),
+    canceled: entry.cancelled===true || entry.tripCancelled===true || entry.place.cancelled===true,
     cancellationScope:entry.tripCancelled || entry.cancelled ? "leg" : entry.place.cancelled ? "stop" : undefined,
-    realtime: entry.realTime,
-    direction: compactStationLabel(entry.headsign) ?? compactStationLabel(entry.tripTo?.name) ?? compactStationLabel(entry.routeLongName),
-    provenance: compactStationLabel(entry.tripFrom?.name),
-    alerts:(entry.alerts ?? []).map(alertHeader).filter((value): value is string => Boolean(value)),
-    line: { name: entry.displayName || entry.routeShortName, product: product(entry.mode), routeId:entry.routeId, color:entry.routeColor, textColor:entry.routeTextColor },
+    realtime: entry.realTime===true,
+    direction: compactStationLabel(safeBoardText(entry.headsign)) ?? compactStationLabel(safeBoardText(entry.tripTo?.name)) ?? compactStationLabel(safeBoardText(entry.routeLongName)),
+    provenance: compactStationLabel(safeBoardText(entry.tripFrom?.name)),
+    alerts:safeBoardAlertHeaders(entry.alerts),
+    line: { name: safeBoardText(entry.displayName) || safeBoardText(entry.routeShortName), product: product(safeBoardText(entry.mode)), routeId:safeBoardText(entry.routeId), color:safeBoardText(entry.routeColor), textColor:safeBoardText(entry.routeTextColor) },
   }));
-  return { entries, source:payload.source ?? "Transitous / MOTIS", updatedAt:payload.updatedAt, warnings:payload.warnings ?? [], verificationStatus:payload.verification?.status ?? "unavailable", verificationMessage:payload.verification?.message };
+  const metadata=safeBoardMetadata(payload);
+  return { entries, ...metadata, verificationStatus:payload.verification?.status ?? "unavailable", verificationMessage:payload.verification?.message };
 }
 
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(tripId)}`, window.location.origin);
-  const response = await fetch(url, { signal });
+  const tripSignal=signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000);
+  const response = await fetch(url, { signal:tripSignal });
   if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
   const envelope = await response.json() as { trip?: { legs?: TripLeg[] } };
   const payload = envelope.trip ?? {};
@@ -288,7 +290,7 @@ function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
 export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { station: Station; onSummary?: (summary: BoardSummary) => void; onMapTrip?: (trip: BoardMapTrip) => void; onStationTrips?: (trips: BoardMapTrip[]) => void }) {
   const [mode, setMode] = useState<BoardMode>("departures");
   const [productFilter, setProductFilter] = useState<ProductFilter>("all");
-  const [delayFilter, setDelayFilter] = useState<DelayFilter>("all");
+  const [delayFilter, setDelayFilter] = useState<BoardDelayFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("time");
   const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(240);
@@ -323,11 +325,12 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const previewSignatureRef = useRef("");
   const rowRequestRef = useRef<AbortController | null>(null);
   useEffect(() => {
+    // Switching stations or direction must invalidate pending detail requests.
     const controller = new AbortController();
     rowRequestRef.current = controller;
-    return () => controller.abort();
-  }, []);
-  const endpointSignatureRef = useRef("");
+    return () => { controller.abort(); if(rowRequestRef.current===controller)rowRequestRef.current=null; };
+  }, [station.id,mode]);
+  const enrichmentAttemptsRef = useRef<Map<string,number>>(new Map());
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -348,7 +351,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     let hasRows=boardHasRows.current;
     const kind:BoardKind=mode==="arrivals"?"arrival":"departure";
     const scope=`${station.id}:${kind}`;
-    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
+    const reset=boardScope.current!==scope?setTimeout(()=>{setEntries([]);setExpandedRows([]);setTripDetails({});setTripDetailState({});enrichmentAttemptsRef.current.clear();previewSignatureRef.current="";setStatus("loading");setStale(false);setUpdatedAt(null);setVerificationStatus("unavailable");setVerificationMessage("");setSourceWarnings([]);},0):undefined;
     if(boardScope.current!==scope){hasRows=false;boardHasRows.current=false;boardScope.current=scope;}
     const poller=new VisibilityPoller(async signal=>{
       try {
@@ -356,10 +359,11 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           if(signal.aborted)return;clearTimeout(reset);hasRows=board.entries.length>0;boardHasRows.current=hasRows;
           setEntries(deduplicate(board.entries));setSourceLabel(board.source);setSourceWarnings(board.warnings);
           setVerificationStatus(board.verificationStatus);setVerificationMessage(board.verificationMessage??"");
-          setUpdatedAt(board.updatedAt?new Date(board.updatedAt):new Date());setStale(false);setStatusMessage("");setStatus("ready");
+          setUpdatedAt(board.updatedAt?new Date(board.updatedAt):null);setStale(false);setStatusMessage("");setStatus("ready");
         },payload=>{
           if(signal.aborted)return;
-          setSourceLabel(payload.source??"Transitous / MOTIS");setSourceWarnings(payload.warnings??[]);
+          const verificationMetadata=safeBoardMetadata(payload);
+          setSourceLabel(verificationMetadata.source);setSourceWarnings(verificationMetadata.warnings);
           setVerificationStatus(payload.verification?.status??"unavailable");setVerificationMessage(payload.verification?.message??"");
         });
       } catch(error) {
@@ -390,10 +394,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       if (productFilter === "ubahn" && productName !== "ubahn") return false;
       if (productFilter === "tram" && productName !== "tram") return false;
       const delayState=deriveRealtimePresentation({scheduled:entry.plannedWhen,actual:boardDisplayActual(entry,boardLive),realtime:entry.realtime&&boardLive,cancelled:entry.canceled});
-      const delay=delayState.delayMinutes;
-      if(delayFilter==="ontime"&&(entry.canceled||delay!==0))return false;
-      if(delayFilter==="delayed"&&(entry.canceled||delay===null||delay<5))return false;
-      if (delayFilter === "canceled" && !entry.canceled) return false;
+      if (!matchesBoardDelayFilter(delayFilter,delayState)) return false;
       const platform = boardDisplayPlatform(entry,boardLive) ?? entry.plannedPlatform ?? "";
       if (platformFilter !== "all" && platform !== platformFilter) return false;
       if (normalisedQuery && ![entry.line?.name, entry.direction, entry.provenance, platform].filter(Boolean).join(" ").toLocaleLowerCase("de").includes(normalisedQuery)) return false;
@@ -439,39 +440,50 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   useEffect(() => { if (status === "ready") onSummary?.(summary); }, [onSummary, status, summary]);
 
   useEffect(() => {
-    if (status !== "ready") return;
-    const unresolved = entries.filter((entry) => entry.tripId && (mode === "departures" ? !entry.direction : !entry.provenance)).slice(0, 90);
-    const signature = `${station.id}|${mode}|${unresolved.map((entry) => entry.tripId).join("|")}`;
-    if (!unresolved.length || endpointSignatureRef.current === signature) return;
-    endpointSignatureRef.current = signature;
+    if (status !== "ready" || boardScope.current !== `${station.id}:${mode === "arrivals" ? "arrival" : "departure"}`) return;
+    // Only enrich the first visible candidates; never fan out ninety requests.
+    // Failed lookups are eligible to retry after 150 seconds, not every render.
+    const now = Date.now();
+    const unresolved = entries.filter(entry => {
+      if (!entry.tripId || (mode === "departures" ? !!entry.direction : !!entry.provenance)) return false;
+      return now - (enrichmentAttemptsRef.current.get(entryKey(entry)) ?? -Infinity) >= 150_000;
+    }).slice(0, 36);
+    if (!unresolved.length) return;
+    for (const entry of unresolved) enrichmentAttemptsRef.current.set(entryKey(entry),now);
     const controller = new AbortController();
     let active = true;
-    void Promise.allSettled(unresolved.map(async (entry) => ({
-      tripId:entry.tripId!,
-      detail:await loadTrip(entry.tripId!, station, entry.when ?? entry.plannedWhen, controller.signal),
-    }))).then((results) => {
-      if (!active) return;
-      const resolved = new Map(results.filter((result): result is PromiseFulfilledResult<{ tripId:string; detail:TripDetail }> => result.status === "fulfilled").map((result) => [result.value.tripId, result.value.detail]));
-      if (!resolved.size) return;
-      setTripDetails((current) => {
-        const next = { ...current };
-        for (const entry of unresolved) {
-          const detail = entry.tripId ? resolved.get(entry.tripId) : undefined;
-          if (detail) next[entryKey(entry)] = detail;
-        }
+    const resolved = new Map<string,TripDetail>();
+    void inBatches(unresolved, 6, async entry => {
+      controller.signal.throwIfAborted();
+      const detail = await loadTrip(entry.tripId!,station,entry.when ?? entry.plannedWhen,controller.signal);
+      return {key:entryKey(entry),detail};
+    }, results => {
+      if (!active || controller.signal.aborted) return;
+      const batch = results
+        .filter((result):result is PromiseFulfilledResult<{key:string;detail:TripDetail}> => result.status === "fulfilled")
+        .map(result => result.value);
+      if (!batch.length) return;
+      for (const item of batch) resolved.set(item.key,item.detail);
+      // Detail panels may show successful stops before slower batches finish.
+      setTripDetails(current => {
+        const next = {...current};
+        for (const item of batch) next[item.key] = item.detail;
         return next;
       });
-      setEntries((current) => current.map((entry) => {
-        const detail = entry.tripId ? resolved.get(entry.tripId) : undefined;
+    }).then(() => {
+      if (!active || controller.signal.aborted || !resolved.size) return;
+      // One final entry update avoids restarting the effect between batches.
+      setEntries(current => current.map(entry => {
+        const detail = resolved.get(entryKey(entry));
         if (!detail) return entry;
         return {
           ...entry,
           direction:entry.direction ?? detail.destination,
           provenance:entry.provenance ?? detail.origin,
-          line:{ ...entry.line, color:entry.line?.color ?? detail.color, textColor:entry.line?.textColor ?? detail.textColor },
+          line:{...entry.line,color:entry.line?.color ?? detail.color,textColor:entry.line?.textColor ?? detail.textColor},
         };
       }));
-    });
+    }).catch(() => { /* An aborted station request cannot change the next station. */ });
     return () => { active = false; controller.abort(); };
   }, [entries, mode, station, status]);
 
@@ -512,7 +524,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     const key = entryKey(entry);
     setPinned((current) => {
       const next = current.includes(key) ? current.filter((item) => item !== key) : [key, ...current].slice(0, 30);
-      localStorage.setItem("bahnconnections-pinned-trips", JSON.stringify(next));
+      try { writePreference(localStorage,"bahnconnections-pinned-trips",JSON.stringify(next)); } catch { /* Storage can be unavailable in restricted contexts. */ }
       return next;
     });
   }
@@ -524,6 +536,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     if (!opening || !entry.tripId || tripDetailState[key] === "loading") return;
     const existing = tripDetails[key];
     if (existing) {
+      setTripDetailState((current) => ({ ...current, [key]:"ready" }));
       if (existing.points.length) onMapTrip?.(mapTrip(entry, existing));
       return;
     }
@@ -558,20 +571,20 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
       {status === "ready" && (!boardLive || verificationStatus === "different") && <p className="board-quality-notice" role="status">{!boardLive ? "Echtzeitdaten veraltet · Fahrplanzeiten angezeigt" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
 
       {filtersOpen && <div className="board-filter-panel" id="board-filters" onKeyDown={event=>{if(event.key==="Escape"){event.stopPropagation();setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}}>
-        <div className="board-filter-heading"><div><b>{mode==="arrivals"?"Ankünfte filtern":"Abfahrten filtern"}</b><small>{visibleEntries.length} von {entries.length} Fahrten · {mode==="arrivals"?"Ankunft":"Abfahrt"}</small></div><button type="button" className="board-filter-close" onClick={()=>{setFiltersOpen(false);document.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}} aria-label="Filter schließen"><UiIcon name="close"/></button></div>
+        <div className="board-filter-heading"><div><b>{mode==="arrivals"?"Ankünfte filtern":"Abfahrten filtern"}</b><small>{visibleEntries.length} von {entries.length} Fahrten · {mode==="arrivals"?"Ankunft":"Abfahrt"}</small></div><button type="button" className="board-filter-close" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}} aria-label="Filter schließen"><UiIcon name="close"/></button></div>
         <div className="board-search-row"><label className="board-search"><UiIcon name="search"/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis suchen" aria-label="Innerhalb der Bahnhofstafel suchen"/>{query&&<button type="button" onClick={()=>setQuery("")} aria-label="Suche leeren"><UiIcon name="close"/></button>}</label></div>
         <div className="board-filter-block"><div className="board-filter-section-title">Verkehrsmittel</div><div className="board-product-tabs" aria-label="Verkehrsmittel">
           {([["all","Alle",entries.length],["fern","Fernverkehr",productCounts.fern],["regional","Regional",productCounts.regional],["sbahn","S-Bahn",productCounts.sbahn],["ubahn","U-Bahn",productCounts.ubahn],["tram","Tram",productCounts.tram]] as const).map(([id,label,count])=><button type="button" key={id} aria-pressed={productFilter===id} className={productFilter===id?"active":""} onClick={()=>setProductFilter(id)}>{label}<small>{count}</small></button>)}
         </div></div>
         <div className="board-filter-block"><div className="board-filter-section-title">Betriebslage</div><div className="board-status-pills" aria-label="Betriebslage">
-          {([["all","Alle"],["ontime","Pünktlich"],["delayed","+5 Min."],["canceled","Ausfälle"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={delayFilter===id} className={delayFilter===id?"active":""} onClick={()=>setDelayFilter(id)}>{label}</button>)}
+          {([["all","Alle"],["ontime","Pünktlich"],["delayed","Verspätet"],["canceled","Ausfälle"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={delayFilter===id} className={delayFilter===id?"active":""} onClick={()=>setDelayFilter(id)}>{label}</button>)}
         </div></div>
         <div className="board-filter-fields">
           <label>Gleis<select value={platformFilter} onChange={event=>setPlatformFilter(event.target.value)}><option value="all">Alle Gleise</option>{platformOptions.map(platform=><option key={platform} value={platform}>{platform}</option>)}</select></label>
           <label>Zeitraum<select value={windowMinutes} onChange={event=>setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="180">3 Stunden</option><option value="240">4 Stunden</option><option value="500">Bis zu 8 Std. 20 Min.</option></select></label>
           <label>Sortierung<select value={sortMode} onChange={event=>setSortMode(event.target.value as SortMode)}><option value="time">{mode==="arrivals"?"Ankunftszeit":"Abfahrtszeit"}</option><option value="delay">Größte Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
-        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={()=>{setFiltersOpen(false);document.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
+        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
         <details className="board-filter-extra"><summary>Weitere Tafeloptionen</summary><div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div></details>
       </div>}
 

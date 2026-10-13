@@ -1,3 +1,4 @@
+import { APP_VERSION } from "./app-version.ts";
 import { chooseStationMatch } from "./station-match.ts";
 import type { Station } from "./network-data";
 
@@ -16,7 +17,7 @@ const stopIdCache = new Map<string, Promise<string | null>>();
 export const RAIL_MODES = "HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,REGIONAL_FAST_RAIL,REGIONAL_RAIL,SUBURBAN,SUBWAY,TRAM";
 
 export function transitousRequestHeaders(): Record<string, string> {
-  return typeof window === "undefined" ? { Accept:"application/json", "User-Agent":"BahnConnections/16" } : { Accept:"application/json" };
+  return typeof window === "undefined" ? { Accept:"application/json", "User-Agent":`BahnConnections/${APP_VERSION} (+https://github.com/Cola968/BahnConnections)` } : { Accept:"application/json" };
 }
 
 export function embeddedTransitousStopId(station: Station) {

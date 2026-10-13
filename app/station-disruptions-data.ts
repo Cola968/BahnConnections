@@ -1,8 +1,51 @@
 export type RailNotice={key:string;kind:"construction"|"cancellation"|"incident";headline:string;lines:string[];detail:string;plannedTime?:string;direction?:string;journey?:string};
+export type RailNoticeFilter="all"|"construction"|"cancellation"|"incident";
+
+/** Counts are calculated on deduplicated notice records, before user filtering. */
+export function noticeCategoryCounts(items:readonly RailNotice[]):Record<RailNoticeFilter,number>{
+ const counts={all:items.length,construction:0,cancellation:0,incident:0};
+ for(const item of items)counts[item.kind]+=1;
+ return counts;
+}
+function searchKey(text:string){
+ return text.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("de-DE").replace(/\s+/g," ").trim();
+}
+/** Searches alerts, route names and all grouped rail lines, never just a headline. */
+export function filterStationNotices(items:readonly RailNotice[],filter:RailNoticeFilter,query:string):RailNotice[]{
+ const term=searchKey(query.slice(0,100));
+ return items.filter(item=>(filter==="all"||item.kind===filter)&&(!term||searchKey([
+  item.headline,item.detail,item.lines.join(" "),item.direction??"",item.journey??""
+ ].join(" ")).includes(term)));
+}
+
 type Alert={header?:string;headerText?:{translation?:{text?:string}[]};descriptionText?:{translation?:{text?:string}[]}};
 export type NoticeStopTime={tripId?:string;displayName?:string;routeShortName?:string;headsign?:string;tripFrom?:{name?:string};tripTo?:{name?:string};place?:{departure?:string;arrival?:string;scheduledDeparture?:string;scheduledArrival?:string;cancelled?:boolean};cancelled?:boolean;tripCancelled?:boolean;alerts?:Alert[]};
+type NoticeFeed={stopTimes:NoticeStopTime[];warnings:string[]};
+/** Preserve usable disruption reports when arrivals or departures cannot be loaded. */
+export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<NoticeFeed>[]) {
+ const fulfilled=results.filter((result):result is PromiseFulfilledResult<NoticeFeed>=>result.status==="fulfilled");
+ const entries=fulfilled.flatMap(result=>result.value.stopTimes);
+ const warnings=fulfilled.flatMap(result=>result.value.warnings)
+   .filter((warning):warning is string=>typeof warning==="string").slice(0,3);
+ return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
+}
 function clean(v:unknown){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,360):"";}
-function alertText(alert:Alert){const header=clean(alert.header)||clean(alert.headerText?.translation?.find(i=>clean(i.text))?.text);const detail=clean(alert.descriptionText?.translation?.find(i=>clean(i.text))?.text);return {header,detail};}
+function firstTranslation(value:unknown):string{
+ if(!value||typeof value!=="object"||Array.isArray(value))return "";
+ const translations=(value as {translation?:unknown}).translation;
+ if(!Array.isArray(translations))return "";
+ for(const translation of translations){
+  if(!translation||typeof translation!=="object")continue;
+  const text=clean((translation as {text?:unknown}).text);
+  if(text)return text;
+ }
+ return "";
+}
+function alertText(alert:Alert){
+ const header=clean(alert.header)||firstTranslation(alert.headerText);
+ const detail=firstTranslation(alert.descriptionText);
+ return {header,detail};
+}
 function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":/ausfall|entfällt|ersatzverkehr|abgesagt/.test(s)?"cancellation":"incident";}
 export function extractStationNotices(entries:NoticeStopTime[],limit=35):RailNotice[]{
  const unique=new Map<string,RailNotice>();
