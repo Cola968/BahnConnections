@@ -294,7 +294,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [delayFilter, setDelayFilter] = useState<BoardDelayFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("time");
-  const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(240);
+  const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(500);
   const [query, setQuery] = useState("");
   const [compact, setCompact] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -330,7 +330,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [now, setNow] = useState(0);
   const boardLive=boardPredictionFresh(updatedAt,now,stale);
   const [refreshToken, setRefreshToken] = useState(0);
-  const [displayLimit, setDisplayLimit] = useState(50);
+  const [displayLimit, setDisplayLimit] = useState(120);
   const previewSignatureRef = useRef("");
   const rowRequestRef = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -422,7 +422,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const displayedEntries = useMemo(() => visibleEntries.slice(0, displayLimit), [displayLimit, visibleEntries]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDisplayLimit(compact ? 50 : 100), 0);
+    const timer = window.setTimeout(() => setDisplayLimit(compact ? 120 : 200), 0);
     return () => window.clearTimeout(timer);
   }, [compact, delayFilter, mode, platformFilter, productFilter, query, sortMode, station.id, windowMinutes]);
 
@@ -575,7 +575,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     <section className={`live-board realistic${compact ? " compact" : " expanded-detail"}`} aria-live="polite">
       <BoardToolbar mode={mode} onMode={setMode} filtersOpen={filtersOpen}
         quickView={activeBoardQuickView({delay:delayFilter,windowMinutes,otherFilters:productFilter!=="all"||platformFilter!=="all"||sortMode!=="time"||Boolean(query.trim())})} onQuickView={setQuickView}
-        filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 240}
+        filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 500}
         onFilters={() => setFiltersOpen(value => !value)} />
 
       {status === "ready" && (!boardLive || verificationStatus === "different") && <p className="board-quality-notice" role="status">{!boardLive ? "Echtzeitdaten veraltet · Fahrplanzeiten angezeigt" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
@@ -594,10 +594,15 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           <label>Zeitraum<select value={windowMinutes} onChange={event=>setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="180">3 Stunden</option><option value="240">4 Stunden</option><option value="500">Bis zu 8 Std. 20 Min.</option></select></label>
           <label>Sortierung<select value={sortMode} onChange={event=>setSortMode(event.target.value as SortMode)}><option value="time">{mode==="arrivals"?"Ankunftszeit":"Abfahrtszeit"}</option><option value="delay">Größte Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
-        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
+        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(500);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
         <details className="board-filter-extra"><summary>Weitere Tafeloptionen</summary><div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div></details>
       </div>}
 
+      {status === "ready" && <p className="board-results-summary" role="status">
+        {visibleEntries.length} Fahrten im ausgewählten Zeitraum · {windowMinutes === 500 ? "bis 8 Std. 20 Min." : windowMinutes/60 + " Std."}
+        {visibleEntries.length > displayedEntries.length ? ` · ${displayedEntries.length} geladen` : ""}
+        {stale ? " · letzter bekannter Stand" : ""}
+      </p>}
       <div className="board-table">
         <div className="board-table-head"><span /><span>Zug / Linie</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
         {status === "loading" && <div className="board-skeleton" aria-label="Live-Daten werden geladen">{[1,2,3,4,5].map((item) => <div key={item}><i /><span><i /><i /></span><span><i /><i /></span></div>)}</div>}
@@ -630,8 +635,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                 </article>
               );
             })}
-            {!visibleEntries.length && <div className="board-state board-empty-state" role="status"><b>{entries.length ? "Keine Fahrten mit diesen Filtern" : "Keine Fahrten verfügbar"}</b><span>{entries.length ? "Ändere Filter oder Zeitraum, um weitere Verbindungen zu sehen." : "Für diese Station wurden momentan keine Fahrten geliefert."}</span>{entries.length ? <button type="button" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Alle Fahrten anzeigen</button> : <button type="button" onClick={() => setRefreshToken(value => value + 1)}>Erneut laden</button>}</div>}
-            {displayedEntries.length < visibleEntries.length && <button className="board-more" onClick={() => setDisplayLimit((value) => value + 50)}>Weitere 50 Fahrten anzeigen <span>{displayedEntries.length}/{visibleEntries.length}</span></button>}
+            {!visibleEntries.length && <div className="board-state board-empty-state" role="status"><b>{entries.length ? "Keine Fahrten mit diesen Filtern" : "Keine Fahrten verfügbar"}</b><span>{entries.length ? "Ändere Filter oder Zeitraum, um weitere Verbindungen zu sehen." : "Für diese Station wurden momentan keine Fahrten geliefert."}</span>{entries.length ? <button type="button" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(500);}}>Alle Fahrten anzeigen</button> : <button type="button" onClick={() => setRefreshToken(value => value + 1)}>Erneut laden</button>}</div>}
+            {displayedEntries.length < visibleEntries.length && <button className="board-more" onClick={() => setDisplayLimit((value) => value + 120)}>Weitere 120 Fahrten anzeigen <span>{displayedEntries.length}/{visibleEntries.length}</span></button>}
           </div>
         )}
       </div>
