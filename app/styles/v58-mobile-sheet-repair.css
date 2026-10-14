@@ -5,16 +5,16 @@
 @media (max-width:1023px) {
   /* Minimized means a compact handle, not a large blank white card. */
   .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
-    height:76px!important;
-    min-height:76px!important;
-    max-height:76px!important;
+    height:64px!important;
+    min-height:64px!important;
+    max-height:64px!important;
     padding-bottom:0!important;
     overflow:hidden!important;
   }
   .app-shell[data-mobile-sheet="collapsed"] .station-card>.station-sheet-header {
-    min-height:72px!important;
-    height:72px!important;
-    grid-template-rows:72px!important;
+    min-height:60px!important;
+    height:60px!important;
+    grid-template-rows:60px!important;
     padding-block:6px!important;
   }
   .app-shell[data-mobile-sheet="collapsed"] .station-card>.panel-body,
