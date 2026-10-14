@@ -22,7 +22,7 @@ Offizielle Quelle: https://render.com/docs/free
 2. **Workers & Pages → Create application → Import a repository**.
 3. GitHub-Zugriff einmalig autorisieren; Repository `Cola968/BahnConnections` wählen. **Production branch `main`** erst dann, wenn geprüfte Release-Änderungen gemergt sind; für unveröffentlichten V57.3-Code zunächst eine separate Vorschau verwenden.
 4. Worker-Name `bahnconnections-standalone`, Build `pnpm build:cloudflare`, Deploy `pnpm deploy:cloudflare`, Root-Verzeichnis Wurzel. `wrangler.jsonc` und `vite.cloudflare.config.ts` sind im Repository.
-5. **Save and Deploy**; erst danach liegt eine reale `https://...workers.dev`-Adresse vor. Die Render-Adresse wird durch diesen Schritt **nicht** ersetzt.
+5. **Save and Deploy**; erst danach liegt eine reale `https://...workers.dev`-Adresse vor. Die Render-Adresse wird durch diesen Schritt **nicht** ersetzt. **Bereits auf dem Handy installierte Render-PWAs wechseln den Ursprung nicht automatisch; nach der Cloudflare-Freigabe die PWA von der neuen HTTPS-Origin neu installieren.**
 6. Auf der neuen Origin `/`, `/version.json`, `/manifest.webmanifest`, `/sw.js`, den Planer, die Tafel, Fahrtverläufe und APIs mit realen Quellen prüfen. Auf Android Chrome installieren, App schließen und kalt erneut öffnen.
 7. Wenn verfügbar, eigene HTTPS-Domain in Cloudflare konfigurieren, **bevor** die Play-Store-App gepackt wird. Exakte Origin für die TWA festschreiben.
 8. `NEXT_PUBLIC_APP_ORIGIN` auf diese Origin (ohne Pfad) konfigurieren, damit OpenGraph-/Share-Links denselben App-Ursprung verwenden.
