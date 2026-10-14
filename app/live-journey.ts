@@ -253,7 +253,11 @@ export function transferWaitMinutes(journey: LiveJourney, transitIndex: number) 
   const leg = journey.transitLegs[transitIndex];
   const next = journey.transitLegs[transitIndex + 1];
   if (!leg || !next) return null;
-  return Math.max(0, Math.round((new Date(next.startTime).getTime() - new Date(leg.endTime).getTime()) / 60_000));
+  const arrival=Date.parse(leg.realtime?leg.endTime:leg.scheduledEndTime);
+  const departure=Date.parse(next.realtime?next.startTime:next.scheduledStartTime);
+  if(!Number.isFinite(arrival)||!Number.isFinite(departure))return null;
+  // Negative transfers must remain negative: clamping hid impossible connections.
+  return Math.floor((departure-arrival)/60_000);
 }
 
 type DbLocation = { id?: string; name?: string; type?: string; location?: { latitude?: number; longitude?: number } };
