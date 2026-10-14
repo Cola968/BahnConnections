@@ -1,0 +1,119 @@
+/* V58 mobile visual regressions, reported on Berlin Südkreuz.
+ * Keep the ICE train number and its destination in separate, bounded grid tracks.
+ * Earlier design versions used a 34–44px service column while the number could
+ * exceed it, allowing text to paint on top of the destination. */
+@media (max-width: 479px) {
+  .app-shell .station-card .board-row-summary {
+    display:grid;
+    grid-template-columns:3px minmax(68px,74px) minmax(0,1fr)!important;
+    grid-template-rows:repeat(3,minmax(0,auto));
+    gap:3px 10px!important;
+    align-items:start;
+    min-height:82px;
+    padding:11px 2px!important;
+  }
+  .app-shell .station-card .board-row-summary .row-status {
+    grid-column:1!important;
+    grid-row:1/4!important;
+  }
+  .app-shell .station-card .board-row-summary .board-service {
+    grid-column:2!important;
+    grid-row:1/4!important;
+    width:100%;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+  .app-shell .station-card .board-row-summary .board-service .service-logo {
+    box-sizing:border-box;
+    min-width:0!important;
+    max-width:100%!important;
+    height:27px;
+    padding:0 8px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .app-shell .station-card .board-row-summary .board-service>b {
+    box-sizing:border-box;
+    display:block;
+    max-width:100%;
+    min-width:0;
+    font-size:clamp(.75rem,3.5vw,.875rem);
+    font-variant-numeric:tabular-nums;
+    font-weight:650;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    line-height:1.15;
+  }
+  .app-shell .station-card .board-row-summary .board-destination {
+    grid-column:3!important;
+    grid-row:1!important;
+    min-width:0;
+    overflow:hidden;
+    align-self:start;
+  }
+  .app-shell .station-card .board-row-summary .board-destination b {
+    display:block;
+    max-width:100%;
+    font-size:clamp(.875rem,3.7vw,1rem);
+    line-height:1.28;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    -webkit-line-clamp:unset;
+  }
+  .app-shell .station-card .board-row-summary .board-time {
+    grid-column:3!important;
+    grid-row:2!important;
+    min-width:0;
+    text-align:left;
+  }
+  .app-shell .station-card .board-row-summary .board-time .realtime-time,
+  .app-shell .station-card .board-row-summary .board-time .realtime-time__pair {
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+  }
+  .app-shell .station-card .board-row-summary .board-platform {
+    grid-column:3!important;
+    grid-row:3!important;
+    min-width:0;
+    justify-content:flex-start!important;
+    text-align:left;
+  }
+}
+@media (max-width:1023px) {
+  /* The collapsed drawer shows only its header. It must not keep 100px of
+     empty white panel below the title when the tabs/body are hidden. */
+  .app-shell[data-mobile-sheet="collapsed"] {
+    --mobile-sheet-visible-height:64px;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel:not([data-sheet-dragging="true"]) {
+    height:64px!important;
+    min-height:64px!important;
+    max-height:64px!important;
+    padding-bottom:0!important;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .station-card>.station-sheet-header {
+    height:64px!important;
+    min-height:64px!important;
+    max-height:64px!important;
+    grid-template-rows:56px!important;
+    padding-top:8px!important;
+    padding-bottom:0!important;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .station-sheet-header .station-section-tabs {
+    display:none!important;
+  }
+  /* V58 adds a second row of quick filters. Make half sheet tall enough
+     to show actual services without forcing users to expand every time. */
+  .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] {
+    --sheet-preset:min(64dvh,var(--sheet-limit));
+  }
+  .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] .station-card:not([data-sheet-dragging="true"]) {
+    height:min(var(--mobile-sheet-height,64dvh),var(--sheet-limit));
+  }
+}
