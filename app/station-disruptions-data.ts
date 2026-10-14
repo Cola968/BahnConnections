@@ -48,7 +48,7 @@ export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<
  return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
 }
 function clean(v:unknown,max=360){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,max):"";}
-function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /ausfall|fällt aus|entfällt|entfallen|ersatzverkehr|abgesagt|cancel|no service/.test(s)?"cancellation":/bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":"incident";}
+function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /ausfall|fällt aus|entfällt|entfallen|abgesagt|cancel|no service/.test(s)?"cancellation":/bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt|engineering work|construction/.test(s)?"construction":/ersatzverkehr|replacement service/.test(s)?"cancellation":"incident";}
 function isDisruption(alert:Alert,headline:string,detail:string){
  const text=(headline+' '+detail).toLocaleLowerCase('de');
  if(alert.effect==='NO_EFFECT'||alert.effect===7)return false;
