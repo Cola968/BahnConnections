@@ -64,7 +64,7 @@ export function SettingsDialog(p:Props) {
   const tabIndex=tab==="profile"?0:tab==="settings"?1:tab==="about"?2:3;
   const locationText=`${p.locationStatus}${p.locationAccuracy!==undefined ? ` · ±${Math.round(p.locationAccuracy)} m` : ""}`;
 
-  return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
+  return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={event=>{event.preventDefault();p.onClose();}} onKeyDownCapture={event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();p.onClose();}}} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
     <header className="settings-heading">
       <div className="settings-heading-copy"><h2 id="settings-title">Einstellungen</h2><p className="settings-subtitle">Passe die App an dich an</p></div>
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
