@@ -14,13 +14,18 @@ export type TrainStop = {
 type RawStop={name?:string;lat?:number;lon?:number;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;track?:string;cancelled?:boolean};
 type RawLeg={mode?:string;realTime?:boolean;cancelled?:boolean;from?:RawStop;to?:RawStop;intermediateStops?:RawStop[]};
 const RAIL_MODES=new Set(["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL","REGIONAL_FAST_RAIL","REGIONAL_RAIL","SUBURBAN","SUBWAY","TRAM"]);
+const validatedTime=(value?:string):string|undefined=>typeof value==="string"&&Number.isFinite(Date.parse(value))?value:undefined;
 
 export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   const result:TrainStop[]=[];
   for(const leg of legs){
     if(!leg || typeof leg!=="object")continue;
     if(!RAIL_MODES.has(leg.mode??""))continue;
-    for(const [index,stop] of [leg.from,...(Array.isArray(leg.intermediateStops)?leg.intermediateStops:[]),leg.to].entries()){
+    for(const [index,raw] of [leg.from,...(Array.isArray(leg.intermediateStops)?leg.intermediateStops:[]),leg.to].entries()){
+      // Invalid realtime strings must never hide valid scheduled times or
+      // flow into RealtimeTime, share exports or countdowns.
+      const stop=raw?{...raw,arrival:validatedTime(raw.arrival),departure:validatedTime(raw.departure),
+        scheduledArrival:validatedTime(raw.scheduledArrival),scheduledDeparture:validatedTime(raw.scheduledDeparture)}:undefined;
       if(typeof stop?.name!=="string" || !stop.name)continue;
       const time=stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture;
       const previous=result.at(-1);
