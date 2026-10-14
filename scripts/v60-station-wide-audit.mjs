@@ -1,0 +1,35 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
+const station= (name,id) => ({name,id});
+const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
+const cases=[station("Berlin Hermannstraße","de:test:hermannstr"),station("Berlin Hbf","de:test:hbf"),station("Hamburg Hbf","de:test:hamburg"),station("Lübeck Hbf","de:test:luebeck"),station("Dresden Hbf","de:test:dresden")];
+for(const s of cases){
+ const rows=[{tripId:s.id+":1",displayName:"S9",place:{scheduledDeparture:at(5)}},{tripId:s.id+":2",displayName:"RE1",place:{scheduledDeparture:at(20)}}];
+ const requested=[];
+ const live=await loadStationBoardWithFallback(async mode=>{requested.push(mode);return rows});
+ assert.deepEqual(requested,["REALTIME"],s.name);
+ assert.equal(live.stopTimes.length,2,s.name);
+ assert.equal(live.fallback,false,s.name);
+ const recovered=await loadStationBoardWithFallback(async mode=>{if(mode==="REALTIME")throw new Error("503");return rows});
+ assert.equal(recovered.mode,"OFF",s.name);
+ assert.equal(recovered.stopTimes.length,2,s.name);
+ assert.match(recovered.warning,/Fahrplandaten/,s.name);
+ const emptyLive=await loadStationBoardWithFallback(async mode=>mode==="REALTIME"?[]:rows);
+ assert.equal(emptyLive.stopTimes.length,2,s.name);
+ assert.equal(emptyLive.fallback,true,s.name);
+ await assert.rejects(loadStationBoardWithFallback(async()=>{throw Error("failed")}),/failed/,s.name);
+}
+const file=(name)=>readFileSync(new URL("../"+name,import.meta.url),"utf8");
+const backend=file("app/api/stations/[id]/board/route.ts");
+assert.match(backend,/loadStationBoardWithFallback/);
+assert.match(backend,/realtimeMode/);
+assert.match(backend,/stopId/);
+const board=file("app/live-board.tsx");
+assert.match(board,/windowMinutes, setWindowMinutes.*500/);
+assert.match(board,/Weitere 50 Fahrten anzeigen/);
+assert.match(board,/\bboardScope\b/);
+const page=file("app/page.tsx");
+assert.match(page,/stationMarkerHierarchy/);
+assert.match(page,/station-tap-target/);
+console.log("Station-wide timetable and UI regression: 5 station types, fallback, stationId, touch markers passed.");
