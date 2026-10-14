@@ -10,7 +10,7 @@ import { compactStationLabel } from "./transit-style";
 import { JourneyTimeRange } from "./journey-time-range";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
-import { assessTransfer,minimumTransferBuffer } from "./v60-transfer-assessment";
+import { assessTransfer,minimumTransferBuffer } from "./v60-transfer-assessment.ts";
 
 export function JourneyAlternatives({ journeys, selected, limit, label, onSelect, onMore }: {
   journeys:LiveJourney[]; selected:LiveJourney; limit:number; label:(journey:LiveJourney, first:LiveJourney) => string;
