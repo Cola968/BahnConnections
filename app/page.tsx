@@ -11,6 +11,8 @@ import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
+import { resolveV60Shortcut, type V60Shortcut } from "./v60-shortcuts";
+import { V60ShortcutHelp } from "./v60-shortcut-help";
 import {mapDataStatus} from "./map-data-status";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
@@ -234,6 +236,8 @@ export default function Home() {
   const [stationTrip, setStationTrip] = useState<BoardMapTrip | null>(null);
   const [stationTrips, setStationTrips] = useState<BoardMapTrip[]>([]);
   const [settingsOpen,setSettingsOpen]=useState(false);
+  const [shortcutsOpen,setShortcutsOpen]=useState(false);
+  const closeShortcuts=useCallback(()=>setShortcutsOpen(false),[]);
   const [settingsInitialTab,setSettingsInitialTab]=useState<"profile"|"settings"|"about"|"plans">("profile");
   const [profile,setProfile]=useState<LocalProfile>(parseLocalProfile(null));
   const [reducedMotion,setReducedMotion]=useState(false);
@@ -504,24 +508,42 @@ export default function Home() {
   }, [stationById]);
 
   const escapePanel = useEffectEvent(() => {
+    if(shortcutsOpen){setShortcutsOpen(false);return;}
     if(settingsOpen)return;
     if(helpOpen){setHelpOpen(false);return;}
     if(liveFiltersOpen){setLiveFiltersOpen(false);mobileViewTriggerRef.current?.focus();return;}
     if(moreMenuOpen){setMoreMenuOpen(false);return;}
     resetMap();
   });
-  useEffect(() => {
-    const shortcut = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
-      if (["INPUT","SELECT","TEXTAREA"].includes(target.tagName) && event.key !== "Escape") return;
-      if (event.key.toLocaleLowerCase() === "l") setLiveVisible((value) => !value);
-      if (event.key.toLocaleLowerCase() === "s") { event.preventDefault(); document.querySelector<HTMLInputElement>(".station-search input")?.focus(); }
-      if (event.key.toLocaleLowerCase() === "f") { const drawer = document.querySelector<HTMLDetailsElement>(".filter-drawer"); if (drawer) drawer.open = !drawer.open; }
-      if (event.key === "Escape" && !event.defaultPrevented) escapePanel();
+  const runV60Shortcut=useEffectEvent((action:V60Shortcut)=>{
+    if(action==="escape"){escapePanel();return;}
+    if(settingsOpen||shortcutsOpen||helpOpen)return;
+    switch(action){
+      case "search":document.querySelector<HTMLInputElement>(".station-search input,.mobile-search-dock .station-search input")?.focus();break;
+      case "live":setLiveVisible(value=>!value);break;
+      case "filters":setLiveFiltersOpen(value=>!value);setMoreMenuOpen(false);break;
+      case "map":navigate("map");break;
+      case "planner":navigate("connections");setExploreOpen(true);break;
+      case "departures":navigate("departures");break;
+      case "help":setShortcutsOpen(true);setMoreMenuOpen(false);setLiveFiltersOpen(false);break;
+    }
+  });
+  useEffect(()=>{
+    const shortcut=(event:KeyboardEvent)=>{
+      if(event.defaultPrevented)return;
+      const target=event.target instanceof HTMLElement ? event.target : null;
+      const action=resolveV60Shortcut({key:event.key,ctrlKey:event.ctrlKey,metaKey:event.metaKey,
+        altKey:event.altKey,repeat:event.repeat,targetTag:target?.tagName,
+        isContentEditable:target?.isContentEditable,
+        withinEditable:Boolean(target?.closest('[contenteditable],[role="textbox"]'))});
+      if(!action)return;
+      if(action!=="escape"&&target?.closest('[role="dialog"],[aria-modal="true"]'))return;
+      if(action!=="escape"&&action!=="help"&&action!=="search"&&target?.closest("details[open]"))return;
+      event.preventDefault();runV60Shortcut(action);
     };
-    window.addEventListener("keydown", shortcut);
-    return () => window.removeEventListener("keydown", shortcut);
-  }, []);
+    window.addEventListener("keydown",shortcut);
+    return ()=>window.removeEventListener("keydown",shortcut);
+  },[]);
 
   useEffect(() => {
     const router = new WorkerTrackRouter(() => setRailState("ready"), () => setRailRevision(value => value + 1), () => setRailState("error"));
@@ -1261,6 +1283,7 @@ export default function Home() {
           <a className="install-app-link" href="/install" aria-label="BahnConnections als App installieren"><span className="install-icon" aria-hidden="true">↓</span><span className="install-label-long">App installieren</span><span className="install-label-short">App</span></a>
           <button ref={mobileViewTriggerRef} type="button" className={liveFiltersOpen ? "mobile-map-view-button active" : "mobile-map-view-button"} onClick={() => { setLiveFiltersOpen((value) => !value); setMoreMenuOpen(false); setViewMenuOpen(false); }} aria-expanded={liveFiltersOpen} aria-controls="map-view-menu" aria-label="Ansicht und Kartenoptionen"><UiIcon name="layers" /><span className="view-button-label">Ansicht</span></button>
           <button className="round-button" onClick={() => setTheme((current) => current === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Dunkles Kartenthema" : "Helles Kartenthema"}><UiIcon name={theme === "light" ? "moon" : "sun"} /></button>
+          <button type="button" className="round-button v60-shortcuts-trigger" onClick={()=>setShortcutsOpen(true)} aria-haspopup="dialog" aria-label="Tastaturhilfe und Schnellaktionen öffnen" title="Tastaturhilfe (?)">?</button>
           <button className="round-button settings-trigger" onClick={()=>{setSettingsInitialTab("profile");setSettingsOpen(true);}} aria-label="Profil und Einstellungen öffnen">{profile.avatarDataUrl ? <img className="header-avatar" src={profile.avatarDataUrl} alt=""/> : profile.initials ? <span>{profile.initials}</span> : <UiIcon name="user"/>}</button>
         </div>
       </header>
@@ -1309,6 +1332,7 @@ export default function Home() {
               <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
 
+              <button type="button" onClick={() => {setShortcutsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="info"/><span><b>Tastenkürzel</b><small>Navigation, Suche und Kartenansicht</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
             <small className="more-version">{APP_VERSION_LABEL}</small>
@@ -1414,7 +1438,8 @@ export default function Home() {
 
       </section>
 
-      {settingsOpen && <SettingsDialog initialTab={settingsInitialTab} savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} language={language} onLanguage={setLanguage} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
+      <V60ShortcutHelp open={shortcutsOpen} onClose={closeShortcuts}/>
+       {settingsOpen && <SettingsDialog initialTab={settingsInitialTab} savedRoutes={savedRoutes} onOpenRoute={(route,reverse)=>{openSavedRoute(route,reverse);setSettingsOpen(false);}} onRemoveRoute={id=>storeRoutes(savedRoutes.filter(route=>route.id!==id))} onClose={()=>setSettingsOpen(false)} profile={profile} onProfile={saveProfile} stations={plannerStations.slice().sort((a,b)=>a.name.localeCompare(b.name,"de"))} onHomeStation={station=>{selectStation(station);setActiveView("departures");setExploreOpen(false);}} favoriteCount={favoriteIds.length} theme={theme} onTheme={setTheme} language={language} onLanguage={setLanguage} highContrast={highContrast} onContrast={setHighContrast} fontScale={fontScale} onFontScale={setFontScale} reducedMotion={reducedMotion} onReducedMotion={setReducedMotion} autoLocation={autoLocation} onAutoLocation={value=>{if(value) setAutoLocation(true);else stopLocation();}} onRequestLocation={()=>startLocation()} locationStatus={geoMessage || (geoStatus==="active" ? "Standort aktiv" : geoStatus==="locating" ? "Standort wird ermittelt" : "Standort noch nicht freigegeben")} locationAccuracy={geoPosition?.accuracy} showTrails={showTrails} onShowTrails={setShowTrails} overviewRoutesVisible={overviewRoutesVisible} onOverviewRoutesVisible={value=>{setOverviewRoutesVisible(value);setStationTrip(null);setStationTrips([]);}} showRouteLabels={showRouteLabels} onShowRouteLabels={setShowRouteLabels}/>}
       {!boardOnly && <MobileNavigation value={mobileView} onChange={navigate} language={language} onMore={() => { setMoreMenuOpen((value) => !value); setLiveFiltersOpen(false); setViewMenuOpen(false); }} moreOpen={moreMenuOpen} />}
 
       {helpOpen && (
@@ -1424,7 +1449,7 @@ export default function Home() {
             <span className="eyebrow plain">DATEN & METHODIK</span>
             <h2 id="sources-title">So liest du die Karte</h2>
             <p>BahnConnections verbindet ein kuratiertes Fernverkehrsnetz für die Übersicht mit mehr als 5.000 Personenbahnhöfen, echter aktueller Verbindungssuche, Live-Bahnhofstafeln und einer gebündelten Live-Lage.</p>
-            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung</b> ist als Prognose aus Uhrzeit, Wochentag und Zugart gekennzeichnet; die Live-Quelle liefert keine Belegungsmessung.</li><li><b>Tastatur</b>: S öffnet die Suche, L schaltet Live-Züge, F öffnet Filter und Esc schließt Details.</li></ul>
+            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung</b> ist als Prognose aus Uhrzeit, Wochentag und Zugart gekennzeichnet; die Live-Quelle liefert keine Belegungsmessung.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
             <div className="source-links">
               <a href="https://www.bahn.de/service/fahrplaene/streckennetz" target="_blank" rel="noreferrer"><b>DB Fernverkehr</b><span>ICE/IC-Liniennetz 2026 ↗</span></a>
               <a href="https://developers.deutschebahn.com/db-api-marketplace/apis/product/stada/api/173477" target="_blank" rel="noreferrer"><b>DB InfraGO StaDa</b><span>Bahnhofs-Stammdaten ↗</span></a>
