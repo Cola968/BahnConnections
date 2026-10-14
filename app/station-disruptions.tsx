@@ -102,12 +102,15 @@ export function StationDisruptions({station}:{station:Station}){
  },[station,station.id,refresh]);
 
  useEffect(()=>{
-  // Optional, device-only storage: never network, never a blocker for incident loading.
-  try{
-   const current=parseIncidentWatches(readPreferenceJson(window.localStorage,INCIDENT_WATCH_KEY));
-   setWatchedLines(readIncidentWatch(current,station.id));
-  }catch{setWatchedLines([]);}
-  setWatchOnly(false);setWatchMessage("");
+  // Delay the optional persistence read until after React commits the station switch.
+  const timer=window.setTimeout(()=>{
+   try{
+    const current=parseIncidentWatches(readPreferenceJson(window.localStorage,INCIDENT_WATCH_KEY));
+    setWatchedLines(readIncidentWatch(current,station.id));
+   }catch{setWatchedLines([]);}
+   setWatchOnly(false);setWatchMessage("");
+  },0);
+  return()=>window.clearTimeout(timer);
  },[station.id]);
 
  function toggleWatchedLine(line:string){
