@@ -13,6 +13,7 @@ import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop
 import { UiIcon } from "./ui-icon";
 import { resolveV60Shortcut, type V60Shortcut } from "./v60-shortcuts";
 import { V60ShortcutHelp } from "./v60-shortcut-help";
+import { nextRecentStations,RECENT_STATIONS_KEY } from "./v60-recent-stations";
 import {mapDataStatus} from "./map-data-status";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
@@ -237,6 +238,7 @@ export default function Home() {
   const [stationTrips, setStationTrips] = useState<BoardMapTrip[]>([]);
   const [settingsOpen,setSettingsOpen]=useState(false);
   const [shortcutsOpen,setShortcutsOpen]=useState(false);
+  const [recentStationIds,setRecentStationIds]=useState<string[]>([]);
   const closeShortcuts=useCallback(()=>setShortcutsOpen(false),[]);
   const [settingsInitialTab,setSettingsInitialTab]=useState<"profile"|"settings"|"about"|"plans">("profile");
   const [profile,setProfile]=useState<LocalProfile>(parseLocalProfile(null));
@@ -293,6 +295,7 @@ export default function Home() {
   const selectStation = useCallback((match: Station) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
     if (match.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((station) => station.id === match.id) ? current : [...current, match]);
+    setRecentStationIds(current=>nextRecentStations(current,match.id));
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
     setRadarDirection("all");setTrackedRadarAnchor(null);setJourneyMessage("");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
@@ -431,6 +434,7 @@ export default function Home() {
     const timer = window.setTimeout(() => {
       try {
         setFavoriteIds(readPreferenceIds(localStorage,"bahnconnections-favorite-stations"));
+        setRecentStationIds(readPreferenceIds(localStorage,RECENT_STATIONS_KEY).slice(0,6));
         setTheme(readPreference(localStorage,"bahnconnections-theme") === "dark" ? "dark" : "light");
         setHighContrast(readPreference(localStorage,"bahnconnections-contrast") === "high");
         setFontScale((value=>value==="normal"||value==="large"?value:"compact")(readPreference(localStorage,"bahnconnections-font")));
@@ -447,6 +451,12 @@ export default function Home() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(()=>{
+    if(!preferencesReady)return;
+    try{localStorage.setItem(RECENT_STATIONS_KEY,JSON.stringify(recentStationIds));}
+    catch{/* Recent searches are optional and never block travel information. */}
+  },[preferencesReady,recentStationIds]);
 
   useEffect(() => {
     if (!preferencesReady) return;
@@ -1332,6 +1342,10 @@ export default function Home() {
               <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
 
+              {recentStationIds.length>0 && <div className="v60-recent-stations" aria-label="Zuletzt geöffnete Bahnhöfe">
+                <div><strong>Zuletzt geöffnet</strong><button type="button" onClick={()=>setRecentStationIds([])}>Verlauf löschen</button></div>
+                {recentStationIds.map(id=>allStations.find(station=>station.id===id)).filter((station):station is Station=>Boolean(station)).map(station=><button type="button" key={station.id} onClick={()=>{selectStation(station);setMoreMenuOpen(false);}}><UiIcon name="clock"/><span>{stationDisplayName(station.name)}</span><UiIcon name="arrow"/></button>)}
+              </div>}
               <button type="button" onClick={() => {setShortcutsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="info"/><span><b>Tastenkürzel</b><small>Navigation, Suche und Kartenansicht</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => { setHelpOpen(true); setMoreMenuOpen(false); }}><UiIcon name="info"/><span><b>Hilfe & Daten</b><small>Quellen, Datenschutz und Methodik</small></span><UiIcon name="arrow"/></button>
             </div>
