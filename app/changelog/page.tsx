@@ -1,7 +1,15 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
+ {version:"V60.0",date:"14. Oktober 2026 · Release-Kandidat",current:true,lead:"Praktischere Zugverfolgung, ehrliche Umstiege, teilbare Fahrten und weniger störende Bedienhürden.",tags:["Umstiege","Zugverfolgung","Teilen","Mobil"],changes:[
+  ["Besserer Zuglauf","Ankunft und Abfahrt an tatsächlich gemeldeten Halten, Datenstand, Aufenthalt und Filter für kommende Halte übersichtlich darstellen."],
+  ["Ehrliche Umstiege","Rechnerischen Puffer aus Fahrzeiten und gemeldeten Fußwegen zeigen; fehlende Gehzeiten und unbekannte Anschlüsse offen benennen."],
+  ["Nützliche Alternativen","Ausfälle ausblenden oder einblenden, Verbindungen nach Umstiegszeit und weiteren Fahrgastkriterien sortieren."],
+  ["Zugfahrt teilen","Soll- und gegebenenfalls aktuelle Prognosezeiten als begrenzte Momentaufnahme teilen oder kopieren, ohne GPS-Behauptung."],
+  ["Weniger Klicks","Lokaler Verlauf kürzlich genutzter Bahnhöfe, Tastaturhilfe und ruhige Animationen mit Barrierefreiheitsoptionen."],
+  ["Verlässliche Daten","Stale-Gleise und ungültige Zeitstrings aus aktuellen Angaben heraushalten, unbelegte Auslastung und Scores entfernen."]
+ ]},
+ {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:false,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
   ["Bahnhofstafel sofort filtern","Mit einem Tipp nur die nächste Stunde, verspätete oder ausgefallene Züge ansehen; Filter vollständig zurücksetzen."],
   ["Reisealternativen","Alternative Verbindungen sofort nach Ankunft, Reisezeit, Umstiegen oder Fußweg sortieren; bei Ausfall direkt darauf hinweisen."],
   ["Radar-Datenstatus","Geschätzte Positionen und Echtzeitquelle klar trennen. Ein Klick führt zur Methodik."],
