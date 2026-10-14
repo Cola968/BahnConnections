@@ -52,3 +52,10 @@
 .app-shell .station-share:focus-visible {outline:2px solid var(--action);outline-offset:2px}
 .app-shell .station-share-message {padding:6px 8px;margin:4px 0 8px;color:var(--muted);font-size:.8rem;line-height:1.5}
 @media(max-width:360px) {.app-shell .station-share {font-size:.72rem;padding:7px}}
+
+.app-shell .incidents-share-action {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:3px 0 13px;min-width:0}
+.app-shell .incidents-share-action button {display:inline-flex;align-items:center;gap:7px;min-height:48px;padding:10px 12px;border-radius:11px;border:1px solid var(--line-subtle);background:var(--paper);color:var(--ink);font-size:.86rem;font-weight:650}
+.app-shell .incidents-share-action button svg {width:17px;height:17px}
+.app-shell .incidents-share-action button:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+.app-shell .incidents-share-action span {font-size:.74rem;line-height:1.45;color:var(--muted);flex:1;min-width:110px}
+@media(max-width:360px) {.app-shell .incidents-share-action {align-items:stretch;flex-direction:column}.app-shell .incidents-share-action button {justify-content:center}}
