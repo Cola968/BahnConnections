@@ -1,6 +1,7 @@
 # V58.0 · Railglass-Neustart – cleane Fahrgastoberfläche
 
 - **One-tap Bahnhofstafeln:** Schnellansichten „Nächste Stunde“, „Verspätet“, „Ausfälle“ und „Alle Fahrten“ direkt über der Tafel. Alle vier setzen möglicherweise widersprüchliche erweiterte Filter zurück; ein aktiver benutzerdefinierter Filter wird nicht fälschlich als Schnellansicht ausgewiesen.
+- **Alternativen vergleichen:** Direkte Filterchips für empfohlene, früheste, schnellste, umstiegsarme oder gehwegoptimierte Verbindungen. Bei ausfallender gewählter Fahrt wird die Alternativsuche klarer hervorgehoben.
 - **Radar-Transparenz:** Dezentes, aufklappbares Datenstatus-Element über der Karte mit Quelle/Methodik. Für geschätzte Positionen wird nie Fahrzeug-GPS behauptet; Netzfehler, veraltete Daten und reine Fahrplanlagen erhalten unterscheidbare Zustände.
 - **Railglass-Design:** Einheitliches, zurückhaltendes Materialsystem für hell und dunkel: hochwertige Navigation, kompaktere Tafel, flüssigere mobile Sheets, ruhiger Zug-Inspector, weniger dekorative Gradienten und deutlichere Informationshierarchie.
 - **Android-Leisten:** Browser-/PWA-Farben folgen dem gewählten Hell-/Dunkelmodus statt hart codierten Flächen; auch Safe Areas und kleine Displays werden berücksichtigt.
