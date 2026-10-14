@@ -39,7 +39,7 @@ import { SmartSearch } from "./smart-search";
 import { buildStationImportance, NetworkStats } from "./network-stats";
 import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileSheetState } from "./panel-tools";
 import { DesktopPanelResizer } from "./desktop-panel-resizer";
-import { assessJourneyTransfers } from "./v60-transfer-assessment";
+import { assessJourneyTransfers } from "./v60-transfer-assessment.ts";
 import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
 import { StationMapRenderer } from "./station-map-renderer";
