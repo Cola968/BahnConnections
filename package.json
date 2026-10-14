@@ -34,7 +34,8 @@
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
-    "audit:v60": "node scripts/v60-audit.mjs"
+    "audit:v60": "node scripts/v60-audit.mjs",
+    "audit:v60-passenger": "node scripts/v60-passenger-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",
