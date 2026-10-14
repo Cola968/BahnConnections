@@ -140,10 +140,41 @@ try {
         const visible=rows.filter(e=>r(e).top>=contentTop-1&&r(e).bottom<=Math.min(r(body).bottom,r(panel).bottom)+1);
         const search=document.querySelector('.topbar>.station-search'),ss=getComputedStyle(search),topbar=document.querySelector('.topbar');return {search:{...rect(search),left:r(search).left,right:r(search).right,position:ss.position,computedTop:ss.top,transform:ss.transform,translate:ss.translate},topbar:{...rect(topbar),left:r(topbar).left,transform:getComputedStyle(topbar).transform,translate:getComputedStyle(topbar).translate},actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
       })()`);
+
+      if(!baseline && width < 480) {
+        const rows=await evaluate(`(() => [...document.querySelectorAll('.station-card .board-row-summary')].slice(0,6).map(row => {
+          const service=row.querySelector('.board-service');
+          const number=service?.querySelector('b');
+          const destination=row.querySelector('.board-destination');
+          const r=e=>e?.getBoundingClientRect();
+          return {train:number?.textContent,serviceRight:r(service)?.right,numberRight:r(number)?.right,destinationLeft:r(destination)?.left,
+            serviceOverflow:service?.scrollWidth-(service?.clientWidth??0),
+            destinationOverflow:destination?.scrollWidth-(destination?.clientWidth??0)};
+        }))()`);
+        for(const row of rows) {
+          assert.ok(row.serviceRight <= row.destinationLeft-3,
+            `${width}-${theme}-${state} number and destination must never overlap: ${JSON.stringify(row)}`);
+          assert.ok(row.serviceOverflow <= 1,
+            `${width}-${theme}-${state} train number must remain inside its grid column: ${JSON.stringify(row)}`);
+          assert.ok(row.destinationOverflow <= 1,
+            `${width}-${theme}-${state} destination must not overflow its column: ${JSON.stringify(row)}`);
+        }
+      }
       const name=`${width}-${theme}-${state}`;
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=130,name+' chrome');if(state==='half')assert.ok(measure.visibleRows>=4,name+' visible rows');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
+      if(!baseline && width===390 && state==='expanded' && theme==='light') {
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(280);
+        const collapsed=await evaluate(`(() => {const p=document.querySelector('.station-card').getBoundingClientRect();const h=document.querySelector('.station-sheet-header').getBoundingClientRect();return {height:p.height,header:h.height,content:getComputedStyle(document.querySelector('.station-card .panel-body')).display,state:document.querySelector('.app-shell').dataset.mobileSheet};})()`);
+        assert.equal(collapsed.state,'collapsed','Station drawer close/collapse action must update state');
+        assert.ok(collapsed.height<=68 && collapsed.header<=68,'Collapsed drawer must not display the blank 100px sheet: '+JSON.stringify(collapsed));
+        assert.equal(collapsed.content,'none','Collapsed drawer must keep timetable content hidden');
+        await screenshot('390-light-station-collapsed-compact');
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(260);
+      }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
         const occlusion=await evaluate(`(() => {const tabs=document.querySelector('.station-section-tabs'),r=tabs.getBoundingClientRect();const h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {tabsHit:tabs.contains(h),position:getComputedStyle(tabs).position};})()`);
