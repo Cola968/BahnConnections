@@ -11,6 +11,7 @@ import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings
 import { APP_VERSION_LABEL } from "./app-version";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
+import {mapDataStatus} from "./map-data-status";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
 import { JourneyTimeRange } from "./journey-time-range";
@@ -1171,6 +1172,7 @@ export default function Home() {
   const desktopSearchMode = desktopWorkspace && desktopView === "connections" && (!journey || exploreOpen);
   const desktopJourneyMode = desktopWorkspace && desktopView === "connections" && Boolean(journey) && !exploreOpen;
   const plannerVisible = !statsOpen && (exploreOpen || desktopSearchMode);
+  const radarInsight=mapDataStatus(liveVisible,liveState,visibleLiveTrips.length,visibleLiveTrips.filter(trip=>trip.realTime).length);
   const activePrimaryPanel = plannerVisible ? "planner" : statsOpen ? "stats" : journey && !departuresView ? "journey" : selectedLiveTrip ? "trip" : selected && !sidebarCollapsed ? "station" : null;
   const primaryPanelOpen = Boolean(activePrimaryPanel);
   usePanelHistory(primaryPanelOpen,resetMap,preferencesReady);
@@ -1256,6 +1258,7 @@ export default function Home() {
       )}
 
       <section className="map-stage" aria-label="Interaktive Bahnkarte für Fernverkehr, Regio, S-Bahn, U-Bahn und Straßenbahn">
+        {liveVisible && !primaryPanelOpen && !focusMode && !liveFiltersOpen && !moreMenuOpen && !helpOpen && <button type="button" className="v58-map-source" data-quality={radarInsight.tone} onClick={()=>setHelpOpen(true)} aria-label={`${radarInsight.label}. ${radarInsight.detail}. Datenquellen und Methodik öffnen`}><span className="v58-map-source-pulse" aria-hidden="true"/><span><strong>{radarInsight.label}</strong><small>{radarInsight.detail}</small></span><UiIcon name="info"/></button>}
         <div ref={mapElementRef} className="map-canvas" />
         {/* GPS location and walking directions now live inside route search and station information. */}
 
