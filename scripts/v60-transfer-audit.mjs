@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { assessTransfer, assessJourneyTransfers } from "../app/v60-transfer-assessment.ts";
+import { assessTransfer, assessJourneyTransfers, minimumTransferBuffer } from "../app/v60-transfer-assessment.ts";
+import {sortJourneys} from "../app/journey-tools.ts";
 
 const base=Date.parse("2026-10-14T12:00:00Z");
 const at=minute=>new Date(base+minute*60_000).toISOString();
@@ -51,6 +52,15 @@ assert.equal(assessJourneyTransfers({...route(prev,next),transitLegs:[prev]},cur
 assert.equal(assessTransfer(route(prev,next,0),0,Number.NaN).source,"timetable","Unreliable device clock cannot authenticate live estimates");
 const dayBoundary=assessTransfer(route(leg("IC",0,59),leg("RB",67,80),2),0,current);
 assert.equal(dayBoundary.bufferMinutes,6);
+
+assert.equal(minimumTransferBuffer(route(prev,next,3),current),7);
+assert.equal(minimumTransferBuffer(route(late,next,3),current),-8);
+assert.equal(minimumTransferBuffer(route(prev,next,11),current),-1);
+assert.equal(minimumTransferBuffer({...route(prev,next),transitLegs:[prev]},current),null,"Direct journeys have no transfer buffer");
+const journeys=[{...route(prev,next,11),id:"bad"},{...route(prev,next,1),id:"good"},{...route(prev,next,7),id:"tight"}];
+assert.deepEqual(sortJourneys(journeys,"transfer",current).map(item=>item.id),["good","tight","bad"],"Sort by genuinely computed transfer buffer");
+assert.deepEqual(journeys.map(item=>item.id),["bad","good","tight"],"Sorting cannot change provider order");
+
 console.log("V60 transfer audit: source freshness, footpath, cancellations, negative transfer and boundary cases passed.");
 
 const read=(path)=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
