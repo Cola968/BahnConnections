@@ -35,6 +35,7 @@ jobs:
       - run: pnpm audit:surfaces
       - run: node scripts/disruption-provider-audit.mjs
       - run: node scripts/incident-watch-audit.mjs
+      - run: node scripts/board-health-audit.mjs
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
