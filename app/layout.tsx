@@ -28,7 +28,9 @@ import "./styles/v56-travel-tools.css";
 import "./styles/v56-1-interactions.css";
 import "./styles/v57-station-radar.css";
 import "./styles/v57-2-turnaround.css";
+import "./styles/v58-liquid-relaunch.css";
 import { PwaRegister } from "./pwa-register";
+import { BrowserChrome } from "./browser-chrome";
 
 // Keep preview, installed PWA and future Play Store origins aligned with the real host.
 // Without an explicit HTTPS origin, framework metadata should use the request host.
@@ -71,5 +73,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body>{children}<PwaRegister /></body></html>;
+  return <html lang="de"><body>{children}<PwaRegister /><BrowserChrome /></body></html>;
 }
