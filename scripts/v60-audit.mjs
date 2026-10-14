@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync,readFileSync } from "node:fs";
 import { resolveV60Shortcut,V60_SHORTCUTS } from "../app/v60-shortcuts.ts";
+import {nextRecentStations,RECENT_STATIONS_LIMIT} from "../app/v60-recent-stations.ts";
 
 const root=(relative)=>new URL("../"+relative,import.meta.url);
 const read=path=>readFileSync(root(path),"utf8");
@@ -19,6 +20,12 @@ assert.equal(resolveV60Shortcut({key:"d"}),"departures");
 assert.equal(resolveV60Shortcut({key:"f"}),"filters");
 assert.equal(resolveV60Shortcut({key:"Ctrl+s",ctrlKey:true}),null);
 assert.ok(V60_SHORTCUTS.length>=8);
+assert.deepEqual(nextRecentStations(["berlin","potsdam"],"potsdam"),["potsdam","berlin"]);
+assert.equal(nextRecentStations(["berlin"],"").length,1);
+assert.equal(nextRecentStations(["berlin"],"x".repeat(181)).length,1);
+assert.deepEqual(nextRecentStations([], "berlin"),["berlin"]);
+assert.equal(nextRecentStations(Array.from({length:50},(_,i)=>"s"+i),"next").length,RECENT_STATIONS_LIMIT);
+
 
 const plan=read("docs/releases/V60-PRODUCT-AND-QA-PLAN.md");
 const items=[...plan.matchAll(/^\|\s*(0[1-9]|1[0-9]|20)\s*\|/gm)].map(m=>Number(m[1]));
@@ -37,6 +44,9 @@ assert.match(html,/\.\/styles\/v60-motion\.css/);
 assert.match(page,/V60ShortcutHelp/);
 assert.match(page,/resolveV60Shortcut/);
 assert.match(page,/runV60Shortcut/);
+assert.match(page,/nextRecentStations/);
+assert.match(page,/Verlauf löschen/);
+assert.match(motion,/v60-recent-stations/);
 assert.match(motion,/@media\(prefers-reduced-motion:reduce\)/);
 assert.match(motion,/html\[data-motion="reduced"\]/);
 assert.match(motion,/v60-dialog-in/);
