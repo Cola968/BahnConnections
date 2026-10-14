@@ -815,6 +815,13 @@ export default function Home() {
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
       const markerRadius = journey ? Math.min(3.2, Math.max(1.8, baseRadius * .27)) : isSelected || isDestination ? Math.max(6, baseRadius + 1) : isTransfer ? Math.max(7.8, baseRadius) : baseRadius;
+      // Make every visible station reachable by touch even when its passenger-
+      // proportional visual dot is tiny. The visual marker is added afterwards
+      // so its name and existing keyboard semantics remain unchanged.
+      L.circleMarker([station.lat,station.lon],{
+        radius:24,weight:0,opacity:0,fill:true,fillOpacity:0,
+        className:"station-tap-target",interactive:!Boolean(journey),
+      }).on("click",()=>selectStation(station)).addTo(layer);
       const marker = L.circleMarker([station.lat, station.lon], {
         radius:markerRadius,
         color: isSelected || isDestination ? "#fff" : isTransfer ? (theme === "dark" ? "#d0b57e" : "#9a7233") : markerPalette.edge,
@@ -1326,7 +1333,7 @@ export default function Home() {
           </div>
           {liveVisible && (liveState === "stale" || liveState === "error") && <p className="radar-data-notice" role="status">{liveState === "stale" ? "Radar-Datenstand veraltet – Zugpositionen ausgeblendet" : "Radar derzeit nicht erreichbar"}</p>}
           {liveVisible && selected && !selectedLiveTrip && !plannerVisible && !journey && !settingsOpen && !liveFiltersOpen && !moreMenuOpen && mobileSheetState!=="expanded" && <div className="station-radar-scope" aria-label="Bahnhofsradar">
-            <div><b>{stationDisplayName(selected.name)}</b><small role="status">{stationRadar.status==="loading"?"Halte werden geprüft …":stationRadar.status==="error"?"Bahnhofshalte nicht erreichbar":`${visibleLiveTrips.length} Züge mit bestätigtem Halt`}</small></div>
+            <div><b>{stationDisplayName(selected.name)}</b><small role="status">{stationRadar.status==="loading"?"Halte werden geprüft …":stationRadar.status==="error"?"Bahnhofshalte nicht erreichbar":`${visibleLiveTrips.length} Züge auf der Karte · ${stationRadar.calls.size} Fahrten mit Halt im Zeitfenster`}</small></div>
             <div className="radar-direction-control" role="group" aria-label="Fahrtrichtung am Bahnhof">{([["all",language==="en"?"Show all":"Alle"],["inbound",language==="en"?"Inbound":"Ankommend"],["outbound",language==="en"?"Outbound":"Abgehend"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={radarDirection===id} onClick={()=>setRadarDirection(id)}>{label}</button>)}</div>
           </div>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
