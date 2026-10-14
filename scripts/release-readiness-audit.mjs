@@ -20,6 +20,10 @@ try {
 const worker = read("public/sw.js");
 const changelog = read("CHANGELOG.md");
 const manifest = read("app/manifest.ts");
+const layout = read("app/layout.tsx");
+verify(!layout.includes('new URL("https://bahnconnections-de.a-stad.chatgpt.site")'), "App metadata must not hard-code the deprecated Sites host for Play builds.");
+verify(layout.includes("NEXT_PUBLIC_APP_ORIGIN"), "Standalone production metadata must support a configured HTTPS origin.");
+verify(manifest.includes('start_url:"/"') && manifest.includes('scope:"/"'), "A Play wrapper must launch the exact installed app origin.");
 const transitous = read("app/transitous.ts");
 verify(transitous.includes('import { APP_VERSION } from "./app-version.ts"'), "Transitous User-Agent must use the current app version.");
 verify(transitous.includes("https://github.com/Cola968/BahnConnections"), "Transitous User-Agent needs a public contact URL.");

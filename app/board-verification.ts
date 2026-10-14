@@ -1,3 +1,4 @@
+import {transitAlerts,transitAlertContent} from './transit-alerts.ts';
 export type TransitousBoardRow = {
   displayName?:string;
   routeShortName?:string;
@@ -17,22 +18,7 @@ export function validTransitousBoardRows(input:unknown):TransitousBoardRow[] {
 
 /** Read untrusted alert headers without assuming nested translation arrays exist. */
 export function safeBoardAlertHeaders(value:unknown):string[] {
-  if(!Array.isArray(value)) return [];
-  const result:string[]=[];
-  for(const raw of value) {
-    if(!raw||typeof raw!=="object"||Array.isArray(raw))continue;
-    const alert=raw as Record<string,unknown>;
-    const headerText=alert.headerText;
-    const translations=headerText&&typeof headerText==="object"&&!Array.isArray(headerText)
-      ? (headerText as {translation?:unknown}).translation : undefined;
-    const translated=Array.isArray(translations)
-      ? translations.find(row=>row&&typeof row==="object"&&typeof row.text==="string"&&row.text.trim())?.text : undefined;
-    const rawText=typeof alert.header==="string"&&alert.header.trim()?alert.header:translated;
-    if(typeof rawText!=="string")continue;
-    const text=rawText.trim().replace(/\s+/g," ").slice(0,240);
-    if(text)result.push(text);
-  }
-  return result;
+  return [...new Set(transitAlerts(value).map(alert=>transitAlertContent(alert).header.slice(0,240)).filter(Boolean))];
 }
 
 /** Do not mark malformed or missing provider timestamps as real-time updates. */

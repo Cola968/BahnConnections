@@ -25,6 +25,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:release
+      - run: pnpm audit:play-hosting
+      - run: pnpm audit:railglass
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
@@ -33,6 +35,10 @@ jobs:
       - run: pnpm audit:links
       - run: pnpm audit:input
       - run: pnpm audit:surfaces
+      - run: node scripts/disruption-provider-audit.mjs
+      - run: node scripts/incident-watch-audit.mjs
+      - run: node scripts/board-health-audit.mjs
+      - run: node scripts/incident-digest-audit.mjs
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board

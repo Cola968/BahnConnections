@@ -17,10 +17,11 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
 }) {
   const [order,setOrder]=useState<JourneySort>('recommended');
   const alternatives = sortJourneys(journeys.filter(journey => journey.id !== selected.id),order);
+  const disrupted=selected.cancelled||selected.transitLegs.some(leg=>leg.cancelled);
   if (!alternatives.length) return null;
   return <details className="journey-alternatives">
-    <summary>Andere Verbindungen <span>{alternatives.length}<UiIcon name="chevron" width="16" height="16" /></span></summary>
-    <label className="journey-sort">Vergleichen nach<select value={order} onChange={event=>setOrder(event.target.value as JourneySort)}><option value="recommended">Empfehlung der Suche</option><option value="arrival">Früheste Ankunft</option><option value="duration">Kürzeste Reisezeit</option><option value="changes">Wenigste Umstiege</option><option value="walking">Wenigster Fußweg</option></select></label>
+    <summary>{disrupted?"Fahrt fällt aus · Alternativen prüfen":"Andere Verbindungen"} <span>{alternatives.length}<UiIcon name="chevron" width="16" height="16" /></span></summary>
+    <div className="v58-alternative-sort" role="group" aria-label="Andere Verbindungen sortieren">{([["recommended","Empfohlen"],["arrival","Früh ankommen"],["duration","Schnell"],["changes","Wenig Umstiege"],["walking","Wenig Fußweg"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={order===id} onClick={()=>setOrder(id)}>{label}</button>)}</div>
     <div>{alternatives.slice(0,limit).map(journey => <button type="button" key={journey.id} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onSelect(journey); }}>
       <em>{label(journey,journeys[0])}</em>
       <small>{journeyDateRange(journey)}</small>

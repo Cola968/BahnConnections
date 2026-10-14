@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -55,8 +55,8 @@ function incidentTimetable(requestUrl){
   const scheduled=new Date(Date.now()+30*60_000).toISOString();
   const place=kind==='arrival'?{arrival:when,scheduledArrival:scheduled}:{departure:when,scheduledDeparture:scheduled};
   return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
-    ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
-    : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
+    ? [{tripId:'qa-inc-s7',displayName:'S7',place:{...place,alerts:[{headerText:'Signalstörung an der Stadtbahn',descriptionText:'Züge fahren mit Verspätung.',effect:'SIGNIFICANT_DELAYS'}]}}]
+    : [{tripId:'qa-inc-re1',displayName:'RE1',place:{...place,alerts:[{headerText:'Bauarbeiten zwischen Berlin und Potsdam',descriptionText:'Ersatzverkehr im betroffenen Abschnitt.',effect:'MODIFIED_SERVICE'}]}},
        {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true},
        {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
@@ -140,10 +140,41 @@ try {
         const visible=rows.filter(e=>r(e).top>=contentTop-1&&r(e).bottom<=Math.min(r(body).bottom,r(panel).bottom)+1);
         const search=document.querySelector('.topbar>.station-search'),ss=getComputedStyle(search),topbar=document.querySelector('.topbar');return {search:{...rect(search),left:r(search).left,right:r(search).right,position:ss.position,computedTop:ss.top,transform:ss.transform,translate:ss.translate},topbar:{...rect(topbar),left:r(topbar).left,transform:getComputedStyle(topbar).transform,translate:getComputedStyle(topbar).translate},actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
       })()`);
+
+      if(!baseline && width < 480) {
+        const rows=await evaluate(`(() => [...document.querySelectorAll('.station-card .board-row-summary')].slice(0,6).map(row => {
+          const service=row.querySelector('.board-service');
+          const number=service?.querySelector('b');
+          const destination=row.querySelector('.board-destination');
+          const r=e=>e?.getBoundingClientRect();
+          return {train:number?.textContent,serviceRight:r(service)?.right,numberRight:r(number)?.right,destinationLeft:r(destination)?.left,
+            serviceOverflow:service?.scrollWidth-(service?.clientWidth??0),
+            destinationOverflow:destination?.scrollWidth-(destination?.clientWidth??0)};
+        }))()`);
+        for(const row of rows) {
+          assert.ok(row.serviceRight <= row.destinationLeft-3,
+            `${width}-${theme}-${state} number and destination must never overlap: ${JSON.stringify(row)}`);
+          assert.ok(row.serviceOverflow <= 1,
+            `${width}-${theme}-${state} train number must remain inside its grid column: ${JSON.stringify(row)}`);
+          assert.ok(row.destinationOverflow <= 1,
+            `${width}-${theme}-${state} destination must not overflow its column: ${JSON.stringify(row)}`);
+        }
+      }
       const name=`${width}-${theme}-${state}`;
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=130,name+' chrome');if(state==='half')assert.ok(measure.visibleRows>=4,name+' visible rows');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
+      if(!baseline && width===390 && state==='expanded' && theme==='light') {
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(280);
+        const collapsed=await evaluate(`(() => {const p=document.querySelector('.station-card').getBoundingClientRect();const h=document.querySelector('.station-sheet-header').getBoundingClientRect();return {height:p.height,header:h.height,content:getComputedStyle(document.querySelector('.station-card .panel-body')).display,state:document.querySelector('.app-shell').dataset.mobileSheet};})()`);
+        assert.equal(collapsed.state,'collapsed','Station drawer close/collapse action must update state');
+        assert.ok(collapsed.height<=68 && collapsed.header<=68,'Collapsed drawer must not display the blank 100px sheet: '+JSON.stringify(collapsed));
+        assert.equal(collapsed.content,'none','Collapsed drawer must keep timetable content hidden');
+        await screenshot('390-light-station-collapsed-compact');
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(260);
+      }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
         const occlusion=await evaluate(`(() => {const tabs=document.querySelector('.station-section-tabs'),r=tabs.getBoundingClientRect();const h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {tabsHit:tabs.contains(h),position:getComputedStyle(tabs).position};})()`);
@@ -152,6 +183,15 @@ try {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       }
       if(!baseline&&width===390&&state==='half') {
+        // V58: preset selection is an actual React action, not only a visual pill.
+        assert.equal(await evaluate("document.querySelectorAll('.board-quick-views button').length"),4,'All four quick views must be rendered');
+        await click('.board-quick-views button[data-quick-view="upcoming"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=upcoming]').getAttribute('aria-pressed')"),'true','Upcoming view must select the 60-minute window');
+        await click('.board-quick-views button[data-quick-view="canceled"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=canceled]').getAttribute('aria-pressed')"),'true','Cancellation view must activate');
+        await click('.board-quick-views button[data-quick-view="all"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=all]').getAttribute('aria-pressed')"),'true','All view must restore the default state');
+        await screenshot('390-railglass-quick-views');
         await click('.board-filter-toggle');await pause(350);
         await screenshot(`${width}-${theme}-half-filters`);
         const filterPosition=await evaluate(`(() => {
@@ -191,9 +231,22 @@ try {
       }
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
       assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
-      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-affected .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-watch-lines .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await screenshot(`${width}-${theme}-incidents`);
+      if(width===390&&theme==='light'){
+        // Bookmarked rail lines are a real mobile interaction, not a decorative chip.
+        await evaluate("document.querySelector('.incidents-watch-lines button:last-child').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-lines button:last-child');
+        assert.equal(await evaluate("document.querySelector('.incidents-watch-lines button:last-child').getAttribute('aria-pressed')"),'true','Line watch must respond to touch');
+        await evaluate("document.querySelector('.incidents-watch-selected button').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Watched-line filter must narrow the results');
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Resetting watch-only view must recover all reports');
+        await screenshot('390-light-incidents-bookmarks');
+      }
+
       if(width===390&&theme==='light'){
         // A frozen, anonymous DOM capture for design comparison. Keep real rendered
         // markup/styles; remove scripts so the visual tool cannot start live polling.
@@ -225,6 +278,18 @@ try {
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Line search should find arrival notices');
       assert.match(await evaluate("document.querySelector('.incident-card h3').textContent"),/Signalstörung/);
       await screenshot(`${width}-${theme}-incidents-search`);
+      if(width===390&&theme==='light'){
+        // Check composability on a real controlled React select (category + search + line).
+        assert.deepEqual(await evaluate("Array.from(document.querySelector('.incidents-tools select').options).map(o=>o.value)"),['all','ICE 1205','RE1','S7']);
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='RE1';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),0,'Line focus must combine with S7 search without showing unrelated notices');
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='all';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Clearing line focus must restore search results');
+        await screenshot('390-light-incidents-line-focus');
+      }
+
       incidentFixtureMode=false;
       await click('#station-tab-live');
     }

@@ -329,10 +329,10 @@ try {
   }
   if (useJourneyFixture) {
     await tap('.journey-alternatives summary');
-    await tap('.journey-alternatives>div>button:first-child');
+    await tap('.journey-alternatives>div:last-child>button:first-child');
     if (!await evaluate(`[document.querySelector('.mobile-sheet-summary'),document.querySelector('.live-journey-leg header')].some(el=>el?.textContent.includes('ICE 1207'))`)) throw new Error('Alternative wird nicht gemeinsam ausgewählt');
     await tap('.journey-alternatives summary');
-    await tap('.journey-alternatives>div>button:first-child');
+    await tap('.journey-alternatives>div:last-child>button:first-child');
     if (await evaluate(`Array.from(document.querySelectorAll('.live-journey-leg')).some(el=>el.scrollWidth>el.clientWidth+1)`)) throw new Error('Fahrtdetails werden horizontal abgeschnitten');
   }
 

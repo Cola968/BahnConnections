@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "57.0.0",
+  "version": "58.0.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -23,11 +23,14 @@
     "audit:billing": "node scripts/billing-audit.mjs",
     "audit:planner": "node scripts/planner-logic-audit.mjs",
     "audit:release": "node scripts/release-readiness-audit.mjs",
+    "audit:play-hosting": "node scripts/play-hosting-audit.mjs",
+    "smoke:play-start": "node scripts/play-hosting-smoke.mjs",
     "audit:v56": "node scripts/v56-regression-audit.mjs",
     "audit:arrival": "node scripts/arrival-countdown-audit.mjs",
     "audit:links": "node scripts/planner-link-audit.mjs",
     "audit:input": "node scripts/api-input-audit.mjs",
     "audit:surfaces": "node scripts/v56-product-surface-audit.mjs",
+    "audit:railglass": "node scripts/v58-railglass-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)"

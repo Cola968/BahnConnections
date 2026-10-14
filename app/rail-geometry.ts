@@ -34,3 +34,35 @@ export function splitRailGeometry(points: RailPoint[], maximumGapKm = 2): RailPo
 export function railGeometryLengthKm(segments: RailPoint[][]) {
   return segments.reduce((total, segment) => total + segment.slice(1).reduce((sum, point, index) => sum + railDistanceKm(segment[index], point), 0), 0);
 }
+
+/**
+ * Visual-only joins for successive portions of ONE known service/route.
+ * Track geometry remains split: these links are NOT evidence of a surveyed rail
+ * alignment and must be drawn with a distinct dashed style and explanation.
+ * A small maximum prevents fictitious city-to-city shortcuts.
+ */
+export function railContinuityLinks(
+  segments: readonly (readonly RailPoint[])[],
+  maximumInferredGapKm = 15,
+): RailPoint[][] {
+  if (!Number.isFinite(maximumInferredGapKm) || maximumInferredGapKm <= 0) return [];
+  const maximum = Math.min(maximumInferredGapKm, 15);
+  const links: RailPoint[][] = [];
+  const valid = (point: RailPoint | undefined): point is RailPoint =>
+    Array.isArray(point) && point.length === 2 && Number.isFinite(point[0]) &&
+    Number.isFinite(point[1]) && Math.abs(point[0]) <= 90 && Math.abs(point[1]) <= 180;
+
+  for (let i = 1; i < segments.length; i++) {
+    const before = segments[i - 1];
+    const after = segments[i];
+    if (before.length < 2 || after.length < 2) continue;
+    const start = before.at(-1);
+    const end = after[0];
+    if (!valid(start) || !valid(end)) continue;
+    const distance = railDistanceKm(start, end);
+    if (distance > 0.035 && distance <= maximum) {
+      links.push([[start[0], start[1]], [end[0], end[1]]]);
+    }
+  }
+  return links;
+}

@@ -27,10 +27,26 @@ import "./styles/v56-feature-polish.css";
 import "./styles/v56-travel-tools.css";
 import "./styles/v56-1-interactions.css";
 import "./styles/v57-station-radar.css";
+import "./styles/v57-2-turnaround.css";
+import "./styles/v58-liquid-relaunch.css";
+import "./styles/v58-mobile-sheet-repair.css";
+import "./styles/v58-mobile-layout-hotfix.css";
 import { PwaRegister } from "./pwa-register";
+import { BrowserChrome } from "./browser-chrome";
+
+// Keep preview, installed PWA and future Play Store origins aligned with the real host.
+// Without an explicit HTTPS origin, framework metadata should use the request host.
+const configuredAppOrigin=process.env.NEXT_PUBLIC_APP_ORIGIN;
+const configuredMetadataBase=(()=>{
+ if(!configuredAppOrigin)return undefined;
+ try{
+  const url=new URL(configuredAppOrigin);
+  return url.protocol==="https:"&&!url.username&&!url.password&&url.pathname==="/"&&!url.search&&!url.hash?url:undefined;
+ }catch{return undefined;}
+})();
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bahnconnections-de.a-stad.chatgpt.site"),
+  metadataBase: configuredMetadataBase,
   title: "BahnConnections – Bahnnetz, Live-Züge & Bahnhofstafeln",
   description: "Interaktive Bahnkarte mit exakten Fahrtverläufen, Live-Abfahrten und vollständigen Halten für Fernverkehr, Regio, S- und U-Bahn.",
   manifest: "/manifest.webmanifest",
@@ -59,5 +75,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body>{children}<PwaRegister /></body></html>;
+  return <html lang="de"><body>{children}<PwaRegister /><BrowserChrome /></body></html>;
 }

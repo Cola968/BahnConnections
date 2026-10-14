@@ -1,0 +1,30 @@
+name: Google Play app launch smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_origin:
+        description: "Actual deployed HTTPS worker or custom app origin (never the Render free URL)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  play-hosting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit:play-hosting
+      - name: Verify deployed Android/PWA launch origin
+        env:
+          BAHNCONNECTIONS_PLAY_ORIGIN: ${{ inputs.app_origin }}
+        run: pnpm smoke:play-start
