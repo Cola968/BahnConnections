@@ -191,9 +191,22 @@ try {
       }
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
       assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
-      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-affected .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-watch-lines .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await screenshot(`${width}-${theme}-incidents`);
+      if(width===390&&theme==='light'){
+        // Bookmarked rail lines are a real mobile interaction, not a decorative chip.
+        await evaluate("document.querySelector('.incidents-watch-lines button:last-child').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-lines button:last-child');
+        assert.equal(await evaluate("document.querySelector('.incidents-watch-lines button:last-child').getAttribute('aria-pressed')"),'true','Line watch must respond to touch');
+        await evaluate("document.querySelector('.incidents-watch-selected button').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Watched-line filter must narrow the results');
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Resetting watch-only view must recover all reports');
+        await screenshot('390-light-incidents-bookmarks');
+      }
+
       if(width===390&&theme==='light'){
         // A frozen, anonymous DOM capture for design comparison. Keep real rendered
         // markup/styles; remove scripts so the visual tool cannot start live polling.
