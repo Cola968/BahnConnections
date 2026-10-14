@@ -45,7 +45,7 @@ export function combineStationCallResults(
 
 export async function fetchStationCallSnapshot(station:Station,signal:AbortSignal){
   const id=await requireTransitousStopId(station,signal);
-  const time=new Date(Date.now()-6*60*60_000).toISOString();
+  const time=new Date(Date.now()-45*60_000).toISOString();
   const fetchBoard=async(kind:'arrival'|'departure')=>{
     const query=new URLSearchParams({kind,time,n:'5000',verify:'0'});
     const response=await fetch(`/api/stations/${encodeURIComponent(id)}/board?${query}`,{signal:AbortSignal.any([signal,AbortSignal.timeout(20_000)]),cache:'no-store'});
