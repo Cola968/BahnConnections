@@ -1,3 +1,13 @@
+# V57.2 · Kehrtwende: Linienfokus und zuverlässige Störungsinformationen
+
+- **Daten zuerst:** V57.1-Anbieterfix für MOTIS-v6-Störungsdaten und ergänzende VBB-/DB-Bahnhofshinweise mit echten Quell- und Teilfehleranzeigen übernommen.
+- **Betroffene Linie gezielt auswählen:** Linienfilter aus tatsächlich gemeldeten Linien, ohne allgemeine Bahnhofshinweise fälschlich einer Bahnlinie zuzuordnen.
+- **Sortieren statt suchen müssen:** Meldungen nach Standardgewichtung, planmäßiger Zeit oder Zuglinie ordnen; Kategorien, Suchtext und Linienfilter kombinieren.
+- **Meldung kopieren:** Den vollständigen verfügbaren Störungstext mit Linien- und Fahrtrichtungsangaben aus dem geöffneten Hinweis übernehmen. Gerät ohne Clipboard-Zugriff zeigt transparente Fehlermeldung.
+- **Eindeutigere Ausfälle:** Hinweise wie „Fahrt fällt aus wegen Bauarbeiten“ werden als Ausfall und nicht als reine Baustelle eingeordnet.
+- **UI-Korrekturen:** Mobile Filterfelder, 44-Pixel-Touchziele, Tastaturfokus, Kontrastmodus und reduzierte Animationen.
+- **Sicherheit:** Die Funktion erfindet keine Echtzeitdaten und behauptet bei leerer Quellantwort keine Netz-Störungsfreiheit. Reale Android-/PWA-Tests bleiben erforderlich.
+
 # V57.1 · Störungsmeldungen wieder sichtbar
 
 - Aktuelles Transitous-Datenformat und Hinweise an Bahnhofshalten korrekt eingelesen.
