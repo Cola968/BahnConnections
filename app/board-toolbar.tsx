@@ -25,7 +25,7 @@ export function BoardToolbar({ mode, onMode, filtersOpen, filtersActive, onFilte
 
     </div>
     <div className="board-quick-views" role="group" aria-label="Schnellfilter der Bahnhofstafel">
-      {([["upcoming","Nächste Stunde"],["delayed","Verspätet"],["canceled","Ausfälle"],["all","Alle Fahrten"]] as const).map(([id,label])=><button type="button" key={id} data-quick-view={id} aria-pressed={quickView===id} className={quickView===id?"active":""} onClick={()=>onQuickView(id)}>{label}</button>)}
+      {([["upcoming","1 Std.","Nächste Stunde"],["delayed","Verspätet","Verspätete Fahrten"],["canceled","Ausfälle","Ausgefallene Fahrten"],["all","Alle","Alle Fahrten"]] as const).map(([id,label,description])=><button type="button" key={id} data-quick-view={id} aria-label={description} title={description} aria-pressed={quickView===id} className={quickView===id?"active":""} onClick={()=>onQuickView(id)}>{label}</button>)}
     </div>
   </div>;
 }
