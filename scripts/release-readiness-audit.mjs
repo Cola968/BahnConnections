@@ -19,6 +19,12 @@ try {
 
 const worker = read("public/sw.js");
 const changelog = read("CHANGELOG.md");
+const packageJson = JSON.parse(read("package.json"));
+const releasePage = read("app/changelog/page.tsx");
+verify(!version || packageJson.version === `${version}.0`, "package.json version must match APP_VERSION (major.minor.patch).");
+verify(!version || releasePage.includes(`{version:"V${version}",`), "App release history must include the currently deployed version.");
+verify(!version || new RegExp(`\\{version:"V${version.replaceAll(".", "\\.")}",[^\\n]*current:true`).test(releasePage), "Only the current published version must be marked as current in changelog UI.");
+verify((releasePage.match(/current:true/g)??[]).length === 1, "Release history must have exactly one current version.");
 const manifest = read("app/manifest.ts");
 const layout = read("app/layout.tsx");
 verify(!layout.includes('new URL("https://bahnconnections-de.a-stad.chatgpt.site")'), "App metadata must not hard-code the deprecated Sites host for Play builds.");
