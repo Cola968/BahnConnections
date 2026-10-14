@@ -152,6 +152,15 @@ try {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       }
       if(!baseline&&width===390&&state==='half') {
+        // V58: preset selection is an actual React action, not only a visual pill.
+        assert.equal(await evaluate("document.querySelectorAll('.board-quick-views button').length"),4,'All four quick views must be rendered');
+        await click('.board-quick-views button[data-quick-view="upcoming"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view="upcoming"]').getAttribute('aria-pressed')"),'true','Upcoming view must select the 60-minute window');
+        await click('.board-quick-views button[data-quick-view="canceled"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view="canceled"]').getAttribute('aria-pressed')"),'true','Cancellation view must activate');
+        await click('.board-quick-views button[data-quick-view="all"]');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view="all"]').getAttribute('aria-pressed')"),'true','All view must restore the default state');
+        await screenshot('390-railglass-quick-views');
         await click('.board-filter-toggle');await pause(350);
         await screenshot(`${width}-${theme}-half-filters`);
         const filterPosition=await evaluate(`(() => {
