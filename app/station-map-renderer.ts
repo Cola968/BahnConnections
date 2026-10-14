@@ -1,6 +1,6 @@
 import type * as Leaflet from 'leaflet';
 import type { BoardMapTrip } from './live-board';
-import { splitRailGeometry } from './rail-geometry';
+import { railContinuityLinks, splitRailGeometry } from './rail-geometry';
 import { serviceColors } from './transit-style';
 
 /** Append new previews in small frames. Already drawn lines survive every batch. */
@@ -30,6 +30,14 @@ export class StationMapRenderer {
         const segments=trip.previewSegments??trip.segments.flatMap(segment=>splitRailGeometry(segment));
         const color=serviceColors(trip.category,trip.color,trip.textColor,trip.name,this.hint).background;
         const layers:Leaflet.Layer[]=[];
+        // Data sources occasionally omit rail alignment between valid parts
+        // of the SAME journey. Display uncertainty instead of an abrupt hole.
+        for(const joining of railContinuityLinks(segments)){
+          const inferred=this.L.polyline(joining,{renderer:this.canvas,
+            color,weight:2.6,opacity:.62,dashArray:'5 7',lineCap:'round',lineJoin:'round'});
+          inferred.bindTooltip('Ungefähre Verbindung · genauer Gleisverlauf nicht verfügbar');
+          inferred.addTo(this.layer);layers.push(inferred);
+        }
         for(const segment of segments){
           const line=this.L.polyline(segment,{renderer:this.canvas,smoothFactor:1.5,
             color,weight:3.2,opacity:.8,lineCap:'round',lineJoin:'round',className:'station-trip-preview'});
