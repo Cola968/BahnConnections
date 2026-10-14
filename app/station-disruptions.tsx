@@ -7,6 +7,7 @@ import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineS
 import {UiIcon} from "./ui-icon";
 import {readPreferenceJson,writePreference} from "./local-preferences";
 import {INCIDENT_WATCH_KEY,parseIncidentWatches,toggleIncidentWatch,readIncidentWatch,filterWatchedIncidents} from "./incident-watch";
+import {formatIncidentDigest} from "./incident-digest";
 import {serviceBadgeStyle,type RailCategory} from "./transit-style";
 
 function lineCategory(line:string):RailCategory{
@@ -146,6 +147,17 @@ export function StationDisruptions({station}:{station:Station}){
   try{await navigator.clipboard.writeText(lines.join("\n"));setCopyMessage("Hinweis kopiert.");}
   catch{setCopyMessage("Kopieren nicht möglich. Bitte Geräteberechtigung prüfen.");}
  }
+ async function shareIncidentDigest(){
+  const digest=formatIncidentDigest({stationName:station.name,retrievedAt:updated,notices:visible,warning});
+  try{
+   if(navigator.share){
+    try{await navigator.share({title:"Betriebslage – "+station.name,text:digest});setCopyMessage("Betriebslage geteilt.");return;}
+    catch(error){if((error as Error)?.name==="AbortError")return;}
+   }
+   if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(digest);setCopyMessage("Gefilterte Betriebslage kopiert.");return;}
+   setCopyMessage("Teilen auf diesem Gerät nicht verfügbar.");
+  }catch{setCopyMessage("Betriebslage konnte nicht geteilt werden.");}
+ }
  const lineBadge=(line:string)=><span key={line} className="incident-line-badge" style={serviceBadgeStyle(lineCategory(line),undefined,undefined,line,station.name)}>{line}</span>;
  return <section className="station-incidents" aria-labelledby="incidents-heading">
   <header className="station-incidents-head"><div><h2 id="incidents-heading">Betriebslage</h2><p>{loaded?`${counts.all} ${counts.all===1?"Meldung":"Meldungen"} im Fahrplanfenster`:"Abfahrten & Ankünfte"}{date&&<> · Stand {date}</>}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)} disabled={state==="loading"||state==="refreshing"} aria-label="Störungsmeldungen aktualisieren" title="Aktualisieren"><UiIcon name="refresh"/></button></header>
@@ -161,6 +173,7 @@ export function StationDisruptions({station}:{station:Station}){
     <label><span>Linienfokus</span><select value={lineFocus} onChange={event=>setLineFocus(event.target.value)} aria-label="Störungslinie filtern"><option value="all">Alle betroffenen Linien</option>{affectedLines.map(line=><option key={line} value={line}>{line}</option>)}</select></label>
     <label><span>Reihenfolge</span><select value={sortOrder} onChange={event=>setSortOrder(event.target.value as RailNoticeSort)} aria-label="Meldungen sortieren"><option value="recommended">Standard</option><option value="time">Nach Uhrzeit</option><option value="line">Nach Linie</option></select></label>
    </div>
+   <div className="incidents-share-action"><button type="button" onClick={()=>void shareIncidentDigest()}><UiIcon name="copy"/> Ansicht teilen</button><span>Enthält nur geladene Hinweise und Quellstand.</span></div>
   </>}
   {state==="loading"&&<p className="incidents-state" role="status">Aktuelle Hinweise werden geladen …</p>}
   {state==="refreshing"&&<p className="incidents-refreshing" role="status">Hinweise werden im Hintergrund aktualisiert …</p>}
