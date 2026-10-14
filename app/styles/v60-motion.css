@@ -1,0 +1,90 @@
+/* V60 Motion Contract — motion communicates state and never changes transport data.
+   Single global control: system prefers-reduced-motion OR settings data-motion.
+   Avoid map canvas animation, forced flashes, z-axis/depth effects and layout shifts. */
+:root{--v60-motion-quick:120ms;--v60-motion-normal:190ms;--v60-motion-open:220ms;--v60-motion-ease:cubic-bezier(.22,1,.36,1)}
+@keyframes v60-enter {from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes v60-soft-appear {from{opacity:0}to{opacity:1}}
+@keyframes v60-dialog-in {from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.app-shell .v60-shortcuts-trigger{
+  display:inline-grid;place-items:center;min-width:44px;min-height:44px;
+  font-weight:750;font-size:1rem;cursor:pointer
+}
+.app-shell .v60-shortcuts-trigger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.v60-shortcut-backdrop{
+  position:fixed;inset:0;z-index:4000;display:grid;place-items:center;
+  padding:clamp(12px,3vw,24px);background:rgba(8,25,36,.44);
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both
+}
+.v60-shortcut-dialog{
+  box-sizing:border-box;width:min(100%,460px);max-height:min(85dvh,710px);overflow:auto;
+  border:1px solid var(--line-subtle);border-radius:24px;
+  padding:20px 22px 18px;color:var(--ink);background:var(--paper);
+  box-shadow:0 22px 60px rgba(7,29,42,.22);
+  animation:v60-dialog-in var(--v60-motion-open) var(--v60-motion-ease) both
+}
+.v60-shortcut-dialog>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.v60-shortcut-dialog header small{color:var(--muted);font-size:.77rem}
+.v60-shortcut-dialog h2{margin:5px 0 0;font-size:1.45rem;letter-spacing:-.035em}
+.v60-shortcut-dialog header button{
+  flex:none;width:44px;height:44px;display:grid;place-items:center;
+  background:var(--soft);color:var(--ink);border:1px solid var(--line-subtle);
+  border-radius:12px;font-size:1.1rem;cursor:pointer
+}
+.v60-shortcut-dialog>p{line-height:1.5;color:var(--muted);font-size:.87rem}
+.v60-shortcut-dialog dl{margin:16px 0;display:grid;gap:0}
+.v60-shortcut-dialog dl>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line-subtle)}
+.v60-shortcut-dialog dl>div:last-child{border-bottom:1px solid var(--line-subtle)}
+.v60-shortcut-dialog dt{min-width:0;font-size:.9rem}
+.v60-shortcut-dialog dd{margin:0;flex:none;text-align:right}
+.v60-shortcut-dialog kbd{display:inline-block;padding:5px 8px;border-radius:8px;
+  border:1px solid var(--line);background:var(--soft);font:600 .79rem/1.2 system-ui,sans-serif;color:var(--ink)}
+.v60-shortcut-dialog .v60-shortcut-hint{font-size:.78rem}
+.v60-shortcut-dialog button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* Scoped motion for every major workflow. Avoid animating row heights and map tiles. */
+.app-shell .station-section-tabs>button,
+.app-shell .mobile-navigation>button,
+.app-shell .desktop-navigation>button,
+.app-shell .board-quick-views>button{
+  transition:color var(--v60-motion-quick) ease,
+    background-color var(--v60-motion-normal) ease,border-color var(--v60-motion-normal) ease!important
+}
+.app-shell .board-row.open>.board-row-detail,
+.app-shell .trip-stop-panel,
+.app-shell .station-lines .line-route-detail{
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both
+}
+.app-shell :is(.map-filters-v57,.simple-more-popover,.board-filter-panel){
+  animation:v60-enter var(--v60-motion-open) var(--v60-motion-ease) both
+}
+.app-shell :is(.station-line-row,.incident-card,.journey-alternatives button,
+.saved-route-open,.station-radar-scope button) {
+  transition:background-color var(--v60-motion-normal) ease,
+    border-color var(--v60-motion-normal) ease,box-shadow var(--v60-motion-normal) ease
+}
+/* Never flash live / late / canceled status, and never imply continuous GPS motion. */
+.app-shell :is(.board-row,.board-time,.realtime-time,.v58-map-source-pulse) {animation-duration:0ms}
+@media(max-width:1023px){
+  /* The header already contains app/install/theme/search; help stays in More on phones. */
+  .app-shell .v60-shortcuts-trigger{display:none}
+  .v60-shortcut-dialog{padding:18px;max-height:calc(100dvh - 32px);border-radius:20px}
+}
+/* User preference is as important as the system-wide accessibility setting. */
+@media(prefers-reduced-motion:reduce) {
+  .app-shell,.app-shell *, .app-shell *::before,.app-shell *::after,
+  .v60-shortcut-backdrop,.v60-shortcut-dialog{
+    animation:none!important;transition:none!important;scroll-behavior:auto!important
+  }
+}
+html[data-motion="reduced"] .app-shell,
+html[data-motion="reduced"] .app-shell *,
+html[data-motion="reduced"] .app-shell *::before,
+html[data-motion="reduced"] .app-shell *::after,
+html[data-motion="reduced"] .v60-shortcut-backdrop,
+html[data-motion="reduced"] .v60-shortcut-dialog {
+  animation:none!important;transition:none!important;scroll-behavior:auto!important
+}
+@media(forced-colors:active){
+  .v60-shortcut-dialog,.v60-shortcut-dialog header button{border:1px solid CanvasText;background:Canvas;color:CanvasText}
+}
