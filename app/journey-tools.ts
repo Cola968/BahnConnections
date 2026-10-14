@@ -1,5 +1,5 @@
 import type { LiveJourney } from './live-journey';
-import {minimumTransferBuffer} from './v60-transfer-assessment';
+import {minimumTransferBuffer} from './v60-transfer-assessment.ts';
 
 export type JourneySort='recommended'|'arrival'|'duration'|'changes'|'walking'|'transfer';
 export function journeyDateRange(journey:LiveJourney):string {
