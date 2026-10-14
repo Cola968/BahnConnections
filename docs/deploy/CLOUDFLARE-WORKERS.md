@@ -1,13 +1,13 @@
 # BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Aktueller Release-Kandidat:** [PR #71 (V57.3)](https://github.com/Cola968/BahnConnections/pull/71) – **noch nicht auf Cloudflare online**. Hier wird eine eigenständige Web-/PWA-Version vorbereitet; die ursprüngliche ChatGPT-Sites-URL bleibt unabhängig.
+**Aktueller Release-Kandidat:** [PR #74 (V60.0)](https://github.com/Cola968/BahnConnections/pull/74) auf [PR #72 (V58)](https://github.com/Cola968/BahnConnections/pull/72) – **noch nicht auf Cloudflare online**. Release-Gates stehen in der [V60.0-Checkliste](../releases/V60.0-RELEASE-CHECKLIST.md). Die ursprüngliche ChatGPT-Sites-URL bleibt unabhängig.
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
 Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token in GitHub Secrets**: Cloudflare richtet den Build-Token selbst ein. Du musst den GitHub-Zugriff einmalig im Dashboard autorisieren. Das geht auch am Smartphone.
 
-1. Zuerst die [Release-Checkliste V57.3](../releases/V57.3-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
-2. Die getestete PR #71 auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
+1. Zuerst die [Release-Checkliste V60.0](../releases/V60.0-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
+2. Zuerst den geprüften V58-PR #72 und anschließend den geprüften V60-PR #74 auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
 3. [Cloudflare Workers & Pages öffnen](https://dash.cloudflare.com/?to=/:account/workers-and-pages). **Create application → Import a repository** auswählen und GitHub verbinden.
 4. Repo **`Cola968/BahnConnections`**, Produktionsbranch **`main`**, Worker-Name **`bahnconnections-standalone`** wählen. Der Worker-Name muss mit `wrangler.jsonc` übereinstimmen.
 5. In den Einstellungen folgende Werte eintragen:
@@ -20,7 +20,7 @@ Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token 
 | Deploy command | `pnpm deploy:cloudflare` |
 
 6. **Save and Deploy** nur nach erfolgter Freigabe ausführen. Eine tatsächliche `workers.dev`-URL wird erst **nach erfolgreichem** Deployment vergeben. Die vorherige ChatGPT-Sites-URL wird dadurch nicht aktualisiert.
-7. Neue Adresse öffnen, `/version.json` auf **`"version": "57.3"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
+7. Neue Adresse öffnen, `/version.json` auf **`"version": "60.0"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
 8. Bei Bedarf in **Settings → Builds** die gewünschte Auto-Deploy-/Preview-Branch-Strategie festlegen. Ein Push auf den Produktionsbranch kann einen neuen Build und eine Veröffentlichung auslösen.
 
 Cloudflare Dokumentation: [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) und [Build Settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
@@ -37,7 +37,7 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 
 1. [Cloudflare – Account API Tokens](https://dash.cloudflare.com/?to=/:account/api-tokens) öffnen. **Create Token → Edit Cloudflare Workers** wählen. Das Token auf das eigene Cloudflare-Konto beschränken und erstellen. Hinweis: Es wird nur bei Erstellung vollständig angezeigt.
 2. In [GitHub → BahnConnections → Actions secrets](https://github.com/Cola968/BahnConnections/settings/secrets/actions) unter **New repository secret** den Namen `CLOUDFLARE_API_TOKEN` wählen und dort den Tokenwert einfügen. **Den Token niemals hier im Chat senden.**
-3. Danach kann der bestehende GitHub-Workflow `Standalone Cloudflare Workers` die App direkt über Wrangler bereitstellen, **ohne** Cloudflare „Connect GitHub“ oder die fehlerhafte Weiterleitung. Deployment bleibt bewusst an den Branch `main` und `publish=true` gebunden; der V57.3-Draft-PR muss erst mit Rechte- und QA-Abnahme freigegeben werden.
+3. Danach kann der bestehende GitHub-Workflow `Standalone Cloudflare Workers` die App direkt über Wrangler bereitstellen, **ohne** Cloudflare „Connect GitHub“ oder die fehlerhafte Weiterleitung. Deployment bleibt bewusst an den Branch `main` und `publish=true` gebunden; V58-PR #72 und V60-PR #74 müssen erst nach Rechte- und QA-Abnahme integriert werden.
 4. Erst ein echter Deployment-Erfolg (nicht der erfolgreiche Dry-Run) liefert eine funktionierende Worker-Adresse und beendet den Render-Free-Aufwachbildschirm **für die neu installierte PWA auf Cloudflare**. Bereits auf Render installierte Apps müssen von der Cloudflare-Adresse neu installiert werden.
 
 [Cloudflare-Dokumentation: GitHub Actions mit Wrangler](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
@@ -46,7 +46,7 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 ## Was bereits vorbereitet ist
 
 - Getrennter Cloudflare Worker mit `wrangler.jsonc`, `vite.cloudflare.config.ts`, `pnpm build:cloudflare` und `pnpm deploy:cloudflare`.
-- App-Version, PWA-Service-Worker-Cache, Installations-URL, Changelog und Release-Notizen sind auf **V57.3** abgestimmt.
+- App-Version, PWA-Service-Worker-Cache, Installations-URL, Changelog und Release-Notizen sind im V60-Branch auf **V60.0** abgestimmt (kein öffentlicher Deploy).
 - Die Code-Tests werden über GitHub Actions ausgeführt; Status immer für den **neuesten** PR-Commit ansehen.
 
 ## Offene Freigaben und Grenzen
