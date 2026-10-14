@@ -31,6 +31,7 @@ import "./styles/v57-2-turnaround.css";
 import "./styles/v58-liquid-relaunch.css";
 import "./styles/v58-mobile-sheet-repair.css";
 import "./styles/v58-mobile-layout-hotfix.css";
+import "./styles/v60-motion.css";
 import { PwaRegister } from "./pwa-register";
 import { BrowserChrome } from "./browser-chrome";
 
