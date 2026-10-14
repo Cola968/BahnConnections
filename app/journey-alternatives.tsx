@@ -10,7 +10,7 @@ import { compactStationLabel } from "./transit-style";
 import { JourneyTimeRange } from "./journey-time-range";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
-import { assessTransfer } from "./v60-transfer-assessment";
+import { assessTransfer,minimumTransferBuffer } from "./v60-transfer-assessment";
 
 export function JourneyAlternatives({ journeys, selected, limit, label, onSelect, onMore }: {
   journeys:LiveJourney[]; selected:LiveJourney; limit:number; label:(journey:LiveJourney, first:LiveJourney) => string;
@@ -25,7 +25,7 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
   if (!candidates.length) return null;
   return <details className="journey-alternatives">
     <summary>{disrupted?"Fahrt fällt aus · Alternativen prüfen":"Andere Verbindungen"} <span>{alternatives.length}{excluded&&excludeCancelled?` von ${candidates.length}`:""}<UiIcon name="chevron" width="16" height="16" /></span></summary>
-    <div className="v58-alternative-sort" role="group" aria-label="Andere Verbindungen sortieren">{([["recommended","Empfohlen"],["arrival","Früh ankommen"],["duration","Schnell"],["changes","Wenig Umstiege"],["walking","Wenig Fußweg"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={order===id} onClick={()=>setOrder(id)}>{label}</button>)}</div>
+    <div className="v58-alternative-sort" role="group" aria-label="Andere Verbindungen sortieren">{([["recommended","Empfohlen"],["arrival","Früh ankommen"],["duration","Schnell"],["changes","Wenig Umstiege"],["walking","Wenig Fußweg"],["transfer","Mehr Umstiegspuffer"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={order===id} onClick={()=>setOrder(id)}>{label}</button>)}</div>
     {excluded>0&&<label className="v60-alternative-available"><input type="checkbox" checked={excludeCancelled} onChange={event=>setExcludeCancelled(event.target.checked)}/> Nur Verbindungen ohne gemeldeten Ausfall ({excluded} ausgeblendet)</label>}
     {!alternatives.length&&<p className="v60-alternative-empty">Keine Alternative ohne gemeldeten Ausfall in dieser Auswahl. Mit dem Schalter kannst du auch ausgefallene Vorschläge anzeigen.</p>}
     <div>{alternatives.slice(0,limit).map(journey => <button type="button" key={journey.id} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onSelect(journey); }}>
@@ -34,6 +34,7 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
       <JourneyTimeRange journey={journey} />
       <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
       <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}</small>
+      {journey.transitLegs.length>1&&<small>{minimumTransferBuffer(journey)===null?"Umstiegspuffer nicht berechenbar":`Kleinster Umstiegspuffer: ${minimumTransferBuffer(journey)} Min. · einschließlich Fußweg, kein garantierter Anschluss`}</small>}
       <small>{walkingMinutes(journey)} Min. Fußweg · {Math.round((journey.durationSeconds-selected.durationSeconds)/60)>0?'+':''}{Math.round((journey.durationSeconds-selected.durationSeconds)/60)} Min. gegenüber Auswahl{journey.cancelled?' · Ausfall':''}</small>
     </button>)}{alternatives.length > limit && <button type="button" className="journey-more" onClick={onMore}>Weitere Verbindungen anzeigen</button>}</div>
   </details>;
