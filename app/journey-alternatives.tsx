@@ -10,7 +10,7 @@ import { compactStationLabel } from "./transit-style";
 import { JourneyTimeRange } from "./journey-time-range";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
-import { assessTransfer,minimumTransferBuffer } from "./v60-transfer-assessment.ts";
+import { assessTransfer,assessJourneyTransfers,minimumTransferBuffer } from "./v60-transfer-assessment.ts";
 
 export function JourneyAlternatives({ journeys, selected, limit, label, onSelect, onMore }: {
   journeys:LiveJourney[]; selected:LiveJourney; limit:number; label:(journey:LiveJourney, first:LiveJourney) => string;
@@ -34,7 +34,7 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
       <JourneyTimeRange journey={journey} />
       <small>{formatDuration(Math.round(journey.durationSeconds / 60))} · {journey.transfers ? `${journey.transfers} Umstieg${journey.transfers > 1 ? "e" : ""}` : "Direkt"}</small>
       <small>{journey.transitLegs.map(leg => leg.name).join(" · ")}</small>
-      {journey.transitLegs.length>1&&<small>{minimumTransferBuffer(journey)===null?"Umstiegszeit nicht berechenbar":`Kleinste Umstiegszeit: ${minimumTransferBuffer(journey)} Min. ${assessTransfer(journey,0).walkProvided?"(gemeldeter Fußweg abgezogen)":"(Gleisweg nicht vollständig bekannt)"} · kein garantierter Anschluss`}</small>}
+      {journey.transitLegs.length>1&&<small>{minimumTransferBuffer(journey)===null?"Umstiegszeit nicht berechenbar":`Kleinste Umstiegszeit: ${minimumTransferBuffer(journey)} Min. ${assessJourneyTransfers(journey).every(transfer=>transfer.walkProvided)?"(gemeldete Fußwege abgezogen)":"(mindestens ein Gleisweg nicht bekannt)"} · kein garantierter Anschluss`}</small>}
       <small>{walkingMinutes(journey)} Min. Fußweg · {Math.round((journey.durationSeconds-selected.durationSeconds)/60)>0?'+':''}{Math.round((journey.durationSeconds-selected.durationSeconds)/60)} Min. gegenüber Auswahl{journey.cancelled?' · Ausfall':''}</small>
     </button>)}{alternatives.length > limit && <button type="button" className="journey-more" onClick={onMore}>Weitere Verbindungen anzeigen</button>}</div>
   </details>;
