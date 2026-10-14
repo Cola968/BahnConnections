@@ -1,3 +1,11 @@
+# V57.1 · Störungsmeldungen wieder sichtbar
+
+- Aktuelles Transitous-Datenformat und Hinweise an Bahnhofshalten korrekt eingelesen.
+- Deutsche Bahnhofsmeldungen durch VBB-/DB-Daten ergänzt; Quellenfehler bleiben sichtbar.
+- Tafel und Reiseplanung zeigen bislang verworfene Hinweise.
+- Teilausfälle korrekt unter Ausfälle; Bahnhofshinweise markieren nicht pauschal alle Linien.
+- PWA-Update und Service-Worker-Cache auf V57.1 abgestimmt.
+
 # V57.0 · Bahnhofsradar, vollständige Zugverläufe und mobile Störungsansicht
 
 - Radar auf bestätigte Halte am ausgewählten Bahnhof begrenzt, mit Alle/Ankommend/Abgehend.

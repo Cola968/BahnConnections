@@ -1,7 +1,13 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V57.0",date:"13. Oktober 2026 · Beta",current:true,lead:"Dein Bahnhof, der ganze Zugverlauf und eine ruhigere mobile Ansicht.",tags:["Bahnhofsradar","Störungen","Mobile"],changes:[
+ {version:"V57.1",date:"13. Oktober 2026 · Beta",current:true,lead:"Störungsmeldungen werden zuverlässig eingelesen und um weitere Bahnhofshinweise ergänzt.",tags:["Störungen","Fehlerkorrekturen"],changes:[
+  ["Meldungen wieder sichtbar","Aktuelles Transitous-Datenformat und Hinweise am Bahnhofshalt korrekt verarbeitet."],
+  ["Weitere Datenquellen","Deutsche Bahnhofsmeldungen werden durch VBB beziehungsweise DB transport.rest ergänzt. Unvollständige Quellen bleiben erkennbar."],
+  ["Korrekte Zuordnung","Teilausfälle erscheinen unter Ausfälle; allgemeine Aufzugshinweise markieren nicht alle Linien als gestört."],
+  ["Hinweise in allen Ansichten","Tafel und Reiseplanung zeigen zuvor verworfene Meldungen. Updatekennung und Cache sind auf V57.1 abgestimmt."]
+ ]},
+ {version:"V57.0",date:"13. Oktober 2026 · Beta",current:false,lead:"Dein Bahnhof, der ganze Zugverlauf und eine ruhigere mobile Ansicht.",tags:["Bahnhofsradar","Störungen","Mobile"],changes:[
   ["Nur passende Züge","Der Radar zeigt bestätigte Bahnhofshalte. Alle, Ankommend oder Abgehend direkt auswählen."],
   ["Vom Start bis zum Ziel","Vollständige Fahrt mit allen gemeldeten Halten, nächstem Halt und Zielankunft."],
   ["Klarere Kartenmarker","Kleine Bahnsymbole, passende Verkehrsmittelfarben und genau ein Richtungspfeil vor dem Zug."],

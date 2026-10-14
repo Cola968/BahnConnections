@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -55,8 +55,8 @@ function incidentTimetable(requestUrl){
   const scheduled=new Date(Date.now()+30*60_000).toISOString();
   const place=kind==='arrival'?{arrival:when,scheduledArrival:scheduled}:{departure:when,scheduledDeparture:scheduled};
   return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
-    ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
-    : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
+    ? [{tripId:'qa-inc-s7',displayName:'S7',place:{...place,alerts:[{headerText:'Signalstörung an der Stadtbahn',descriptionText:'Züge fahren mit Verspätung.',effect:'SIGNIFICANT_DELAYS'}]}}]
+    : [{tripId:'qa-inc-re1',displayName:'RE1',place:{...place,alerts:[{headerText:'Bauarbeiten zwischen Berlin und Potsdam',descriptionText:'Ersatzverkehr im betroffenen Abschnitt.',effect:'MODIFIED_SERVICE'}]}},
        {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true},
        {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};

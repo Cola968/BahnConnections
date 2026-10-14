@@ -33,6 +33,7 @@ jobs:
       - run: pnpm audit:links
       - run: pnpm audit:input
       - run: pnpm audit:surfaces
+      - run: node scripts/disruption-provider-audit.mjs
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
