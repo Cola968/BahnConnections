@@ -752,7 +752,7 @@ try {
     }
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
     await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
-    if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
+    await waitFor(`!document.querySelector('.settings-dialog[open]')`,'Escape failed to close native settings dialog');
     profileChecks.push({width,saved:true,settings:true,plannedBilling:true,noOverflow:true});
   }
   for(const width of [320,390,1440]) {
