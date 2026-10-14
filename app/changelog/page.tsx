@@ -1,7 +1,28 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V57.0",date:"13. Oktober 2026 · Beta",current:true,lead:"Dein Bahnhof, der ganze Zugverlauf und eine ruhigere mobile Ansicht.",tags:["Bahnhofsradar","Störungen","Mobile"],changes:[
+ {version:"V57.3",date:"14. Oktober 2026 · Beta",current:true,lead:"Meine Linien, eine ehrliche Datenqualität und Betriebslagen, die sich direkt teilen lassen.",tags:["Meine Linien","Echtzeitklarheit","Teilen","Mobile"],changes:[
+  ["Meine Linien","Störungsmeldungen gezielt auf gemerkte Linien eingrenzen. Auswahl bleibt nur lokal auf deinem Gerät."],
+  ["Datenqualität statt falschem Live","Echtzeitabdeckung, letzte Abfrage und Quellenhinweise auf der Bahnhof-Infoseite."],
+  ["Station teilen","Bei unterstützten Bahnhöfen einen direkt öffnenden Link versenden oder kopieren."],
+  ["Betriebslage teilen","Gefilterte Störungsmeldungen mit Abrufzeit und klarer Quelleneinschränkung übergeben."],
+  ["Kategorien korrekt","Baustellen und bauarbeitsbedingte Zugausfälle sauber unterscheiden; Station-Status nicht aus veralteten Prognosen ableiten."],
+  ["Mobil überarbeitet","Lesbare Filter, größere Touchflächen und klarere Zustandsmeldungen."]
+ ]},
+ {version:"V57.2",date:"14. Oktober 2026 · Beta",current:false,lead:"Linienbezogene Meldungen, bessere Filter und mehr Klarheit bei Betriebsstörungen.",tags:["Störungen","Datenqualität","Mobile"],changes:[
+  ["Linienfokus","Gemeldete Linien einzeln auswählen. Allgemeine Bahnhofshinweise werden nicht fälschlich einer Linie zugeschrieben."],
+  ["Chronologisch sortieren","Meldungen nach Uhrzeit oder Linie ordnen und zugleich Kategorien und Suchbegriffe verwenden."],
+  ["Meldungen kopieren","Wichtige Details zu Störungen, Richtung und betroffenen Linien einfach übernehmen."],
+  ["Zuverlässigere Ausfallmeldung","Teilausfälle und bauarbeitsbedingte Zugausfälle werden korrekt als Ausfälle eingeordnet."],
+  ["Für kleine Displays","Tastaturfreundliche mobile Felder, bessere Touchflächen und Reduktion unnötiger Animationen."]
+ ]},
+ {version:"V57.1",date:"13. Oktober 2026 · Beta",current:false,lead:"Störungsmeldungen werden zuverlässig eingelesen und um weitere Bahnhofshinweise ergänzt.",tags:["Störungen","Fehlerkorrekturen"],changes:[
+  ["Meldungen wieder sichtbar","Aktuelles Transitous-Datenformat und Hinweise am Bahnhofshalt korrekt verarbeitet."],
+  ["Weitere Datenquellen","Deutsche Bahnhofsmeldungen werden durch VBB beziehungsweise DB transport.rest ergänzt. Unvollständige Quellen bleiben erkennbar."],
+  ["Korrekte Zuordnung","Teilausfälle erscheinen unter Ausfälle; allgemeine Aufzugshinweise markieren nicht alle Linien als gestört."],
+  ["Hinweise in allen Ansichten","Tafel und Reiseplanung zeigen zuvor verworfene Meldungen. Updatekennung und Cache sind auf V57.1 abgestimmt."]
+ ]},
+ {version:"V57.0",date:"13. Oktober 2026 · Beta",current:false,lead:"Dein Bahnhof, der ganze Zugverlauf und eine ruhigere mobile Ansicht.",tags:["Bahnhofsradar","Störungen","Mobile"],changes:[
   ["Nur passende Züge","Der Radar zeigt bestätigte Bahnhofshalte. Alle, Ankommend oder Abgehend direkt auswählen."],
   ["Vom Start bis zum Ziel","Vollständige Fahrt mit allen gemeldeten Halten, nächstem Halt und Zielankunft."],
   ["Klarere Kartenmarker","Kleine Bahnsymbole, passende Verkehrsmittelfarben und genau ein Richtungspfeil vor dem Zug."],

@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -55,8 +55,8 @@ function incidentTimetable(requestUrl){
   const scheduled=new Date(Date.now()+30*60_000).toISOString();
   const place=kind==='arrival'?{arrival:when,scheduledArrival:scheduled}:{departure:when,scheduledDeparture:scheduled};
   return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
-    ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
-    : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
+    ? [{tripId:'qa-inc-s7',displayName:'S7',place:{...place,alerts:[{headerText:'Signalstörung an der Stadtbahn',descriptionText:'Züge fahren mit Verspätung.',effect:'SIGNIFICANT_DELAYS'}]}}]
+    : [{tripId:'qa-inc-re1',displayName:'RE1',place:{...place,alerts:[{headerText:'Bauarbeiten zwischen Berlin und Potsdam',descriptionText:'Ersatzverkehr im betroffenen Abschnitt.',effect:'MODIFIED_SERVICE'}]}},
        {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true},
        {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
@@ -191,9 +191,22 @@ try {
       }
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
       assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
-      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-affected .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-watch-lines .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await screenshot(`${width}-${theme}-incidents`);
+      if(width===390&&theme==='light'){
+        // Bookmarked rail lines are a real mobile interaction, not a decorative chip.
+        await evaluate("document.querySelector('.incidents-watch-lines button:last-child').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-lines button:last-child');
+        assert.equal(await evaluate("document.querySelector('.incidents-watch-lines button:last-child').getAttribute('aria-pressed')"),'true','Line watch must respond to touch');
+        await evaluate("document.querySelector('.incidents-watch-selected button').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Watched-line filter must narrow the results');
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Resetting watch-only view must recover all reports');
+        await screenshot('390-light-incidents-bookmarks');
+      }
+
       if(width===390&&theme==='light'){
         // A frozen, anonymous DOM capture for design comparison. Keep real rendered
         // markup/styles; remove scripts so the visual tool cannot start live polling.
@@ -225,6 +238,18 @@ try {
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Line search should find arrival notices');
       assert.match(await evaluate("document.querySelector('.incident-card h3').textContent"),/Signalstörung/);
       await screenshot(`${width}-${theme}-incidents-search`);
+      if(width===390&&theme==='light'){
+        // Check composability on a real controlled React select (category + search + line).
+        assert.deepEqual(await evaluate("Array.from(document.querySelector('.incidents-tools select').options).map(o=>o.value)"),['all','ICE 1205','RE1','S7']);
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='RE1';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),0,'Line focus must combine with S7 search without showing unrelated notices');
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='all';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Clearing line focus must restore search results');
+        await screenshot('390-light-incidents-line-focus');
+      }
+
       incidentFixtureMode=false;
       await click('#station-tab-live');
     }

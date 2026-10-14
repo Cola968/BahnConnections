@@ -19,6 +19,7 @@ import { journeyDateRange } from "./journey-tools";
 import { NetworkNotice } from "./network-notice";
 import { realtimeTooltip } from "./realtime-tooltip";
 import { readPreference, readPreferenceJson, readPreferenceIds } from "./local-preferences";
+import {stationCondition} from "./board-health";
 import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
@@ -205,6 +206,7 @@ export default function Home() {
   const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>([]);
   const [routeSaveMessage,setRouteSaveMessage]=useState("");
   const [shareMessage,setShareMessage]=useState("");
+  const [stationShareStatus,setStationShareStatus]=useState<{id:string;message:string}|null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [boardOnly, setBoardOnly] = useState(false);
@@ -958,6 +960,24 @@ export default function Home() {
   }
 
 
+  async function shareStation(station:Station){
+    // Station IDs are recognized from the public deep-link router; dynamic provider
+    // IDs may not be available to a recipient until a fresh search.
+    if(station.id.startsWith("motis:")){
+      setStationShareStatus({id:station.id,message:"Dieser dynamische Bahnhof hat noch keinen dauerhaft teilbaren Link."});return;
+    }
+    const url=new URL("/",window.location.origin);
+    url.searchParams.set("station",station.id);
+    try{
+      if(navigator.share){
+       try{await navigator.share({title:station.name+" – BahnConnections",url:url.toString()});setStationShareStatus({id:station.id,message:"Bahnhof-Link geteilt."});return;}
+       catch(error){if((error as Error)?.name==="AbortError")return;}
+      }
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.toString());setStationShareStatus({id:station.id,message:"Bahnhof-Link kopiert."});return;}
+      setStationShareStatus({id:station.id,message:"Teilen auf diesem Gerät nicht verfügbar."});
+    }catch{setStationShareStatus({id:station.id,message:"Bahnhof-Link konnte nicht geteilt werden."});}
+  }
+
   function toggleFavorite(station: Station) {
     setFavoriteIds((current) => {
       const next = current.includes(station.id) ? current.filter((id) => id !== station.id) : [station.id, ...current].slice(0, 30);
@@ -1308,7 +1328,7 @@ export default function Home() {
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}><LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} /></div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
-            {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${!boardSummary ? "unknown" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "risk" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "medium" : "good"}`}><i />{!boardSummary ? "lädt" : boardSummary.canceled > 0 || boardSummary.delayed15 / Math.max(1,boardSummary.total) > .2 ? "angespannt" : boardSummary.delayed6 / Math.max(1,boardSummary.total) > .2 ? "beobachten" : "stabil"}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button></div></div>
+            {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${stationCondition(boardSummary,selected.id).tone}`}><i />{stationCondition(boardSummary,selected.id).label}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button><button type="button" className="station-share" onClick={()=>void shareStation(selected)} aria-label={"Bahnhof "+selected.name+" teilen"} disabled={selected.id.startsWith("motis:")} title={selected.id.startsWith("motis:")?"Link für diesen Bahnhof nicht verfügbar":"Bahnhof-Link teilen"}><UiIcon name="copy"/> Teilen</button></div></div>{stationShareStatus?.id===selected.id&&<p className="station-share-message" role="status">{stationShareStatus.message}</p>}
             <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus==="loading"}><UiIcon name="location"/> {walkStatus==="loading"?"Fußweg wird berechnet …":"Fußweg ab meinem Standort"}</button>{walkTargetId===selected.id&&walkStatus==="ready"&&walkRoute&&<div className="station-walk-result" role="status"><b>{Math.ceil(walkRoute.durationSeconds/60)} Min. zu Fuß · {(walkRoute.distanceMeters/1000).toLocaleString("de-DE",{maximumFractionDigits:1})} km</b><small>Route auf der Karte markiert</small><details><summary>Wegbeschreibung</summary><ol>{walkRoute.steps.map((step,i)=><li key={i}>{step.instruction} · {step.distanceMeters} m</li>)}</ol></details><button type="button" onClick={()=>{setWalkRoute(null);setWalkTargetId(null);setWalkStatus("idle");}}>Route schließen</button></div>}{walkStatus==="error"&&walkMessage&&<small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
 

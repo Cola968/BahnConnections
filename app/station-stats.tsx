@@ -1,6 +1,7 @@
 "use client";
 
 import type { BoardSummary } from "./live-board";
+import {assessBoardHealth} from "./board-health";
 import type { Station } from "./network-data";
 import type { StationLineSummary } from "./station-lines";
 
@@ -18,6 +19,7 @@ export function StationStats({ station, boardSummary, lineSummary }: {
   const validLive = board ? board.delaySamples : 0;
   const punctuality = board && validLive ? (validLive - board.delayed6) / validLive * 100 : null;
   const products = board ? Object.entries(board.products).filter(([, value]) => value > 0) : [];
+  const health=assessBoardHealth(board);
 
   return (
     <div className="station-stats">
@@ -29,6 +31,15 @@ export function StationStats({ station, boardSummary, lineSummary }: {
         <article><small>Straßenbahn-Linien</small><strong>{lines?.tram ?? "–"}</strong><span>laut aktueller Linienauskunft</span></article>
         <article><small>Fahrten / 500 Min.</small><strong>{board?.total ?? "–"}</strong><span>aktueller Tafelsnapshot</span></article>
         <article><small>Pünktlich &lt; 6 Min.</small><strong>{punctuality === null ? "–" : percent(punctuality)}</strong><span>{board ? `${board.delaySamples}/${board.total} Fahrten mit auswertbarer Prognose` : "Live-Tafel lädt"}</span></article>
+      </section>
+
+      <section className="station-health-card" aria-label="Echtzeitabdeckung und Datenqualität">
+        <div className="station-health-heading"><strong>Datenqualität</strong><span data-state={health.state}>{health.label}</span></div>
+        <p>{health.detail}</p>
+        <div className="station-health-coverage"><span>Echtzeitangaben</span><b>{health.realtimeCount} von {health.totalCount} Fahrten · {health.percentage} %</b></div>
+        <progress max={Math.max(health.totalCount,1)} value={health.realtimeCount} aria-label="Anteil der Fahrten mit Echtzeitangaben">{health.percentage}%</progress>
+        {health.sourceTime&&<p className="station-health-time">Letzter erfolgreicher Datenabruf: {new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(new Date(health.sourceTime))} Uhr</p>}
+        {health.warningCount>0&&<p className="station-health-warning" role="status">{health.warningCount} Quellenhinweis{health.warningCount>1?"e":""} vorhanden. Einzelheiten findest du an der Tafel.</p>}
       </section>
 
       <section className="station-role-card live-source-card">
