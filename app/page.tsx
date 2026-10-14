@@ -33,13 +33,13 @@ import { LiveTripInspector } from "./live-trip-inspector";
 import { TrainRadarHud } from "./train-radar-hud";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
-import { fetchLiveJourneys, journeyPoints, transferWaitMinutes, type LiveJourney, type PlannerCategory } from "./live-journey";
+import { fetchLiveJourneys, journeyPoints, type LiveJourney, type PlannerCategory } from "./live-journey";
 import { activeEstimatedPosition, matchesLiveStatus, type LiveTrainCategory, type LiveTrip } from "./live-trains";
 import { SmartSearch } from "./smart-search";
 import { buildStationImportance, NetworkStats } from "./network-stats";
 import { MOBILE_SHEET_HEIGHT_EVENT, PanelTools, usePanelControls, type MobileSheetState } from "./panel-tools";
 import { DesktopPanelResizer } from "./desktop-panel-resizer";
-import { occupancyForecast } from "./occupancy";
+import { assessJourneyTransfers } from "./v60-transfer-assessment";
 import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
 import { StationMapRenderer } from "./station-map-renderer";
@@ -138,20 +138,24 @@ function serviceBadgeLabel(category: PlannerCategory | "walk", name: string) {
 }
 
 function liveJourneyQuality(journey: LiveJourney) {
-  if (!journey.transfers) return { score:98, label:"Direkt", tone:"good", explanation:"Kein Fahrzeugwechsel nötig." };
-  const waits = journey.transitLegs.slice(0, -1).map((_, index) => transferWaitMinutes(journey, index) ?? 0);
-  const shortest = Math.min(...waits);
-  const realtimePenalty = journey.realtime ? 0 : 5;
-  const score = Math.max(35, Math.min(96, 84 - Math.max(0, 10 - shortest) * 4 - Math.max(0, shortest - 35) - (journey.transfers - 1) * 8 - realtimePenalty));
-  const tone = shortest < 7 ? "risk" : shortest < 12 ? "medium" : "good";
-  return { score, label:tone === "risk" ? "knapp" : tone === "medium" ? "machbar" : "komfortabel", tone, explanation:`Kürzeste Umsteigezeit ${shortest} Min. · ${journey.realtime ? "aktuelle Echtzeitlage berücksichtigt" : "derzeit ohne Echtzeitbestätigung"}.` };
+  const assessments=assessJourneyTransfers(journey);
+  if(!assessments.length)return {tone:"medium",label:"ohne Umstieg",explanation:"Kein Fahrzeugwechsel nötig."};
+  const cancelled=assessments.find(item=>item.status==="cancelled");
+  const missed=assessments.find(item=>item.status==="missed");
+  const unknown=assessments.find(item=>item.status==="unknown");
+  const shortest=assessments.filter(item=>item.bufferMinutes!==null).sort((a,b)=>a.bufferMinutes!-b.bufferMinutes!)[0];
+  if(cancelled)return {tone:"risk",label:"mit Ausfall",explanation:cancelled.detail};
+  if(missed)return {tone:"risk",label:"zeitlich nicht erreichbar",explanation:missed.detail};
+  if(unknown||!shortest)return {tone:"medium",label:"nicht bewertbar",explanation:"Mindestens ein Anschluss hat unvollständige Zeitangaben. Bitte prüfen."};
+  return {tone:shortest.tone,label:shortest.status==="tight"?"sehr knapp":shortest.status==="caution"?"knapp":"mit Zeitpuffer",
+    explanation:`Kleinster rechnerischer Puffer ${shortest.bufferMinutes} Min. einschließlich gemeldeter Fußwege. ${shortest.source==="realtime"?"Echtzeitprognose":shortest.source==="partial"?"Teilweise Echtzeitdaten":"Fahrplanwerte"} – kein garantierter Anschluss.`};
 }
 
 function journeyOptionLabel(option: LiveJourney, fastest?: LiveJourney) {
   if (!fastest || option.id === fastest.id) return "Schnellste";
   if (option.transfers < fastest.transfers) return "Wenig Umstiege";
-  const waits = option.transitLegs.slice(0, -1).map((_, index) => transferWaitMinutes(option, index) ?? 0);
-  if (waits.length && Math.min(...waits) >= 10) return "Robuster Umstieg";
+  const transfers=assessJourneyTransfers(option);
+  if (transfers.length&&transfers.every(item=>item.bufferMinutes!==null&&item.bufferMinutes>=10))return "Mehr Zeit zum Umsteigen";
   return "Spätere Abfahrt";
 }
 
@@ -1419,13 +1423,10 @@ export default function Home() {
             <JourneyExport key={journey.id} journey={journey}/>
             <div className="journey-legs live-legs">
               {journey.transitLegs.map((leg, index) => {
-                const forecast=occupancyForecast(leg.startTime, leg.name);
-                const wait=transferWaitMinutes(journey,index);
                 return <article className={`live-journey-leg ${serviceClass(leg.category)}${journey.transitLegs.length === 1 ? " single-leg" : ""}`} key={`${leg.tripId ?? leg.name}-${index}`}>
                   <header><span className={`service-logo ${serviceClass(leg.category)}`} style={leg.category === "walk" ? undefined : serviceBadgeStyle(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`)}>{serviceBadgeLabel(leg.category, leg.name)}</span><span><b>{leg.name}</b>{leg.headsign ? <small>Richtung {stationDisplayName(leg.headsign)}</small> : null}</span>{leg.cancelled ? <span className="leg-live-state cancel">Ausfall</span> : null}</header>
                   <div className="leg-route-line"><span><b>{stationDisplayName(leg.from.name)}</b><RealtimeTime scheduled={leg.scheduledStartTime} actual={leg.startTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.from.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.from.scheduledTrack} actual={leg.from.track} /></small></span><i aria-hidden="true">→</i><span><b>{stationDisplayName(leg.to.name)}</b><RealtimeTime scheduled={leg.scheduledEndTime} actual={leg.endTime} realtime={leg.realtime} cancelled={leg.cancelled || leg.to.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /><small><RealtimePlatform scheduled={leg.to.scheduledTrack} actual={leg.to.track} /></small></span></div>
                   <div className="leg-facts"><span>{leg.stops.length} Halte</span><span>{formatDuration(Math.round(leg.durationSeconds / 60))}</span></div>
-                  {forecast.level >= 3 && <div className={`occupancy-forecast compact level-${forecast.level}`}><b>Hohe Auslastung erwartet</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div>}
                   {leg.alerts.length > 0 && <div className="journey-alerts">{leg.alerts.slice(0,2).map((alert,alertIndex) => <p key={`${alert.header}-${alertIndex}`}><b>Hinweis:</b> {alert.header}</p>)}</div>}
                   <ol className="model-stop-list live-stop-list">{leg.stops.map((stop,stopIndex) => {
                     const actual=stop.departure ?? stop.arrival;
@@ -1435,13 +1436,13 @@ export default function Home() {
                       <RealtimeTime scheduled={planned} actual={actual} realtime={leg.realtime} cancelled={stop.cancelled || leg.cancelled} cancellationLabel={leg.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact />
                     </li>;
                   })}</ol>
-                  {wait !== null && <TransferNotice journey={journey} index={index} minutes={wait} />}
+                  {index<journey.transitLegs.length-1 && <TransferNotice journey={journey} index={index} />}
                 </article>;
               })}
             </div>
             {journey.legs.some((leg) => leg.category === "walk") && <p className="journey-walk-note">Fußwege am Start, Ziel oder beim Umstieg sind in der Gesamtdauer enthalten.</p>}
             {journeyQuality && journey.transfers > 0 && <div className={`transfer-quality ${journeyQuality.tone}`}><span><b>Umstieg {journeyQuality.label}</b><small>{journeyQuality.explanation}</small></span></div>}
-            <details className="journey-secondary-info"><summary>Reiseinformationen</summary><p>{journey.sourceLabel}{journey.updatedAt ? ` · Stand ${new Date(journey.updatedAt).toLocaleTimeString("de-DE", { hour:"2-digit", minute:"2-digit", timeZone:"Europe/Berlin" })}` : ""}</p>{journey.transitLegs.map((leg,index) => <div key={index}><b>{leg.name}</b>{leg.operator && <p>{leg.operator}</p>}<p>{leg.realtime ? "Echtzeit für diesen Fahrtabschnitt verfügbar" : "Fahrplandaten für diesen Fahrtabschnitt"}</p><p>{occupancyForecast(leg.startTime,leg.name).label} · Prognose, keine Live-Belegungsmessung</p>{leg.wheelchairAccessible && <p>Barrierefreiheit: {leg.wheelchairAccessible === "ACCESSIBLE" ? "als zugänglich gemeldet" : "Angabe des Verkehrsunternehmens: " + leg.wheelchairAccessible}</p>}</div>)}</details>
+            <details className="journey-secondary-info"><summary>Reiseinformationen</summary><p>{journey.sourceLabel}{journey.updatedAt ? ` · Stand ${new Date(journey.updatedAt).toLocaleTimeString("de-DE", { hour:"2-digit", minute:"2-digit", timeZone:"Europe/Berlin" })}` : ""}</p>{journey.transitLegs.map((leg,index) => <div key={index}><b>{leg.name}</b>{leg.operator && <p>{leg.operator}</p>}<p>{leg.realtime ? "Echtzeit für diesen Fahrtabschnitt verfügbar" : "Fahrplandaten für diesen Fahrtabschnitt"}</p><p>Belegung nicht verfügbar – für diesen Zug liegen keine bestätigten Auslastungsdaten vor.</p>{leg.wheelchairAccessible && <p>Barrierefreiheit: {leg.wheelchairAccessible === "ACCESSIBLE" ? "als zugänglich gemeldet" : "Angabe des Verkehrsunternehmens: " + leg.wheelchairAccessible}</p>}</div>)}</details>
             {journey.warnings.length > 0 && <div className="journey-source-warnings">{journey.warnings.map((warning, index) => <p key={`${warning}-${index}`}>{warning}</p>)}</div>}
           </div>
           </section>
@@ -1468,7 +1469,7 @@ export default function Home() {
             <span className="eyebrow plain">DATEN & METHODIK</span>
             <h2 id="sources-title">So liest du die Karte</h2>
             <p>BahnConnections verbindet ein kuratiertes Fernverkehrsnetz für die Übersicht mit mehr als 5.000 Personenbahnhöfen, echter aktueller Verbindungssuche, Live-Bahnhofstafeln und einer gebündelten Live-Lage.</p>
-            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung</b> ist als Prognose aus Uhrzeit, Wochentag und Zugart gekennzeichnet; die Live-Quelle liefert keine Belegungsmessung.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
+            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung:</b> Ohne gemeldete Belegungsdaten wird keine Zugauslastung behauptet. Tageszeit und Zugart reichen nicht für eine verlässliche Prognose.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
             <div className="source-links">
               <a href="https://www.bahn.de/service/fahrplaene/streckennetz" target="_blank" rel="noreferrer"><b>DB Fernverkehr</b><span>ICE/IC-Liniennetz 2026 ↗</span></a>
               <a href="https://developers.deutschebahn.com/db-api-marketplace/apis/product/stada/api/173477" target="_blank" rel="noreferrer"><b>DB InfraGO StaDa</b><span>Bahnhofs-Stammdaten ↗</span></a>
