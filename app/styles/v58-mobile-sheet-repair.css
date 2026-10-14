@@ -123,6 +123,16 @@
     margin-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
     max-width:calc(100vw - 16px);
   }
+  /* With an open sheet, the map attribution has to stay ABOVE the sheet,
+     not be obscured underneath either the sheet or the bottom tab bar. */
+  .app-shell.has-primary-panel:is([data-mobile-sheet="half"],[data-mobile-sheet="expanded"])
+    .leaflet-bottom .leaflet-control-attribution {
+    margin-bottom:calc(var(--bottom-navigation,60px) + var(--mobile-sheet-visible-height,0px) + 14px)!important;
+  }
+  .app-shell.has-primary-panel[data-mobile-sheet="collapsed"]
+    .leaflet-bottom .leaflet-control-attribution {
+    margin-bottom:calc(var(--bottom-navigation,60px) + 78px)!important;
+  }
 }
 @media (max-width:359px) {
   .app-shell .board-row-summary {
