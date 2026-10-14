@@ -10,7 +10,9 @@ for(const input of [{ctrlKey:true},{metaKey:true},{altKey:true},{repeat:true},{t
  {targetTag:"textarea"},{targetTag:"select"},{isContentEditable:true},{withinEditable:true}]){
  assert.equal(run(input),null,"Never hijack inputs or browser shortcuts: "+JSON.stringify(input));
 }
-assert.equal(resolveV60Shortcut({key:"Escape",targetTag:"input"}),"escape");
+assert.equal(resolveV60Shortcut({key:"Escape",targetTag:"input"}),null,"Escape in search must not reset the map");
+assert.equal(resolveV60Shortcut({key:"Escape",withinEditable:true}),null);
+assert.equal(resolveV60Shortcut({key:"Escape"}),"escape");
 assert.equal(resolveV60Shortcut({key:"?"}),"help");
 assert.equal(resolveV60Shortcut({key:"/"}),"search");
 assert.equal(resolveV60Shortcut({key:"s"}),"search");
@@ -44,6 +46,7 @@ assert.match(html,/\.\/styles\/v60-motion\.css/);
 assert.match(page,/V60ShortcutHelp/);
 assert.match(page,/resolveV60Shortcut/);
 assert.match(page,/runV60Shortcut/);
+assert.match(page,/getClientRects\(\)\.length>0/);
 assert.match(page,/nextRecentStations/);
 assert.match(page,/Verlauf löschen/);
 assert.match(motion,/v60-recent-stations/);
