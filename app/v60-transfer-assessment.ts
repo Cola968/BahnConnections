@@ -47,14 +47,14 @@ export function assessTransfer(journey:LiveJourney,index:number,now=Date.now()):
  if(!previous||!next)return empty();
  const walk=transferWalk(journey,previous,next);
  const walkMinutes=walk.minutes;
+ if(journey.cancelled||previous.cancelled||next.cancelled||previous.to.cancelled||next.from.cancelled){
+  return { ...empty(),walkMinutes,walkProvided:walk.provided,status:"cancelled",tone:"risk",label:"Anschluss durch Ausfall betroffen",
+   detail:"Mindestens ein betroffener Fahrtabschnitt oder Halt fällt aus. Verbindung und Alternativen prüfen." };
+ }
  if(!walk.valid||(!walk.provided&&differentStations(previous,next))){
   return {...empty(),status:"unknown",walkProvided:walk.provided,
     label:"Fußweg für diesen Umstieg unbekannt",
     detail:"Haltestellenwechsel oder ungültige Gehzeit ohne berechenbaren Fußweg. Anschluss beim Betreiber prüfen."};
- }
- if(journey.cancelled||previous.cancelled||next.cancelled||previous.to.cancelled||next.from.cancelled){
-  return { ...empty(),walkMinutes,walkProvided:walk.provided,status:"cancelled",tone:"risk",label:"Anschluss durch Ausfall betroffen",
-   detail:"Mindestens ein betroffener Fahrtabschnitt oder Halt fällt aus. Verbindung und Alternativen prüfen." };
  }
  const fresh=sourceFresh(journey,now);
  const arrivingLive=Boolean(fresh&&previous.realtime&&when(previous.endTime)!==null);
