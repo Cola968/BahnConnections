@@ -75,3 +75,34 @@ Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich ferti
 - [x] Bei frischem Fahrtverlauf können früher liegende Halte über 'Ab jetzt' ausgeblendet und über 'Alle zeigen' vollständig wiederhergestellt werden. Bei veralteten Daten darf der Filter keine Halte verstecken.
 - [x] Quell-/Geräteuhr-Toleranz bis zehn Sekunden und zusätzliche deterministische Regressionen über `pnpm audit:v60-passenger`; als verpflichtender CI-Schritt eingebunden.
 - [ ] Vollständige interaktive End-to-End- und Android-Geräteabnahme, neue Funktionen #02–#20 und Datenrechte weiterhin offen. Ein erfolgreiches CI allein gibt keine Releasefreigabe.
+
+## V60 Erweiterung: Pakete 21–40
+
+Die ursprünglichen 20 Pakete bleiben bestehen. Die folgenden Ergänzungen sind kleinere, einzeln prüfbare Fahrgastfunktionen. **Umgesetzt** bedeutet im Entwicklungsbranch eingecheckt, nicht veröffentlicht. Alle Änderungen benötigen weiterhin CI und reale Browser-/Geräteabnahme.
+
+| Nr. | Funktion | Stand | Abnahmekriterium |
+|---|---|---|---|
+| 21 | Zugfahrt als Momentaufnahme teilen | Implementiert, QA offen | Native Teilen-Funktion mit Kopieren-Fallback; vollständiger Verlauf nur aus echten Halten; bei veraltetem Stand keine Istzeiten als aktuell anzeigen |
+| 22 | Netto-Umstiegspuffer nach Fußweg | Implementiert, QA offen | Negative Puffer korrekt; tatsächliche, zwischen Zugabschnitten gelieferte Fußwegdauer abziehen; keine Anschlussgarantie |
+| 23 | Ausgefallene Alternativen ausblenden | Implementiert, QA offen | Vorbelegte Filteransicht mit manueller Rückstellung; Zug- und Halt-Ausfälle berücksichtigt |
+| 24 | Alternativen nach Umstiegspuffer sortieren | Implementiert, QA offen | Kleinsten berechenbaren Puffer eines Reisewegs priorisieren, unbekannte Daten nicht als sicher ausweisen, Reihenfolge der Quelldaten nicht verändern |
+| 25 | Keine erfundene Zugauslastung | Implementiert, QA offen | Tageszeit/Verkehrsmittel erzeugen keine scheinbar echten Besetzungswerte; nur bestätigte Auslastungsdaten erlauben konkrete Stufen |
+| 26 | Zug-Alarm während geöffneter App | Geplant | Lokale Warnung bei tatsächlich aktualisiertem Gleis/Ausfall/Verspätung, ohne falsches Push-Versprechen |
+| 27 | Veränderungsprotokoll der Zugankunft | Geplant | Nur seit Sitzungsbeginn beobachtete Werte mit Zeitstempel, keine rückwirkend erfundene Historie |
+| 28 | Persönliche Mini-Abfahrtstafel | Geplant | Gemerkte Station mit nächsten Abfahrten und Datenalter; keine zusätzlichen unkontrollierten Poller |
+| 29 | Pendleransicht mehrerer Haltestellen | Geplant | Maximal drei gespeicherte Stationen, Quellenfehler pro Station isoliert, Ladebudget begrenzt |
+| 30 | Pendelstrecken sortierbar | Geplant | Lokal gespeicherte Favoriten umordnen, Tastaturbedienung, keine Serverpflicht |
+| 31 | Schrift- und Tabellendichte pro Ansicht | Geplant | Große Schrift ohne Zeit-/Zugnummern-Überlagerung bei 320–430px und 200%-Zoom |
+| 32 | Zwei reale Reisealternativen vergleichen | Geplant | Soll/Ist, Umstiege, Puffer, Fußweg und Quelle nebeneinander; fehlende Daten sichtbar |
+| 33 | Gleiswechsel während einer aktiven Sitzung | Geplant | Vorher/nachher nur bei beobachteter Anbieteränderung anzeigen; keine historische Behauptung |
+| 34 | Radar-Quellzeit direkt am Zug | Geplant | Zeitpunkt der zuletzt gesehenen Positionsgrundlage; Modellposition darf nie GPS genannt werden |
+| 35 | Datenstatus direkt je Teilansicht | Geplant | Letzter erfolgreicher Abruf, veraltet/teilweise/fehlend ohne pauschalen Grünstatus |
+| 36 | Quellenabdeckung je Zugkategorie | Geplant | Transparenter Vergleich von Fern-, Regional- und Nahverkehrsantworten; keine erfundene Vollständigkeit |
+| 37 | Sitzungsspur einer verfolgten Fahrt | Geplant | Ausschließlich lokal tatsächlich berechnete Zeitpunkte, klar modelliert statt gemessener Strecke |
+| 38 | Ressourcenschonender Radar | Geplant | Karte im Hintergrund pausiert, keine Timer-/Fetch-Duplikate, Batterieverhalten unter Mobilbedingungen testen |
+| 39 | Direktsuche nach Zugnummer | Geplant | Nur eindeutige Treffer aus Anbieterfahrten und Uhrzeitfenstern, kein blindes Zeichnen eines Zuges |
+| 40 | Verifizierbarer Offline-Datenstand | Geplant | Letzter Cache mit Zeitstempel und ausdrücklichem Offline-Hinweis; keine Aktualitätsbehauptung |
+
+### Produktdisziplin
+
+Die Pakete sind keine Sammlung von Design-Gimmicks. Neue Statusanzeigen brauchen eine reale Quelle, einen benannten Fehlerzustand und einen überprüfbaren Klickpfad. Offene API-Rechte, fehlende GPS-Positionen und fehlende echte Auslastungswerte dürfen nicht durch KI-Schätzungen kaschiert werden. Reihenfolge: P0-Bugfixes und Fachlogik → Browser- und Android-Tests → Nutzerfunktionen → Veröffentlichung.
