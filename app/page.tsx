@@ -529,7 +529,12 @@ export default function Home() {
     if(action==="escape"){escapePanel();return;}
     if(settingsOpen||shortcutsOpen||helpOpen)return;
     switch(action){
-      case "search":document.querySelector<HTMLInputElement>(".station-search input,.mobile-search-dock .station-search input")?.focus();break;
+      case "search": {
+        const inputs=Array.from(document.querySelectorAll<HTMLInputElement>(".mobile-search-dock .station-search input, .topbar .station-search input, .planner-panel .station-search input"));
+        const visible=inputs.find(input=>input.getClientRects().length>0 && getComputedStyle(input).visibility!=="hidden" && !input.disabled);
+        visible?.focus();
+        break;
+      }
       case "live":setLiveVisible(value=>!value);break;
       case "filters":setLiveFiltersOpen(value=>!value);setMoreMenuOpen(false);break;
       case "map":navigate("map");break;
