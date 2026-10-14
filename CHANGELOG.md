@@ -1,3 +1,13 @@
+# V58.0 · Railglass-Neustart – cleane Fahrgastoberfläche
+
+- **One-tap Bahnhofstafeln:** Schnellansichten „Nächste Stunde“, „Verspätet“, „Ausfälle“ und „Alle Fahrten“ direkt über der Tafel. Alle vier setzen möglicherweise widersprüchliche erweiterte Filter zurück; ein aktiver benutzerdefinierter Filter wird nicht fälschlich als Schnellansicht ausgewiesen.
+- **Radar-Transparenz:** Dezentes, aufklappbares Datenstatus-Element über der Karte mit Quelle/Methodik. Für geschätzte Positionen wird nie Fahrzeug-GPS behauptet; Netzfehler, veraltete Daten und reine Fahrplanlagen erhalten unterscheidbare Zustände.
+- **Railglass-Design:** Einheitliches, zurückhaltendes Materialsystem für hell und dunkel: hochwertige Navigation, kompaktere Tafel, flüssigere mobile Sheets, ruhiger Zug-Inspector, weniger dekorative Gradienten und deutlichere Informationshierarchie.
+- **Android-Leisten:** Browser-/PWA-Farben folgen dem gewählten Hell-/Dunkelmodus statt hart codierten Flächen; auch Safe Areas und kleine Displays werden berücksichtigt.
+- **A11y und Performance:** 44–52px-Touchziele, fokussierbare Bedienelemente, scrollbar-reduzierte Filterchips, reduzierte Bewegung/Transparenz sowie Kontrastmodus.
+- **Prüfungen:** Neue deterministische Tests für Schnellfilter, Radar-Aussagen, Gestaltungsintegration und Betriebssystemleisten. Zusätzliche Chromium-Interaktionen und Render/Worker-Builds im PR.
+- **Wichtig:** Der Launch ist im PR; Cloudflare/Render/Google Play werden durch diese Änderungen nicht automatisch aktualisiert. Die Quellen- und Lizenzrechte bleiben ein Release-Gate.
+
 # V57.3 · Großes Fahrgast-Update: Meine Linien, Datenklarheit und Teilen
 
 - **Meine Linien:** Betroffene Züge im jeweiligen Bahnhof lokal als beobachtete Linien markieren und Meldungen auf die eigenen Linien eingrenzen. Speicherung nur auf dem Gerät (maximal 20 Bahnhöfe und 12 Linien je Bahnhof), mit transparenter Fehlermeldung bei gesperrtem Speicher. Keine Push- oder Hintergrundüberwachung.
