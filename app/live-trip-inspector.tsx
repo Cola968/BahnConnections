@@ -99,6 +99,8 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       actualDeparture:complete?first?.departure??first?.arrival:trip.departure,
       actualArrival:complete?last?.arrival??last?.departure:trip.arrival,
       realtime:complete?stops.some(stop=>stop.realtime):trip.realTime,
+      departureRealtime:complete?Boolean(first?.realtime):trip.realTime,
+      arrivalRealtime:complete?Boolean(last?.realtime):trip.realTime,
       fresh:complete?detailFresh:radarFresh,
       updatedAt:complete?detailsUpdatedAt:radarUpdatedAt,
       stops:complete?stops:[],
