@@ -26,6 +26,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:release
       - run: pnpm audit:play-hosting
+      - run: pnpm audit:railglass
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
