@@ -130,3 +130,12 @@ html[data-theme="dark"] .app-shell .train-cockpit{background:#263c49!important;b
 @media(prefers-reduced-motion:reduce){.app-shell :is(.board-row-summary,.mobile-navigation>button,.station-section-tabs button){transition:none!important;animation:none!important;}}
 html[data-motion="reduced"] .app-shell :is(.board-row-summary,.mobile-navigation>button,.station-section-tabs button){transition:none!important;animation:none!important;}
 @media(forced-colors:active){.app-shell :is(.mobile-navigation,.mobile-sheet-panel,.board-quick-views button,.v58-map-source){border:1px solid CanvasText!important}.app-shell .board-quick-views button[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-3px}}
+
+/* DB-inspired direct journey comparison: one intentional row, no modal hop. */
+.app-shell .journey-alternatives>summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:760;font-size:.9rem;line-height:1.4;}
+.app-shell .journey-alternatives>summary>span{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);}
+.app-shell .v58-alternative-sort{display:flex;align-items:center;gap:6px;overflow-x:auto;max-width:100%;scrollbar-width:none;padding:4px 0 12px;}
+.app-shell .v58-alternative-sort::-webkit-scrollbar{display:none;}
+.app-shell .v58-alternative-sort button{flex:0 0 auto;min-height:43px;border:1px solid var(--line-subtle);border-radius:999px;padding:8px 13px;color:var(--muted);background:transparent;white-space:nowrap;font-size:.8rem;font-weight:620;}
+.app-shell .v58-alternative-sort button[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--paper));color:var(--ink);font-weight:730;}
+.app-shell .journey-alternatives>div:last-child>button{min-height:62px;border-bottom:1px solid var(--line-subtle);border-radius:0;}
