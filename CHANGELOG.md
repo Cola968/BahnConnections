@@ -1,3 +1,13 @@
+# V57.3 · Großes Fahrgast-Update: Meine Linien, Datenklarheit und Teilen
+
+- **Meine Linien:** Betroffene Züge im jeweiligen Bahnhof lokal als beobachtete Linien markieren und Meldungen auf die eigenen Linien eingrenzen. Speicherung nur auf dem Gerät (maximal 20 Bahnhöfe und 12 Linien je Bahnhof), mit transparenter Fehlermeldung bei gesperrtem Speicher. Keine Push- oder Hintergrundüberwachung.
+- **Störungszentrale:** Linienfokus, Textsuche, Kategorien und Uhrzeitsortierung kombinieren; baustellenbedingte Ersatzverkehre nicht automatisch als Zugausfall einstufen. Allgemeine Bahnhofshinweise bleiben in der persönlichen Ansicht sichtbar.
+- **Meldungen teilen:** Gefilterte Betriebslage per nativer Android-Teilen-Funktion oder Zwischenablage versenden – mit Abrufzeit und Hinweis auf das begrenzte Fahrplanfenster. Einzelne Meldungen bleiben ebenfalls kopierbar.
+- **Bahnhöfe teilen:** Bei unterstützten Bahnhöfen führt der Link wieder direkt zur Bahnhofstafel. Für nur dynamisch aufgelöste Stationen werden keine möglicherweise kaputten Links versprochen.
+- **Verlässliche Datenqualität:** Neuer Überblick über tatsächliche Echtzeitabdeckung, Zeitstempel und Quellenwarnungen unter Bahnhof → Info. Ein grüner Bahnhofszustand benötigt genügend aktuelle Prognosen; bei dünnen oder veralteten Daten bleibt er unbestimmt.
+- **Mobile Bedienung:** Lesbare, größere Filter- und Teilen-Aktionen; kleinere Bildschirme, Darkmode, Tastaturfokus, hohe Kontraste und reduzierte Bewegung berücksichtigt.
+- **Sicherheits- und Regressionstests:** Neue Tests für Favoritenspeicherung, Datenqualität, Störungs-Export und die Anbieter-Kategorisierung. Browser-Interaktionen auf mobilen Auflösungen werden erneut geprüft.
+
 # V57.2 · Kehrtwende: Linienfokus und zuverlässige Störungsinformationen
 
 - **Daten zuerst:** V57.1-Anbieterfix für MOTIS-v6-Störungsdaten und ergänzende VBB-/DB-Bahnhofshinweise mit echten Quell- und Teilfehleranzeigen übernommen.
