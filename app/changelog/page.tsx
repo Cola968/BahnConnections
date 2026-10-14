@@ -1,7 +1,13 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
+ {version:"V60.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"Nächste Halte und Zugaufenthalte nachvollziehbar anzeigen – zuverlässige Fahrgastinformationen statt erfundener Live-Daten.",tags:["Fahrtverlauf","Halte","Prognosen","Fehlerkorrekturen"],changes:[
+  ["Bahnsteigaufenthalte","Während eines gemeldeten Aufenthalts bleibt der Bahnhof der nächste relevante Halt. Angezeigt wird die verbleibende Abfahrtszeit aus Plan- oder Prognosewerten."],
+  ["Ab jetzt filtern","Frühere Halte im Zuginspektor mit einem Tipp ausblenden und bei Bedarf alle Halte wiederherstellen. Bei unsicheren Daten keine automatische Verkürzung."],
+  ["Quellzeit robuster","Kleine Uhrabweichungen machen eine frische Quelle nicht unnötig veraltet."],
+  ["Geprüfte Funktionen","Pflicht-Regressionsprüfung für Halte, Aktualität und interaktive Fahrgastansicht in GitHub Actions."]
+ ]},
+ {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:false,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
   ["Bahnhofstafel sofort filtern","Mit einem Tipp nur die nächste Stunde, verspätete oder ausgefallene Züge ansehen; Filter vollständig zurücksetzen."],
   ["Reisealternativen","Alternative Verbindungen sofort nach Ankunft, Reisezeit, Umstiegen oder Fußweg sortieren; bei Ausfall direkt darauf hinweisen."],
   ["Radar-Datenstatus","Geschätzte Positionen und Echtzeitquelle klar trennen. Ein Klick führt zur Methodik."],
