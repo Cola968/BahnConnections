@@ -44,3 +44,11 @@
 .app-shell .station-health-card .station-health-warning {color:var(--ink)}
 @media(max-width:360px) {.app-shell .station-health-heading,.app-shell .station-health-coverage {display:grid;gap:4px}}
 @media(forced-colors:active) {.app-shell .station-health-card progress {border:1px solid CanvasText}}
+
+/* Station permalink belongs alongside existing favorite action. */
+.app-shell .station-share {display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;max-width:100%;padding:8px 10px;border:1px solid var(--line-subtle);border-radius:10px;background:var(--paper);color:var(--ink);font-size:.77rem;font-weight:650;white-space:nowrap}
+.app-shell .station-share svg {width:16px;height:16px;flex:none}
+.app-shell .station-share:disabled {opacity:.5;cursor:not-allowed}
+.app-shell .station-share:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+.app-shell .station-share-message {padding:6px 8px;margin:4px 0 8px;color:var(--muted);font-size:.8rem;line-height:1.5}
+@media(max-width:360px) {.app-shell .station-share {font-size:.72rem;padding:7px}}
