@@ -14,9 +14,10 @@ export type ShortcutInput = {
 /** Browser shortcuts and form editing always take precedence over app commands. */
 export function resolveV60Shortcut(input: ShortcutInput): V60Shortcut | null {
   if (input.ctrlKey || input.metaKey || input.altKey || input.repeat) return null;
-  if (input.key === "Escape") return "escape";
   if (input.isContentEditable || input.withinEditable) return null;
   if (["input", "textarea", "select"].includes((input.targetTag ?? "").toLowerCase())) return null;
+  // Escape inside form controls belongs to the control (e.g. search suggestions).
+  if (input.key === "Escape") return "escape";
   switch (input.key.toLowerCase()) {
     case "?": return "help";
     case "/": return "search";
