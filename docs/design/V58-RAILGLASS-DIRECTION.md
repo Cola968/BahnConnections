@@ -27,7 +27,8 @@ BahnConnections ist ein aktuelles Fahrgastwerkzeug für Menschen, die in zehn Se
 1. **DB-Navigator-inspiriert:** Ein-Tipp-Filter `upcoming` (60 Minuten), `delayed`, `canceled`, `all` (240 Minuten) direkt an der Bahnhofstafel. Aktiv setzt jeweils andere benutzerdefinierte Filter bewusst zurück; das ist im UI sichtbar und durch Tests abgesichert. Erweiterte Filter bleiben in der gewohnten Filterseite.
 2. **FR24-inspiriert:** Karte erhält einen kleinen datentreuen Status-Chip. Text unterscheidet „Züge im Radar“, „Fahrplanposition“, „veraltet“ und „nicht erreichbar“. Tippen öffnet **Daten & Methodik**. Keine erfundenen Koordinaten/Speed/GPS.
 3. **Liquid-Glass-Relaunch:** Durchgehende Chrome-/Nav-/Sheet-/Board-/Train-Inspector-Gestaltung und systemkonformer Darkmode. Die Karte selbst bleibt interaktiv; die Datenfläche ist bewusst nicht von Dekoration bedeckt.
-4. **PWA-Systemleisten:** Browser-Chrome passt sich dem aktiv gewählten Theme an. Die schlechte Render-Free-Ladeseite muss weiterhin durch Deploymentwechsel beseitigt werden.
+4. **Vergleich statt Sortierdialog:** Im aufklappbaren Alternativbereich sind fünf echte Sortieroptionen als große horizontale Schaltflächen verfügbar. Eine ausgefallene Reise führt direkt zu Alternativen; verbleibende Reiseoptionen stammen weiterhin aus echten Suchergebnissen.
+5. **PWA-Systemleisten:** Browser-Chrome passt sich dem aktiv gewählten Theme an. Die schlechte Render-Free-Ladeseite muss weiterhin durch Deploymentwechsel beseitigt werden.
 
 ## Qualitätstore für Go/No-Go
 - TypeScript, ESLint, `pnpm audit:railglass`, vorhandene Board-/Realtime-/Disruption-Audits, Production-Build, Cloudflare-Dry-Run und Render-/Node-Build.
