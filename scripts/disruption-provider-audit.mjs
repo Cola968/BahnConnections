@@ -35,4 +35,6 @@ assert.deepEqual(extra.find(item=>item.headline==='Aufzug defekt').lines,[],'Do 
 assert.deepEqual(extra.find(item=>item.headline==='Bauarbeiten').lines,['S1']);
 assert.deepEqual(supplementalNoticeRows(null,'arrival'),[]);
 assert.equal(extractStationNotices([{displayName:'ICE 873',place:{alerts:[{headerText:'ICE 873: Fahrt fällt aus zwischen Hamburg-Altona und Hamburg Hbf.'}]}}])[0].kind,'cancellation','A partial route cancellation belongs under Ausfälle');
+assert.equal(extractStationNotices([{displayName:'RE1',place:{alerts:[{headerText:'Bauarbeiten zwischen Berlin und Potsdam',descriptionText:'Ersatzverkehr im betroffenen Abschnitt'}]}}])[0].kind,'construction','Construction with bus replacement is not automatically a cancelled train.');
+assert.equal(extractStationNotices([{displayName:'RE1',place:{alerts:[{headerText:'Fahrt fällt aus wegen Bauarbeiten',descriptionText:'Ersatzverkehr ist eingerichtet'}]}}])[0].kind,'cancellation','Explicitly cancelled services override a construction reason.');
 console.log('Disruption provider format audit passed');
