@@ -23,6 +23,8 @@
     "audit:billing": "node scripts/billing-audit.mjs",
     "audit:planner": "node scripts/planner-logic-audit.mjs",
     "audit:release": "node scripts/release-readiness-audit.mjs",
+    "audit:play-hosting": "node scripts/play-hosting-audit.mjs",
+    "smoke:play-start": "node scripts/play-hosting-smoke.mjs",
     "audit:v56": "node scripts/v56-regression-audit.mjs",
     "audit:arrival": "node scripts/arrival-countdown-audit.mjs",
     "audit:links": "node scripts/planner-link-audit.mjs",
