@@ -5,6 +5,7 @@ export type TransferSource="realtime"|"partial"|"timetable";
 export type TransferAssessment={
  status:TransferStatus;source:TransferSource;tone:"risk"|"medium"|"good";
  waitMinutes:number|null;walkMinutes:number;bufferMinutes:number|null;
+ arrivalRealtime:boolean;departureRealtime:boolean;
  label:string;detail:string;
 };
 const when=(value?:string|null):number|null=>{
@@ -26,7 +27,7 @@ function transferWalkingMinutes(journey:LiveJourney,previous:LiveJourneyLeg,next
 }
 const empty=():TransferAssessment=>({
  status:"unknown",source:"timetable",tone:"medium",
- waitMinutes:null,walkMinutes:0,bufferMinutes:null,label:"Umstiegszeit unbekannt",
+ waitMinutes:null,walkMinutes:0,bufferMinutes:null,arrivalRealtime:false,departureRealtime:false,label:"Umstiegszeit unbekannt",
  detail:"Ankunft oder Abfahrt fehlt beziehungsweise ist ungültig. Anschluss bitte selbst prüfen.",
 });
 /** A calculated connection buffer is not a prediction of catching a train.
@@ -46,7 +47,7 @@ export function assessTransfer(journey:LiveJourney,index:number,now=Date.now()):
  const arrival=arrivingLive?when(previous.endTime):when(previous.scheduledEndTime)??(!previous.realtime?when(previous.endTime):null);
  const departure=departingLive?when(next.startTime):when(next.scheduledStartTime)??(!next.realtime?when(next.startTime):null);
  const source:TransferSource=arrivingLive&&departingLive?"realtime":arrivingLive||departingLive?"partial":"timetable";
- if(arrival===null||departure===null)return {...empty(),source,walkMinutes};
+ if(arrival===null||departure===null)return {...empty(),source,walkMinutes,arrivalRealtime:arrivingLive,departureRealtime:departingLive};
  const waitMinutes=Math.floor((departure-arrival)/60_000);
  const bufferMinutes=waitMinutes-walkMinutes;
  const status:TransferStatus=bufferMinutes<0?"missed":bufferMinutes<=3?"tight":bufferMinutes<=6?"caution":"sufficient";
@@ -54,7 +55,7 @@ export function assessTransfer(journey:LiveJourney,index:number,now=Date.now()):
  const provenance=source==="realtime"?"aktuellen Prognosen":source==="partial"?"teils Prognosen, teils Fahrplan":"Fahrplandaten";
  const label=status==="missed"?"Anschluss zeitlich nicht erreichbar":`${bufferMinutes} Min. rechnerischer Umstiegspuffer`;
  const detail=`${waitMinutes} Min. zwischen Ankunft und Abfahrt · ${walkMinutes} Min. Fußweg berücksichtigt · Berechnung aus ${provenance}. Kein garantierter Anschluss; Gleisweg und Störungen können abweichen.`;
- return {status,source,tone,waitMinutes,walkMinutes,bufferMinutes,label,detail};
+ return {status,source,tone,waitMinutes,walkMinutes,bufferMinutes,label,detail,arrivalRealtime:arrivingLive,departureRealtime:departingLive};
 }
 export function assessJourneyTransfers(journey:LiveJourney,now=Date.now()):TransferAssessment[]{
  return journey.transitLegs.slice(0,-1).map((_,index)=>assessTransfer(journey,index,now));
