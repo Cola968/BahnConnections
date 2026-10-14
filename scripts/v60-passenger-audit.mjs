@@ -23,12 +23,12 @@ assert.equal(sourceFreshness(new Date(start),start-5000,true),"current","Small c
 assert.equal(sourceFreshness(new Date(start),start-15_000,true),"old");
 assert.equal(sourceFreshness(new Date(start),start+91_000,true),"old");
 assert.equal(sourceFreshness(null,start,true),"missing");
-const complete=relevantTrainStops(stops,start+25*60_000,false,true);
+const complete=relevantTrainStops(stops,start+21*60_000,false,true);
 assert.deepEqual(complete,{stops,hidden:0});
-const remaining=relevantTrainStops(stops,start+25*60_000,true,true);
+const remaining=relevantTrainStops(stops,start+21*60_000,true,true);
 assert.equal(remaining.hidden,1);
 assert.deepEqual(remaining.stops.map(x=>x.name),["Berlin Ostbahnhof","Erkner"]);
-assert.equal(relevantTrainStops(stops,start+25*60_000,true,false).hidden,0,"Never hide previous stops on stale data");
+assert.equal(relevantTrainStops(stops,start+21*60_000,true,false).hidden,0,"Never hide previous stops on stale data");
 assert.equal(relevantTrainStops(stops,start+100*60_000,true,true).hidden,0,"Completed journey keeps accessible full route");
 const dwell=normaliseTrainStops([
  {mode:"REGIONAL_RAIL",realTime:true,from:{name:"A",departure:at(0)},to:{name:"B",arrival:at(10)}},
