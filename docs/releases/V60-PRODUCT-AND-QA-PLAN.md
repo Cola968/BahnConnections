@@ -66,3 +66,12 @@ Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich ferti
 - [ ] Funktionspakete 01–20 einzeln implementieren und abnehmen.
 - [ ] Code-Review und CI-Befunde vollständig bearbeiten.
 - [ ] Externe Daten-/Lizenzfreigaben und finalen Deploy-Nachweis dokumentieren.
+
+## Iteration 3 – Fahrtverlauf und Zeitzustände (14. Oktober 2026)
+
+- [x] Bugfix: Ein Bahnhof wird nicht mehr als abgefahren behandelt, solange das Ende des gemeldeten Halts erst in der Zukunft liegt; die Abfahrt statt allein die Ankunft bestimmt den Wechsel des nächsten Halts.
+- [x] Ungültige Echtzeit-Zeitstrings werden auf gültige Sollzeiten zurückgeführt. Ein ausschließlich fahrplanbasierter Aufenthalt erhält keine Echtzeit-Kennzeichnung.
+- [x] Im Zug-Inspector erscheint während eines zeitlich gemeldeten Aufenthalts eine Abfahrt in Minuten. Die Bezeichnung lautet bewusst 'laut Fahrplan' bzw. 'laut Prognose', nicht 'Zug steht am Gleis'.
+- [x] Bei frischem Fahrtverlauf können früher liegende Halte über 'Ab jetzt' ausgeblendet und über 'Alle zeigen' vollständig wiederhergestellt werden. Bei veralteten Daten darf der Filter keine Halte verstecken.
+- [x] Quell-/Geräteuhr-Toleranz bis zehn Sekunden und zusätzliche deterministische Regressionen über `pnpm audit:v60-passenger`; als verpflichtender CI-Schritt eingebunden.
+- [ ] Vollständige interaktive End-to-End- und Android-Geräteabnahme, neue Funktionen #02–#20 und Datenrechte weiterhin offen. Ein erfolgreiches CI allein gibt keine Releasefreigabe.
