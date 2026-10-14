@@ -8,7 +8,7 @@
 
 ## Funktionale Änderungen
 1. Präziser **Linienfokus**: betroffene Linien aus den deduplizierten Meldungen, keine Bahnhofshinweise als Linienmeldungen; Kombination mit Kategorie und Freitext.
-2. Drei Anordnungen: Standard, **nächste zuerst** nach tatsächlicher Meldungszeit, **nach Linie**. Fehlende Zeiten erscheinen nicht als erfundene Uhrzeit.
+2. Drei Anordnungen: Standard, **nach Uhrzeit** anhand der tatsächlich gelieferten Meldungszeit, **nach Linie**. Fehlende Zeiten erscheinen nicht als erfundene Uhrzeit.
 3. Einzelmeldung aus der aufklappbaren Karte **kopieren** (vollständiger Text, Linien, Richtung), mit verständlichem Berechtigungsfehler.
 4. Ausfälle mit zusätzlicher Bauarbeitsmeldung als **Zugausfälle** klassifizieren, statt im Baustellenfilter zu verstecken.
 5. Bedienfeld passt sich an 320–430 px und Desktop an; 44px Touchflächen, Tastaturfokus, Kontrastmodus und Reduced Motion.
