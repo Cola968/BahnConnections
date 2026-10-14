@@ -72,7 +72,9 @@ export function trainStopPhase(stop:TrainStop,now:number):"approaching"|"at-stop
     if(now<arrival)return "approaching";
     return now<=departure?"at-stop":"departed";
   }
-  const at=departure??arrival;
+  // If the provider sends an impossible departure-before-arrival order, use
+  // the arrival as the fallback rather than claiming the train has departed.
+  const at=arrival!==null&&departure!==null&&departure<arrival?arrival:departure??arrival;
   return at===null?"unknown":now<=at?"approaching":"departed";
 }
 export function headingDegrees(before:[number,number]|null,after:[number,number]|null):number|null{
