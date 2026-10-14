@@ -5,6 +5,8 @@ import {requireTransitousStopId} from "./transitous";
 import {VisibilityPoller} from "./visibility-poller";
 import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds,affectedNoticeLines,type NoticeStopTime,type RailNotice,type RailNoticeFilter,type RailNoticeSort} from "./station-disruptions-data";
 import {UiIcon} from "./ui-icon";
+import {readPreferenceJson,writePreference} from "./local-preferences";
+import {INCIDENT_WATCH_KEY,parseIncidentWatches,toggleIncidentWatch,readIncidentWatch,filterWatchedIncidents} from "./incident-watch";
 import {serviceBadgeStyle,type RailCategory} from "./transit-style";
 
 function lineCategory(line:string):RailCategory{
@@ -34,6 +36,9 @@ export function StationDisruptions({station}:{station:Station}){
  const [lineFocus,setLineFocus]=useState("all");
  const [sortOrder,setSortOrder]=useState<RailNoticeSort>("recommended");
  const [copyMessage,setCopyMessage]=useState("");
+ const [watchedLines,setWatchedLines]=useState<string[]>([]);
+ const [watchOnly,setWatchOnly]=useState(false);
+ const [watchMessage,setWatchMessage]=useState("");
  const currentStationRef=useRef("");
  const hasSuccessfulDataRef=useRef(false);
 
@@ -96,11 +101,39 @@ export function StationDisruptions({station}:{station:Station}){
   return()=>poller.dispose();
  },[station,station.id,refresh]);
 
+ useEffect(()=>{
+  // Optional, device-only storage: never network, never a blocker for incident loading.
+  try{
+   const current=parseIncidentWatches(readPreferenceJson(window.localStorage,INCIDENT_WATCH_KEY));
+   setWatchedLines(readIncidentWatch(current,station.id));
+  }catch{setWatchedLines([]);}
+  setWatchOnly(false);setWatchMessage("");
+ },[station.id]);
+
+ function toggleWatchedLine(line:string){
+  let nextLines:string[];
+  try{
+   const prev=parseIncidentWatches(readPreferenceJson(window.localStorage,INCIDENT_WATCH_KEY));
+   // Preserve items bookmarked in a previous tab when storage is available.
+   const next=toggleIncidentWatch(prev,station.id,line);
+   nextLines=readIncidentWatch(next,station.id);
+   const saved=writePreference(window.localStorage,INCIDENT_WATCH_KEY,JSON.stringify(next));
+   setWatchMessage(saved?"Linienauswahl auf diesem Gerät gespeichert.":"Speichern nicht möglich – Auswahl bleibt nur bis zum Neuladen.");
+  }catch{
+   const next=toggleIncidentWatch({[station.id]:watchedLines},station.id,line);
+   nextLines=readIncidentWatch(next,station.id);
+   setWatchMessage("Lokale Speicherung nicht verfügbar – Auswahl bleibt nur bis zum Neuladen.");
+  }
+  setWatchedLines(nextLines);
+  if(!nextLines.length)setWatchOnly(false);
+ }
+
  const counts=noticeCategoryCounts(items);
- const visible=filterStationNotices(items,filter,query,lineFocus,sortOrder);
+ const filtered=filterStationNotices(items,filter,query,lineFocus,sortOrder);
+ const visible=watchOnly?filterWatchedIncidents(filtered,watchedLines):filtered;
  const date=updated?new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(new Date(updated)):"";
  const hasQuery=Boolean(query.trim());
- const hasFilters=filter!=="all"||hasQuery||lineFocus!=="all";
+ const hasFilters=filter!=="all"||hasQuery||lineFocus!=="all"||watchOnly;
  const loaded=state==="ready"||state==="refreshing";
  const affectedLines=affectedNoticeLines(items);
  async function copyNotice(item:RailNotice){
@@ -113,7 +146,12 @@ export function StationDisruptions({station}:{station:Station}){
  const lineBadge=(line:string)=><span key={line} className="incident-line-badge" style={serviceBadgeStyle(lineCategory(line),undefined,undefined,line,station.name)}>{line}</span>;
  return <section className="station-incidents" aria-labelledby="incidents-heading">
   <header className="station-incidents-head"><div><h2 id="incidents-heading">Betriebslage</h2><p>{loaded?`${counts.all} ${counts.all===1?"Meldung":"Meldungen"} im Fahrplanfenster`:"Abfahrten & Ankünfte"}{date&&<> · Stand {date}</>}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)} disabled={state==="loading"||state==="refreshing"} aria-label="Störungsmeldungen aktualisieren" title="Aktualisieren"><UiIcon name="refresh"/></button></header>
-  {loaded&&affectedLines.length>0&&<div className="incidents-affected"><h3>Betroffene Linien</h3><div>{affectedLines.map(lineBadge)}</div></div>}
+  {loaded&&<div className="incidents-watch">
+   <div className="incidents-watch-head"><h3>Meine Linien</h3><p>Nur auf diesem Gerät · keine Push-Benachrichtigungen</p></div>
+   {affectedLines.length>0&&<div className="incidents-watch-lines" role="group" aria-label="Linien am Bahnhof merken">{affectedLines.map(line=><button type="button" key={line} aria-pressed={watchedLines.includes(line)} aria-label={watchedLines.includes(line)?line+" nicht mehr merken":line+" merken"} onClick={()=>toggleWatchedLine(line)}><UiIcon name="star"/>{lineBadge(line)}</button>)}</div>}
+   {watchedLines.length>0&&<div className="incidents-watch-selected"><span>Gemerkt: {watchedLines.join(", ")}</span><button type="button" aria-pressed={watchOnly} onClick={()=>setWatchOnly(value=>!value)}>{watchOnly?"Alle Meldungen anzeigen":"Nur meine Linien anzeigen"}</button></div>}
+   {watchMessage&&<p className="incidents-watch-feedback" role="status">{watchMessage}</p>}
+  </div>}
   {loaded&&<><div className="incidents-search-row"><label className="incidents-search"><span className="sr-only">Hinweise durchsuchen</span><input type="search" value={query} maxLength={100} onChange={event=>setQuery(event.target.value)} placeholder="Linie, Störung oder Ziel suchen" aria-label="Störungsmeldungen durchsuchen"/></label>{hasQuery&&<button type="button" onClick={()=>setQuery("")} aria-label="Suche leeren">Löschen</button>}</div>
    <div className="incidents-filters" role="group" aria-label="Meldungstyp">{noticeFilters.map(item=><button type="button" key={item.id} aria-pressed={filter===item.id} className={filter===item.id?"active":""} onClick={()=>setFilter(item.id)}>{item.name} <span aria-hidden="true">{counts[item.id]}</span></button>)}</div>
    <div className="incidents-tools">
@@ -125,7 +163,7 @@ export function StationDisruptions({station}:{station:Station}){
   {state==="refreshing"&&<p className="incidents-refreshing" role="status">Hinweise werden im Hintergrund aktualisiert …</p>}
   {state==="error"&&<div className="incidents-state" role="alert"><b>Hinweise derzeit nicht abrufbar.</b><p>Bitte Internetverbindung prüfen und erneut versuchen.</p><button type="button" onClick={()=>setRefresh(value=>value+1)}>Erneut versuchen</button></div>}
   {loaded&&<>{hasFilters&&<p className="incidents-total" role="status">{visible.length} von {counts.all} gemeldeten Hinweisen im geladenen Fahrplanfenster</p>}{copyMessage&&<p className="incidents-copy-feedback" role="status">{copyMessage}</p>}{warning&&<p className="incidents-warning" role="status">{warning}</p>}
-   {!visible.length&&<div className="incidents-state"><b>{hasFilters?"Keine Hinweise passen zur Auswahl.":"Keine Hinweise in den abgerufenen Fahrten."}</b><p>Andere Fahrten können trotzdem betroffen sein.</p>{hasFilters&&<button type="button" onClick={()=>{setFilter("all");setQuery("");setLineFocus("all");setSortOrder("recommended");}}>Alle Hinweise anzeigen</button>}</div>}
+   {!visible.length&&<div className="incidents-state"><b>{hasFilters?"Keine Hinweise passen zur Auswahl.":"Keine Hinweise in den abgerufenen Fahrten."}</b><p>Andere Fahrten können trotzdem betroffen sein.</p>{hasFilters&&<button type="button" onClick={()=>{setFilter("all");setQuery("");setLineFocus("all");setSortOrder("recommended");setWatchOnly(false);}}>Alle Hinweise anzeigen</button>}</div>}
    <div className="incidents-list">{visible.map(item=><article key={item.key} className={"incident-card "+item.kind}>
     <details className="incident-disclosure"><summary>
      <span className="incident-row-lines">{item.lines.length?item.lines.map(lineBadge):<UiIcon name="train"/>}</span>
@@ -139,6 +177,6 @@ export function StationDisruptions({station}:{station:Station}){
     </div></details>
    </article>)}</div>
   </>}
-  <details className="incidents-provenance"><summary>Daten & Aktualisierung</summary><p>Hinweise aus Abfahrten und Ankünften am gewählten Bahnhof: Transitous / MOTIS, in Deutschland ergänzt durch VBB beziehungsweise DB transport.rest.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten. Das geladene Fahrplanfenster ist keine vollständige Übersicht aller Netzstörungen.</p></details>
+  <details className="incidents-provenance"><summary>Daten & Aktualisierung</summary><p>Hinweise aus Abfahrten und Ankünften am gewählten Bahnhof: Transitous / MOTIS, in Deutschland ergänzt durch VBB beziehungsweise DB transport.rest.{date?" Letzte erfolgreiche Abfrage: "+date+" Uhr.":" Noch keine erfolgreiche Abfrage."} Automatische Aktualisierung bei geöffneter Ansicht etwa alle zwei Minuten. Das geladene Fahrplanfenster ist keine vollständige Übersicht aller Netzstörungen. Gemerkte Linien werden nur in diesem Browser gespeichert, nicht im Hintergrund überwacht.</p></details>
  </section>;
 }
