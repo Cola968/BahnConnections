@@ -21,6 +21,7 @@ const paths = {
   train: <><rect x="6" y="3" width="12" height="15" rx="3" /><path d="M6 10h12M9 21l2-3m4 3-2-3M12 3v7M9 14h.01M15 14h.01" /></>,
   check: <path d="m4 12 5 5L20 6"/>,
   copy: <><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></>,
+  share: <><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><path d="m7.8 11 8.4-5m-8.4 7 8.4 5"/></>,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>,
   refresh: <><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5 9a8 8 0 0 1 13-3l2 2M4 16l2 2a8 8 0 0 0 13-3"/></>,
   alert: <><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5m0 4h.01"/></>,
