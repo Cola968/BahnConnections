@@ -30,6 +30,7 @@ jobs:
       - run: pnpm audit:v60
       - run: pnpm audit:v60-passenger
       - run: pnpm audit:v60-transfer
+      - run: pnpm audit:v60-share
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
