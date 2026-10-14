@@ -4,15 +4,17 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-**Cloudflare-V56.2-Releasekandidat:** Die neue Version wird in [PR #64](https://github.com/Cola968/BahnConnections/pull/64) vorbereitet. Eine **eigenständige Cloudflare-Workers-Veröffentlichung wurde noch nicht durchgeführt**. Die Anleitung für die Ersteinrichtung per Smartphone: [Cloudflare Workers](docs/deploy/CLOUDFLARE-WORKERS.md). Vor Veröffentlichung ist die [V56.2-Release-Checkliste](docs/releases/V56.2-RELEASE-CHECKLIST.md) abzuarbeiten.
+**V58.0 Railglass in Entwicklung:** [Draft PR #72](https://github.com/Cola968/BahnConnections/pull/72). Die vorherigen ungemergten V57.3-Änderungen sind in diesem Branch enthalten; die öffentliche App ist **nicht automatisch V58**. Kein Cloudflare-Production-Deploy ohne GitHub-Secret, Abnahme und Freigabe.
 
-## V56.2 · Störungszentrale und zuverlässige Echtzeitdaten
+## V58.0 · Railglass Relaunch
 
-- Suche und Kategorie-Filter für Meldungen, Bauarbeiten und Ausfälle; Hinweise aus Ankünften und Abfahrten werden zusammengeführt.
-- Regelmäßige Aktualisierung bei sichtbarer Ansicht, letztes erfolgreiches Ergebnis bei kurzfristigen Quellenproblemen.
-- Korrekte Filterung bestätigter +1-bis-+4-Minuten-Verspätungen, defensiver Umgang mit ungültigen Providerdaten, begrenzte Detailabfragen und Zeitlimits.
-- Bessere mobile Tastaturbedienung, sichtbare Fahrthaltelisten und englische Navigationsbeschriftung.
-- **Wichtige Einschränkungen:** Reale Gerätetests fehlen; Live-Ankunfts- und Geschwindigkeitsangaben sind quellenabhängige Prognosen beziehungsweise Modellwerte, kein Fahrzeug-GPS. Die Transitous-Nutzung für kommerzielle Zwecke oder ohne Open-Source-Lizenz ist noch nicht freigegeben.
+- Neue hochwertige Hell-/Dunkelansichten mit einem durchgängigen Navigations- und Sheetsystem, reduzierter „Kartenstapel“-Ästhetik und Android-Systemleistenanpassung.
+- Vier Ein-Tipp-Ansichten für Bahnhofstafeln: Nächste Stunde, Verspätet, Ausfälle, Alle Fahrten. Bestehende Filter bleiben erhalten.
+- Direkter Vergleich von Reisealternativen nach Ankunft, Dauer, Umstiegen oder Fußweg.
+- Kartenstatus mit echten Datenqualitätszuständen: Positionen werden nicht als Fahrzeug-GPS ausgegeben.
+- Vorhandene Funktionen bleiben bestehen (Live-Tafel, Planer, Karte, Zugverfolgung, Merkliste, Störungen und Sharing). Tests auf dem aktuellen Branch in GitHub Actions, reale Android-Hardware weiter erforderlich.
+
+**Designkonzept und Go/No-Go:** [Railglass V58](docs/design/V58-RAILGLASS-DIRECTION.md), [Cloudflare und Android](docs/deploy/PLAY-STORE-NO-RENDER-SPLASH.md). Quellen-/Nutzungsrechte vor Veröffentlichung klären (Issue #67).
 
 ## Funktionen
 
