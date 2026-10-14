@@ -14,6 +14,20 @@ assert.equal(nextTrainStopIndex(stops,start+10*60_000),1,"Advance after departin
 assert.equal(nextTrainStopIndex(stops,Number.NaN),-1);
 assert.equal(nextTrainStopIndex([stop("Canceled",4,5,{cancelled:true}),...stops],start),1);
 assert.equal(nextTrainStopIndex([stop("Terminal",20,null)],start+5*60_000),0);
+const brokenForecast=normaliseTrainStops([
+ {mode:"REGIONAL_RAIL",realTime:true,from:{name:"A",departure:"not-an-iso-time",scheduledDeparture:at(5)},
+  to:{name:"B",arrival:"invalid",scheduledArrival:at(15)}}]);
+assert.equal(brokenForecast[0].departure,undefined,"Malformed provider departure should never reach RealtimeTime");
+assert.equal(brokenForecast[1].arrival,undefined,"Malformed provider arrival should never reach the UI");
+assert.equal(brokenForecast[0].scheduledDeparture,at(5));
+assert.equal(nextTrainStopIndex(brokenForecast,start),0,"Timetable fallback must survive normalization");
+const repairedBoundary=normaliseTrainStops([
+ {mode:"REGIONAL_RAIL",realTime:true,from:{name:"A",departure:at(0)},to:{name:"B",arrival:"broken",scheduledArrival:at(10)}},
+ {mode:"REGIONAL_RAIL",realTime:true,from:{name:"B",departure:at(12)},to:{name:"C",arrival:at(30)}}
+]);
+assert.equal(repairedBoundary.length,3);
+assert.equal(repairedBoundary[1].scheduledArrival,at(10));
+assert.equal(repairedBoundary[1].departure,at(12));
 assert.equal(nextTrainStopIndex([{name:"Defekte Quellzeit",arrival:"broken",scheduledArrival:at(20),departure:"broken",scheduledDeparture:at(22),cancelled:false,realtime:true}],start),0,"Invalid provider forecasts must fall back to a valid planned stop time");
 assert.equal(trainStopPhase(stops[0],start-60_000),"approaching");
 assert.equal(trainStopPhase(stops[0],start+4*60_000),"at-stop");
