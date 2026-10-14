@@ -1,4 +1,5 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
+import { loadStationBoardWithFallback, type StoptimesMode } from "../../../../station-board-fallback";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, validTransitousBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
@@ -91,13 +92,20 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const requestedTime=query.get("time");
     if (requestedTime && (!Number.isFinite(Date.parse(requestedTime)) || requestedTime.length>80)) return Response.json({ stopTimes:[], warnings:["Ungültiger Abfragezeitpunkt"] }, { status:400 });
     if (requestedTime) url.searchParams.set("time", requestedTime);
-    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]) });
-    if (!response.ok) throw new Error(`Transitous ${response.status}`);
-    const responseData = await response.json() as { stopTimes?:unknown } | null;
-    const stopTimes = validTransitousBoardRows(responseData?.stopTimes);
-    const hasRealtime = stopTimes.some((item) => item.realTime === true);
+    // Per-station and per-direction: no map viewport is consulted.
+    // If realtime fails or lacks records, retry the same stop as timetable-only.
+    const requestRows=async(mode:StoptimesMode):Promise<unknown>=>{
+      const candidate=new URL(url);
+      candidate.searchParams.set("realtimeMode",mode);
+      const response=await fetch(candidate,{headers:transitousRequestHeaders(),signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)])});
+      if(!response.ok)throw new Error(`Transitous ${response.status}`);
+      const responseData=await response.json() as {stopTimes?:unknown}|null;
+      return responseData?.stopTimes;
+    };
+    const {stopTimes,fallback,warning}=await loadStationBoardWithFallback(requestRows);
+    const hasRealtime = !fallback && stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
-    const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
     // The disruption screen needs route-specific alerts, not a second DB check
     // for each direction. Streamed live boards retain full verification.
     if(query.get("verify")==="0" && query.get("stream")!=="1"){
