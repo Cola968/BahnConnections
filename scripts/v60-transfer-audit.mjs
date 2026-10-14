@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { assessTransfer, assessJourneyTransfers } from "../app/v60-transfer-assessment.ts";
 
 const base=Date.parse("2026-10-14T12:00:00Z");
@@ -51,3 +52,18 @@ assert.equal(assessTransfer(route(prev,next,0),0,Number.NaN).source,"timetable",
 const dayBoundary=assessTransfer(route(leg("IC",0,59),leg("RB",67,80),2),0,current);
 assert.equal(dayBoundary.bufferMinutes,6);
 console.log("V60 transfer audit: source freshness, footpath, cancellations, negative transfer and boundary cases passed.");
+
+const read=(path)=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
+const page=read("app/page.tsx");
+const alternatives=read("app/journey-alternatives.tsx");
+const board=read("app/live-board.tsx");
+const journey=read("app/live-journey.ts");
+assert.match(page,/assessJourneyTransfers\(journey\)/);
+assert.match(alternatives,/assessTransfer\(journey,index\)/);
+assert.match(alternatives,/checked=\{excludeCancelled\}/);
+assert.match(alternatives,/Nur Verbindungen ohne gemeldeten Ausfall/);
+assert.doesNotMatch(page,/occupancyForecast\(/,"No invented occupancy in itinerary");
+assert.doesNotMatch(board,/occupancyForecast\(/,"No invented occupancy in station board");
+assert.doesNotMatch(journey,/Math\.max\(0, Math\.round\(\(new Date\(next\.startTime/,"Negative transfer must not be clamped");
+assert.match(journey,/Number\.isFinite\(arrival\)/,"Invalid transfer timestamps need checking");
+console.log("V60 UI wiring audit: actual transfer buffer, alternative cancellation filter and no invented occupancy.");
