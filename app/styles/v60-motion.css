@@ -91,7 +91,7 @@
   .app-shell .board-quick-views{
     box-sizing:border-box;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
     gap:5px!important;width:100%;min-width:0;max-width:100%;
-    overflow:visible!important;padding:3px 0 6px!important
+    overflow:visible!important;padding:0!important
   }
   .app-shell .board-quick-views button{
     box-sizing:border-box;min-width:0;min-height:44px!important;
