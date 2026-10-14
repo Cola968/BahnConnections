@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
 import {combineStationCallResults} from "../app/station-radar-data.ts";
+import {STATIONS} from "../app/network-data.ts";
+import {stationMarkerHierarchy} from "../app/station-marker.ts";
 const station= (name,id) => ({name,id});
 const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
 const cases=[station("Berlin Hermannstraße","de:test:hermannstr"),station("Berlin Hbf","de:test:hbf"),station("Hamburg Hbf","de:test:hamburg"),station("Lübeck Hbf","de:test:luebeck"),station("Dresden Hbf","de:test:dresden")];
@@ -27,6 +29,16 @@ assert.deepEqual(combineStationCallResults(success,failure).coverage,'partial');
 assert.equal(combineStationCallResults(success,failure).calls.size,1);
 assert.deepEqual(combineStationCallResults(success,success).coverage,'complete');
 assert.throws(()=>combineStationCallResults(failure,failure),/nicht erreichbar/);
+// One algorithm must work for EVERY curated station, not only Berlin fixtures.
+// Dynamically discovered DB stops use the same marker/board code paths.
+const ids=new Set();
+for(const st of STATIONS){
+ assert.ok(st.id && !ids.has(st.id),"duplicate or missing station id: "+st.id);ids.add(st.id);
+ assert.ok(Number.isFinite(st.lat)&&Number.isFinite(st.lon),"invalid coordinates: "+st.id);
+ const hierarchy=stationMarkerHierarchy({hub:st.hub,passengerBand:st.passengerBand});
+ assert.ok(hierarchy.radius>0 && hierarchy.minimumZoom>=0,"unrenderable marker: "+st.name);
+}
+assert.ok(STATIONS.length>50,"Expected nationwide station sample, not only Berlin fixtures");
 const file=(name)=>readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const backend=file("app/api/stations/[id]/board/route.ts");
 assert.match(backend,/loadStationBoardWithFallback/);
@@ -39,4 +51,4 @@ assert.match(board,/\bboardScope\b/);
 const page=file("app/page.tsx");
 assert.match(page,/stationMarkerHierarchy/);
 assert.match(page,/station-tap-target/);
-console.log("Station-wide timetable and UI regression: 5 station types, fallback, stationId, touch markers passed.");
+console.log("Station-wide timetable and UI regression: "+STATIONS.length+" curated stations + 5 station-provider scenarios + fallback/partial direction/touch tests passed.");
