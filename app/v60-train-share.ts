@@ -8,6 +8,7 @@ export type TrainShareInput={
  plannedDeparture?:string;plannedArrival?:string;
  actualDeparture?:string;actualArrival?:string;
  realtime:boolean;fresh:boolean;updatedAt?:Date|null;
+ departureRealtime?:boolean;arrivalRealtime?:boolean;
  stops:readonly TrainShareStop[];
 };
 const formatter=new Intl.DateTimeFormat("de-DE",{
@@ -20,16 +21,18 @@ const clock=(value?:string):string=>{
 };
 export function formatTrainShare(input:TrainShareInput):string{
  const fresh=Boolean(input.fresh&&input.updatedAt&&Number.isFinite(input.updatedAt.getTime()));
- const prediction=fresh&&input.realtime;
+ const departurePrediction=fresh&&(input.departureRealtime??input.realtime);
+ const arrivalPrediction=fresh&&(input.arrivalRealtime??input.realtime);
+ const prediction=departurePrediction||arrivalPrediction;
  const lines=[
   "BahnConnections · Zugfahrt (Momentaufnahme)",
   `Zug: ${safe(input.name)}`,
   `Strecke: ${safe(input.from)} → ${safe(input.to)}`,
   `Abfahrt planmäßig: ${clock(input.plannedDeparture)}`,
-  ...(prediction&&Number.isFinite(Date.parse(input.actualDeparture??""))?[`Abfahrt Prognose: ${clock(input.actualDeparture)}`]:[]),
+  ...(departurePrediction&&Number.isFinite(Date.parse(input.actualDeparture??""))?[`Abfahrt Prognose: ${clock(input.actualDeparture)}`]:[]),
   `Ankunft planmäßig: ${clock(input.plannedArrival)}`,
-  ...(prediction&&Number.isFinite(Date.parse(input.actualArrival??""))?[`Ankunft Prognose: ${clock(input.actualArrival)}`]:[]),
-  `Datenstand: ${fresh?`Prognosen zum Abruf ${formatter.format(input.updatedAt!)}`:"Keine aktuelle Prognose – nur Fahrplanangaben"}`,
+  ...(arrivalPrediction&&Number.isFinite(Date.parse(input.actualArrival??""))?[`Ankunft Prognose: ${clock(input.actualArrival)}`]:[]),
+  `Datenstand: ${fresh?`${prediction?"Prognosen und Fahrplanstand":"Fahrplanstand"} vom ${formatter.format(input.updatedAt!)}`:"Keine aktuelle Prognose – nur Fahrplanangaben"}`,
   "",
   ...(input.stops.length?["Gemeldete Halte (Auszug):",...input.stops.slice(0,20).map(stop=>{
     if(stop.cancelled)return `${safe(stop.name,80)} · Halt entfällt`;
