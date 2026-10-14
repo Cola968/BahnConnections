@@ -47,8 +47,8 @@ export function TransferNotice({ journey, index }: {journey:LiveJourney; index:n
   return <div className={`transfer-step ${assessment.tone}`} role="status">
     <span><b>{assessment.label} · {compactStationLabel(previous.to.name)??previous.to.name}</b>
       <span className="transfer-times">
-        <span>Ankunft <RealtimeTime scheduled={previous.scheduledEndTime} actual={previous.endTime} realtime={previous.realtime} cancelled={previous.cancelled||previous.to.cancelled} cancellationLabel={previous.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={previous.to.scheduledTrack} actual={previous.to.track}/></span>
-        <span>Abfahrt <RealtimeTime scheduled={next.scheduledStartTime} actual={next.startTime} realtime={next.realtime} cancelled={next.cancelled||next.from.cancelled} cancellationLabel={next.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={next.from.scheduledTrack} actual={next.from.track}/></span>
+        <span>Ankunft <RealtimeTime scheduled={previous.scheduledEndTime} actual={assessment.arrivalRealtime?previous.endTime:previous.scheduledEndTime} realtime={assessment.arrivalRealtime} cancelled={previous.cancelled||previous.to.cancelled} cancellationLabel={previous.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={previous.to.scheduledTrack} actual={previous.to.track}/></span>
+        <span>Abfahrt <RealtimeTime scheduled={next.scheduledStartTime} actual={assessment.departureRealtime?next.startTime:next.scheduledStartTime} realtime={assessment.departureRealtime} cancelled={next.cancelled||next.from.cancelled} cancellationLabel={next.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={next.from.scheduledTrack} actual={next.from.track}/></span>
       </span>
       <small>{next.name} · {assessment.detail}</small>
     </span>
