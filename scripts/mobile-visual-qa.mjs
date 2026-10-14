@@ -482,16 +482,26 @@ try {
     const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
     return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
   })()`);
-  if (!simpleMore || simpleMore.count !== 4) throw new Error('Mehr-Menü ist nicht auf vier Kernaktionen begrenzt: '+JSON.stringify(simpleMore));
+  if (!simpleMore || simpleMore.count !== 5) throw new Error('V60 Mehr-Menü muss genau fünf Kernaktionen zeigen: '+JSON.stringify(simpleMore));
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Tastenkürzel','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
   await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
+  await tap('.mobile-navigation button:last-of-type');
+  await tap('.simple-more-list>button:nth-of-type(4)');
+  if (!await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog[role=dialog]'))"))
+    throw new Error('V60 Tastaturhilfe lässt sich im mobilen Mehr-Menü nicht öffnen');
+  if (await evaluate("Boolean(document.querySelector('.simple-more-popover'))"))
+    throw new Error('Mehr-Menü bleibt unter Tastaturhilfe sichtbar');
+  await tap('.v60-shortcut-dialog header button');
+  if (await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog'))"))
+    throw new Error('Tastaturhilfe lässt sich nicht schließen');
+
 
   const radarChecks=[];
   if (useJourneyFixture) {
