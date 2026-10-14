@@ -29,3 +29,21 @@ export function assessBoardHealth(board:BoardHealthInput|null,now=Date.now()):Bo
   return {state:"schedule",label:"Nur Fahrplan / keine aktuelle Prognose",detail:"Die angezeigten Zeiten sind nicht als bestätigte Echtzeit-Prognosen ausgewiesen.",...common};
  return {state:"unknown",label:"Echtzeitstatus unklar",detail:"Die Quelle liefert keine eindeutige Angabe zur Aktualität.",...common};
 }
+
+/** Avoid a green station badge when there are no representative live predictions. */
+export type StationConditionInput=BoardHealthInput&{
+ stationId:string;canceled:number;delayed6:number;delayed15:number;delaySamples:number;
+};
+export function stationCondition(board:StationConditionInput|null,stationId:string,now=Date.now()):{
+ tone:"unknown"|"risk"|"medium"|"good";label:string;
+}{
+ if(!board||board.stationId!==stationId)return {tone:"unknown",label:"lädt"};
+ const health=assessBoardHealth(board,now);
+ if(health.state==="stale")return {tone:"unknown",label:"Daten veraltet"};
+ if(health.state!=="live")return {tone:"unknown",label:"Prognose unklar"};
+ const samples=count(board.delaySamples);
+ if(samples<Math.max(3,Math.ceil(health.totalCount*.2)))return {tone:"unknown",label:"wenige Prognosen"};
+ if(count(board.canceled)>0||count(board.delayed15)/samples>.2)return {tone:"risk",label:"angespannt"};
+ if(count(board.delayed6)/samples>.2)return {tone:"medium",label:"beobachten"};
+ return {tone:"good",label:"stabil"};
+}
