@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V57.3",date:"14. Oktober 2026 · Beta",current:true,lead:"Meine Linien, eine ehrliche Datenqualität und Betriebslagen, die sich direkt teilen lassen.",tags:["Meine Linien","Echtzeitklarheit","Teilen","Mobile"],changes:[
+ {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
+  ["Bahnhofstafel sofort filtern","Mit einem Tipp nur die nächste Stunde, verspätete oder ausgefallene Züge ansehen; Filter vollständig zurücksetzen."],
+  ["Radar-Datenstatus","Geschätzte Positionen und Echtzeitquelle klar trennen. Ein Klick führt zur Methodik."],
+  ["Ein Design statt Kartenstapel","Helle und dunkle Oberflächen mit ruhiger Navigation, konsequenten Schriften und reduzierten Materialeffekten."],
+  ["Android-Barrieren beseitigen","Systemleisten und App-Hintergrund folgen der gewählten Darstellung; kleine Bildschirme und Zuginspektor verbessert."],
+  ["Fehlersicherheit","Filter-, Status- und Darstellungstests ergänzen die bestehenden Chrome-, Render- und Cloudflare-Checks."]
+ ]},
+ {version:"V57.3",date:"14. Oktober 2026 · Beta",current:false,lead:"Meine Linien, eine ehrliche Datenqualität und Betriebslagen, die sich direkt teilen lassen.",tags:["Meine Linien","Echtzeitklarheit","Teilen","Mobile"],changes:[
   ["Meine Linien","Störungsmeldungen gezielt auf gemerkte Linien eingrenzen. Auswahl bleibt nur lokal auf deinem Gerät."],
   ["Datenqualität statt falschem Live","Echtzeitabdeckung, letzte Abfrage und Quellenhinweise auf der Bahnhof-Infoseite."],
   ["Station teilen","Bei unterstützten Bahnhöfen einen direkt öffnenden Link versenden oder kopieren."],
