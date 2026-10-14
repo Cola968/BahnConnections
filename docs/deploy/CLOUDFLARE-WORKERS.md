@@ -31,7 +31,16 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 
 - Ohne Zugangsdaten kann er Cloudflare-Preflight, TypeScript, Worker-Build und Wrangler-Dry-Run überprüfen.
 - Die eigentliche Veröffentlichung läuft **nur von `main`** und nur mit einem ausdrücklich aktivierten Workflow-Dispatch (`publish=true`) oder dem Repository-Opt-in `CLOUDFLARE_DEPLOY_ENABLED=true`.
-- Für diese Alternative sind `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID` als **GitHub Actions Secrets** erforderlich. Niemals im Chat, Quellcode oder PR veröffentlichen.
+- **Vereinfacht:** Die nicht geheime Cloudflare-Konto-ID ist bereits als GitHub-Actions-Repository-Variable `CLOUDFLARE_ACCOUNT_ID` hinterlegt. Der Workflow liest sie automatisch; du musst **nur ein Secret** anlegen: `CLOUDFLARE_API_TOKEN`. Niemals das Token im Chat, Quellcode oder PR veröffentlichen.
+
+### GitHub-Verbindung in Cloudflare hängt? Einmalig ohne Import-Dialog
+
+1. [Cloudflare – Account API Tokens](https://dash.cloudflare.com/?to=/:account/api-tokens) öffnen. **Create Token → Edit Cloudflare Workers** wählen. Das Token auf das eigene Cloudflare-Konto beschränken und erstellen. Hinweis: Es wird nur bei Erstellung vollständig angezeigt.
+2. In [GitHub → BahnConnections → Actions secrets](https://github.com/Cola968/BahnConnections/settings/secrets/actions) unter **New repository secret** den Namen `CLOUDFLARE_API_TOKEN` wählen und dort den Tokenwert einfügen. **Den Token niemals hier im Chat senden.**
+3. Danach kann der bestehende GitHub-Workflow `Standalone Cloudflare Workers` die App direkt über Wrangler bereitstellen, **ohne** Cloudflare „Connect GitHub“ oder die fehlerhafte Weiterleitung. Deployment bleibt bewusst an den Branch `main` und `publish=true` gebunden; der V57.3-Draft-PR muss erst mit Rechte- und QA-Abnahme freigegeben werden.
+4. Erst ein echter Deployment-Erfolg (nicht der erfolgreiche Dry-Run) liefert eine funktionierende Worker-Adresse und beendet den Render-Free-Aufwachbildschirm **für die neu installierte PWA auf Cloudflare**. Bereits auf Render installierte Apps müssen von der Cloudflare-Adresse neu installiert werden.
+
+[Cloudflare-Dokumentation: GitHub Actions mit Wrangler](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
 - Nicht gleichzeitig beide automatischen Deployment-Wege für denselben Worker aktivieren.
 
 ## Was bereits vorbereitet ist
