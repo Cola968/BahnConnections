@@ -124,7 +124,7 @@ check("Transfer displays concrete times, platforms, fresh-source gates and walks
 check("Station subnavigation is owned by the stationary header",page.includes("subNavigation={<StationSubNavigation") && panelTools.includes("{subNavigation}") && !page.includes('className="station-section-tabs"') && stationSheetCss.includes("position:static"));
 check("Board controls use progressive disclosure",board.includes("<BoardToolbar") && board.includes("{filtersOpen &&") && boardToolbar.includes("aria-expanded={filtersOpen}") && board.includes("board-data-details"));
 check("One canonical glass material contract",!styles.at(-1).includes("--glass-clear:color-mix") && styles[0].includes("--glass-sheet-half:") && stationSheetCss.includes("background:transparent!important"));
-check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 50 Fahrten anzeigen"));
+check("Live board is paginated",board.includes("displayLimit") && board.includes("Weitere 120 Fahrten anzeigen"));
 check("Destination has a visible dedicated grid column",css.includes(".board-row-summary .board-destination { grid-column:3") && css.includes("minmax(0,1fr)"));
 check("Line map loading is batched",stationLines.includes("inBatches") && stationLines.includes("void loadMapLines()") && !stationLines.includes("station-line-filters"));
 check("Ring lines retain the selected loop",tripTrimming.includes("trimRepeatedStationLoop") && board.includes("trimRepeatedStationLoop(stops, points, station, referenceTime)") && stationLines.includes("processor.prepare"));
