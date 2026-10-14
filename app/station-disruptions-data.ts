@@ -11,12 +11,29 @@ export function noticeCategoryCounts(items:readonly RailNotice[]):Record<RailNot
 function searchKey(text:string){
  return text.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("de-DE").replace(/\s+/g," ").trim();
 }
+export type RailNoticeSort="recommended"|"time"|"line";
+/** Station-wide notices have no attributed rail line and must not inflate affected-line filters. */
+export function affectedNoticeLines(items:readonly RailNotice[]):string[]{
+ return [...new Set(items.flatMap(item=>item.lines).map(line=>line.trim()).filter(Boolean))]
+   .sort((a,b)=>a.localeCompare(b,"de",{numeric:true}));
+}
+
 /** Searches alerts, route names and all grouped rail lines, never just a headline. */
-export function filterStationNotices(items:readonly RailNotice[],filter:RailNoticeFilter,query:string):RailNotice[]{
+export function filterStationNotices(items:readonly RailNotice[],filter:RailNoticeFilter,query:string,line="all",sort:RailNoticeSort="recommended"):RailNotice[]{
  const term=searchKey(query.slice(0,100));
- return items.filter(item=>(filter==="all"||item.kind===filter)&&(!term||searchKey([
-  item.headline,item.detail,item.lines.join(" "),item.direction??"",item.journey??""
- ].join(" ")).includes(term)));
+ const filtered=items.filter(item=>(filter==="all"||item.kind===filter)
+   &&(line==="all"||item.lines.includes(line))
+   &&(!term||searchKey([
+    item.headline,item.detail,item.lines.join(" "),item.direction??"",item.journey??""
+   ].join(" ")).includes(term)));
+ if(sort==="time")return [...filtered].sort((a,b)=>{
+  const ta=Date.parse(a.plannedTime??"");
+  const tb=Date.parse(b.plannedTime??"");
+  return (Number.isFinite(ta)?ta:Number.POSITIVE_INFINITY)-(Number.isFinite(tb)?tb:Number.POSITIVE_INFINITY);
+ });
+ if(sort==="line")return [...filtered].sort((a,b)=>
+  (a.lines[0]??"ZZZZ").localeCompare(b.lines[0]??"ZZZZ","de",{numeric:true}));
+ return filtered;
 }
 
 type Alert=TransitAlert;
@@ -31,7 +48,7 @@ export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<
  return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
 }
 function clean(v:unknown,max=360){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,max):"";}
-function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":/ausfall|fällt aus|entfällt|entfallen|ersatzverkehr|abgesagt|cancel|no service/.test(s)?"cancellation":"incident";}
+function kindFor(title:string,detail:string):RailNotice["kind"]{const s=(title+" "+detail).toLocaleLowerCase("de");return /ausfall|fällt aus|entfällt|entfallen|ersatzverkehr|abgesagt|cancel|no service/.test(s)?"cancellation":/bauarbeit|baustell|bauphase|gleisbau|instandhaltungsarbeit|bauzeit|baubedingt/.test(s)?"construction":"incident";}
 function isDisruption(alert:Alert,headline:string,detail:string){
  const text=(headline+' '+detail).toLocaleLowerCase('de');
  if(alert.effect==='NO_EFFECT'||alert.effect===7)return false;
