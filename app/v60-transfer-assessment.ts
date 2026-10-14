@@ -59,3 +59,10 @@ export function assessTransfer(journey:LiveJourney,index:number,now=Date.now()):
 export function assessJourneyTransfers(journey:LiveJourney,now=Date.now()):TransferAssessment[]{
  return journey.transitLegs.slice(0,-1).map((_,index)=>assessTransfer(journey,index,now));
 }
+
+/** A sort key, never a probability or promise that a passenger can catch a train. */
+export function minimumTransferBuffer(journey:LiveJourney,now=Date.now()):number|null{
+ const transfers=assessJourneyTransfers(journey,now);
+ if(!transfers.length||transfers.some(item=>item.bufferMinutes===null||item.status==="cancelled"||item.status==="unknown"))return null;
+ return Math.min(...transfers.map(item=>item.bufferMinutes!));
+}
