@@ -118,7 +118,7 @@ export function StationDisruptions({station}:{station:Station}){
    <div className="incidents-filters" role="group" aria-label="Meldungstyp">{noticeFilters.map(item=><button type="button" key={item.id} aria-pressed={filter===item.id} className={filter===item.id?"active":""} onClick={()=>setFilter(item.id)}>{item.name} <span aria-hidden="true">{counts[item.id]}</span></button>)}</div>
    <div className="incidents-tools">
     <label><span>Linienfokus</span><select value={lineFocus} onChange={event=>setLineFocus(event.target.value)} aria-label="Störungslinie filtern"><option value="all">Alle betroffenen Linien</option>{affectedLines.map(line=><option key={line} value={line}>{line}</option>)}</select></label>
-    <label><span>Reihenfolge</span><select value={sortOrder} onChange={event=>setSortOrder(event.target.value as RailNoticeSort)} aria-label="Meldungen sortieren"><option value="recommended">Standard</option><option value="time">Nächste zuerst</option><option value="line">Nach Linie</option></select></label>
+    <label><span>Reihenfolge</span><select value={sortOrder} onChange={event=>setSortOrder(event.target.value as RailNoticeSort)} aria-label="Meldungen sortieren"><option value="recommended">Standard</option><option value="time">Nach Uhrzeit</option><option value="line">Nach Linie</option></select></label>
    </div>
   </>}
   {state==="loading"&&<p className="incidents-state" role="status">Aktuelle Hinweise werden geladen …</p>}
