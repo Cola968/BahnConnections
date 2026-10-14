@@ -2,8 +2,9 @@ import type { Station } from './network-data';
 import { requireTransitousStopId } from './transitous.ts';
 
 export type StationRadarDirection = 'all' | 'inbound' | 'outbound';
-export type StationCall = { arrival?: number; departure?: number };
-type Row = { tripId?: unknown; cancelled?: boolean; tripCancelled?: boolean; place?: { cancelled?: boolean; arrival?: string; departure?: string; scheduledArrival?: string; scheduledDeparture?: string } };
+export type StationCall = {arrival?:number;departure?:number;name?:string;destination?:string;cancelled?:boolean;realtime?:boolean};
+type Row = {tripId?:unknown;cancelled?:boolean;tripCancelled?:boolean;realTime?:boolean;displayName?:string;routeShortName?:string;headsign?:string;tripTo?:{name?:string};place?:{cancelled?:boolean;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string}};
+const safeLabel=(value:unknown)=>typeof value==='string'&&value.trim()?value.trim().slice(0,120):undefined;
 const timestamp = (value?: string) => { const n=Date.parse(value??''); return Number.isFinite(n)?n:undefined; };
 
 /** Membership comes from the selected stop's timetable, never map proximity or a line name. */
@@ -11,24 +12,41 @@ export function stationCalls(arrivals: Row[], departures: Row[]): Map<string,Sta
   const calls=new Map<string,StationCall>();
   for(const [rows,kind] of [[arrivals,'arrival'],[departures,'departure']] as const){
     for(const row of rows){
-      if(!row || typeof row.tripId!=='string' || !row.tripId || row.tripId.length>500 || row.cancelled || row.tripCancelled || !row.place || row.place.cancelled)continue;
-      const at=timestamp(row.place[kind])??timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
+      if(!row || typeof row.tripId!=='string' || !row.tripId || row.tripId.length>500 || !row.place)continue;
+      const actual=timestamp(row.place[kind]);
+      const at=actual??timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
       if(at===undefined)continue;
       const call=calls.get(row.tripId)??{};
-      call[kind]=at;calls.set(row.tripId,call);
+      call[kind]=at;
+      call.name??=safeLabel(row.displayName)??safeLabel(row.routeShortName);
+      call.destination??=safeLabel(row.headsign)??safeLabel(row.tripTo?.name);
+      call.cancelled=Boolean(call.cancelled||row.cancelled||row.tripCancelled||row.place.cancelled);
+      call.realtime=Boolean(call.realtime||(row.realTime===true&&actual!==undefined));
+      calls.set(row.tripId,call);
     }
   }
   return calls;
 }
 
 export function matchesStationCall(call:StationCall|undefined,direction:StationRadarDirection,now=Date.now()):boolean{
-  if(!call)return false;
+  if(!call||call.cancelled)return false;
   if(direction==='all')return true;
   // Once the station has been served, the vehicle is outbound. A future call is inbound.
   // At the platform it belongs to both directions; terminal origins have no arrival.
   if(call.arrival!==undefined && call.departure!==undefined && call.arrival<=now+60_000 && call.departure>=now-60_000)return true;
   if(direction==='inbound')return call.arrival!==undefined && call.arrival>=now-60_000;
   return call.departure!==undefined && call.departure<=now+60_000;
+}
+
+/** Every timetable call is browsable, whether or not map geometry is available. */
+export function listStationCalls(calls:Map<string,StationCall>,direction:StationRadarDirection,query=''){
+  const needle=query.trim().toLocaleLowerCase('de');
+  const at=(call:StationCall)=>direction==='inbound'?call.arrival??Infinity:direction==='outbound'?call.departure??Infinity:Math.min(call.arrival??Infinity,call.departure??Infinity);
+  return [...calls.entries()].filter(([id,call])=>
+    (direction==='all'||(direction==='inbound'?call.arrival!==undefined:call.departure!==undefined))
+    &&(!needle||[id,call.name,call.destination].some(value=>value?.toLocaleLowerCase('de').includes(needle))))
+    .sort(([idA,a],[idB,b])=>at(a)-at(b)||idA.localeCompare(idB,'de'))
+    .map(([tripId,call])=>({tripId,call}));
 }
 
 /** Both sources are attempted independently: one failed direction must not hide

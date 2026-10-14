@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
-import {combineStationCallResults} from "../app/station-radar-data.ts";
+import {combineStationCallResults,listStationCalls,matchesStationCall,stationCalls} from "../app/station-radar-data.ts";
 import {STATIONS} from "../app/network-data.ts";
 import {stationMarkerHierarchy} from "../app/station-marker.ts";
 const station= (name,id) => ({name,id});
@@ -29,6 +29,20 @@ assert.deepEqual(combineStationCallResults(success,failure).coverage,'partial');
 assert.equal(combineStationCallResults(success,failure).calls.size,1);
 assert.deepEqual(combineStationCallResults(success,success).coverage,'complete');
 assert.throws(()=>combineStationCallResults(failure,failure),/nicht erreichbar/);
+const callRows=stationCalls([
+ {tripId:"ice-100",displayName:"ICE 100",headsign:"Hamburg",realTime:true,place:{arrival:at(10),scheduledArrival:at(9)}},
+ {tripId:"cancelled",displayName:"RE 8",headsign:"Lübeck",cancelled:true,place:{scheduledArrival:at(20)}}
+],[{tripId:"ice-100",place:{scheduledDeparture:at(12)}},{tripId:"regional-20",displayName:"RB 20",place:{scheduledDeparture:at(30)}}]);
+assert.equal(callRows.size,3,"provider calls cannot be limited by map viewport");
+assert.equal(callRows.get("ice-100")?.arrival,Date.parse(at(10)));
+assert.equal(callRows.get("ice-100")?.departure,Date.parse(at(12)));
+assert.equal(callRows.get("ice-100")?.realtime,true);
+assert.equal(callRows.get("cancelled")?.cancelled,true);
+assert.equal(matchesStationCall(callRows.get("cancelled"),"all"),false);
+assert.deepEqual(listStationCalls(callRows,"all").map(row=>row.tripId),["ice-100","cancelled","regional-20"]);
+assert.deepEqual(listStationCalls(callRows,"outbound").map(row=>row.tripId),["ice-100","regional-20"]);
+assert.deepEqual(listStationCalls(callRows,"all","lübeck").map(row=>row.tripId),["cancelled"]);
+assert.deepEqual(listStationCalls(callRows,"inbound","ICE").map(row=>row.tripId),["ice-100"]);
 // One algorithm must work for EVERY curated station, not only Berlin fixtures.
 // Dynamically discovered DB stops use the same marker/board code paths.
 const ids=new Set();
@@ -51,4 +65,6 @@ assert.match(board,/\bboardScope\b/);
 const page=file("app/page.tsx");
 assert.match(page,/stationMarkerHierarchy/);
 assert.match(page,/station-tap-target/);
+assert.match(page,/StationRadarTripList key=\{selected.id\}/);
+assert.match(file("app/station-radar-trip-list.tsx"),/api\/trips\/transitous/);
 console.log("Station-wide timetable and UI regression: "+STATIONS.length+" curated stations + 5 station-provider scenarios + fallback/partial direction/touch tests passed.");

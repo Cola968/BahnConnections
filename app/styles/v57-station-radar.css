@@ -131,3 +131,26 @@
 .mobile-nav-route-asset {width:22px;height:24px;background:currentColor;mask:url('/design/cutout-45-ff8aabc8a8fe.png') center/contain no-repeat}
 @container(max-width:300px){.incident-disclosure>summary {gap:8px;grid-template-columns:minmax(38px,auto) minmax(0,1fr) 20px}.incident-row-lines {padding-right:8px;max-width:70px}}
 @container(min-width:480px){.station-incidents .incidents-filters {grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Provider-confirmed station calls remain searchable beyond the visible radar map. */
+.station-radar-trip-toggle,.station-radar-trip-more{width:100%;min-height:44px;border:1px solid var(--line-subtle);border-radius:9px;background:var(--soft);color:var(--ink);font-size:.76rem;font-weight:650;cursor:pointer}
+.station-radar-trip-browser-list{max-height:min(52dvh,440px);overflow-y:auto;overscroll-behavior:contain;margin-top:7px;padding-top:8px;border-top:1px solid var(--line-subtle);scrollbar-width:thin}
+.station-radar-trip-disclosure{margin:0 0 8px;color:var(--muted);font-size:.7rem;line-height:1.5}
+.station-radar-trip-search{display:grid;gap:5px;color:var(--ink);font-size:.74rem;font-weight:650}
+.station-radar-trip-search input{width:100%;min-width:0;min-height:44px;padding:9px;border:1px solid var(--line-subtle);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit}
+.station-radar-trip-rows{margin:8px 0;padding:0;list-style:none}
+.station-radar-trip-rows>li{border-top:1px solid var(--line-subtle)}
+.station-radar-trip-rows>li>button{display:grid;grid-template-columns:minmax(48px,auto) minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;min-height:54px;padding:8px 3px;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer}
+.station-radar-trip-rows>li>button>b{font-size:.76rem;overflow-wrap:anywhere}
+.station-radar-trip-rows>li>button>span{min-width:0;font-size:.75rem;overflow-wrap:anywhere}
+.station-radar-trip-rows>li>button small{display:block;font-size:.68rem;color:var(--muted)}
+.station-radar-trip-rows time{font-size:.72rem;font-variant-numeric:tabular-nums;text-align:right}
+.station-radar-trip-detail{padding:9px;border-radius:9px;background:var(--soft);font-size:.73rem;line-height:1.5}
+.station-radar-trip-detail p{margin:0 0 8px}
+.station-radar-trip-detail ol{max-height:250px;overflow-y:auto;margin:0;padding-left:20px}
+.station-radar-trip-detail li{padding:5px 0}
+.station-radar-trip-detail li b{display:block}
+.station-radar-trip-detail li span{color:var(--muted)}
+.station-radar-trip-detail button{min-height:44px;padding:8px;border:1px solid var(--line-subtle);border-radius:8px;background:var(--paper);color:var(--ink)}
+.station-radar-trip-browser button:focus-visible,.station-radar-trip-browser input:focus-visible{outline:2px solid var(--action);outline-offset:2px}
+@media(max-height:550px){.station-radar-scope .station-radar-trip-browser small{display:block}}

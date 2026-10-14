@@ -27,6 +27,7 @@ import {stationCondition} from "./board-health";
 import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
+import { StationRadarTripList } from "./station-radar-trip-list";
 import { matchesStationCall, type StationRadarDirection } from "./station-radar-data";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
@@ -1335,6 +1336,8 @@ export default function Home() {
           {liveVisible && selected && !selectedLiveTrip && !plannerVisible && !journey && !settingsOpen && !liveFiltersOpen && !moreMenuOpen && mobileSheetState!=="expanded" && <div className="station-radar-scope" aria-label="Bahnhofsradar">
             <div><b>{stationDisplayName(selected.name)}</b><small role="status">{stationRadar.status==="loading"?"Halte werden geprüft …":stationRadar.status==="error"?"Bahnhofshalte nicht erreichbar":`${visibleLiveTrips.length} Züge auf der Karte · ${stationRadar.calls.size} Fahrten mit Halt im Zeitfenster${stationRadar.coverage==="partial"?" · Daten teilweise verfügbar":""}`}</small></div>
             <div className="radar-direction-control" role="group" aria-label="Fahrtrichtung am Bahnhof">{([["all",language==="en"?"Show all":"Alle"],["inbound",language==="en"?"Inbound":"Ankommend"],["outbound",language==="en"?"Outbound":"Abgehend"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={radarDirection===id} onClick={()=>setRadarDirection(id)}>{label}</button>)}</div>
+            <StationRadarTripList key={selected.id} calls={stationRadar.calls} direction={radarDirection}
+              status={stationRadar.status} coverage={stationRadar.coverage} updatedAt={stationRadar.updatedAt}/>
           </div>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached map-filters-v57" id="map-view-menu" role="dialog" aria-label="Kartenfilter">
