@@ -55,6 +55,14 @@ export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
     return end!==null&&end>=now-60_000;
   });
 }
+/** Keep the full route accessible while letting passengers hide already passed stops.
+ * Never infer which stops have passed from an expired timetable snapshot. */
+export function relevantTrainStops(stops:TrainStop[],now:number,onlyRemaining:boolean,fresh:boolean):{stops:TrainStop[];hidden:number}{
+  if(!onlyRemaining||!fresh)return {stops,hidden:0};
+  const index=nextTrainStopIndex(stops,now);
+  return index>0?{stops:stops.slice(index),hidden:index}:{stops,hidden:0};
+}
+
 /** A timetable-based phase, not proof of a measured train position or door status. */
 export function trainStopPhase(stop:TrainStop,now:number):"approaching"|"at-stop"|"departed"|"unknown" {
   if(stop.cancelled||!Number.isFinite(now))return "unknown";
