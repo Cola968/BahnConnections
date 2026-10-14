@@ -53,3 +53,18 @@ const loop=prepareStationTrip({tripId:'qa-loop',name:'S41',category:'sbahn',real
 ]});
 assert.equal(loop.stops.length,6);assert.equal(loop.segments.length,2,'Loop trimming must preserve leg boundaries even when the gap is under 2 km');
 assert.deepEqual(loop.segments,[loopPoints.slice(0,3),loopPoints.slice(3)]);
+
+
+/* V58.1: sparse polyline data must no longer look like an accidental dead end.
+   Links are visualization-only, NOT part of TrackRouter's surveyed segments. */
+const {railContinuityLinks}=await import('../app/rail-geometry.ts');
+const reported=[[[52.5,13.2],[52.52,13.22]],[[52.55,13.24],[52.56,13.25]]];
+const copy=JSON.stringify(reported);
+const joins=railContinuityLinks(reported);
+assert.deepEqual(joins,[[[52.52,13.22],[52.55,13.24]]],'Successive sections of a single journey may display a clearly dashed missing-data link');
+assert.equal(JSON.stringify(reported),copy,'The inferred link must never modify surveyed route geometry');
+assert.equal(railContinuityLinks([reported[0],[[53.5,14],[53.51,14.01]]]).length,0,'Never connect unrelated distant sections');
+assert.equal(railContinuityLinks([reported[0],reported[1]],0).length,0,'Inferred connectors must be disableable');
+assert.equal(railContinuityLinks([reported[0],[[Infinity,13.24],[52.56,13.25]]]).length,0,'Invalid coordinates cannot create fake tracks');
+assert.deepEqual(railContinuityLinks([reported[0],[[52.52,13.22],[52.56,13.25]]]),[],'Touching track endpoints are already continuous');
+console.log('Rail preview gap audit passed: dashed continuity without fictional surveyed tracks.');
