@@ -9,7 +9,7 @@ import {activeEstimatedPosition,decodePolyline,realtimeModelSpeed,type LiveTrip}
 import type {BoardMapTrip} from './live-board';
 import {splitRailGeometry} from './rail-geometry';
 import {compactStationLabel,serviceBadgeStyle} from './transit-style';
-import {nextTrainStopIndex,normaliseTrainStops,sourceFreshness,trainStopPhase,type TrainStop} from './train-inspector-data';
+import {nextTrainStopIndex,normaliseTrainStops,relevantTrainStops,sourceFreshness,trainStopPhase,type TrainStop} from './train-inspector-data';
 import {UiIcon} from './ui-icon';
 import {RAIL_MODES} from './transitous';
 
@@ -21,6 +21,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const [now,setNow]=useState(()=>Date.now());
   const [details,setDetails]=useState<{tripId:string;stops:TrainStop[];state:'loading'|'ready'|'error';updatedAt:Date|null}>({tripId:'',stops:[],state:'loading',updatedAt:null});
   const [retry,setRetry]=useState(0);
+  const [stopView,setStopView]=useState<{tripId:string;onlyRemaining:boolean}>({tripId:'',onlyRemaining:false});
   const nextStopRef=useRef<HTMLLIElement|null>(null);
   const [route,setRoute]=useState<BoardMapTrip|null>(null);
   const publishRoute=useEffectEvent((route:BoardMapTrip)=>onRoute?.(route));
@@ -66,6 +67,9 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const from=label(first?.name??trip.from.name),to=label(last?.name??trip.to.name);
   const nextIndex=detailFresh?nextTrainStopIndex(stops,now):-1,nextStop=nextIndex>=0?stops[nextIndex]:null;
   const nextPhase=nextStop?trainStopPhase(nextStop,now):'unknown';
+  const onlyRemaining=stopView.tripId===trip.tripId&&stopView.onlyRemaining;
+  const {stops:shownStops,hidden:hiddenStops}=relevantTrainStops(stops,now,onlyRemaining,detailFresh);
+  const canHideEarlier=detailFresh&&nextIndex>0;
   const destinationActual=complete?last?.arrival??last?.departure:trip.arrival;
   const destinationPlanned=complete?last?.scheduledArrival??last?.scheduledDeparture:trip.scheduledArrival;
   const destinationFresh=complete?detailFresh:radarFresh;
@@ -99,10 +103,11 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       <div className="train-action-row"><button type="button" className={tracked?'track-button active':'track-button'} onClick={onTrack} aria-pressed={tracked} disabled={!tracked&&!canTrack}><UiIcon name="location"/>{tracked?'Verfolgung beenden':'Auf Karte verfolgen'}</button>{onShowRoute&&route?.tripId===trip.tripId&&<button type="button" className="train-jump-next" onClick={onShowRoute}>Gesamte Strecke auf Karte</button>}{nextStop&&<button type="button" className="train-jump-next" onClick={()=>{nextStopRef.current?.scrollIntoView({block:'center',behavior:document.documentElement.dataset.motion==='reduced'||window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});nextStopRef.current?.focus({preventScroll:true});}}>Zum nächsten Halt</button>}</div>
       {tracked&&<p className="train-tracking-caption" role="status">{canTrack?'Kamera folgt der geschätzten Zugposition.':'Verfolgung pausiert: keine aktuelle Position.'}</p>}
       <section className="train-stops-section" aria-label="Vollständiger Fahrtverlauf">
-        <div className="train-stops-header"><b>Alle Halte</b><small>{stops.length?`${stops.length} Halte`:'Start → Ziel'}</small></div>
+        <div className="train-stops-header"><div><b>Alle Halte</b><small>{stops.length?(hiddenStops? `${shownStops.length} von ${stops.length} Halten · ${hiddenStops} frühere ausgeblendet`:`${stops.length} Halte`):'Start → Ziel'}</small></div>{canHideEarlier&&<button type="button" aria-pressed={onlyRemaining} onClick={()=>setStopView({tripId:trip.tripId,onlyRemaining:!onlyRemaining})}>{onlyRemaining?'Alle zeigen':'Ab jetzt'}</button>}</div>
         {detailState==='loading'&&<p className="train-stops-state" role="status">Vollständiger Fahrtverlauf wird geladen …</p>}
         {detailState==='error'&&<div className="train-route-error" role="status"><p>{stops.length?'Aktualisierung fehlgeschlagen. Der letzte Fahrtverlauf bleibt sichtbar.':'Vollständiger Fahrtverlauf derzeit nicht verfügbar. Oben ist nur der aktuelle Abschnitt zu sehen.'}</p><button type="button" onClick={()=>setRetry(value=>value+1)}>Erneut laden</button></div>}
-        <ol className="train-stop-list">{stops.map((stop,index)=>{
+        <ol className="train-stop-list">{shownStops.map((stop,shownIndex)=>{
+          const index=shownIndex+hiddenStops;
           const isNext=index===nextIndex,isPast=detailFresh&&at(stop.departure??stop.arrival)!==null&&at(stop.departure??stop.arrival)!<now-60_000;
           const actual=index===0?stop.departure??stop.arrival:stop.arrival??stop.departure,scheduled=index===0?stop.scheduledDeparture??stop.scheduledArrival:stop.scheduledArrival??stop.scheduledDeparture;
           return <li key={`${index}-${stop.name}`} ref={isNext?nextStopRef:undefined} tabIndex={isNext?-1:undefined} aria-current={isNext?'step':undefined} className={stop.cancelled?'cancelled':isNext?'next':isPast?'passed':''}><i aria-hidden="true"/><span><b>{label(stop.name)}</b><small>{stop.cancelled?'Halt entfällt':[index===0?'Start':index===stops.length-1?'Ziel':isNext?(nextPhase==='at-stop'?'Aufenthalt laut Fahrzeiten':'Nächster Halt'):'',stop.platform?`Gleis ${stop.platform}`:''].filter(Boolean).join(' · ')}</small></span><RealtimeTime scheduled={scheduled} actual={detailFresh?actual:scheduled} realtime={detailFresh&&stop.realtime} cancelled={stop.cancelled} compact/></li>;
