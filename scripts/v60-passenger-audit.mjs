@@ -18,6 +18,7 @@ assert.equal(nextTrainStopIndex([{name:"Defekte Quellzeit",arrival:"broken",sche
 assert.equal(trainStopPhase(stops[0],start-60_000),"approaching");
 assert.equal(trainStopPhase(stops[0],start+4*60_000),"at-stop");
 assert.equal(trainStopPhase(stops[0],start+9*60_000),"departed");
+assert.equal(trainStopPhase(stop("Unplausible Haltezeit",20,10),start+15*60_000),"approaching","An implausibly early departure must not suggest a train left before arrival");
 assert.equal(trainStopPhase(stop("Cancelled",0,8,{cancelled:true}),start),"unknown");
 assert.equal(trainStopPhase(stop("Unknown",null,null),start),"unknown");
 assert.equal(sourceFreshness(new Date(start),start-5000,true),"current","Small clock skew should not make a fresh feed stale");
