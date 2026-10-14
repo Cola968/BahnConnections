@@ -1,13 +1,13 @@
-# BahnConnections V56.2 auf Cloudflare Workers veröffentlichen – auch vom Handy
+# BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Release-Kandidat:** [PR #64](https://github.com/Cola968/BahnConnections/pull/64) – **noch nicht auf Cloudflare online**. Hier wird eine eigenständige Web-/PWA-Version vorbereitet; die ursprüngliche ChatGPT-Sites-URL bleibt unabhängig.
+**Aktueller Release-Kandidat:** [PR #71 (V57.3)](https://github.com/Cola968/BahnConnections/pull/71) – **noch nicht auf Cloudflare online**. Hier wird eine eigenständige Web-/PWA-Version vorbereitet; die ursprüngliche ChatGPT-Sites-URL bleibt unabhängig.
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
 Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token in GitHub Secrets**: Cloudflare richtet den Build-Token selbst ein. Du musst den GitHub-Zugriff einmalig im Dashboard autorisieren. Das geht auch am Smartphone.
 
-1. Zuerst die [Release-Checkliste V56.2](../releases/V56.2-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
-2. Die getestete PR #64 auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
+1. Zuerst die [Release-Checkliste V57.3](../releases/V57.3-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
+2. Die getestete PR #71 auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
 3. [Cloudflare Workers & Pages öffnen](https://dash.cloudflare.com/?to=/:account/workers-and-pages). **Create application → Import a repository** auswählen und GitHub verbinden.
 4. Repo **`Cola968/BahnConnections`**, Produktionsbranch **`main`**, Worker-Name **`bahnconnections-standalone`** wählen. Der Worker-Name muss mit `wrangler.jsonc` übereinstimmen.
 5. In den Einstellungen folgende Werte eintragen:
@@ -20,7 +20,7 @@ Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token 
 | Deploy command | `pnpm deploy:cloudflare` |
 
 6. **Save and Deploy** nur nach erfolgter Freigabe ausführen. Eine tatsächliche `workers.dev`-URL wird erst **nach erfolgreichem** Deployment vergeben. Die vorherige ChatGPT-Sites-URL wird dadurch nicht aktualisiert.
-7. Neue Adresse öffnen, `/version.json` auf **`"version": "56.2"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
+7. Neue Adresse öffnen, `/version.json` auf **`"version": "57.3"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
 8. Bei Bedarf in **Settings → Builds** die gewünschte Auto-Deploy-/Preview-Branch-Strategie festlegen. Ein Push auf den Produktionsbranch kann einen neuen Build und eine Veröffentlichung auslösen.
 
 Cloudflare Dokumentation: [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) und [Build Settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
@@ -37,7 +37,7 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 ## Was bereits vorbereitet ist
 
 - Getrennter Cloudflare Worker mit `wrangler.jsonc`, `vite.cloudflare.config.ts`, `pnpm build:cloudflare` und `pnpm deploy:cloudflare`.
-- App-Version, PWA-Service-Worker-Cache, Installations-URL, Changelog und Release-Notizen sind auf **V56.2** abgestimmt.
+- App-Version, PWA-Service-Worker-Cache, Installations-URL, Changelog und Release-Notizen sind auf **V57.3** abgestimmt.
 - Die Code-Tests werden über GitHub Actions ausgeführt; Status immer für den **neuesten** PR-Commit ansehen.
 
 ## Offene Freigaben und Grenzen
@@ -49,3 +49,8 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 - Google Play ist ein **separater** Prozess mit Android-Paket, Signatur und Play Console.
 
 **Rückfall:** Bei Fehlern den eigenständigen Worker im Cloudflare-Dashboard auf eine funktionierende Version zurücksetzen. GitHub-Merge-SHA dokumentieren; bei Bedarf Code-Revert. Die bisherige Sites-Adresse bleibt separat erreichbar.
+
+
+## Google Play und Render-Ladeseite
+
+Für eine Google-Play-App ist Render Free mit einer Einschlaf-/Aufwachseite kein geeigneter Start-Host. Zusätzlich zur Cloudflare-Bereitstellung sind die Domain-Verifizierung, eine echte `assetlinks.json` und signierte Android-Pakete erforderlich: [Anleitung ohne Render-Ladeseite](PLAY-STORE-NO-RENDER-SPLASH.md). Die Cloudflare-Git-Integration muss der Eigentümer **einmalig im Dashboard autorisieren**; ein grüner Worker-Dry-Run ist noch keine Veröffentlichung.
