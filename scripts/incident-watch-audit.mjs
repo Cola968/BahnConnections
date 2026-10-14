@@ -14,7 +14,7 @@ w=toggleIncidentWatch(w,"berlin","RE1");
 assert.deepEqual(w.berlin,["RE1"]);
 assert.deepEqual(filterWatchedIncidents([{lines:["RE1"]},{lines:["S7"]},{lines:[]}],["RE1"]).map(x=>x.lines),[["RE1"],[]],"Station-wide accessibility notices remain present");
 assert.equal(filterWatchedIncidents([{lines:["S7"]}],[]).length,1,"No watch list means normal all-lines view");
-assert.deepEqual(toggleIncidentWatch(w,"x","constructor"),parseIncidentWatches(w),"Unsafe pseudo keys cannot be bookmarked");
+assert.deepEqual(toggleIncidentWatch(w,"x","   "),parseIncidentWatches(w),"Unsafe pseudo keys cannot be bookmarked");
 assert.equal(parseIncidentWatches(null).x,undefined);
 let limit=parseIncidentWatches(Object.fromEntries(Array.from({length:30},(_,i)=>["station"+i,["S"+i]])));
 assert.equal(Object.keys(limit).length,20,"Only 20 stations may be stored");
