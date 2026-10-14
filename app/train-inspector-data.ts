@@ -39,12 +39,33 @@ export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   }
   return result;
 }
+const stopTime=(value?:string):number|null=>{
+  const time=Date.parse(value??"");
+  return Number.isFinite(time)?time:null;
+};
+/** A stop remains relevant until departure. Arrival alone must not skip a train
+ * that is scheduled to be standing at the platform. */
 export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
+  if(!Number.isFinite(now))return -1;
   return stops.findIndex(stop=>{
     if(stop.cancelled)return false;
-    const at=Date.parse(stop.arrival??stop.departure??stop.scheduledArrival??stop.scheduledDeparture??"");
-    return Number.isFinite(at)&&at>=now-60_000;
+    const arrival=stopTime(stop.arrival??stop.scheduledArrival);
+    const departure=stopTime(stop.departure??stop.scheduledDeparture);
+    const end=departure!==null&&(arrival===null||departure>=arrival)?departure:arrival;
+    return end!==null&&end>=now-60_000;
   });
+}
+/** A timetable-based phase, not proof of a measured train position or door status. */
+export function trainStopPhase(stop:TrainStop,now:number):"approaching"|"at-stop"|"departed"|"unknown" {
+  if(stop.cancelled||!Number.isFinite(now))return "unknown";
+  const arrival=stopTime(stop.arrival??stop.scheduledArrival);
+  const departure=stopTime(stop.departure??stop.scheduledDeparture);
+  if(arrival!==null&&departure!==null&&departure>=arrival){
+    if(now<arrival)return "approaching";
+    return now<=departure?"at-stop":"departed";
+  }
+  const at=departure??arrival;
+  return at===null?"unknown":now<=at?"approaching":"departed";
 }
 export function headingDegrees(before:[number,number]|null,after:[number,number]|null):number|null{
   if(!before||!after)return null;
@@ -61,5 +82,5 @@ export function cardinalDirection(degrees:number|null):string {
 export function sourceFreshness(updatedAt:Date|null,now:number,inRadar:boolean):"current"|"old"|"missing" {
   if(!inRadar||!updatedAt)return "missing";
   const age=now-updatedAt.getTime();
-  return Number.isFinite(age)&&age>=0&&age<=90_000 ? "current":"old";
+  return Number.isFinite(age)&&age>=-10_000&&age<=90_000 ? "current":"old";
 }
