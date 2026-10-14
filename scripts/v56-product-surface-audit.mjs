@@ -57,7 +57,7 @@ const page=read("app/page.tsx"), filter=read("app/live-board.tsx"),settings=read
 assert.match(page,/StationDisruptions/);
 const incidentPage=read("app/station-disruptions.tsx");
 assert.match(incidentPage,/placeholder="Linie, Störung oder Ziel suchen"/,"Incident search needs an accessible text field");
-assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters must actually change the visible incidents");
+assert.match(incidentPage,/filterStationNotices\(items,filter,query,lineFocus,sortOrder\)/,"Category, query, line focus and sort must all affect visible incidents");
 assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
 assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
 assert.match(incidentPage,/const kinds=\["departure","arrival"\] as const/,"Incident view must include arrivals, not departures only");
