@@ -41,7 +41,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         const stops=normaliseTrainStops(Array.isArray(data.trip?.legs)?data.trip.legs:[]);
         if(!stops.length)throw Error('Keine Halte');
         if(!disposed&&!controller.signal.aborted){
-          const stamp=at(data.updatedAt);setNow(Date.now());setDetails({tripId:trip.tripId,stops,state:'ready',updatedAt:new Date(stamp??Date.now())});
+          const stamp=at(data.updatedAt);setNow(Date.now());setDetails({tripId:trip.tripId,stops,state:'ready',updatedAt:stamp===null?null:new Date(stamp)});
           const legs=Array.isArray(data.trip?.legs)?data.trip.legs:[];
           const segments:[number,number][][]=legs.flatMap((leg:{mode?:string;legGeometry?:{points?:string;precision?:number}})=>{
             if(!leg || !RAIL_MODES.split(',').includes(leg.mode??'') || typeof leg.legGeometry?.points!=='string')return [];
