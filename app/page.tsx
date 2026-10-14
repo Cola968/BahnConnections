@@ -147,15 +147,15 @@ function liveJourneyQuality(journey: LiveJourney) {
   if(cancelled)return {tone:"risk",label:"mit Ausfall",explanation:cancelled.detail};
   if(missed)return {tone:"risk",label:"zeitlich nicht erreichbar",explanation:missed.detail};
   if(unknown||!shortest)return {tone:"medium",label:"nicht bewertbar",explanation:"Mindestens ein Anschluss hat unvollständige Zeitangaben. Bitte prüfen."};
-  return {tone:shortest.tone,label:shortest.status==="tight"?"sehr knapp":shortest.status==="caution"?"knapp":"mit Zeitpuffer",
-    explanation:`Kleinster rechnerischer Puffer ${shortest.bufferMinutes} Min. einschließlich gemeldeter Fußwege. ${shortest.source==="realtime"?"Echtzeitprognose":shortest.source==="partial"?"Teilweise Echtzeitdaten":"Fahrplanwerte"} – kein garantierter Anschluss.`};
+  return {tone:shortest.tone,label:!shortest.walkProvided?"Gleisweg unbekannt":shortest.status==="tight"?"sehr knapp":shortest.status==="caution"?"knapp":"mit Zeitpuffer",
+    explanation:`${shortest.walkProvided?`Kleinster rechnerischer Puffer ${shortest.bufferMinutes} Min. einschließlich gemeldetem Fußweg.`:`${shortest.waitMinutes} Min. zwischen Ankunft und Abfahrt; Gleisweg nicht angegeben.`} ${shortest.source==="realtime"?"Echtzeitprognose":shortest.source==="partial"?"Teilweise Echtzeitdaten":"Fahrplanwerte"} – kein garantierter Anschluss.`};
 }
 
 function journeyOptionLabel(option: LiveJourney, fastest?: LiveJourney) {
   if (!fastest || option.id === fastest.id) return "Schnellste";
   if (option.transfers < fastest.transfers) return "Wenig Umstiege";
   const transfers=assessJourneyTransfers(option);
-  if (transfers.length&&transfers.every(item=>item.bufferMinutes!==null&&item.bufferMinutes>=10))return "Mehr Zeit zum Umsteigen";
+  if (transfers.length&&transfers.every(item=>item.walkProvided&&item.bufferMinutes!==null&&item.bufferMinutes>=10))return "Mehr Zeit zum Umsteigen";
   return "Spätere Abfahrt";
 }
 
