@@ -78,9 +78,11 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const nextPlanned=nextStop?.scheduledArrival??nextStop?.scheduledDeparture;
   const nextArrival=trainArrivalView({scheduled:nextPlanned,actual:nextActual,realtime:Boolean(nextStop?.realtime),fresh:detailFresh});
   const nextMinutes=remainingArrivalMinutes(nextArrival.expected??nextArrival.planned,now,detailFresh);
-  const dwellMinutes=nextPhase==='at-stop'?remainingArrivalMinutes(nextStop?.departure??nextStop?.scheduledDeparture,now,detailFresh):null;
+  const confirmedDwell=Boolean(nextStop?.realtime&&at(nextStop.arrival)!==null&&at(nextStop.departure)!==null);
+  const dwellDeparture=confirmedDwell?nextStop?.departure:nextStop?.scheduledDeparture??nextStop?.departure;
+  const dwellMinutes=nextPhase==='at-stop'?remainingArrivalMinutes(dwellDeparture,now,detailFresh):null;
   const nextStopCaption=nextPhase==='at-stop'
-    ? `Aufenthalt laut ${nextStop?.realtime?'Prognose':'Fahrplan'}${dwellMinutes===null?'':` · Abfahrt in ${dwellMinutes} Min.`}`
+    ? `Aufenthalt laut ${confirmedDwell?'Prognose':'Fahrplan'}${dwellMinutes===null?'':` · Abfahrt in ${dwellMinutes} Min.`}`
     : `Nächster Halt${nextMinutes===null?'':` · ${nextMinutes} Min.`}`;
   const speed=canTrack?realtimeModelSpeed(trip,now):null;
   const start=at(first?.departure??first?.arrival),end=at(destinationActual);
