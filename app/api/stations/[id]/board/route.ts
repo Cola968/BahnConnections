@@ -2,7 +2,7 @@ import { decodeRouteSegment } from "../../../decode-route-segment";
 import { loadStationBoardWithFallback, type StoptimesMode } from "../../../../station-board-fallback";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
-import { compareBoardRows, validTransitousBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
+import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
 type TransitousPlace = { name?:string; lat?:number; lon?:number };
 type DbLocation = { id?:string; name?:string; type?:string; location?:{ latitude?:number; longitude?:number } };
