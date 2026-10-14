@@ -12,6 +12,7 @@ import {compactStationLabel,serviceBadgeStyle} from './transit-style';
 import {nextTrainStopIndex,normaliseTrainStops,relevantTrainStops,sourceFreshness,trainStopPhase,type TrainStop} from './train-inspector-data';
 import {UiIcon} from './ui-icon';
 import {RAIL_MODES} from './transitous';
+import {formatTrainShare} from './v60-train-share';
 
 type Props={trip:LiveTrip;controls:PanelControls;mobileState:MobileSheetState;onMobileState:(state:MobileSheetState)=>void;onClose:()=>void;tracked:boolean;onTrack:()=>void;radarUpdatedAt:Date|null;radarStatus:'loading'|'ready'|'stale'|'error';inRadar:boolean;stationName?:string;onRoute?:(route:BoardMapTrip)=>void;onShowRoute?:()=>void};
 const at=(time?:string)=>{const n=Date.parse(time??'');return Number.isFinite(n)?n:null;};
@@ -21,6 +22,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const [now,setNow]=useState(()=>Date.now());
   const [details,setDetails]=useState<{tripId:string;stops:TrainStop[];state:'loading'|'ready'|'error';updatedAt:Date|null}>({tripId:'',stops:[],state:'loading',updatedAt:null});
   const [retry,setRetry]=useState(0);
+  const [shareResult,setShareResult]=useState<{tripId:string;message:string}>({tripId:'',message:''});
   const [stopView,setStopView]=useState<{tripId:string;onlyRemaining:boolean}>({tripId:'',onlyRemaining:false});
   const nextStopRef=useRef<HTMLLIElement|null>(null);
   const [route,setRoute]=useState<BoardMapTrip|null>(null);
@@ -89,6 +91,33 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   const progress=complete&&detailFresh&&start!==null&&end!==null&&end>start?Math.max(0,Math.min(100,(now-start)/(end-start)*100)):null;
   const routeSummary=complete?`${from} → ${to}`:detailState==='loading'?'Fahrtverlauf wird geladen …':`Abschnitt: ${from} → ${to}`;
   const status=detailFresh?(stops.some(stop=>stop.realtime)?'Echtzeitprognose':'Fahrplan'):detailState==='loading'?'Wird geladen':stops.length?'Letzter Datenstand':'Verlauf nicht verfügbar';
+  async function shareTrain(){
+    const text=formatTrainShare({
+      name:trip.name,from,to,
+      plannedDeparture:complete?first?.scheduledDeparture??first?.scheduledArrival:trip.scheduledDeparture,
+      plannedArrival:complete?last?.scheduledArrival??last?.scheduledDeparture:trip.scheduledArrival,
+      actualDeparture:complete?first?.departure??first?.arrival:trip.departure,
+      actualArrival:complete?last?.arrival??last?.departure:trip.arrival,
+      realtime:complete?stops.some(stop=>stop.realtime):trip.realTime,
+      fresh:complete?detailFresh:radarFresh,
+      updatedAt:complete?detailsUpdatedAt:radarUpdatedAt,
+      stops:complete?stops:[],
+    });
+    try{
+      if(navigator.share){
+        await navigator.share({title:`BahnConnections – ${trip.name}`,text});
+        setShareResult({tripId:trip.tripId,message:"Fahrtinformationen geteilt."});
+        return;
+      }
+    }catch(error){if((error as Error)?.name==="AbortError")return;}
+    try{
+      if(!navigator.clipboard?.writeText)throw new Error("Clipboard unsupported");
+      await navigator.clipboard.writeText(text);
+      setShareResult({tripId:trip.tripId,message:"Fahrtinformationen kopiert."});
+    }catch{
+      setShareResult({tripId:trip.tripId,message:"Teilen auf diesem Gerät nicht verfügbar."});
+    }
+  }
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector train-inspector-v57" data-tracking={tracked?'true':'false'} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Fahrtverlauf" mobileTitle={trip.name} mobileSummary={status} fullTitle={routeSummary} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState}/>
     <div className="panel-body">
@@ -102,7 +131,8 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
         <div><small>{nextStop?nextStopCaption:'Nächster Halt'}</small><b>{nextStop?label(nextStop.name):detailState==='loading'?'Wird geladen …':'Nicht aktuell verfügbar'}</b>{nextStop&&<RealtimeTime scheduled={nextPlanned} actual={detailFresh?nextActual:nextPlanned} realtime={detailFresh&&nextStop.realtime} compact/>}</div>
         <div><small>{complete?'Ankunft am Ziel':'Ankunft im Abschnitt'}</small><b>{to}</b><RealtimeTime scheduled={destinationPlanned} actual={destinationFresh?destinationActual:destinationPlanned} realtime={destinationFresh&&destinationRealtime} cancelled={last?.cancelled} compact/></div>
       </div>
-      <div className="train-action-row"><button type="button" className={tracked?'track-button active':'track-button'} onClick={onTrack} aria-pressed={tracked} disabled={!tracked&&!canTrack}><UiIcon name="location"/>{tracked?'Verfolgung beenden':'Auf Karte verfolgen'}</button>{onShowRoute&&route?.tripId===trip.tripId&&<button type="button" className="train-jump-next" onClick={onShowRoute}>Gesamte Strecke auf Karte</button>}{nextStop&&<button type="button" className="train-jump-next" onClick={()=>{nextStopRef.current?.scrollIntoView({block:'center',behavior:document.documentElement.dataset.motion==='reduced'||window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});nextStopRef.current?.focus({preventScroll:true});}}>Zum nächsten Halt</button>}</div>
+      <div className="train-action-row"><button type="button" className={tracked?'track-button active':'track-button'} onClick={onTrack} aria-pressed={tracked} disabled={!tracked&&!canTrack}><UiIcon name="location"/>{tracked?'Verfolgung beenden':'Auf Karte verfolgen'}</button><button type="button" className="train-jump-next" onClick={()=>void shareTrain()}><UiIcon name="share"/>Fahrt teilen</button>{onShowRoute&&route?.tripId===trip.tripId&&<button type="button" className="train-jump-next" onClick={onShowRoute}>Gesamte Strecke auf Karte</button>}{nextStop&&<button type="button" className="train-jump-next" onClick={()=>{nextStopRef.current?.scrollIntoView({block:'center',behavior:document.documentElement.dataset.motion==='reduced'||window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});nextStopRef.current?.focus({preventScroll:true});}}>Zum nächsten Halt</button>}</div>
+      {shareResult.tripId===trip.tripId&&shareResult.message&&<p className="train-tracking-caption" role="status">{shareResult.message}</p>}
       {tracked&&<p className="train-tracking-caption" role="status">{canTrack?'Kamera folgt der geschätzten Zugposition.':'Verfolgung pausiert: keine aktuelle Position.'}</p>}
       <section className="train-stops-section" aria-label="Vollständiger Fahrtverlauf">
         <div className="train-stops-header"><div><b>Alle Halte</b><small>{stops.length?(hiddenStops? `${shownStops.length} von ${stops.length} Halten · ${hiddenStops} frühere ausgeblendet`:`${stops.length} Halte`):'Start → Ziel'}</small></div>{canHideEarlier&&<button type="button" aria-pressed={onlyRemaining} onClick={()=>setStopView({tripId:trip.tripId,onlyRemaining:!onlyRemaining})}>{onlyRemaining?'Alle zeigen':'Ab jetzt'}</button>}</div>
