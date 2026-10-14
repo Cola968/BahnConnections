@@ -1,3 +1,11 @@
+# V60.0 · Fahrgastqualität (Entwicklung, nicht veröffentlicht)
+
+- **Nächster Halt richtig:** Ein Zug wird während seines laut Fahrplan beziehungsweise Prognose laufenden Bahnhofaufenthalts nicht mehr vorzeitig dem nächsten Bahnhof zugeordnet.
+- **Abfahrt im Aufenthalt:** Im Zuginspektor wird ein rechnerischer Bahnsteigaufenthalt von einer bloß bevorstehenden Ankunft unterschieden. Eine verbleibende Abfahrtszeit wird nur mit vorhandenen Zeitangaben berechnet; keine GPS- oder Türstatusbehauptung.
+- **Vergangene Halte ausblenden:** Der vollständige Fahrtverlauf bleibt verfügbar. Bei aktuellen Daten blendet „Ab jetzt“ bereits passierte Halte auf Wunsch aus; „Alle zeigen“ stellt sie wieder her. Bei veralteten Daten erfolgt kein automatisches Wegfiltern.
+- **Zeitstempel-Toleranz:** Kleine Unterschiede zwischen Quell- und Geräteuhr bis zu zehn Sekunden lassen aktuelle Meldungen nicht irrtümlich veralten.
+- **Regressionen:** Neue verpflichtende V60-Prüfung für Aufenthalte, Prognose-Aktualität, Ausfallhaltestellen und die Zuginspektor-Bedienung. Keine Veröffentlichung ohne vollständigen Build, mobile Sichtprüfung, Quellrechtsklärung und Live-API-Abnahme.
+
 # V58.0 · Railglass-Neustart – cleane Fahrgastoberfläche
 
 - **One-tap Bahnhofstafeln:** Schnellansichten „Nächste Stunde“, „Verspätet“, „Ausfälle“ und „Alle Fahrten“ direkt über der Tafel. Alle vier setzen möglicherweise widersprüchliche erweiterte Filter zurück; ein aktiver benutzerdefinierter Filter wird nicht fälschlich als Schnellansicht ausgewiesen.
