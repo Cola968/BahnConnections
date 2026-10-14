@@ -31,9 +31,20 @@ export function matchesStationCall(call:StationCall|undefined,direction:StationR
   return call.departure!==undefined && call.departure<=now+60_000;
 }
 
-export async function fetchStationCalls(station:Station,signal:AbortSignal):Promise<Map<string,StationCall>>{
+/** Both sources are attempted independently: one failed direction must not hide
+ * every valid railway call for the entire station. A partial result is labelled. */
+export function combineStationCallResults(
+ arrivals:PromiseSettledResult<Row[]>,departures:PromiseSettledResult<Row[]>
+):{calls:Map<string,StationCall>;coverage:'complete'|'partial'}{
+ if(arrivals.status==='rejected'&&departures.status==='rejected')throw new Error("Bahnhofshalte nicht erreichbar");
+ return {
+   calls:stationCalls(arrivals.status==='fulfilled'?arrivals.value:[],departures.status==='fulfilled'?departures.value:[]),
+   coverage:arrivals.status==='fulfilled'&&departures.status==='fulfilled'?'complete':'partial',
+ };
+}
+
+export async function fetchStationCallSnapshot(station:Station,signal:AbortSignal){
   const id=await requireTransitousStopId(station,signal);
-  // Include the preceding part of long-distance services already leaving the station.
   const time=new Date(Date.now()-6*60*60_000).toISOString();
   const fetchBoard=async(kind:'arrival'|'departure')=>{
     const query=new URLSearchParams({kind,time,n:'5000',verify:'0'});
@@ -43,7 +54,10 @@ export async function fetchStationCalls(station:Station,signal:AbortSignal):Prom
     if(!Array.isArray(data.stopTimes))throw Error('Ungültige Bahnhofshalte');
     return data.stopTimes as Row[];
   };
-  // Both directions must resolve before any train is described as confirmed.
-  const [arrivals,departures]=await Promise.all([fetchBoard('arrival'),fetchBoard('departure')]);
-  signal.throwIfAborted();return stationCalls(arrivals,departures);
+  const [arrivals,departures]=await Promise.allSettled([fetchBoard('arrival'),fetchBoard('departure')]);
+  signal.throwIfAborted();
+  return combineStationCallResults(arrivals,departures);
+}
+export async function fetchStationCalls(station:Station,signal:AbortSignal):Promise<Map<string,StationCall>>{
+  return (await fetchStationCallSnapshot(station,signal)).calls;
 }
