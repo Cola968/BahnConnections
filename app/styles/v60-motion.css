@@ -88,3 +88,14 @@ html[data-motion="reduced"] .v60-shortcut-dialog {
 @media(forced-colors:active){
   .v60-shortcut-dialog,.v60-shortcut-dialog header button{border:1px solid CanvasText;background:Canvas;color:CanvasText}
 }
+
+/* V60 recent stations — informational, not a second full-page navigation. */
+.app-shell .v60-recent-stations{display:grid;gap:2px;border-block:1px solid var(--line-subtle);padding:10px 0;margin:5px 0}
+.app-shell .v60-recent-stations>div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 10px 4px}
+.app-shell .v60-recent-stations>div strong{font-size:.84rem}
+.app-shell .v60-recent-stations>div button{font-size:.76rem;color:var(--muted);text-decoration:underline;text-underline-offset:3px;min-height:44px;background:none;border:0;padding:0 6px}
+.app-shell .v60-recent-stations>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:44px;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:var(--ink)}
+.app-shell .v60-recent-stations>button:active{background:var(--soft)}
+.app-shell .v60-recent-stations>button>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .v60-recent-stations>button svg{width:17px;height:17px;color:var(--muted)}
+.app-shell .v60-recent-stations button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
