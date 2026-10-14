@@ -43,7 +43,7 @@ assert.match(page,/className="v58-map-source"/);
 assert.match(page,/onClick=\{\(\)=>setHelpOpen\(true\)\}/);
 const alternatives=read("app/journey-alternatives.tsx");
 assert.match(alternatives,/className="v58-alternative-sort"/);
-assert.match(alternatives,/aria-pressed=\\{order===id\\}/);
+assert.ok(alternatives.includes('aria-pressed={order===id}'),"Alternative sort options must have a pressed state");
 assert.match(alternatives,/Fahrt fällt aus · Alternativen prüfen/);
 const chrome=read("app/browser-chrome.tsx");
 assert.match(chrome,/attributeFilter:\["data-theme"\]/);
