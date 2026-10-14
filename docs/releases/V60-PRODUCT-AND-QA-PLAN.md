@@ -12,9 +12,9 @@ Referenzen:
 - https://developer.apple.com/design/human-interface-guidelines/motion
 - https://developer.apple.com/design/human-interface-guidelines/accessibility
 
-## 20 echte Produktfunktionen für V60
+## 20 überprüfbare Produktideen für die Entwicklungs-Roadmap
 
-Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich fertig sind. Ein Grundgerüst allein zählt nicht als ausgelieferte Funktion.
+Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich fertig sind. Diese Tabelle ist **keine Zusage, alle 20 in V60 auszuliefern**. Ein Grundgerüst allein zählt nicht als ausgelieferte Funktion.
 
 | Nr. | Funktionspaket | Abnahmekriterium |
 |---|---|---|
@@ -54,7 +54,7 @@ Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich ferti
 
 ## V60-Release-Gates
 
-1. **Keine Merge-/Veröffentlichungsautomatik** solange V58-Regressionen offen oder die 20 Features unvollständig sind.
+1. **Keine Merge-/Veröffentlichungsautomatik** solange V58-Regressionen, Fahrplandaten-/Android-Gates oder die verbindlich für V60 ausgewählten Kernfunktionen unvollständig sind. Der Ideen-Backlog ist kein Release-Blocker.
 2. `pnpm audit:v60`, `pnpm audit:v58` bzw. `pnpm audit:railglass`, `pnpm audit:layout`, `pnpm audit:mobile`, `pnpm audit:map`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build`, Cloudflare Wrangler Dry-Run müssen grün sein.
 3. Playwright/Chromium auf 320/360/390/430/768/1024/1440, Hell/Dunkel, 200% Text und System „Reduce Motion“; reale API-Fehlerzustände.
 4. Mindestens ein echtes Android-Gerät: langsames Netz, Flugmodus, Hintergrund/Rückkehr, Dialoge, Tastatur, Sheet-Swipes, Map-Follow und PWA-Update.
@@ -63,7 +63,7 @@ Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich ferti
 ## Implementationsprotokoll
 
 - [x] V60-Projektbranch isoliert angelegt aus V58 inkl. dortiger Mobile-Fixes.
-- [ ] Funktionspakete 01–20 einzeln implementieren und abnehmen.
+- [ ] Verbindlich ausgewählte V60-Kernfunktionen einzeln implementieren und abnehmen; alle übrigen Pakete bleiben ungeplante Kandidaten.
 - [ ] Code-Review und CI-Befunde vollständig bearbeiten.
 - [ ] Externe Daten-/Lizenzfreigaben und finalen Deploy-Nachweis dokumentieren.
 
@@ -78,7 +78,7 @@ Status = **geplant**, bis UI, Datenfluss, Tests und responsive QA wirklich ferti
 
 ## V60 Erweiterung: Pakete 21–40
 
-Die ursprünglichen 20 Pakete bleiben bestehen. Die folgenden Ergänzungen sind kleinere, einzeln prüfbare Fahrgastfunktionen. **Umgesetzt** bedeutet im Entwicklungsbranch eingecheckt, nicht veröffentlicht. Alle Änderungen benötigen weiterhin CI und reale Browser-/Geräteabnahme.
+Die ursprünglichen 20 Ideen bleiben als Backlog bestehen. Die folgenden Ergänzungen sind kleinere, einzeln prüfbare Fahrgastfunktionen und **nicht automatisch V60-Releaseumfang**. **Umgesetzt** bedeutet im Entwicklungsbranch eingecheckt, nicht veröffentlicht. Alle Änderungen benötigen weiterhin CI und reale Browser-/Geräteabnahme.
 
 | Nr. | Funktion | Stand | Abnahmekriterium |
 |---|---|---|---|
@@ -106,3 +106,16 @@ Die ursprünglichen 20 Pakete bleiben bestehen. Die folgenden Ergänzungen sind 
 ### Produktdisziplin
 
 Die Pakete sind keine Sammlung von Design-Gimmicks. Neue Statusanzeigen brauchen eine reale Quelle, einen benannten Fehlerzustand und einen überprüfbaren Klickpfad. Offene API-Rechte, fehlende GPS-Positionen und fehlende echte Auslastungswerte dürfen nicht durch KI-Schätzungen kaschiert werden. Reihenfolge: P0-Bugfixes und Fachlogik → Browser- und Android-Tests → Nutzerfunktionen → Veröffentlichung.
+
+
+## Produkt-Review: realistische V60-Freigabe statt 40-Funktionen-Wettlauf
+
+**V60-Kernumfang (verbindliche Qualitätsziele):** korrekte Fahrplan-/Echtzeit-Zeiten, Gleis und Ausfälle; funktionierende Suche/Verbindungen; nachvollziehbare Umstiegszeiten und Alternativen; Bahnradar mit klar gekennzeichneter modellierter Position; mobile Navigation/Sheets, Lesbarkeit und Tastatur; stabile Lade-, Fehler- und Offline-Status; Pendlerfavoriten und datensparsames Teilen nur soweit stabil integriert.
+
+**Nur bei bestätigter Datenquelle:** Gleiswechsel-Feed und echte Ereignisbenachrichtigungen (benötigen mehrere beobachtete Zustände), Barrierefreiheits-/Aufzugzustände, Zugauslastung, Zugnummern-Suche und historische Betriebstaten. Ohne Quelle ist das Feature **nicht auslieferbar** und wird nicht durch eine KI-Prognose simuliert.
+
+**Nach V60 verschieben:** Bahnhof-zu-Bahnhof-Vergleiche (#10/#29), Radar-Wiedergabe (#09) und Sitzungsspuren (#37), Statistik zur Quellenabdeckung (#36), mehrere konkurrierende Datenstatusansichten (#35) sowie redundante Offline-Anzeigen (#18/#40). Viele dieser Funktionen haben geringe Alltagsnutzung oder überschneiden sich; sie sollen insbesondere nicht das mobile Hauptlayout belasten.
+
+**Bewusst nicht als Feature-KPI verwenden:** Anzahl der Features, große Score-Zahlen ohne empirische Grundlage, Animationen nur zur Dekoration, zweite Bedienelemente für dieselbe Aktion. Ziel ist eine schnelle, klare Fahrgastansicht mit nachvollziehbaren Daten – nicht eine aufgeblähte Oberfläche.
+
+**Fehlerkorrekturen im aktuellen PR:** Keine fiktive Null-Minuten-Gehzeit und kein unbelegter grüner Anschluss, keine als aktuell angezeigten Gleise bei abgelaufener Prognose, ungültige Anbieter-Zeitstrings sanitisiert, beim Teilen Echtzeitstand getrennt für Abfahrt und Ankunft. Die Tests dafür laufen unter `audit:v60-transfer`, `audit:v60-passenger` und `audit:v60-share`. Alle weiterhin durch mobile Browser-/Android- und Datenquellenprüfung abnehmen.
