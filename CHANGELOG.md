@@ -1,3 +1,15 @@
+# V60.0 · Next Generation – Fahrgastklarheit und zuverlässige Zugverfolgung
+
+- **Besserer Zug-Inspector:** Vollständige tatsächlich gemeldete Halte, nachvollziehbare Soll-/Prognosezeiten, Aufenthalte bis zur Abfahrt, optional nur kommende Halte und Datenstand der Quelle.
+- **Umstiege nachvollziehen:** Ankunft/Abfahrt und gemeldeter Fußweg ergeben einen rechnerischen Puffer. Fehlen Wege oder Quellenzeiten, wird das offen ausgewiesen; keine garantierten Anschlüsse oder erfundenen Gehzeiten.
+- **Alternativen gezielt finden:** Ausgefallene Vorschläge optional ausblenden sowie nach Ankunft, Dauer, Umstiegen, Gehweg oder Umstiegszeit sortieren.
+- **Zugfahrt teilen:** Kompakte, lokal erstellte Momentaufnahme über Geräte-Teilen oder Kopieren, mit separater Prüfung von Echtzeitprognosen für Abfahrt und Ankunft. Keine dauerhafte Verfolgung durch das Teilen.
+- **Tastatur und Alltag:** Bedienbare Schnellaktionen samt Hilfedialog und ein lokaler, löschbarer Verlauf der zuletzt geöffneten Bahnhöfe.
+- **Klare Datenqualität statt falscher Sicherheit:** Ungültige Prognosezeiten werden verworfen, veraltete Gleisangaben nicht als live markiert. Fantasie-Auslastung und eine unbelegte „Verlässlichkeitsquote“ entfernt. Modellierte Zugpositionen bleiben als Schätzungen gekennzeichnet.
+- **Design und Bedienbarkeit:** Railglass-Basis mit Mobil- und Darkmode-Verbesserungen, dezenter Bewegung, Unterstützung für reduzierte Animationen und bestehender Bahnhofstafel-/Radar-Funktionalität.
+- **Qualität:** Umfangreiche Regressionstests, Responsive-Chromium-Szenarien, TypeScript, Lint, Produktions-Build und Cloudflare-Worker-Dry-Run gehören zur Releaseprüfung.
+- **Hinweis:** Diese Änderungen sind im V60-Release-Branch vorbereitet; ein GitHub-PR oder bestandener Dry-Run allein ist **keine öffentliche Veröffentlichung**. API-Rechte und reale Geräteabnahme bleiben Freigabebedingungen.
+
 # V58.0 · Railglass-Neustart – cleane Fahrgastoberfläche
 
 - **One-tap Bahnhofstafeln:** Schnellansichten „Nächste Stunde“, „Verspätet“, „Ausfälle“ und „Alle Fahrten“ direkt über der Tafel. Alle vier setzen möglicherweise widersprüchliche erweiterte Filter zurück; ein aktiver benutzerdefinierter Filter wird nicht fälschlich als Schnellansicht ausgewiesen.
