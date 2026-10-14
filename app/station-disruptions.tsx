@@ -107,7 +107,7 @@ export function StationDisruptions({station}:{station:Station}){
   const lines=[item.headline,item.lines.length?"Betroffene Linien: "+item.lines.join(", "):"Bahnhofshinweis",
    item.direction?"Richtung: "+item.direction:"",item.detail].filter(Boolean);
   if(!navigator.clipboard?.writeText){setCopyMessage("Kopieren auf diesem Gerät nicht verfügbar.");return;}
-  try{await navigator.clipboard.writeText(lines.join("\\n"));setCopyMessage("Hinweis kopiert.");}
+  try{await navigator.clipboard.writeText(lines.join("\n"));setCopyMessage("Hinweis kopiert.");}
   catch{setCopyMessage("Kopieren nicht möglich. Bitte Geräteberechtigung prüfen.");}
  }
  const lineBadge=(line:string)=><span key={line} className="incident-line-badge" style={serviceBadgeStyle(lineCategory(line),undefined,undefined,line,station.name)}>{line}</span>;
