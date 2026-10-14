@@ -70,6 +70,40 @@
   .app-shell .v60-shortcuts-trigger{display:none}
   .v60-shortcut-dialog{padding:18px;max-height:calc(100dvh - 32px);border-radius:20px}
 }
+
+/* Global station-board interaction contract: the same controls for every stop.
+   Four short labels fit a 320px handset; no offscreen fourth button. */
+.app-shell .board-results-summary{
+  margin:2px 0 8px;padding:0 2px;color:var(--muted);
+  font-size:.75rem;line-height:1.45;overflow-wrap:anywhere
+}
+.app-shell .board-results-summary[role="status"]{animation:none}
+.app-shell .board-filter-toggle:focus-visible,
+.app-shell .board-quick-views button:focus-visible,
+.app-shell .board-mode-tabs button:focus-visible{
+  outline:2px solid var(--action);outline-offset:2px
+}
+.app-shell .board-quick-views button:active{transform:scale(.98)}
+@media(max-width:1023px){
+  .app-shell[data-primary-panel="station"]:not([data-mobile-sheet="collapsed"]) .station-radar-scope{
+    display:none!important /* One station sheet, not another competing radar card */
+  }
+  .app-shell .board-quick-views{
+    box-sizing:border-box;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px!important;width:100%;min-width:0;max-width:100%;
+    overflow:visible!important;padding:3px 0 6px!important
+  }
+  .app-shell .board-quick-views button{
+    box-sizing:border-box;min-width:0;min-height:44px!important;
+    padding:7px 2px!important;border-radius:12px!important;
+    font-size:clamp(.67rem,2.7vw,.8rem)!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .app-shell .board-mode-tabs button,
+  .app-shell .board-filter-toggle{min-height:44px!important}
+  .app-shell .board-filter-toggle{min-width:68px;padding-inline:8px!important}
+}
+
 /* User preference is as important as the system-wide accessibility setting. */
 @media(prefers-reduced-motion:reduce) {
   .app-shell,.app-shell *, .app-shell *::before,.app-shell *::after,
