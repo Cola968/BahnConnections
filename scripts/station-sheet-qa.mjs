@@ -227,11 +227,11 @@ try {
       await screenshot(`${width}-${theme}-incidents-search`);
       if(width===390&&theme==='light'){
         // Check composability on a real controlled React select (category + search + line).
-        assert.deepEqual(await evaluate("Array.from(document.querySelector('[aria-label=\\\"Störungslinie filtern\\\"]').options).map(o=>o.value)"),['all','ICE 1205','RE1','S7']);
-        await evaluate("(() => {const e=document.querySelector('[aria-label=\\\"Störungslinie filtern\\\"]');e.value='RE1';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        assert.deepEqual(await evaluate("Array.from(document.querySelector('.incidents-tools select').options).map(o=>o.value)"),['all','ICE 1205','RE1','S7']);
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='RE1';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
         await pause(150);
         assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),0,'Line focus must combine with S7 search without showing unrelated notices');
-        await evaluate("(() => {const e=document.querySelector('[aria-label=\\\"Störungslinie filtern\\\"]');e.value='all';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='all';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
         await pause(150);
         assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Clearing line focus must restore search results');
         await screenshot('390-light-incidents-line-focus');
