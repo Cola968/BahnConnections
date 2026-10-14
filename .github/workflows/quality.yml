@@ -27,6 +27,7 @@ jobs:
       - run: pnpm audit:release
       - run: pnpm audit:play-hosting
       - run: pnpm audit:railglass
+      - run: pnpm audit:v60
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
