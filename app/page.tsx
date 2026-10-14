@@ -54,7 +54,7 @@ import {
   type TrainType,
 } from "./network-data";
 import { WorkerTrackRouter } from "./track-worker-client";
-import { splitRailGeometry } from "./rail-geometry";
+import { railContinuityLinks, splitRailGeometry } from "./rail-geometry";
 import { declutterStations } from "./map-density";
 import { distanceMeters, type WalkingRoute } from "./walking-route";
 
@@ -570,6 +570,16 @@ export default function Home() {
     if (!mapReady || !L || !map || !layer) return;
     layer.clearLayers();
     const mapTokens = getComputedStyle(document.documentElement);
+    // Dashed route links explain an unsurveyed gap; do not merge them into
+    // actual rail geometry or present them as vehicle positioning.
+    const drawUncertainLinks=(segments:[number,number][][],color:string,opacity=.66)=>{
+      for(const join of railContinuityLinks(segments)){
+        const inferred=L.polyline(join,{renderer:routeRendererRef.current!,color,
+          weight:2.8,opacity,dashArray:'5 7',lineCap:'round',lineJoin:'round'});
+        inferred.bindTooltip(routeElement('Verbindung geschätzt','Keine genaue Gleisgeometrie für diesen Abschnitt verfügbar'),{sticky:true});
+        inferred.addTo(layer);
+      }
+    };
 
     const drawRoute = (route: Route, from: string, to: string, featured = false, muted = false) => {
       const path = routePath(route, from, to);
@@ -592,6 +602,7 @@ export default function Home() {
       if (!segments.length) return;
       const coverage = Math.round((trackGeometry?.coverage ?? 0) * 100);
       const palette: Record<TrainType, string> = { ICE:"#df4050", IC:"#208a92", EC:"#7256c9" };
+      if(!muted)drawUncertainLinks(segments,palette[route.type],featured ? .7 : .48);
       for (const points of segments) {
         L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color: theme === "dark" ? "#0c222a" : "#fffdf9", weight: featured ? 6.4 : muted ? 3 : 4.6, opacity: featured ? .82 : muted ? .1 : .72, lineCap: "round" }).addTo(layer);
         const line = L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5,
@@ -617,7 +628,9 @@ export default function Home() {
     if (journey) {
       for (const leg of journey.transitLegs) {
         const legColor = serviceColors(leg.category as PlannerCategory, leg.routeColor, leg.routeTextColor, leg.name, `${leg.operator ?? ""} ${leg.from.name} ${leg.to.name}`).background;
-        for (const points of splitRailGeometry(leg.points)) {
+        const legSegments=splitRailGeometry(leg.points);
+        drawUncertainLinks(legSegments,legColor,.78);
+        for (const points of legSegments) {
           L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:7, opacity:.86, lineCap:"round", lineJoin:"round" }).addTo(layer);
           const line = L.polyline(points, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:legColor, weight:4.6, opacity:.98, lineCap:"round", lineJoin:"round" }).addTo(layer);
           line.bindTooltip(realtimeTooltip(leg.name, { scheduled:leg.scheduledStartTime, actual:leg.startTime, realtime:leg.realtime, cancelled:leg.cancelled }, undefined, "Fahrtabschnitt entfällt"), { sticky:true });
@@ -644,6 +657,7 @@ export default function Home() {
       });
     } else if (stationTrip && exactTripSegments(stationTrip).length) {
       const color = serviceColors(stationTrip.category, stationTrip.color, stationTrip.textColor, stationTrip.name, `${selected?.state ?? ""} ${selected?.name ?? ""}`).background;
+      drawUncertainLinks(exactTripSegments(stationTrip),color,.75);
       for (const segment of exactTripSegments(stationTrip)) {
         L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color:theme === "dark" ? "#071d26" : "#fff", weight:8, opacity:.9, lineCap:"round", lineJoin:"round" }).addTo(layer);
         const exactLine = L.polyline(segment, { renderer:routeRendererRef.current!, smoothFactor:1.5, color, weight:4.8, opacity:.98, lineCap:"round", lineJoin:"round", className:"station-trip-exact" }).addTo(layer);
