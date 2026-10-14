@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
+import {combineStationCallResults} from "../app/station-radar-data.ts";
 const station= (name,id) => ({name,id});
 const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
 const cases=[station("Berlin Hermannstraße","de:test:hermannstr"),station("Berlin Hbf","de:test:hbf"),station("Hamburg Hbf","de:test:hamburg"),station("Lübeck Hbf","de:test:luebeck"),station("Dresden Hbf","de:test:dresden")];
@@ -20,6 +21,12 @@ for(const s of cases){
  assert.equal(emptyLive.fallback,true,s.name);
  await assert.rejects(loadStationBoardWithFallback(async()=>{throw Error("failed")}),/failed/,s.name);
 }
+const confirmed={tripId:'ICE-452',place:{scheduledArrival:at(5),scheduledDeparture:at(8)}};
+const success={status:'fulfilled',value:[confirmed]},failure={status:'rejected',reason:new Error('API 503')};
+assert.deepEqual(combineStationCallResults(success,failure).coverage,'partial');
+assert.equal(combineStationCallResults(success,failure).calls.size,1);
+assert.deepEqual(combineStationCallResults(success,success).coverage,'complete');
+assert.throws(()=>combineStationCallResults(failure,failure),/nicht erreichbar/);
 const file=(name)=>readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const backend=file("app/api/stations/[id]/board/route.ts");
 assert.match(backend,/loadStationBoardWithFallback/);
