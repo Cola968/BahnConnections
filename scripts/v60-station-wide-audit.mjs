@@ -27,7 +27,7 @@ assert.match(backend,/realtimeMode/);
 assert.match(backend,/stopId/);
 const board=file("app/live-board.tsx");
 assert.match(board,/windowMinutes, setWindowMinutes.*500/);
-assert.match(board,/Weitere 50 Fahrten anzeigen/);
+assert.match(board,/Weitere 120 Fahrten anzeigen/);
 assert.match(board,/\bboardScope\b/);
 const page=file("app/page.tsx");
 assert.match(page,/stationMarkerHierarchy/);
