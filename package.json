@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "57.3.0",
+  "version": "58.0.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -30,6 +30,7 @@
     "audit:links": "node scripts/planner-link-audit.mjs",
     "audit:input": "node scripts/api-input-audit.mjs",
     "audit:surfaces": "node scripts/v56-product-surface-audit.mjs",
+    "audit:railglass": "node scripts/v58-railglass-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
