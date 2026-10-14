@@ -3,6 +3,7 @@ import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
  {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
   ["Bahnhofstafel sofort filtern","Mit einem Tipp nur die nächste Stunde, verspätete oder ausgefallene Züge ansehen; Filter vollständig zurücksetzen."],
+  ["Reisealternativen","Alternative Verbindungen sofort nach Ankunft, Reisezeit, Umstiegen oder Fußweg sortieren; bei Ausfall direkt darauf hinweisen."],
   ["Radar-Datenstatus","Geschätzte Positionen und Echtzeitquelle klar trennen. Ein Klick führt zur Methodik."],
   ["Ein Design statt Kartenstapel","Helle und dunkle Oberflächen mit ruhiger Navigation, konsequenten Schriften und reduzierten Materialeffekten."],
   ["Android-Barrieren beseitigen","Systemleisten und App-Hintergrund folgen der gewählten Darstellung; kleine Bildschirme und Zuginspektor verbessert."],
