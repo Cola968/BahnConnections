@@ -14,6 +14,7 @@ assert.equal(nextTrainStopIndex(stops,start+10*60_000),1,"Advance after departin
 assert.equal(nextTrainStopIndex(stops,Number.NaN),-1);
 assert.equal(nextTrainStopIndex([stop("Canceled",4,5,{cancelled:true}),...stops],start),1);
 assert.equal(nextTrainStopIndex([stop("Terminal",20,null)],start+5*60_000),0);
+assert.equal(nextTrainStopIndex([{name:"Defekte Quellzeit",arrival:"broken",scheduledArrival:at(20),departure:"broken",scheduledDeparture:at(22),cancelled:false,realtime:true}],start),0,"Invalid provider forecasts must fall back to a valid planned stop time");
 assert.equal(trainStopPhase(stops[0],start-60_000),"approaching");
 assert.equal(trainStopPhase(stops[0],start+4*60_000),"at-stop");
 assert.equal(trainStopPhase(stops[0],start+9*60_000),"departed");
