@@ -10,18 +10,24 @@ import { compactStationLabel } from "./transit-style";
 import { JourneyTimeRange } from "./journey-time-range";
 import { RealtimeTime } from "./realtime-time";
 import { RealtimePlatform } from "./realtime-platform";
+import { assessTransfer } from "./v60-transfer-assessment";
 
 export function JourneyAlternatives({ journeys, selected, limit, label, onSelect, onMore }: {
   journeys:LiveJourney[]; selected:LiveJourney; limit:number; label:(journey:LiveJourney, first:LiveJourney) => string;
   onSelect:(journey:LiveJourney) => void; onMore:() => void;
 }) {
   const [order,setOrder]=useState<JourneySort>('recommended');
-  const alternatives = sortJourneys(journeys.filter(journey => journey.id !== selected.id),order);
+  const [excludeCancelled,setExcludeCancelled]=useState(true);
+  const candidates=journeys.filter(journey=>journey.id!==selected.id);
+  const excluded=candidates.filter(journey=>journey.cancelled||journey.transitLegs.some(leg=>leg.cancelled||leg.from.cancelled||leg.to.cancelled)).length;
+  const alternatives = sortJourneys(candidates.filter(journey=>!excludeCancelled||!(journey.cancelled||journey.transitLegs.some(leg=>leg.cancelled||leg.from.cancelled||leg.to.cancelled))),order);
   const disrupted=selected.cancelled||selected.transitLegs.some(leg=>leg.cancelled);
-  if (!alternatives.length) return null;
+  if (!candidates.length) return null;
   return <details className="journey-alternatives">
-    <summary>{disrupted?"Fahrt fällt aus · Alternativen prüfen":"Andere Verbindungen"} <span>{alternatives.length}<UiIcon name="chevron" width="16" height="16" /></span></summary>
+    <summary>{disrupted?"Fahrt fällt aus · Alternativen prüfen":"Andere Verbindungen"} <span>{alternatives.length}{excluded&&excludeCancelled?` von ${candidates.length}`:""}<UiIcon name="chevron" width="16" height="16" /></span></summary>
     <div className="v58-alternative-sort" role="group" aria-label="Andere Verbindungen sortieren">{([["recommended","Empfohlen"],["arrival","Früh ankommen"],["duration","Schnell"],["changes","Wenig Umstiege"],["walking","Wenig Fußweg"]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={order===id} onClick={()=>setOrder(id)}>{label}</button>)}</div>
+    {excluded>0&&<label className="v60-alternative-available"><input type="checkbox" checked={excludeCancelled} onChange={event=>setExcludeCancelled(event.target.checked)}/> Nur Verbindungen ohne gemeldeten Ausfall ({excluded} ausgeblendet)</label>}
+    {!alternatives.length&&<p className="v60-alternative-empty">Keine Alternative ohne gemeldeten Ausfall in dieser Auswahl. Mit dem Schalter kannst du auch ausgefallene Vorschläge anzeigen.</p>}
     <div>{alternatives.slice(0,limit).map(journey => <button type="button" key={journey.id} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onSelect(journey); }}>
       <em>{label(journey,journeys[0])}</em>
       <small>{journeyDateRange(journey)}</small>
@@ -33,16 +39,17 @@ export function JourneyAlternatives({ journeys, selected, limit, label, onSelect
   </details>;
 }
 
-export function TransferNotice({ journey, index, minutes }: {journey:LiveJourney; index:number; minutes:number}) {
-  const previous = journey.transitLegs[index];
-  const next = journey.transitLegs[index + 1];
-  if (!next) return null;
-  const walking = journey.legs.filter(leg => leg.category === "walk" && new Date(leg.startTime) >= new Date(previous.endTime) && new Date(leg.endTime) <= new Date(next.startTime)).reduce((seconds,leg) => seconds + leg.durationSeconds,0);
-  return <div className={`transfer-step ${minutes < 7 ? "risk" : minutes < 12 ? "medium" : "good"}`}>
-    <span><b>{minutes < 0 ? "Anschluss voraussichtlich verpasst" : `${minutes} Min. Umstieg in ${compactStationLabel(previous.to.name) ?? previous.to.name}`}</b>
-      <span className="transfer-times"><span>Ankunft <RealtimeTime scheduled={previous.scheduledEndTime} actual={previous.endTime} realtime={previous.realtime} cancelled={previous.cancelled || previous.to.cancelled} cancellationLabel={previous.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /> · <RealtimePlatform scheduled={previous.to.scheduledTrack} actual={previous.to.track} /></span><span>Abfahrt <RealtimeTime scheduled={next.scheduledStartTime} actual={next.startTime} realtime={next.realtime} cancelled={next.cancelled || next.from.cancelled} cancellationLabel={next.cancelled ? "Fahrtabschnitt entfällt" : "Halt entfällt"} compact /> · <RealtimePlatform scheduled={next.from.scheduledTrack} actual={next.from.track} /></span></span>
-      <small>{next.name}{walking ? ` · ${Math.ceil(walking / 60)} Min. Fußweg enthalten` : ""}{minutes >= 0 && minutes < 7 ? " · Kurzer Anschluss, bitte prüfen" : ""}</small>
+export function TransferNotice({ journey, index }: {journey:LiveJourney; index:number}) {
+  const previous=journey.transitLegs[index],next=journey.transitLegs[index+1];
+  if(!previous||!next)return null;
+  const assessment=assessTransfer(journey,index);
+  return <div className={`transfer-step ${assessment.tone}`} role="status">
+    <span><b>{assessment.label} · {compactStationLabel(previous.to.name)??previous.to.name}</b>
+      <span className="transfer-times">
+        <span>Ankunft <RealtimeTime scheduled={previous.scheduledEndTime} actual={previous.endTime} realtime={previous.realtime} cancelled={previous.cancelled||previous.to.cancelled} cancellationLabel={previous.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={previous.to.scheduledTrack} actual={previous.to.track}/></span>
+        <span>Abfahrt <RealtimeTime scheduled={next.scheduledStartTime} actual={next.startTime} realtime={next.realtime} cancelled={next.cancelled||next.from.cancelled} cancellationLabel={next.cancelled?"Fahrtabschnitt entfällt":"Halt entfällt"} compact /> · <RealtimePlatform scheduled={next.from.scheduledTrack} actual={next.from.track}/></span>
+      </span>
+      <small>{next.name} · {assessment.detail}</small>
     </span>
   </div>;
 }
-
