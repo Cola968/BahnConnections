@@ -49,8 +49,8 @@ export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
   if(!Number.isFinite(now))return -1;
   return stops.findIndex(stop=>{
     if(stop.cancelled)return false;
-    const arrival=stopTime(stop.arrival??stop.scheduledArrival);
-    const departure=stopTime(stop.departure??stop.scheduledDeparture);
+    const arrival=stopTime(stop.arrival)??stopTime(stop.scheduledArrival);
+    const departure=stopTime(stop.departure)??stopTime(stop.scheduledDeparture);
     const end=departure!==null&&(arrival===null||departure>=arrival)?departure:arrival;
     return end!==null&&end>=now-60_000;
   });
@@ -66,8 +66,8 @@ export function relevantTrainStops(stops:TrainStop[],now:number,onlyRemaining:bo
 /** A timetable-based phase, not proof of a measured train position or door status. */
 export function trainStopPhase(stop:TrainStop,now:number):"approaching"|"at-stop"|"departed"|"unknown" {
   if(stop.cancelled||!Number.isFinite(now))return "unknown";
-  const arrival=stopTime(stop.arrival??stop.scheduledArrival);
-  const departure=stopTime(stop.departure??stop.scheduledDeparture);
+  const arrival=stopTime(stop.arrival)??stopTime(stop.scheduledArrival);
+  const departure=stopTime(stop.departure)??stopTime(stop.scheduledDeparture);
   if(arrival!==null&&departure!==null&&departure>=arrival){
     if(now<arrival)return "approaching";
     return now<=departure?"at-stop":"departed";
