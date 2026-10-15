@@ -70,7 +70,7 @@ const backend=file("app/api/stations/[id]/board/route.ts");
 assert.match(backend,/loadStationBoardWithFallback/);
 assert.match(backend,/realtimeMode/);
 assert.match(backend,/stopId/);
-assert.match(backend,/url.searchParams.set\\("window"/,"Station board API must pass bounded MOTIS windows");
+assert.ok(backend.includes('url.searchParams.set("window"'),"Station board API must pass bounded MOTIS windows");
 assert.match(file("app/station-radar-data.ts"),/window:'32400'/,"A bounded scope must replace unlimited 5000-event fetches");
 assert.doesNotMatch(file("app/station-radar-data.ts"),/n:'5000'/);
 const board=file("app/live-board.tsx");
