@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--mobile') ? [[320,568],[360,640],[390,844],[430,932],[667,375],[844,390],[768,1024]] : args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -45,7 +45,7 @@ async function click(selector) {
   await pause(350);
 }
 async function screenshot(name) {
-  const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:process.platform!=='win32'});
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
 }
 let incidentFixtureMode=false;
@@ -102,7 +102,8 @@ try {
     const originalFetch=window.fetch;
     window.fetch=async (...args)=>{
       const response=await originalFetch(...args);
-      if(!String(args[0]).includes('/board?')||!response.ok)return response;
+      const url=new URL(args[0] instanceof Request?args[0].url:String(args[0]),window.location.href);
+      if(!url.pathname.endsWith('/board')||url.searchParams.get('stream')!=='1'||!response.ok)return response;
       const data=await response.json(),encoder=new TextEncoder();
       return new Response(new ReadableStream({start(controller){
         controller.enqueue(encoder.encode(JSON.stringify({type:'board',...data,verification:{status:'pending'}})+'\\n'));
@@ -121,7 +122,11 @@ try {
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
     if(args.includes('--stream')){
       assert.equal(await evaluate("Boolean(document.querySelector('.verification-pending'))"),true,'Rows must display while DB verification is pending');
-      await click('.board-row-summary');await pause(1900);
+      await click('.board-row-summary');
+      for(let attempt=0;attempt<100;attempt++){
+        if(await evaluate("Boolean(document.querySelector('.verification-inconclusive'))"))break;
+        await pause(100);
+      }
       assert.equal(await evaluate("Boolean(document.querySelector('.verification-inconclusive'))"),true,'Late verification must remain conservative');
       assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','Verification must preserve expanded row');
       await click('.board-row-summary');
@@ -161,6 +166,23 @@ try {
         }
       }
       const name=`${width}-${theme}-${state}`;
+      if(!baseline&&width<1024){
+        const targets=await evaluate(`(() => {
+          const header=document.querySelector('.station-sheet-header'),bounds=header.getBoundingClientRect();
+          return [...header.querySelectorAll('.mobile-sheet-actions button,.station-section-tabs button')].map(button=>{
+            const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+            return {label:button.getAttribute('aria-label')||button.textContent,width:r.width,height:r.height,
+              inside:r.left>=bounds.left-1&&r.right<=bounds.right+1&&r.top>=bounds.top-1&&r.bottom<=bounds.bottom+1,
+              hit:hit===button||button.contains(hit),overflow:button.classList.contains('active')||button.getAttribute('role')==='tab'?button.scrollWidth-button.clientWidth:0};
+          });
+        })()`);
+        assert.equal(targets.length,7,name+' must expose five tabs plus minimize and close');
+        for(const target of targets){
+          assert.ok(target.width>=43.9&&target.height>=43.9&&target.inside&&target.hit,
+            name+' reachable 44px header target: '+JSON.stringify(target));
+          assert.ok(target.overflow<=1,name+' navigation label must fit: '+JSON.stringify(target));
+        }
+      }
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
       if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
@@ -180,8 +202,12 @@ try {
         assert.equal(await evaluate("document.querySelector('#station-tab-trips').getAttribute('aria-selected')"),'true');
         assert.ok(await evaluate("Boolean(document.querySelector('#station-panel-trips .station-radar-trip-toggle'))"),'Train list tab must be reachable');
         await click('.station-radar-trip-toggle');
-        await pause(450);
-        assert.ok(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"),'Train list must show confirmed provider calls');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"))break;
+          await pause(100);
+        }
+        assert.ok(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"),
+          'Train list must show confirmed provider calls: '+await evaluate("document.querySelector('#station-panel-trips')?.innerText"));
         await screenshot('390-light-station-trips-tab');
         await click('#station-tab-live');
         assert.equal(await evaluate("document.querySelector('#station-tab-live').getAttribute('aria-selected')"),'true');
