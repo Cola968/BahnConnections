@@ -174,6 +174,17 @@ try {
         await screenshot('390-light-station-collapsed-compact');
         await click('.mobile-sheet-actions button:first-child');
         await pause(260);
+        // V60: the timetable owns the initial viewport. All confirmed station
+        // trips remain reachable in one tap without displacing departure rows.
+        await click('#station-tab-trips');
+        assert.equal(await evaluate("document.querySelector('#station-tab-trips').getAttribute('aria-selected')"),'true');
+        assert.ok(await evaluate("Boolean(document.querySelector('#station-panel-trips .station-radar-trip-toggle'))"),'Train list tab must be reachable');
+        await click('.station-radar-trip-toggle');
+        await pause(450);
+        assert.ok(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"),'Train list must show confirmed provider calls');
+        await screenshot('390-light-station-trips-tab');
+        await click('#station-tab-live');
+        assert.equal(await evaluate("document.querySelector('#station-tab-live').getAttribute('aria-selected')"),'true');
       }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
