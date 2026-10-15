@@ -4,7 +4,7 @@ import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { SavedRoutesPanel } from "./saved-routes-panel";
 import type { SavedRoute } from "./saved-routes";
-import { PLUS_PRICING, SUBSCRIPTION_PLANS } from "./subscription-plans";
+import { PLUS_PRICING } from "./subscription-plans";
 import { APP_VERSION_LABEL } from "./app-version";
 
 const formatEuro=(cents:number)=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(cents/100);
