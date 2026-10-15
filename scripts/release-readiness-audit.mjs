@@ -45,6 +45,18 @@ if (version) {
   verify(changelog.trimStart().startsWith(`# V${version}`), `CHANGELOG.md must begin with V${version}.`);
 }
 
+const latestReleaseGuide=read(`docs/releases/V${version}-RELEASE-CHECKLIST.md`);
+verify(latestReleaseGuide.startsWith(`# BahnConnections V${version}`), "Authoritative release checklist must match the current APP_VERSION.");
+verify(latestReleaseGuide.includes("nicht") || latestReleaseGuide.includes("OFFEN"), "The release guide must disclose outstanding approvals.");
+verify(latestReleaseGuide.includes("#67") && latestReleaseGuide.includes("#66"), "The release guide must retain data-rights and real-device gates.");
+const cloudflareGuide=read("docs/deploy/CLOUDFLARE-WORKERS.md");
+verify(cloudflareGuide.includes(`V${version}-RELEASE-CHECKLIST.md`), "Deployment instructions must link to the current release checklist.");
+verify(cloudflareGuide.includes(`"version": "${version}"`), "Deployment smoke must check the actual release version.");
+verify(!layout.includes("exakten Fahrtverläufen") && !layout.includes("vollständigen Halten"), "Metadata must not promise unverified exact/complete coverage.");
+verify(!manifest.includes("vollständige Halte") && !manifest.includes("exakte Fahrtverläufe"), "PWA metadata must describe provider-reported data honestly.");
+const subscriptions=read("app/subscription-plans.ts");
+verify(subscriptions.includes('availability:"planned"') && subscriptions.includes('checkoutEnabled:false'), "Plus must remain clearly unavailable until authorized payment activation.");
+
 verify(manifest.includes('display:"standalone"'), "Installable PWA display mode is missing.");
 verify(manifest.includes("/app-icon-192.png") && manifest.includes("/app-icon-512.png"), "PWA icon entries are missing.");
 verify(worker.includes('event.data?.type === "SKIP_WAITING"'), "PWA update handler is missing.");
