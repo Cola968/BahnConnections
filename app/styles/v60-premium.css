@@ -128,7 +128,7 @@
   outline:3px solid #fff;
 }
 .settings-dialog-v48[open] .plan-card.plus .plus-plan-summary>span {
-  display:block;min-width:0;color:#fff;
+  min-width:0;color:#fff;
 }
 .settings-dialog-v48[open] .plan-card.plus .plus-plan-topline {
   display:flex;
