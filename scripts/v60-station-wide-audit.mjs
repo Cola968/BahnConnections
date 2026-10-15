@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
+import {loadStationBoardWithFallback,StationSourceThrottledError} from "../app/station-board-fallback.ts";
 import {combineStationCallResults,listStationCalls,matchesStationCall,stationCalls} from "../app/station-radar-data.ts";
 import {STATIONS} from "../app/network-data.ts";
 import {failedStationRadarSnapshot} from "../app/station-radar-state.ts";
@@ -25,6 +25,13 @@ for(const s of cases){
  assert.equal(emptyLive.fallback,true,s.name);
  await assert.rejects(loadStationBoardWithFallback(async()=>{throw Error("failed")}),/failed/,s.name);
 }
+// HTTP 429 must not cause a second (timetable-only) call that amplifies load.
+let throttledAttempts=0;
+await assert.rejects(loadStationBoardWithFallback(async()=>{
+ throttledAttempts++;
+ throw new StationSourceThrottledError("429");
+}),StationSourceThrottledError);
+assert.equal(throttledAttempts,1,"Respect 429; do not immediately retry the throttled provider");
 const confirmed={tripId:'ICE-452',place:{scheduledArrival:at(5),scheduledDeparture:at(8)}};
 const success={status:'fulfilled',value:[confirmed]},failure={status:'rejected',reason:new Error('API 503')};
 assert.deepEqual(combineStationCallResults(success,failure).coverage,'partial');
@@ -79,6 +86,7 @@ const file=(name)=>readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const backend=file("app/api/stations/[id]/board/route.ts");
 assert.match(backend,/loadStationBoardWithFallback/);
 assert.match(backend,/realtimeMode/);
+assert.match(backend,/StationSourceThrottledError/);
 assert.match(backend,/stopId/);
 assert.ok(backend.includes('url.searchParams.set("window"'),"Station board API must pass bounded MOTIS windows");
 assert.match(file("app/station-radar-data.ts"),/window:'32400'/,"A bounded scope must replace unlimited 5000-event fetches");
