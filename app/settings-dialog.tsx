@@ -164,7 +164,14 @@ export function SettingsDialog(p:Props) {
               <span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>monatlich</small></span>
               <span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>jährlich</small></span>
             </div>
-            <p className="plus-simple-note">Geplante Funktionen und Preise. Noch kein Starttermin.</p>
+            <details className="plus-simple-more">
+              <summary>Mehr zu Plus <UiIcon name="chevron"/></summary>
+              <div className="plus-simple-more-content">
+                <p><strong>Synchronisierung</strong> – Favoriten und Pendelstrecken sollen auf deinen Geräten verfügbar sein.</p>
+                <p><strong>Fahrthinweise</strong> – Meldungen zu gespeicherten Strecken, sofern entsprechende Daten vorliegen.</p>
+                <p><strong>Start und Preise</strong> – Noch kein Termin. Die angezeigten Preise sind vorläufig; Plus kann nicht gebucht werden.</p>
+              </div>
+            </details>
           </section>
         </div>
       </>}
