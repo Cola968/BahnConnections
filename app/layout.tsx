@@ -50,13 +50,13 @@ const configuredMetadataBase=(()=>{
 export const metadata: Metadata = {
   metadataBase: configuredMetadataBase,
   title: "BahnConnections – Bahnnetz, Live-Züge & Bahnhofstafeln",
-  description: "Interaktive Bahnkarte mit exakten Fahrtverläufen, Live-Abfahrten und vollständigen Halten für Fernverkehr, Regio, S- und U-Bahn.",
+  description: "Bahnkarte mit Verbindungssuche, Abfahrten und vom Datenanbieter gemeldeten Fahrtverläufen für Fernverkehr, Regio, S- und U-Bahn.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable:true, statusBarStyle:"default", title:"BahnConnections" },
   icons: { icon:[{ url:"/app-icon.svg", type:"image/svg+xml" },{ url:"/app-icon-192.png", sizes:"192x192", type:"image/png" }], apple:"/app-icon-192.png" },
   openGraph: {
     title: "BahnConnections",
-    description: "Live-Züge, exakte Fahrtverläufe und Bahnhofstafeln für Fernverkehr, Regio, S- und U-Bahn.",
+    description: "Bahnhofstafeln, Zugfahrten und Ankunftszeiten aus verfügbaren Fahrplandaten für Fernverkehr, Regio, S- und U-Bahn.",
     type: "website",
     locale: "de_DE",
     images: [{ url: "/og.png", width: 1792, height: 1024, alt: "BahnConnections – Fernverkehr direkt entdecken" }],
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "BahnConnections",
-    description: "Live-Züge, exakte Fahrtverläufe und Bahnhofstafeln für Fernverkehr, Regio, S- und U-Bahn.",
+    description: "Bahnhofstafeln, Zugfahrten und Ankunftszeiten aus verfügbaren Fahrplandaten für Fernverkehr, Regio, S- und U-Bahn.",
     images: ["/og.png"],
   },
 };
