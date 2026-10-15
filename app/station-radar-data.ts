@@ -2,9 +2,10 @@ import type { Station } from './network-data';
 import { requireTransitousStopId } from './transitous.ts';
 
 export type StationRadarDirection = 'all' | 'inbound' | 'outbound';
-export type StationCall = {arrival?:number;departure?:number;scheduledArrival?:number;scheduledDeparture?:number;arrivalRealtime?:boolean;departureRealtime?:boolean;name?:string;destination?:string;cancelled?:boolean;realtime?:boolean};
-type Row = {tripId?:unknown;cancelled?:boolean;tripCancelled?:boolean;realTime?:boolean;displayName?:string;routeShortName?:string;headsign?:string;tripTo?:{name?:string};place?:{cancelled?:boolean;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string}};
+export type StationCall = {arrival?:number;departure?:number;scheduledArrival?:number;scheduledDeparture?:number;arrivalRealtime?:boolean;departureRealtime?:boolean;name?:string;destination?:string;arrivalTrack?:string;arrivalScheduledTrack?:string;departureTrack?:string;departureScheduledTrack?:string;cancelled?:boolean;realtime?:boolean};
+type Row = {tripId?:unknown;cancelled?:boolean;tripCancelled?:boolean;realTime?:boolean;displayName?:string;routeShortName?:string;headsign?:string;tripTo?:{name?:string};place?:{cancelled?:boolean;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;track?:string;scheduledTrack?:string}};
 const safeLabel=(value:unknown)=>typeof value==='string'&&value.trim()?value.trim().slice(0,120):undefined;
+const safeTrack=(value:unknown)=>typeof value==='string'&&value.trim()?value.trim().slice(0,24):undefined;
 const timestamp = (value?: string) => { const n=Date.parse(value??''); return Number.isFinite(n)?n:undefined; };
 
 /** Membership comes from the selected stop's timetable, never map proximity or a line name. */
@@ -22,9 +23,13 @@ export function stationCalls(arrivals: Row[], departures: Row[]): Map<string,Sta
       if(kind==='arrival'){
         call.scheduledArrival=scheduled??call.scheduledArrival;
         call.arrivalRealtime=Boolean(row.realTime===true&&actual!==undefined);
+        call.arrivalScheduledTrack=safeTrack(row.place.scheduledTrack)??call.arrivalScheduledTrack;
+        call.arrivalTrack=safeTrack(row.place.track)??call.arrivalTrack;
       }else{
         call.scheduledDeparture=scheduled??call.scheduledDeparture;
         call.departureRealtime=Boolean(row.realTime===true&&actual!==undefined);
+        call.departureScheduledTrack=safeTrack(row.place.scheduledTrack)??call.departureScheduledTrack;
+        call.departureTrack=safeTrack(row.place.track)??call.departureTrack;
       }
       call.name??=safeLabel(row.displayName)??safeLabel(row.routeShortName);
       call.destination??=safeLabel(row.headsign)??safeLabel(row.tripTo?.name);
