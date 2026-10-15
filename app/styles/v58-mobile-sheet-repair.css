@@ -52,6 +52,9 @@
   .app-shell .board-quick-views {
     padding:0!important;
   }
+  .app-shell .board-mode-tabs button {
+    min-width:44px!important;
+  }
 
   /* Each row allocates *real* space for the ICE icon and the train number.
    * An older flex-direction:row!important made ICE + "1" spill into "Kiel Hbf".

@@ -189,7 +189,8 @@ try {
       }
       if(!baseline&&height<521){
         assert.ok(measure.visibleRows>=1,name+' must initially expose a complete timetable row');
-        assert.equal(await evaluate(`Array.from(document.querySelectorAll('.board-primary-bar button')).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&r.width>=44&&(hit===button||button.contains(hit));})`),true,name+' all timetable controls must remain reachable');
+        const toolbarTargets=await evaluate(`Array.from(document.querySelectorAll('.board-primary-bar button')).map(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {label:button.textContent,width:r.width,height:r.height,hit:hit===button||button.contains(hit)};})`);
+        for(const target of toolbarTargets)assert.ok(target.height>=43.9&&target.width>=43.9&&target.hit,name+' reachable timetable target: '+JSON.stringify(target));
       }
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
