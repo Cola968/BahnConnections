@@ -1,12 +1,20 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadStationBoardWithFallback,StationSourceThrottledError} from "../app/station-board-fallback.ts";
+import {boardRequestWindow} from "../app/board-request-window.ts";
 import {combineStationCallResults,listStationCalls,matchesStationCall,stationCalls} from "../app/station-radar-data.ts";
 import {STATIONS} from "../app/network-data.ts";
 import {failedStationRadarSnapshot} from "../app/station-radar-state.ts";
 import {stationMarkerHierarchy} from "../app/station-marker.ts";
 import {chooseStationMatch,stationNameKey} from "../app/station-match.ts";
 const station= (name,id) => ({name,id});
+// Verify the actual validator used by GET, not a superficial source-text regex.
+for(const [request,expected] of [[null,null],["0",0],["900",900],["32400",32400],["86400",86400],["086400",86400],
+ ["",undefined],["-1",undefined],["1.5",undefined],["86401",undefined],["999999",undefined],["abc",undefined],["3e4",undefined],
+ ["32400%26stopId=bogus",undefined]]){
+ assert.equal(boardRequestWindow(request),expected,`MOTIS window validator must classify ${String(request)}`);
+}
+
 const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
 const cases=[station("Berlin Hermannstraße","de:test:hermannstr"),station("Berlin Hbf","de:test:hbf"),station("Hamburg Hbf","de:test:hamburg"),station("Lübeck Hbf","de:test:luebeck"),station("Dresden Hbf","de:test:dresden")];
 for(const s of cases){
@@ -88,7 +96,7 @@ assert.match(backend,/loadStationBoardWithFallback/);
 assert.match(backend,/realtimeMode/);
 assert.match(backend,/StationSourceThrottledError/);
 assert.match(backend,/stopId/);
-assert.ok(backend.includes('url.searchParams.set("window"'),"Station board API must pass bounded MOTIS windows");
+assert.match(backend,/boardRequestWindow\(query.get\("window"\)\)/,"Station board API must use the tested validator");
 assert.match(file("app/station-radar-data.ts"),/window:'32400'/,"A bounded scope must replace unlimited 5000-event fetches");
 assert.doesNotMatch(file("app/station-radar-data.ts"),/n:'5000'/);
 const board=file("app/live-board.tsx");
