@@ -160,3 +160,29 @@
 @media (forced-colors:active) {
   .app-shell .board-row-summary .service-logo { forced-color-adjust:auto; }
 }
+
+/* V60 release gate: independent hit planes for title/actions and five tabs.
+   Native-grid auto-placement interacted with the sheet's inherited 44px
+   button minimum and could paint the second row across the first-row buttons.
+   Fixed absolute rows make their touch rectangles non-overlapping. */
+@media (max-width:1023px) {
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header {
+    position:relative!important;display:block!important;
+    box-sizing:border-box;height:88px!important;min-height:88px!important;
+    max-height:88px!important;flex:0 0 88px!important;
+    padding:0!important;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.mobile-sheet-summary {
+    position:absolute!important;top:0!important;left:8px!important;right:104px!important;
+    width:auto!important;height:44px!important;min-height:44px!important;z-index:2;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.mobile-sheet-actions {
+    position:absolute!important;top:0!important;right:8px!important;left:auto!important;
+    width:88px!important;height:44px!important;z-index:3;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.station-section-tabs {
+    position:absolute!important;top:44px!important;left:8px!important;right:8px!important;
+    width:auto!important;height:44px!important;min-height:44px!important;
+    grid-row:auto!important;grid-column:auto!important;z-index:1;
+  }
+}
