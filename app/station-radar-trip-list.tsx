@@ -52,7 +52,8 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt,
   const [limit,setLimit]=useState(60),[selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<Detail|null>(null),[retry,setRetry]=useState(0);
   const rows=useMemo(()=>listStationCalls(calls,direction,query),[calls,direction,query]);
-  const fresh=status==="ready"&&updatedAt>0&&Date.now()-updatedAt<150_000;
+  // The poller marks failed refreshes as stale; render must remain pure.
+  const fresh=status==="ready"&&updatedAt>0;
   useEffect(()=>{
     if(!open||!selected)return;
     const controller=new AbortController();
