@@ -109,6 +109,104 @@
 .settings-dialog .plan-card.plus .billing-price-options strong {
   letter-spacing:-.025em;
 }
+/* The summary fills the colorful card: tap anywhere in the top area to open.
+   Native details/summary provides keyboard and screen-reader disclosure for free. */
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-summary {
+  display:grid;
+  gap:12px;
+  list-style:none;
+  cursor:pointer;
+  border-radius:12px;
+  outline-offset:4px;
+  padding:0;
+  min-width:0;
+  color:#fff;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-summary::-webkit-details-marker { display:none; }
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-summary::marker { content:""; }
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-summary:focus-visible {
+  outline:3px solid #fff;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-summary>span {
+  display:block;min-width:0;color:#fff;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-topline {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:space-between;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-title {
+  font-size:clamp(1.25rem,4vw,1.62rem);letter-spacing:-.03em;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-status {
+  flex:none;
+  color:#fff;
+  padding:5px 9px;
+  background:rgba(14,19,54,.23);
+  border:1px solid rgba(255,255,255,.37);
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:700;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-description {
+  max-width:48ch;
+  font-size:.93rem;
+  line-height:1.45;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-price-preview {
+  font-size:.81rem;
+  font-weight:650;
+  line-height:1.4;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-expand {
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:44px;padding:0 1px;
+  border-top:1px solid rgba(255,255,255,.3);
+  font-weight:700;font-size:.86rem;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-expand svg {
+  width:17px;height:17px;transition:transform 180ms ease;
+}
+.settings-dialog-v48[open] .plan-card.plus[open] .plus-plan-expand svg {
+  transform:rotate(180deg);
+}
+.settings-dialog-v48[open] .plan-card.plus[open] .plus-plan-expand>span::after {
+  content:" – geöffnet";
+  font-size:.75rem;font-weight:400;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-details {
+  display:block;min-width:0;
+  margin-top:6px;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.32);
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-details h4 {
+  color:#fff;font-size:1rem;font-weight:750;
+  margin:16px 0 8px;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-details h4:first-child { margin-top:0; }
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-benefits {
+  display:grid;gap:12px;margin:12px 0 20px;padding:0;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-benefits>div {
+  border-left:2px solid rgba(255,255,255,.5);
+  padding-left:11px;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-benefits :is(dt,dd) {
+  color:#fff;margin:0;line-height:1.45;
+}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-benefits dt {font-weight:700;font-size:.89rem}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-benefits dd {font-size:.84rem;margin-top:3px}
+.settings-dialog-v48[open] .plan-card.plus .plus-plan-note {
+  color:#fff;font-size:.82rem;line-height:1.5;margin:9px 0 0;
+}
+@media(prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] .plan-card.plus .plus-plan-expand svg { transition:none; }
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-card.plus .plus-plan-expand svg { transition:none; }
+
 @media(max-width:359px) {
   .settings-dialog-v48[open] .plan-card.plus { padding:13px; }
   .settings-dialog .plan-card.plus .billing-price-options { grid-template-columns:1fr; }
@@ -136,6 +234,6 @@ html[data-motion="reduced"] .settings-dialog .plan-card.plus::before {
     box-shadow:none;
   }
   .settings-dialog .plan-card.plus::before { display:none; }
-  .settings-dialog-v48[open] .plan-card.plus :is(h3,li,li>span,svg,small,strong),
+  .settings-dialog-v48[open] .plan-card.plus :is(h3,li,li>span,svg,small,strong,dt,dd,p),
   .settings-dialog-v48[open] .plan-card.plus>div:first-child>span { color:CanvasText; }
 }
