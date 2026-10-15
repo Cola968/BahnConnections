@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
+import {RealtimeTime} from "./realtime-time";
 
 type Stop={name?:string;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;cancelled?:boolean};
 type Leg={from?:Stop;to?:Stop;intermediateStops?:Stop[];cancelled?:boolean};
@@ -26,6 +27,22 @@ function parseStops(legs:Leg[]):DisplayStop[]{
   }
   return stops;
 }
+function EventTime({call,kind,fresh}:{call:StationCall;kind:"arrival"|"departure";fresh:boolean}){
+  const actual=call[kind],planned=kind==="arrival"?call.scheduledArrival:call.scheduledDeparture;
+  const predicted=kind==="arrival"?call.arrivalRealtime:call.departureRealtime;
+  if(actual===undefined&&planned===undefined)return null;
+  const label=kind==="arrival"?"Ankunft":"Abfahrt";
+  // Expired predictions cannot masquerade as live after a failed poll.
+  const current=predicted&&!fresh ? planned : actual;
+  const date=current===undefined?null:new Date(current);
+  return <span className="station-radar-event">
+    <small>{label}{date&&Number.isFinite(date.getTime())?" · "+new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",day:"2-digit",month:"2-digit"}).format(date):""}</small>
+    {current===undefined?<strong className="station-radar-time-missing">Prognose veraltet</strong>
+      :<RealtimeTime scheduled={planned!==undefined?new Date(planned).toISOString():undefined}
+        actual={!predicted||fresh?new Date(current).toISOString():undefined}
+        realtime={Boolean(predicted&&fresh)} cancelled={call.cancelled} compact />}
+  </span>;
+}
 /** Only fetch a trip on user selection; never fan out to thousands of trip endpoints. */
 export function StationRadarTripList({calls,direction,status,coverage,updatedAt,onRefresh}:{
   calls:Map<string,StationCall>;direction:StationRadarDirection;
@@ -35,6 +52,7 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt,
   const [limit,setLimit]=useState(60),[selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<Detail|null>(null),[retry,setRetry]=useState(0);
   const rows=useMemo(()=>listStationCalls(calls,direction,query),[calls,direction,query]);
+  const fresh=status==="ready"&&updatedAt>0&&Date.now()-updatedAt<150_000;
   useEffect(()=>{
     if(!open||!selected)return;
     const controller=new AbortController();
@@ -74,7 +92,10 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt,
       <ul className="station-radar-trip-rows">{rows.slice(0,limit).map(({tripId,call})=><li key={tripId}>
         <button type="button" aria-expanded={selected===tripId} aria-controls={selected===tripId?"station-radar-selected-trip":undefined} onClick={()=>toggle(tripId)}>
           <b>{call.name??"Zugfahrt"}</b><span>{call.destination??"Ziel nicht gemeldet"}<small>{call.cancelled?"Halt entfällt":status==="stale"?"Alter Abruf – keine aktuelle Prognose":call.realtime?"Prognose vorhanden":"Fahrplan / Status unbekannt"}</small></span>
-          <time>{time(direction==="inbound"?call.arrival??call.departure:call.departure??call.arrival)}</time>
+          <span className="station-radar-events">
+            <EventTime call={call} kind="arrival" fresh={fresh}/>
+            <EventTime call={call} kind="departure" fresh={fresh}/>
+          </span>
         </button>
         {selected===tripId&&<div id="station-radar-selected-trip" className="station-radar-trip-detail" role="region" aria-label="Fahrtverlauf">
           {detail?.id!==tripId||detail.state==="loading"?<p role="status">Fahrtverlauf wird geladen …</p>
