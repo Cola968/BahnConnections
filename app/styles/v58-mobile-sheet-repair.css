@@ -164,6 +164,31 @@
   .app-shell .board-row-summary .service-logo { forced-color-adjust:auto; }
 }
 
+/* Short phone landscapes keep the station switcher and timetable usable.
+   Put quick filters beside the mode switch rather than consuming another row. */
+@media (max-width:1023px) and (max-height:520px) and (orientation:landscape) {
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card.mobile-sheet-panel {
+    top:68px!important;bottom:76px!important;left:8px!important;right:8px!important;
+    width:auto!important;max-width:none!important;transform:none!important;
+    height:calc(100dvh - 144px)!important;min-height:0!important;
+    max-height:calc(100dvh - 144px)!important;padding-bottom:0!important;
+  }
+  .app-shell[data-primary-panel="station"] .map-stage { padding-right:0!important; }
+  .app-shell.has-primary-panel[data-primary-panel="station"] .topbar>.station-search {
+    display:flex!important;
+  }
+  .app-shell[data-primary-panel="station"] .brand-name { display:none!important; }
+  .app-shell .board-primary-bar {
+    grid-template-columns:auto minmax(0,1fr) auto!important;
+    column-gap:10px!important;
+  }
+  .app-shell .board-mode-tabs { grid-column:1;grid-row:1; }
+  .app-shell .board-actions { grid-column:3;grid-row:1; }
+  .app-shell .board-quick-views {
+    grid-column:2!important;grid-row:1;min-width:0;
+  }
+}
+
 /* V60 release gate: independent hit planes for title/actions and five tabs.
    Native-grid auto-placement interacted with the sheet's inherited 44px
    button minimum and could paint the second row across the first-row buttons.

@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--mobile') ? [[320,568],[360,640],[390,844],[430,932],[667,375],[844,390],[768,1024]] : args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--landscape') ? [[667,375],[844,390]] : args.includes('--mobile') ? [[320,568],[360,640],[390,844],[430,932],[667,375],[844,390],[768,1024]] : args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -45,7 +45,7 @@ async function click(selector) {
   await pause(350);
 }
 async function screenshot(name) {
-  const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:process.platform!=='win32'});
+  const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
 }
 let incidentFixtureMode=false;
@@ -183,9 +183,13 @@ try {
           assert.ok(target.overflow<=1,name+' navigation label must fit: '+JSON.stringify(target));
         }
       }
+      if(!baseline&&height<521){
+        assert.ok(measure.visibleRows>=1,name+' must initially expose a complete timetable row');
+        assert.equal(await evaluate(`Array.from(document.querySelectorAll('.board-primary-bar button')).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&r.width>=44&&(hit===button||button.contains(hit));})`),true,name+' all timetable controls must remain reachable');
+      }
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls: '+JSON.stringify(measure.search));}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
       if(!baseline && width===390 && state==='expanded' && theme==='light') {
         await click('.mobile-sheet-actions button:first-child');
         await pause(280);

@@ -72,6 +72,7 @@ jobs:
           pnpm audit:layout -- 'http://localhost:3000/?station=berlin' work/station-loading-qa --station-loading-only
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
           node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
           node scripts/planner-qa.mjs http://localhost:3000 work/planner-qa
           node scripts/station-radar-qa.mjs http://localhost:3000 work/station-radar-qa
@@ -99,6 +100,7 @@ jobs:
             work/station-sheet-qa/
             work/live-map-qa/
             work/board-stream-qa/
+            work/station-landscape-qa/
             work/station-loading-qa/
             work/planner-qa/
             work/station-radar-qa/
