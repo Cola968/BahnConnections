@@ -265,3 +265,59 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-card.plus {animatio
   .settings-dialog-v48[open] .plan-card.plus .plus-plan-expand,
   .settings-dialog-v48[open] .plan-card.plus .plus-plan-expand>span {color:CanvasText;}
 }
+
+
+/* V60.2: restrained comparison cards matching the original Free/Plus layout. */
+.settings-dialog-v48[open] .plan-list-v60-simple {gap:14px;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-card {
+  border-radius:17px;padding:18px 19px;box-shadow:none;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-card.free {
+  color:var(--ink);background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.72);
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-card.plus-simple {
+  isolation:auto;color:var(--ink);
+  border:1px solid rgba(187,66,103,.36);
+  background:linear-gradient(118deg,rgba(178,55,102,.10),rgba(111,85,164,.09) 48%,rgba(30,111,127,.10) 100%);
+  background-size:150% 150%;
+  animation:v60-plus-subtle-shift 32s ease-in-out infinite alternate;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple::before {display:none;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple> * {position:relative;z-index:1;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-heading {
+  display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-heading h3 {
+  margin:0;color:var(--ink);font-size:1.45rem;font-weight:650;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-heading>span {
+  color:var(--muted);font-size:.8rem;font-weight:550;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-feature-list {gap:12px;margin:19px 0;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-feature-list li,
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-feature-list li>span {
+  color:var(--ink);font-weight:450;line-height:1.4;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plan-feature-list svg {color:#be3b59;}
+.settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0 0;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options>span {
+  border:1px solid rgba(255,255,255,.76);border-radius:13px;
+  background:rgba(255,255,255,.22);padding:12px;min-width:0;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options :is(strong,small) {color:var(--ink);}
+.settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options strong {font-size:1.13rem;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-note {
+  color:var(--muted);font-size:.77rem;margin:13px 0 0;line-height:1.4;
+}
+@media(max-width:359px) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plan-card {padding:14px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {animation:none;}
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {animation:none;}
+@media(forced-colors:active) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {animation:none;background:Canvas;border:1px solid CanvasText;}
+}
