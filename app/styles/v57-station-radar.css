@@ -154,3 +154,60 @@
 .station-radar-trip-detail button{min-height:44px;padding:8px;border:1px solid var(--line-subtle);border-radius:8px;background:var(--paper);color:var(--ink)}
 .station-radar-trip-browser button:focus-visible,.station-radar-trip-browser input:focus-visible{outline:2px solid var(--action);outline-offset:2px}
 @media(max-height:550px){.station-radar-scope .station-radar-trip-browser small{display:block}}
+
+
+/* V60: The complete trip list belongs to the station sheet, not an unreachable
+   floating map overlay. Simple hierarchy, two truthful event times per train. */
+.app-shell .station-radar-in-sheet{
+  box-sizing:border-box;min-width:0;margin:4px 0 14px;
+  padding:12px 0 14px;border-bottom:1px solid var(--line-subtle);
+  background:transparent;color:var(--ink)
+}
+.app-shell .station-radar-inline-heading{
+  display:flex;justify-content:space-between;align-items:baseline;
+  flex-wrap:wrap;gap:4px 12px;margin-bottom:9px
+}
+.app-shell .station-radar-inline-heading b{font-size:.88rem;font-weight:700;letter-spacing:-.01em}
+.app-shell .station-radar-inline-heading small{font-size:.72rem;color:var(--muted);line-height:1.4}
+.app-shell .station-radar-in-sheet>.radar-direction-control{margin:0 0 9px}
+.app-shell .station-radar-in-sheet .station-radar-trip-browser-list{
+  max-height:none;overflow:visible;border-top:1px solid var(--line-subtle);
+  padding-top:10px;scrollbar-width:auto
+}
+.app-shell .station-radar-in-sheet .station-radar-trip-toggle{
+  width:100%;text-align:center;min-height:44px;padding:10px 12px;
+  font-size:.8rem;font-weight:700;border-radius:10px
+}
+.app-shell .station-radar-in-sheet .station-radar-trip-rows>li>button{
+  box-sizing:border-box;grid-template-columns:minmax(58px,auto) minmax(0,1fr);
+  grid-template-rows:auto auto;gap:5px 10px;
+  min-height:78px;padding:10px 3px
+}
+.app-shell .station-radar-in-sheet .station-radar-trip-rows>li>button>b{font-size:.81rem}
+.app-shell .station-radar-in-sheet .station-radar-trip-rows>li>button>span:nth-child(2){
+  font-size:.8rem;line-height:1.35
+}
+.app-shell .station-radar-in-sheet .station-radar-trip-rows .station-radar-events{
+  grid-column:1/-1;grid-row:2;display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+  min-width:0;margin-top:4px;padding-top:8px;border-top:1px solid var(--line-subtle);
+  overflow:visible
+}
+.app-shell .station-radar-in-sheet .station-radar-event{display:grid;justify-items:start;min-width:0;gap:3px}
+.app-shell .station-radar-in-sheet .station-radar-event>small{
+  font-size:.7rem;color:var(--muted);line-height:1.3
+}
+.app-shell .station-radar-in-sheet .station-radar-event .realtime-time{
+  font-size:.86rem;min-width:0;line-height:1.35
+}
+.app-shell .station-radar-in-sheet .station-radar-event .realtime-time__pair{display:flex;flex-wrap:wrap;gap:4px 7px;align-items:baseline}
+.app-shell .station-radar-in-sheet .station-radar-event .realtime-time__planned{font-size:.74rem;color:var(--muted)}
+.app-shell .station-radar-in-sheet .station-radar-time-missing{font-size:.74rem;color:var(--muted);font-weight:550}
+.app-shell .station-radar-in-sheet .station-radar-trip-detail ol{max-height:none;overflow:visible}
+.app-shell .station-radar-in-sheet button:focus-visible{
+  outline:2px solid var(--action);outline-offset:2px
+}
+@media(max-width:350px){
+  .app-shell .station-radar-in-sheet .station-radar-trip-rows>li>button{gap:5px 6px}
+  .app-shell .station-radar-in-sheet .station-radar-trip-rows .station-radar-events{gap:5px}
+}
