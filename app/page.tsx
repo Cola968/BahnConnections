@@ -205,7 +205,7 @@ export default function Home() {
   const [bikeRequired, setBikeRequired] = useState(false);
   const [journeyMessage, setJourneyMessage] = useState("");
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
-  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
+  const [stationPanel, setStationPanel] = useState<"live" | "trips" | "destinations" | "stats" | "disruptions">("live");
   const [helpOpen, setHelpOpen] = useState(false);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
@@ -399,7 +399,7 @@ export default function Home() {
     setMobileSheetState("half");
   }, []);
   // Station timetables must work even when the optional map train layer is off.
-  const stationRadar = useStationRadar(selected,liveVisible || stationPanel==="live");
+  const stationRadar = useStationRadar(selected,liveVisible || stationPanel==="trips");
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
@@ -1399,6 +1399,9 @@ export default function Home() {
             <div className="panel-body">
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}>
+              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} />
+            </div>
+            {stationPanel === "trips" && <div id="station-panel-trips" role="tabpanel" aria-labelledby="station-tab-trips">
               <section className="station-radar-in-sheet" aria-label="Alle Fahrten am Bahnhof">
                 <div className="station-radar-inline-heading"><b>Zugradar am Bahnhof</b><small>Alle gemeldeten Halte – auch außerhalb der Karte</small></div>
                 <div className="radar-direction-control" role="group" aria-label="Fahrtenrichtung am Bahnhof">
@@ -1406,8 +1409,7 @@ export default function Home() {
                 </div>
                 <StationRadarTripList key={selected.id} calls={stationRadar.calls} direction={radarDirection} status={stationRadar.status} coverage={stationRadar.coverage} updatedAt={stationRadar.updatedAt} onRefresh={stationRadar.refresh}/>
               </section>
-              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} />
-            </div>
+            </div>}
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
             {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${stationCondition(boardSummary,selected.id).tone}`}><i />{stationCondition(boardSummary,selected.id).label}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button><button type="button" className="station-share" onClick={()=>void shareStation(selected)} aria-label={"Bahnhof "+selected.name+" teilen"} disabled={selected.id.startsWith("motis:")} title={selected.id.startsWith("motis:")?"Link für diesen Bahnhof nicht verfügbar":"Bahnhof-Link teilen"}><UiIcon name="copy"/> Teilen</button></div></div>{stationShareStatus?.id===selected.id&&<p className="station-share-message" role="status">{stationShareStatus.message}</p>}
