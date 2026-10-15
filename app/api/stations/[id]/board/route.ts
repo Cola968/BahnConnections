@@ -88,7 +88,7 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const requestedWindow=query.get("window");
     if(requestedWindow!==null){
       const seconds=Number(requestedWindow);
-      if(!/^\\d{1,6}$/.test(requestedWindow)||!Number.isSafeInteger(seconds)||seconds>86400)
+      if(!/^\d{1,6}$/.test(requestedWindow)||!Number.isSafeInteger(seconds)||seconds>86400)
         return Response.json({stopTimes:[],warnings:["Ungültiges Zeitfenster"]},{status:400});
       url.searchParams.set("window",String(seconds));
     }
