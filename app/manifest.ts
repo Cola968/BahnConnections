@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name:"BahnConnections – Live-Fahrplan und Bahnkarte",
     short_name:"BahnConnections",
-    description:"Live-Abfahrten, vollständige Halte und exakte Fahrtverläufe für Fernverkehr, Regio, S- und U-Bahn.",
+    description:"Bahnkarte, Abfahrten und vom Datenanbieter gemeldete Halte für Fernverkehr, Regio, S- und U-Bahn.",
     id:"/",
     start_url:"/",
     scope:"/",
