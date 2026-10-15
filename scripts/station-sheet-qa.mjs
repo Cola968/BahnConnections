@@ -357,6 +357,20 @@ try {
     await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'},{name:'prefers-reduced-motion',value:'reduce'}]});
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.station-card')).backdropFilter"),'none','Reduced transparency removes glass blur');
     await screenshot('320-reduced-transparency');
+    await click('.station-sheet-header .mobile-sheet-actions button:last-child');
+    for(let attempt=0;attempt<100;attempt++){
+      if(await evaluate("!new URL(location.href).searchParams.has('station')"))break;
+      await pause(100);
+    }
+    assert.equal(await evaluate("Boolean(document.querySelector('.station-card'))"),false,'Closing must remove the station panel');
+    assert.equal(await evaluate("new URL(location.href).searchParams.has('station')"),false,'Closing a shared station must clear its deep link');
+    await command('Page.reload');
+    for(let attempt=0;attempt<100;attempt++){
+      if(await evaluate("Boolean(document.querySelector('.mobile-search-dock input'))"))break;
+      await pause(100);
+    }
+    await pause(500);
+    assert.equal(await evaluate("Boolean(document.querySelector('.station-card'))"),false,'Reload after close must keep the normal map state');
   }
   await writeFile(join(output,'report.json'),JSON.stringify({checkedAt:new Date().toISOString(),fixture:true,baseline,results},null,2));
 }finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}
