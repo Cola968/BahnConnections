@@ -1,5 +1,5 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
-import { loadStationBoardWithFallback, type StoptimesMode } from "../../../../station-board-fallback";
+import { loadStationBoardWithFallback, StationSourceThrottledError, type StoptimesMode } from "../../../../station-board-fallback";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
@@ -108,6 +108,7 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
       const candidate=new URL(url);
       candidate.searchParams.set("realtimeMode",mode);
       const response=await fetch(candidate,{headers:transitousRequestHeaders(),signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)])});
+      if(response.status===429)throw new StationSourceThrottledError("Transitous meldet eine Abfragesperre (429). Bitte später erneut versuchen.");
       if(!response.ok)throw new Error(`Transitous ${response.status}`);
       const responseData=await response.json() as {stopTimes?:unknown}|null;
       return responseData?.stopTimes;
@@ -141,6 +142,7 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     }
     return Response.json({...primary,...await verify()});
   } catch (error) {
-    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:502 });
+    const throttled=error instanceof StationSourceThrottledError;
+    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:throttled?429:502,headers:throttled?{"Retry-After":"60"}:undefined });
   }
 }
