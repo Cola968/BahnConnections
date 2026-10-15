@@ -124,6 +124,6 @@ const navigation=file("app/station-sub-navigation.tsx");
 assert.doesNotMatch(navigation,/value:"trips"/,"One station board replaces the duplicate trip tab");
 assert.doesNotMatch(page,/station-panel-trips/);
 assert.match(page,/id="station-panel-live"[\s\S]*?<LiveBoard key=\{selected.id\}/);
-assert.match(board,/TripStopTimes stop=\{stop\} fresh=\{boardLive\}/,"Both station events stay accessible in the row detail");
+assert.match(board,/TripStopTimes stop=\{stop\} fresh=\{detailFresh\}/,"Both station events stay accessible in the row detail");
 assert.doesNotMatch(board,/if \(detail.points.length\) onMapTrip/,"Opening details must not move the map");
 console.log("Station-wide timetable and UI regression: "+STATIONS.length+" curated stations + 5 station-provider scenarios + fallback/partial direction/touch tests passed.");

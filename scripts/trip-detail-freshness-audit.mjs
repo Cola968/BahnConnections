@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {tripDetailFresh} from '../app/trip-detail-freshness.ts';
+const now=Date.parse('2026-10-15T12:00:00Z');
+assert.equal(tripDetailFresh(now,now),true,'A just-loaded trip is current');
+assert.equal(tripDetailFresh(now-149000,now),true);
+assert.equal(tripDetailFresh(now-151000,now),false,'A fresh board must not make an older trip current');
+assert.equal(tripDetailFresh(now,now+151000),false,'A running page must expire its own trip data');
+assert.equal(tripDetailFresh(now+11000,now),false,'Future timestamps outside clock tolerance are not evidence');
+for(const value of [undefined,null,0,NaN,Infinity])assert.equal(tripDetailFresh(value,now),false);
+console.log('Independent trip freshness: initial load, expiry, board-independent age and invalid timestamps passed');

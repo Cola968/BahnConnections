@@ -50,6 +50,10 @@ async function screenshot(name) {
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
 }
 let incidentFixtureMode=false;
+let tripRevision=0;
+let tripUnavailable=false;
+let tripRequests=0;
+const fixtureNow=Date.now();
 function incidentTimetable(requestUrl){
   const kind=new URL(requestUrl).searchParams.get('kind');
   const when=new Date(Date.now()+35*60_000).toISOString();
@@ -63,14 +67,14 @@ function incidentTimetable(requestUrl){
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
 }
 function fixtureTrip(){
-  const time=minute=>new Date(Date.now()+minute*60000).toISOString();
-  return {trip:{legs:[{realTime:true,from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694,arrival:time(4),scheduledArrival:time(4),departure:time(6),scheduledDeparture:time(5),track:'15'},to:{name:'Berlin Friedrichstraße',lat:52.5202,lon:13.3869,arrival:time(10),scheduledArrival:time(10),track:'6'}}]}};
+  const time=minute=>new Date(fixtureNow+minute*60000).toISOString();
+  return {trip:{legs:[{realTime:true,from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694,arrival:time(4),scheduledArrival:time(4),departure:time(6+tripRevision),scheduledDeparture:time(5),track:'15'},to:{name:'Berlin Friedrichstraße',lat:52.5202,lon:13.3869,arrival:time(10),scheduledArrival:time(10),track:'6'}}]}};
 }
 function timetable() {
   const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
   return {source:'Station-sheet UI fixture',updatedAt:new Date().toISOString(),warnings:[],verification:{status:'matched'},stopTimes:Array.from({length:30},(_,i)=>{
     const [displayName,mode,headsign,track]=names[i%names.length];
-    const scheduled=new Date(Date.now()+(i+5)*60000).toISOString();
+    const scheduled=new Date(fixtureNow+(i+5)*60000).toISOString();
     const actual=new Date(new Date(scheduled).getTime()+(i===4?10:0)*60000).toISOString();
     return {tripId:`station-qa-${i}`,displayName,mode,headsign,realTime:true,place:{departure:actual,arrival:actual,scheduledDeparture:scheduled,scheduledArrival:scheduled,track,scheduledTrack:i===4?'4':track}};
   })};
@@ -88,11 +92,13 @@ try {
     const message=JSON.parse(String(event.data));
     if(message.method==='Fetch.requestPaused') {
       const path=new URL(message.params.request.url).pathname;
+      const tripRequest=path.includes('/api/trips/');
+      if(tripRequest)tripRequests++;
       const payload=path.endsWith('/board')?(incidentFixtureMode?incidentTimetable(message.params.request.url):timetable()):path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
         path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
         path.endsWith('/services')?{routes:[],stopTimes:[],source:'UI fixture',updatedAt:new Date().toISOString(),warnings:[]}:
         path.includes('/api/trips/')?fixtureTrip():[];
-      void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
+      void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:tripRequest&&tripUnavailable?503:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
       return;
     }
     const p=pending.get(message.id);if(!p)return;
@@ -223,6 +229,36 @@ try {
         assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .realtime-time[data-tone=warning]').length"),1,'Departure delay must not be copied to the arrival');
         await screenshot('390-light-unified-station-board');
         await click('.board-row-summary');
+        const beforeReopen=tripRequests;
+        tripRevision=10;
+        await click('.board-row-summary');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length>0"))break;
+          await pause(100);
+        }
+        assert.ok(tripRequests>beforeReopen,'Reopening must refresh cached trip data');
+        assert.ok(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length>0"),'Changed trip forecast must replace the cached forecast');
+        tripUnavailable=true;
+        await evaluate("document.dispatchEvent(new Event('visibilitychange'))");
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"))break;
+          await pause(100);
+        }
+        assert.ok(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"),'Trip refresh failure must be visible even when board data is fresh');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li').length"),2,'Refresh failure must preserve the last known stop sequence');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length"),0,'Fresh board data must not renew stale trip forecasts');
+        tripUnavailable=false;
+        await evaluate("document.querySelector('.board-row.open .trip-stop-state.error button').scrollIntoView({block:'center'})");
+        await click('.board-row.open .trip-stop-state.error button');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("!document.querySelector('.board-row.open .trip-stop-state.error')"))break;
+          await pause(100);
+        }
+        assert.equal(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"),false,'Retry must recover the trip independently');
+        tripRevision=0;
+        await evaluate("document.querySelector('.board-row.open .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row.open .board-row-summary');
+        await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
@@ -257,9 +293,12 @@ try {
         assert.ok(filterPosition.inBody&&filterPosition.startsBelowToolbar&&filterPosition.position!=='absolute'&&
           filterPosition.overflow==='visible'&&filterPosition.bodyScroll==='auto',
           'Filter must remain in the station pane single scroller: '+JSON.stringify(filterPosition));
-        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'hidden','Filter surface must have only one readable text plane');
+        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Filter surface must remove the hidden list from layout');
+        const filterExtent=await evaluate(`(() => {const body=document.querySelector('.station-card .panel-body'),filter=document.querySelector('.board-filter-panel');return {scroll:body.scrollHeight,filter:filter.getBoundingClientRect().height};})()`);
+        assert.ok(filterExtent.scroll<filterExtent.filter+350,'Filters must not retain an empty timetable scroll area: '+JSON.stringify(filterExtent));
+        assert.equal(await evaluate("document.querySelector('.board-filter-panel').textContent.includes('Mehr Zeilendetails')"),false,'Do not expose an option without additional information');
         await click('.board-filter-close');
-        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'visible','Closing filters restores departures');
+        assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Closing filters restores departures');
       }
     }
     if(!baseline&&width===390) {

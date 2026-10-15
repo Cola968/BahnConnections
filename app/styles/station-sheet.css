@@ -7,7 +7,7 @@
 .app-shell .live-board { position:relative; background:transparent; }
 .board-filter-panel { position:absolute; z-index:12; top:44px; left:0; right:0; display:block; max-height:min(420px,60dvh); overflow:auto; border:1px solid var(--glass-stroke); border-radius:18px; background:var(--glass-scroll-edge); backdrop-filter:var(--glass-filter-strong); -webkit-backdrop-filter:var(--glass-filter-strong); box-shadow:var(--glass-shadow); }
 /* Keep one readable content plane while the filter surface is open. */
-.live-board:has(>.board-filter-panel)>:is(.board-table,.board-data-details) { visibility:hidden; }
+.live-board:has(>.board-filter-panel)>:is(.board-table,.board-data-details) { display:none; }
 .board-filter-heading { display:flex; align-items:center; justify-content:space-between; }
 .board-filter-heading button { display:grid; place-items:center; width:44px; height:44px; border:0; color:var(--ink); background:transparent; }
 .board-filter-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }

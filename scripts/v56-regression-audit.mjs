@@ -133,7 +133,7 @@ assert.equal(timedSignal.aborted,true,"Native timeout signals must cancel pendin
 const listing=source("app/live-board.tsx");
 assert.match(listing,/matchesBoardDelayFilter\(delayFilter,delayState\)/,"Board filter uses verified delay semantics");
 assert.match(listing,/\["delayed","Verspätet"\]/,"Positive-delay filter must not claim a five-minute threshold");
-assert.match(listing,/if\s*\(existing\)\s*\{\s*setTripDetailState\([^;]+;\s*return;/,"Opening an enriched trip must mark its cached stop details ready");
+// Independent trip cache expiry is covered by trip-detail-freshness-audit and browser QA.
 
 assert.match(listing,/inBatches\(unresolved,\s*6/,"Resolve missing destinations with bounded six-wide batches");
 assert.match(listing,/const metadata=safeBoardMetadata\(payload\)/,"Board view must validate source metadata at the UI edge");

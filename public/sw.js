@@ -1,4 +1,5 @@
 const CACHE_NAME = "bahnconnections-static-v60-2";
+// V60.2 station-board patch: trigger the existing update flow for installed PWAs.
 const STATIC_ASSETS = ["/", "/install", "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
 const AUTH_PATHS = ["/signin-with-chatgpt", "/auth", "/api/auth", "/oauth", "/cdn-cgi/"];
 
