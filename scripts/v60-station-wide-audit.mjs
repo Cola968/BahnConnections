@@ -47,13 +47,17 @@ assert.equal(combineStationCallResults(success,failure).calls.size,1);
 assert.deepEqual(combineStationCallResults(success,success).coverage,'complete');
 assert.throws(()=>combineStationCallResults(failure,failure),/nicht erreichbar/);
 const callRows=stationCalls([
- {tripId:"ice-100",displayName:"ICE 100",headsign:"Hamburg",realTime:true,place:{arrival:at(10),scheduledArrival:at(9)}},
+ {tripId:"ice-100",displayName:"ICE 100",headsign:"Hamburg",realTime:true,place:{arrival:at(10),scheduledArrival:at(9),track:"12",scheduledTrack:"11"}},
  {tripId:"cancelled",displayName:"RE 8",headsign:"Lübeck",cancelled:true,place:{scheduledArrival:at(20)}}
-],[{tripId:"ice-100",place:{scheduledDeparture:at(12)}},{tripId:"regional-20",displayName:"RB 20",place:{scheduledDeparture:at(30)}}]);
+],[{tripId:"ice-100",place:{scheduledDeparture:at(12),track:"7",scheduledTrack:"7"}},{tripId:"regional-20",displayName:"RB 20",place:{scheduledDeparture:at(30)}}]);
 assert.equal(callRows.size,3,"provider calls cannot be limited by map viewport");
 assert.equal(callRows.get("ice-100")?.arrival,Date.parse(at(10)));
 assert.equal(callRows.get("ice-100")?.scheduledArrival,Date.parse(at(9)),"Original planned time must survive alongside the prediction");
 assert.equal(callRows.get("ice-100")?.arrivalRealtime,true);
+assert.equal(callRows.get("ice-100")?.arrivalTrack,"12","Real-time arrival platform preserved");
+assert.equal(callRows.get("ice-100")?.arrivalScheduledTrack,"11","Planned arrival platform preserved");
+assert.equal(callRows.get("ice-100")?.departureTrack,"7","Departure platform preserved independently");
+assert.equal(callRows.get("ice-100")?.departureScheduledTrack,"7");
 assert.equal(callRows.get("ice-100")?.departure,Date.parse(at(12)));
 assert.equal(callRows.get("ice-100")?.departureRealtime,false,"Scheduled departures must not inherit an unrelated arrival prediction");
 assert.equal(callRows.get("ice-100")?.realtime,true);
@@ -111,6 +115,9 @@ assert.match(page,/className="station-radar-in-sheet"/,"Trip list must stay reac
 assert.match(page,/useStationRadar\(selected,liveVisible \|\| stationPanel==="live"\)/,"Station tab must work when train markers are disabled");
 assert.match(file("app/station-radar-trip-list.tsx"),/EventTime call=\{call\} kind="arrival"/);
 assert.match(file("app/station-radar-trip-list.tsx"),/EventTime call=\{call\} kind="departure"/);
+assert.match(file("app/station-radar-trip-list.tsx"),/RealtimePlatform scheduled=\{plannedPlatform\}/);
+assert.match(file("app/station-radar-trip-list.tsx"),/clock-updatedAt<=150_000/,"Old source forecasts must expire on a running clock");
+assert.match(file("app/station-radar-trip-list.tsx"),/Echtzeitstand veraltet/);
 assert.match(file("app/styles/v57-station-radar.css"),/station-radar-in-sheet/);
 assert.match(file("app/station-radar-trip-list.tsx"),/api\/trips\/transitous/);
 assert.match(file("app/station-radar-trip-list.tsx"),/Aktualisieren/);
