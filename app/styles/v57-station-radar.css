@@ -211,3 +211,17 @@
   .app-shell .station-radar-in-sheet .station-radar-trip-rows>li>button{gap:5px 6px}
   .app-shell .station-radar-in-sheet .station-radar-trip-rows .station-radar-events{gap:5px}
 }
+
+/* Platform information accompanies each ETA/ETD, without taking extra columns
+   from the destination at 320px. Only the actual data source may flag a change. */
+.app-shell .station-radar-in-sheet .station-radar-platform{
+  display:block;font-size:.7rem;color:var(--muted);line-height:1.45;min-width:0
+}
+.app-shell .station-radar-platform .realtime-platform{
+  display:inline-flex;align-items:baseline;gap:4px;max-width:100%;
+  font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums
+}
+.app-shell .station-radar-platform .realtime-platform[data-changed="true"]{
+  color:var(--status-delay,var(--ink));font-weight:650
+}
+.app-shell .station-radar-platform .realtime-platform__arrow{font-style:normal}
