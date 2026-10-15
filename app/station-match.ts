@@ -4,6 +4,11 @@ export function stationNameKey(value = "") {
     .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
     .replace(/\s*[–—]\s*(?:zugang|eingang).*$/,"").replace(/\((?:s\+u|s|u)\)/g,"")
     .replace(/^(?:s\+u|s|u)\s+/,"").replace(/hauptbahnhof|hbf\.?/g,"hbf")
+    // Actual provider aliases: "Hermannstr. (Berlin)" ↔ "Berlin Hermannstraße";
+    // "Gesundbrunnen Bhf (Berlin)" ↔ "Berlin Gesundbrunnen".
+    // Keep Hbf (main station) distinct from the generic "Bhf" suffix.
+    .replace(/([a-z])str\.?(?=\s|\(|$)/g,"$1strasse")
+    .replace(/\bbhf\b(?=\s|\(|$)/g,"")
     .replace(/[^a-z0-9]+/g," ").trim();
 }
 export function stationDistanceMeters(a:NamedPoint,b:NamedPoint) {
