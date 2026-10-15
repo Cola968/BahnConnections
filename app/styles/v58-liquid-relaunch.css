@@ -95,7 +95,8 @@ html,body{background:var(--soft);color:var(--ink);}
 .app-shell .trip-stop-event>small{font-size:11px;color:var(--muted);}
 .app-shell .trip-stop-event .realtime-time{min-width:0;align-items:flex-end;}
 .app-shell .trip-stop-heading{position:static;flex-wrap:wrap;gap:6px;}
-.app-shell .trip-stop-heading button{min-height:44px;background:transparent;border-radius:10px;}
+.app-shell .trip-stop-heading button{min-height:44px;background:transparent;color:var(--ink);border-radius:10px;}
+.app-shell .trip-stop-heading button:hover{background:var(--soft);color:var(--ink);}
 .app-shell .board-time{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
 .app-shell .board-platform {font-variant-numeric:tabular-nums;}
 .app-shell .board-quality-notice {margin-block:7px;padding:9px 12px;border-inline-start:3px solid var(--warning);border-radius:5px;background:color-mix(in srgb,var(--warning) 7%,transparent);line-height:1.45;}
