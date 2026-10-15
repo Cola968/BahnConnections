@@ -4,6 +4,8 @@
  */
 import {validTransitousBoardRows,type TransitousBoardRow} from "./board-verification.ts";
 export type StoptimesMode = "REALTIME" | "OFF";
+/** A throttled provider must not be hammered with an immediate second request. */
+export class StationSourceThrottledError extends Error { readonly status=429; }
 export type StationBoardResult = {
   stopTimes:TransitousBoardRow[];
   mode:StoptimesMode;
@@ -19,7 +21,10 @@ export async function loadStationBoardWithFallback(
     if(!Array.isArray(raw))throw new Error("Invalid real-time stopTimes array");
     const rows=validTransitousBoardRows(raw);
     if(rows.length)return {stopTimes:rows,mode:"REALTIME",fallback:false};
-  }catch(error){primaryError=error;}
+  }catch(error){
+    if(error instanceof StationSourceThrottledError)throw error;
+    primaryError=error;
+  }
   try{
     const raw=await request("OFF");
     if(!Array.isArray(raw))throw new Error("Invalid scheduled stopTimes array");
