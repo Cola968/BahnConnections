@@ -105,6 +105,9 @@ assert.match(file("app/station-radar-data.ts"),/window:'32400'/,"A bounded scope
 assert.doesNotMatch(file("app/station-radar-data.ts"),/n:'5000'/);
 const board=file("app/live-board.tsx");
 assert.match(board,/windowMinutes, setWindowMinutes.*500/);
+assert.ok(board.includes('url.searchParams.set("window", "30600")'),"Fetch the complete station time window");
+assert.ok(board.includes('url.searchParams.set("n", "50")'),"Do not force thousands of irrelevant events at rural stations");
+assert.ok(!board.includes('url.searchParams.set("n", "1400")'));
 assert.match(board,/Weitere 120 Fahrten anzeigen/);
 assert.match(board,/\bboardScope\b/);
 const page=file("app/page.tsx");
