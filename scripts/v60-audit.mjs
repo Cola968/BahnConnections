@@ -61,11 +61,14 @@ assert.doesNotMatch(motion,/infinite|blink/,"No infinite attention-grabbing anim
 const settings=read("app/settings-dialog.tsx");
 const premium=read("app/styles/v60-premium.css");
 const subscription=read("app/subscription-plans.ts");
-assert.match(settings,/<details className="plan-card plus"/,"Plus card must have a built-in keyboard-accessible expanded state");
-assert.match(settings,/<summary className="plus-plan-summary"/,"Tapping the Plus card must open its details");
-assert.match(settings,/PLUS_PRICING/,"Display planned prices from the shared subscription contract");
-assert.match(settings,/noch nicht buchbar/i,"Unreleased Plus must clearly say it cannot be bought");
-assert.match(settings,/keinen Starttermin/i,"Do not imply a launch date");
+assert.match(settings,/plan-list-v60-simple/,"Use the approved two-card Free and Plus layout");
+assert.match(settings,/className="plan-card plus plus-simple"/,"Plus must remain a simple, readable comparison card");
+assert.match(settings,/billing-price-options/,"Planned prices must remain visible");
+assert.match(settings,/PLUS_PRICING/,"Read planned prices from the shared subscription contract");
+assert.match(settings,/Noch nicht buchbar/,"Plus must clearly remain unavailable");
+assert.match(settings,/Noch kein Starttermin/,"Do not imply a launch date");
+assert.doesNotMatch(settings,/<details className="plan-card plus"/,"Do not restore the oversized expandable Plus card");
+assert.match(premium,/plan-list-v60-simple/,"Keep the restrained card styling");
 assert.match(subscription,/checkoutEnabled:false/,"Plus details must not enable Stripe checkout");
 for(const color of ["#951e4d","#b63172","#873e98","#3a4a9b","#1f697d","#246e52"])
   assert.ok(premium.includes(color),"Keep ruby-to-emerald design stop "+color);
