@@ -4,8 +4,10 @@ import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { SavedRoutesPanel } from "./saved-routes-panel";
 import type { SavedRoute } from "./saved-routes";
-import { SUBSCRIPTION_PLANS } from "./subscription-plans";
+import { PLUS_PRICING, SUBSCRIPTION_PLANS } from "./subscription-plans";
 import { APP_VERSION_LABEL } from "./app-version";
+
+const formatEuro=(cents:number)=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(cents/100);
 
 export type LocalProfile={name:string;homeStationId:string;homeStationName:string;favoriteLine:string;avatarDataUrl:string;initials:string};
 export function parseLocalProfile(value:unknown):LocalProfile {
@@ -141,12 +143,34 @@ export function SettingsDialog(p:Props) {
         <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="location"/> Quellen & Transparenz</h3><p>Fahrplandaten werden von externen Verkehrsdatendiensten geladen. Ohne aktuelle Quelle zeigen wir keine bestätigte Pünktlichkeit.</p></div><p className="settings-note">Baustellen und Störungen werden nur für den gewählten Bahnhof und die aus der Quelle gemeldeten Fahrten angezeigt. Keine Garantie einer vollständigen Netzübersicht.</p></section>
       </>}
       {tab==="plans" && <>
-        <div className="settings-section-heading"><h3><UiIcon name="star"/> BahnConnections Plus</h3><p>Ein Überblick über aktuelle und geplante Funktionen. Die Basis bleibt kostenlos.</p></div>
-        <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={"plan-card "+plan.id} key={plan.id}>
-          <div><h3>{plan.name}</h3><span>{plan.availability==="available"?"Aktiv":"noch nicht buchbar"}</span></div>
-          <ul className="plan-feature-list">{plan.features.map(feature=><li key={feature}><UiIcon name="check"/><span>{feature}</span></li>)}</ul>
-          {plan.availability==="planned"&&<><div className="billing-price-options"><span><strong>3,99 €</strong><small>monatlich</small></span><span><strong>29,99 €</strong><small>jährlich</small></span></div></>}
-        </section>)}</div>
+        <div className="settings-section-heading"><h3><UiIcon name="star"/> Abos</h3><p>Die wichtigsten Funktionen bleiben kostenlos. Plus ist noch in Arbeit.</p></div>
+        <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=>plan.id==="plus" ?
+          <details className="plan-card plus" key={plan.id}>
+            <summary className="plus-plan-summary">
+              <span className="plus-plan-topline"><strong className="plus-plan-title">BahnConnections Plus</strong><span className="plus-plan-status">Noch nicht buchbar</span></span>
+              <span className="plus-plan-description">Favoriten und Pendelstrecken auch auf anderen Geräten. Das ist für Plus geplant.</span>
+              <span className="plus-plan-price-preview">Vorgesehen: {formatEuro(PLUS_PRICING.month)} im Monat oder {formatEuro(PLUS_PRICING.year)} im Jahr</span>
+              <span className="plus-plan-expand"><span>Mehr zu Plus</span><UiIcon name="chevron"/></span>
+            </summary>
+            <div className="plus-plan-details">
+              <h4>Das ist geplant</h4>
+              <dl className="plus-plan-benefits">
+                <div><dt>Favoriten synchronisieren</dt><dd>Deine gespeicherten Bahnhöfe sollen auf Handy und Rechner verfügbar sein.</dd></div>
+                <div><dt>Hinweise zu deinen Fahrten</dt><dd>Informationen zu Störungen und Verspätungen auf gespeicherten Strecken – soweit die Daten vorliegen.</dd></div>
+                <div><dt>Pendelstrecken übernehmen</dt><dd>Gespeicherte Verbindungen auf einem anderen Gerät öffnen, ohne sie neu anzulegen.</dd></div>
+              </dl>
+              <h4>Vorgesehene Preise</h4>
+              <div className="billing-price-options"><span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>pro Monat</small></span><span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>pro Jahr</small></span></div>
+              <p className="plus-plan-note">Die Preise sind noch nicht endgültig.</p>
+              <h4>Wann startet Plus?</h4>
+              <p className="plus-plan-note">Es gibt noch keinen Starttermin. Du kannst aktuell kein Abo abschließen.</p>
+              <p className="plus-plan-note">Deine Favoriten und Pendelstrecken bleiben bis dahin auf diesem Gerät gespeichert.</p>
+            </div>
+          </details> :
+          <section className="plan-card free" key={plan.id}>
+            <div><h3>{plan.name}</h3><span>Aktiv</span></div>
+            <ul className="plan-feature-list">{plan.features.map(feature=><li key={feature}><UiIcon name="check"/><span>{feature}</span></li>)}</ul>
+          </section>)}</div>
       </>}
     </div>
   </dialog>;
