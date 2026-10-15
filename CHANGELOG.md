@@ -1,3 +1,10 @@
+# V60.2 · Eine gemeinsame Bahnhofstafel
+
+- Tafel und Fahrten zu einer Bahnhofstafel zusammengeführt; vier klare Bahnhofstabs.
+- Schnellfilter hinter Filter gebündelt, kürzere Ergebnisanzeige, eine geöffnete Fahrt gleichzeitig.
+- Vollständiger Fahrtverlauf mit getrennten Ankunfts- und Abfahrtszeiten im Tafel-Eintrag; Karte nur auf ausdrücklichen Klick.
+- Unbenutzte separate Fahrtenlisten-Komponente entfernt; bestehende Radar-Haltefilter bleiben aktiv.
+
 # V60.1 · Zuverlässigere Bahnhofstafeln
 
 - Abweichende Bahnhofsnamen, Ortszusätze und Kürzel werden bei passenden Koordinaten erkannt.

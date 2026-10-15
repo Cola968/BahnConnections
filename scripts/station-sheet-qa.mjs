@@ -62,6 +62,10 @@ function incidentTimetable(requestUrl){
        {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
 }
+function fixtureTrip(){
+  const time=minute=>new Date(Date.now()+minute*60000).toISOString();
+  return {trip:{legs:[{realTime:true,from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694,arrival:time(4),scheduledArrival:time(4),departure:time(6),scheduledDeparture:time(5),track:'15'},to:{name:'Berlin Friedrichstraße',lat:52.5202,lon:13.3869,arrival:time(10),scheduledArrival:time(10),track:'6'}}]}};
+}
 function timetable() {
   const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
   return {source:'Station-sheet UI fixture',updatedAt:new Date().toISOString(),warnings:[],verification:{status:'matched'},stopTimes:Array.from({length:30},(_,i)=>{
@@ -87,7 +91,7 @@ try {
       const payload=path.endsWith('/board')?(incidentFixtureMode?incidentTimetable(message.params.request.url):timetable()):path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
         path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
         path.endsWith('/services')?{routes:[],stopTimes:[],source:'UI fixture',updatedAt:new Date().toISOString(),warnings:[]}:
-        path.includes('/api/trips/')?{trip:{legs:[]}}:[];
+        path.includes('/api/trips/')?fixtureTrip():[];
       void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
       return;
     }
@@ -180,7 +184,7 @@ try {
               hit:hit===button||button.contains(hit),overflow:button.classList.contains('active')||button.getAttribute('role')==='tab'?button.scrollWidth-button.clientWidth:0};
           });
         })()`);
-        assert.equal(targets.length,7,name+' must expose five tabs plus minimize and close');
+        assert.equal(targets.length,6,name+' must expose four tabs plus minimize and close');
         for(const target of targets){
           assert.ok(target.width>=43.9&&target.height>=43.9&&target.inside&&target.hit,
             name+' reachable 44px header target: '+JSON.stringify(target));
@@ -205,21 +209,20 @@ try {
         await screenshot('390-light-station-collapsed-compact');
         await click('.mobile-sheet-actions button:first-child');
         await pause(260);
-        // V60: the timetable owns the initial viewport. All confirmed station
-        // trips remain reachable in one tap without displacing departure rows.
-        await click('#station-tab-trips');
-        assert.equal(await evaluate("document.querySelector('#station-tab-trips').getAttribute('aria-selected')"),'true');
-        assert.ok(await evaluate("Boolean(document.querySelector('#station-panel-trips .station-radar-trip-toggle'))"),'Train list tab must be reachable');
-        await click('.station-radar-trip-toggle');
+        assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),4,'Four clear station sections');
+        assert.equal(await evaluate("Boolean(document.querySelector('#station-tab-trips'))"),false,'No duplicate trip browser');
+        await click('.board-row-summary');
+        assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','A journey opens directly in the board');
+        assert.ok(await evaluate("Boolean(document.querySelector('.board-row-detail .trip-stop-panel'))"),'Journey detail stays reachable from the board');
         for(let attempt=0;attempt<100;attempt++){
-          if(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"))break;
+          if(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-event').length>=3"))break;
           await pause(100);
         }
-        assert.ok(await evaluate("document.querySelectorAll('#station-panel-trips .station-radar-trip-rows > li').length>0"),
-          'Train list must show confirmed provider calls: '+await evaluate("document.querySelector('#station-panel-trips')?.innerText"));
-        await screenshot('390-light-station-trips-tab');
-        await click('#station-tab-live');
-        assert.equal(await evaluate("document.querySelector('#station-tab-live').getAttribute('aria-selected')"),'true');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .trip-stop-event').length"),2,'Arrival and departure at the station must both remain visible');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:last-child .trip-stop-event').length"),1,'Do not invent a departure at the destination');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .realtime-time[data-tone=warning]').length"),1,'Departure delay must not be copied to the arrival');
+        await screenshot('390-light-unified-station-board');
+        await click('.board-row-summary');
       }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
@@ -230,13 +233,18 @@ try {
       }
       if(!baseline&&width===390&&state==='half') {
         // V58: preset selection is an actual React action, not only a visual pill.
+        await click('.board-filter-toggle');
         assert.equal(await evaluate("document.querySelectorAll('.board-quick-views button').length"),4,'All four quick views must be rendered');
         await click('.board-quick-views button[data-quick-view="upcoming"]');
+        await click('.board-filter-toggle');
         assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=upcoming]').getAttribute('aria-pressed')"),'true','Upcoming view must select the 60-minute window');
         await click('.board-quick-views button[data-quick-view="canceled"]');
+        await click('.board-filter-toggle');
         assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=canceled]').getAttribute('aria-pressed')"),'true','Cancellation view must activate');
         await click('.board-quick-views button[data-quick-view="all"]');
+        await click('.board-filter-toggle');
         assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=all]').getAttribute('aria-pressed')"),'true','All view must restore the default state');
+        await click('.board-filter-close');
         await screenshot('390-railglass-quick-views');
         await click('.board-filter-toggle');await pause(350);
         await screenshot(`${width}-${theme}-half-filters`);
