@@ -278,9 +278,18 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-card.plus {animatio
 .settings-dialog-v48[open] .plan-list-v60-simple .plan-card.plus-simple {
   isolation:auto;color:var(--ink);
   border:1px solid rgba(187,66,103,.36);
-  background:linear-gradient(118deg,rgba(178,55,102,.10),rgba(111,85,164,.09) 48%,rgba(30,111,127,.10) 100%);
-  background-size:150% 150%;
-  animation:v60-plus-subtle-shift 32s ease-in-out infinite alternate;
+  /* All eight hues remain visible across the card, while only their tint moves. */
+  background:linear-gradient(105deg,
+    rgba(157,36,79,.14) 0%,
+    rgba(184,59,104,.13) 13%,
+    rgba(205,100,63,.13) 27%,
+    rgba(205,158,58,.12) 41%,
+    rgba(56,128,85,.13) 55%,
+    rgba(36,130,132,.13) 69%,
+    rgba(57,92,164,.13) 83%,
+    rgba(121,69,154,.14) 100%);
+  background-size:115% 115%;
+  animation:v60-plus-tint-drift 26s ease-in-out infinite alternate;
 }
 .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple::before {display:none;}
 .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple> * {position:relative;z-index:1;}
@@ -346,3 +355,22 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .pl
   .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {transition:none;}
 }
 html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {transition:none;}
+
+/* Small movement only: the entire colour spectrum stays on screen. */
+@keyframes v60-plus-tint-drift {
+  from { background-position:0% 45%; }
+  to { background-position:100% 55%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {
+    animation:none;background-position:50% 50%;
+  }
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {
+  animation:none;background-position:50% 50%;
+}
+@media(forced-colors:active) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {
+    animation:none;background:Canvas;
+  }
+}
