@@ -1,0 +1,986 @@
+[
+  {
+    "station": {
+      "name": "Marburg (Lahn)",
+      "lat": 50.8208,
+      "lon": 8.7751
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:06534:11323",
+        "name": "Marburg Südbahnhof",
+        "lat": 50.794872000000005,
+        "lon": 8.763548
+      },
+      {
+        "id": "de-DELFI_de:06534:10011_G",
+        "name": "Marburg Hauptbahnhof",
+        "lat": 50.819269999999996,
+        "lon": 8.775014
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06534:11086",
+        "name": "Münchhausen (Marburg) Bahnhof",
+        "lat": 50.964035,
+        "lon": 8.718337999999997
+      },
+      {
+        "id": "de-DELFI_de:06533:11504_G",
+        "name": "Limburg (Lahn) Süd (ICE)",
+        "lat": 50.3825,
+        "lon": 8.096112
+      },
+      {
+        "id": "ch-opentransportdataswiss26_Parent8014446",
+        "name": "Maulburg Bahnhof",
+        "lat": 47.644375000000004,
+        "lon": 7.780659000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11023",
+        "name": "Limburg (Lahn)-Staffel Bahnhof",
+        "lat": 50.399513000000006,
+        "lon": 8.046016999999999
+      },
+      {
+        "id": "de-DELFI_de:06533:11174_G",
+        "name": "Limburg (Lahn)-Eschhofen Bahnhof",
+        "lat": 50.393482,
+        "lon": 8.104429
+      },
+      {
+        "id": "at-PTA-Eastern-Region-Flex-2026_at:43:7417:0:1",
+        "name": "Mainburg Bahnhof",
+        "lat": 48.07967401,
+        "lon": 15.478556250000002
+      },
+      {
+        "id": "de-DELFI_de:05762:8130",
+        "name": "Warburg Bahnhof",
+        "lat": 51.49275200000001,
+        "lon": 9.163858
+      },
+      {
+        "id": "de-DELFI_de:02000:49950",
+        "name": "Harburg",
+        "lat": 53.456959999999995,
+        "lon": 9.991454000000001
+      },
+      {
+        "id": "be-sncb_S8821543",
+        "name": "Sint-Mariaburg",
+        "lat": 51.291653000000004,
+        "lon": 4.434902
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Frankfurt Flughafen Fernbf",
+      "lat": 50.0532,
+      "lon": 8.5703
+    },
+    "candidates": [
+      {
+        "id": "nl-OpenOV_stoparea:17987",
+        "name": "Frankfurt Flughafen Fernb",
+        "lat": 50.053196,
+        "lon": 8.57014
+      },
+      {
+        "id": "de-DELFI_de:06412:11511",
+        "name": "Frankfurt (Main) Flughafen Fernbahnhof",
+        "lat": 50.053165,
+        "lon": 8.570185
+      },
+      {
+        "id": "de-DELFI_de:06412:2930",
+        "name": "Frankfurt (Main) Flughafen Terminal 1",
+        "lat": 50.051219999999994,
+        "lon": 8.571250999999998
+      },
+      {
+        "id": "at-Railway-Current-Reference-Data-2026_de:06412:10:16:16",
+        "name": "Frankfurt (Main) Hauptbahnhof/Fernbusterminal",
+        "lat": 50.106293,
+        "lon": 8.661960999999998
+      },
+      {
+        "id": "de-DELFI_de:05111:18488_G",
+        "name": "D-Flughafen Bf",
+        "lat": 51.292007000000005,
+        "lon": 6.786836
+      },
+      {
+        "id": "de-DELFI_de:06412:1224",
+        "name": "Frankfurt (Main) Hausen",
+        "lat": 50.138290000000005,
+        "lon": 8.624616999999999
+      },
+      {
+        "id": "de-DELFI_de:06412:1301",
+        "name": "Frankfurt (Main) Dornbusch",
+        "lat": 50.138645000000004,
+        "lon": 8.670397
+      },
+      {
+        "id": "de-DELFI_de:05315:17551:7:71",
+        "name": "Flughafen Köln/Bonn Bf",
+        "lat": 50.878834,
+        "lon": 7.119445
+      },
+      {
+        "id": "de-DELFI_de:06412:1311",
+        "name": "Frankfurt (Main) Lindenbaum",
+        "lat": 50.152590000000004,
+        "lon": 8.661501
+      },
+      {
+        "id": "de-DELFI_de:05111:18517",
+        "name": "D-Flughafen Term. C",
+        "lat": 51.278084,
+        "lon": 6.766407
+      },
+      {
+        "id": "pl-PKP-Intercity-Germany_620792",
+        "name": "Frankfurt(Oder)(Gr)",
+        "lat": 52.321175000000004,
+        "lon": 14.576403
+      },
+      {
+        "id": "de-DELFI_de:06412:1317",
+        "name": "Frankfurt (Main) Heddernheim",
+        "lat": 50.161957,
+        "lon": 8.649104999999999
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Norden",
+      "lat": 53.586744,
+      "lon": 7.22104
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:03452:67921",
+        "name": "Norddeich(Norden)",
+        "lat": 53.62158,
+        "lon": 7.160823999999999
+      },
+      {
+        "id": "de-DELFI_de:03452:67948",
+        "name": "Norden(Ostfriesl)",
+        "lat": 53.588196,
+        "lon": 7.218913
+      },
+      {
+        "id": "de-DELFI_de:09772:4400_G",
+        "name": "Nordendorf",
+        "lat": 48.593433000000005,
+        "lon": 10.837306
+      },
+      {
+        "id": "de-DELFI_de:03461:67997::1",
+        "name": "Nordenham",
+        "lat": 53.483839999999994,
+        "lon": 8.487495000000001
+      },
+      {
+        "id": "de-VBB_de:11000:900131006::7",
+        "name": "Nordend (Berlin)",
+        "lat": 52.590214,
+        "lon": 13.402918
+      },
+      {
+        "id": "de-DELFI_de:09162:48:2:1",
+        "name": "Nordendstraße",
+        "lat": 48.154903,
+        "lon": 11.575484000000003
+      },
+      {
+        "id": "es-Cercanías-Renfe_05413",
+        "name": "Noreña",
+        "lat": 43.39398,
+        "lon": -5.703627000000001
+      },
+      {
+        "id": "nl-OpenOV_stoparea:130827",
+        "name": "Noorderkempen",
+        "lat": 51.35721999999999,
+        "lon": 4.6329199999999995
+      },
+      {
+        "id": "de-DELFI_de:09162:34",
+        "name": "Nordbad",
+        "lat": 48.160927,
+        "lon": 11.563411
+      },
+      {
+        "id": "de-DELFI_de:05566:31258",
+        "name": "Nordwalde",
+        "lat": 52.07869,
+        "lon": 7.460913
+      },
+      {
+        "id": "de-DELFI_de:03356:68599",
+        "name": "Nordsode",
+        "lat": 53.332836,
+        "lon": 8.980288
+      },
+      {
+        "id": "de-DELFI_de:03452:67921",
+        "name": "Norddeich(Norden)",
+        "lat": 53.62158,
+        "lon": 7.160823999999999
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Papenburg (Ems)",
+      "lat": 53.089658,
+      "lon": 7.386683
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg, Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-VBN_000004920624",
+        "name": "Aschendorf(Papenburg)",
+        "lat": 53.052025,
+        "lon": 7.337034999999999
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg, Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg, Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg, Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      },
+      {
+        "id": "de-DELFI_de:03454:7765",
+        "name": "Papenburg, Bahnhof",
+        "lat": 53.089706,
+        "lon": 7.3867080000000005
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Celle",
+      "lat": 52.62099,
+      "lon": 10.062499
+    },
+    "candidates": [
+      {
+        "id": "it-trenitalia_04530:station",
+        "name": "CELLE",
+        "lat": 44.342462,
+        "lon": 8.54263
+      },
+      {
+        "id": "de-DELFI_de:03351:50",
+        "name": "Celle Bahnhof",
+        "lat": 52.620457,
+        "lon": 10.062468
+      },
+      {
+        "id": "fr-offre-de-transport-tam-en-temps-reel-gtfs-rt-urbain-et-suburbain_43105",
+        "name": "Celleneuve",
+        "lat": 43.615543,
+        "lon": 3.825821
+      },
+      {
+        "id": "be-sncb_S8871365",
+        "name": "Pont-à-Celles",
+        "lat": 50.513813,
+        "lon": 4.355296
+      },
+      {
+        "id": "ch-opentransportdataswiss26_Parentch:1:sloid:9252",
+        "name": "Celerina",
+        "lat": 46.513855,
+        "lon": 9.858462000000001
+      },
+      {
+        "id": "es-RENFE-Larga-Distancia-y-AVE_67107",
+        "name": "Cella",
+        "lat": 40.455265,
+        "lon": -1.2443289999999998
+      },
+      {
+        "id": "cn-china-railway_CLR",
+        "name": "Celei",
+        "lat": 36.97314,
+        "lon": 80.83188
+      },
+      {
+        "id": "fr-base-de-donnees-multimodale-transports-publics-en-bretagne-korrigo-gtfs_SNCF:ST:87481168",
+        "name": "Le Cellier",
+        "lat": 47.313419999999994,
+        "lon": -1.35079
+      },
+      {
+        "id": "de-DELFI_de:03351:50",
+        "name": "Celle Bahnhof",
+        "lat": 52.620457,
+        "lon": 10.062468
+      },
+      {
+        "id": "de-DELFI_de:03351:50",
+        "name": "Celle Bahnhof",
+        "lat": 52.620457,
+        "lon": 10.062468
+      },
+      {
+        "id": "de-DELFI_de:03351:50",
+        "name": "Celle Bahnhof",
+        "lat": 52.620457,
+        "lon": 10.062468
+      },
+      {
+        "id": "de-DELFI_de:03351:50",
+        "name": "Celle Bahnhof",
+        "lat": 52.620457,
+        "lon": 10.062468
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Herford",
+      "lat": 52.119545,
+      "lon": 8.664015
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      },
+      {
+        "id": "de-VBN_000008000162",
+        "name": "Herford Bahnhof",
+        "lat": 52.11961,
+        "lon": 8.663643
+      },
+      {
+        "id": "gb-great-britain_910GHEREFRD",
+        "name": "Hereford",
+        "lat": 52.0612,
+        "lon": -2.7081220000000004
+      },
+      {
+        "id": "gb-great-britain_910GHEYFORD",
+        "name": "Heyford",
+        "lat": 51.918583,
+        "lon": -1.2994468
+      },
+      {
+        "id": "gb-great-britain_910GHFDN",
+        "name": "Hertford North",
+        "lat": 51.798680000000004,
+        "lon": -0.09223840000000003
+      },
+      {
+        "id": "gb-great-britain_910GHERTFDE",
+        "name": "Hertford East",
+        "lat": 51.799397000000006,
+        "lon": -0.07175050000000001
+      },
+      {
+        "id": "de-DELFI_de:07132:090004",
+        "name": "Herdorf Bahnhof",
+        "lat": 50.77837800000001,
+        "lon": 7.953179
+      },
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      },
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      },
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      },
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      },
+      {
+        "id": "de-DELFI_de:05758:1380_G",
+        "name": "Herford, Bahnhof/ZOB",
+        "lat": 52.119243999999995,
+        "lon": 8.664627999999999
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Treysa",
+      "lat": 50.910632,
+      "lon": 9.185804
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:06634:204662_G",
+        "name": "Schwalmstadt-Treysa Bahnhof",
+        "lat": 50.91065999999999,
+        "lon": 9.185673
+      },
+      {
+        "id": "ch-opentransportdataswiss26_Parentch:1:sloid:5398",
+        "name": "Ponte Tresa",
+        "lat": 45.969986,
+        "lon": 8.860479000000002
+      },
+      {
+        "id": "de-DELFI_de:06634:204662_G",
+        "name": "Schwalmstadt-Treysa Bahnhof",
+        "lat": 50.91065999999999,
+        "lon": 9.185673
+      },
+      {
+        "id": "de-DELFI_de:06634:204662_G",
+        "name": "Schwalmstadt-Treysa Bahnhof",
+        "lat": 50.91065999999999,
+        "lon": 9.185673
+      },
+      {
+        "id": "de-DELFI_de:06634:204662_G",
+        "name": "Schwalmstadt-Treysa Bahnhof",
+        "lat": 50.91065999999999,
+        "lon": 9.185673
+      },
+      {
+        "id": "de-DELFI_de:06634:204662_G",
+        "name": "Schwalmstadt-Treysa Bahnhof",
+        "lat": 50.91065999999999,
+        "lon": 9.185673
+      },
+      {
+        "id": "ch-opentransportdataswiss26_Parentch:1:sloid:5398",
+        "name": "Ponte Tresa",
+        "lat": 45.969986,
+        "lon": 8.860479000000002
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Freiberg (Sachs)",
+      "lat": 50.908697,
+      "lon": 13.344597
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:14522:70228:2:4",
+        "name": "Freiberg, Bahnhof",
+        "lat": 50.90941,
+        "lon": 13.342425
+      },
+      {
+        "id": "de-DELFI_de:08118:1503_G",
+        "name": "Freiberg (N)",
+        "lat": 48.929950000000005,
+        "lon": 9.197527
+      },
+      {
+        "id": "de-DELFI_de:14730:8011339",
+        "name": "Dahlen (Sachs)",
+        "lat": 51.35097,
+        "lon": 12.984252999999999
+      },
+      {
+        "id": "pl-Polish-Trains_141290",
+        "name": "Löbau (Sachs)",
+        "lat": 51.09941500000001,
+        "lon": 14.671731
+      },
+      {
+        "id": "de-VBB_de:14730:8011339",
+        "name": "Dahlen(Sachs)",
+        "lat": 51.35097,
+        "lon": 12.984252999999999
+      },
+      {
+        "id": "cz-CZPTT_czptt:stop:DE:19626",
+        "name": "Sebnitz(Sachs)",
+        "lat": 50.975853,
+        "lon": 14.2721405
+      },
+      {
+        "id": "de-VBB_de:14729:8012284",
+        "name": "Machern(Sachs)",
+        "lat": 51.35762799999999,
+        "lon": 12.627756999999999
+      },
+      {
+        "id": "de-VBB_de:14729:8010059",
+        "name": "Borsdorf(Sachs)",
+        "lat": 51.345703,
+        "lon": 12.541164999999998
+      },
+      {
+        "id": "pl-Polish-Trains_141300",
+        "name": "Weickersdorf (Sachs)",
+        "lat": 51.110985,
+        "lon": 14.15129
+      },
+      {
+        "id": "de-DELFI_de:08311:6508:3:1",
+        "name": "Freiburg ZOB",
+        "lat": 47.996822,
+        "lon": 7.841403000000001
+      },
+      {
+        "id": "de-DELFI_de:08111:276",
+        "name": "Freibergstraße",
+        "lat": 48.82429,
+        "lon": 9.221969999999997
+      },
+      {
+        "id": "de-DELFI_de:14729:8012284",
+        "name": "Machern (Sachsen)",
+        "lat": 51.35762799999999,
+        "lon": 12.627756999999999
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Arfurt (Lahn)",
+      "lat": 50.40647866,
+      "lon": 8.21122403
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:06533:11114",
+        "name": "Runkel-Arfurt Bahnhof",
+        "lat": 50.406475,
+        "lon": 8.211104999999998
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11114",
+        "name": "Runkel-Arfurt Bahnhof",
+        "lat": 50.406475,
+        "lon": 8.211104999999998
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      },
+      {
+        "id": "de-DELFI_de:06533:11025_G",
+        "name": "Limburg (Lahn) Bahnhof",
+        "lat": 50.384116999999996,
+        "lon": 8.062342000000001
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Herborn (Dillkr)",
+      "lat": 50.68450459,
+      "lon": 8.30802687
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:06532:11007",
+        "name": "Herborn Bahnhof",
+        "lat": 50.684684999999995,
+        "lon": 8.308304
+      },
+      {
+        "id": "de-DELFI_de:01061:41767",
+        "name": "Herzhorn",
+        "lat": 53.78354,
+        "lon": 9.483884000000002
+      },
+      {
+        "id": "de-DELFI_de:06532:11007",
+        "name": "Herborn Bahnhof",
+        "lat": 50.684684999999995,
+        "lon": 8.308304
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Langeln (Holst)",
+      "lat": 53.79188514,
+      "lon": 9.86178516
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:01056:37994",
+        "name": "Langeln",
+        "lat": 53.79183200000001,
+        "lon": 9.862105000000001
+      },
+      {
+        "id": "de-DELFI_de:01051:39654::1",
+        "name": "Heide(Holst)",
+        "lat": 54.19317000000001,
+        "lon": 9.100833
+      },
+      {
+        "id": "de-DELFI_de:01061:44297",
+        "name": "Horst(Holst)",
+        "lat": 53.804596,
+        "lon": 9.645156
+      },
+      {
+        "id": "de-DELFI_de:01055:74957",
+        "name": "Pönitz(Holst)",
+        "lat": 54.045654,
+        "lon": 10.671157
+      },
+      {
+        "id": "de-DELFI_de:01062:8005019",
+        "name": "Reinfeld (Holst)",
+        "lat": 53.83043,
+        "lon": 10.494537000000001
+      },
+      {
+        "id": "de-DELFI_de:01057:3365::1",
+        "name": "Ascheberg(Holst)",
+        "lat": 54.148495000000004,
+        "lon": 10.340002
+      },
+      {
+        "id": "de-DELFI_de:03153:5536_G",
+        "name": "Langelsheim, Bahnhof",
+        "lat": 51.930126,
+        "lon": 10.34296
+      },
+      {
+        "id": "de-DELFI_de:02000:84952",
+        "name": "Langenfelde",
+        "lat": 53.579693,
+        "lon": 9.930919999999999
+      },
+      {
+        "id": "de-DELFI_de:15085:8012161",
+        "name": "Langenstein",
+        "lat": 51.860459999999996,
+        "lon": 10.979275
+      },
+      {
+        "id": "fr-horaires-sncf_FR::LMU:68b11f70-cb0a-11e8-8bfa-f784c1c7c611:",
+        "name": "Langeac",
+        "lat": 45.101252,
+        "lon": 3.4906049999999995
+      },
+      {
+        "id": "fr-base-de-donnees-multimodale-transports-publics-en-bretagne-korrigo-gtfs_SNCF:ST:87571828",
+        "name": "Langeais",
+        "lat": 47.324059999999996,
+        "lon": 0.410104
+      },
+      {
+        "id": "de-DELFI_de:06435:11061",
+        "name": "Langenselbold Bahnhof",
+        "lat": 50.16230800000001,
+        "lon": 9.058639000000001
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Markt Heimenkirch",
+      "lat": 47.62895756,
+      "lon": 9.90205654
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:09776:1515",
+        "name": "Heimenkirch, Bahnhof",
+        "lat": 47.62891000000001,
+        "lon": 9.9021
+      },
+      {
+        "id": "de-DELFI_at:44:47650",
+        "name": "Obertrattnach-Markt Hofkirchen",
+        "lat": 48.245945000000006,
+        "lon": 13.766864
+      },
+      {
+        "id": "de-DELFI_de:05513:5343:1:01",
+        "name": "Gelsenkirchen Marktstr.",
+        "lat": 51.558193,
+        "lon": 7.093214
+      },
+      {
+        "id": "de-DELFI_de:09171:1335",
+        "name": "Marktl",
+        "lat": 48.2567,
+        "lon": 12.852475000000002
+      },
+      {
+        "id": "de-DELFI_de:09479:9368_G_G",
+        "name": "Marktleuthen",
+        "lat": 50.130802,
+        "lon": 12.013169999999999
+      },
+      {
+        "id": "gb-great-britain_910GMKIN",
+        "name": "Markinch",
+        "lat": 56.200413000000005,
+        "lon": -3.1308023999999994
+      },
+      {
+        "id": "gb-great-britain_910GMRCH",
+        "name": "March",
+        "lat": 52.560085,
+        "lon": 0.0913188
+      },
+      {
+        "id": "de-DELFI_de:09776:1515",
+        "name": "Heimenkirch, Bahnhof",
+        "lat": 47.62891000000001,
+        "lon": 9.9021
+      },
+      {
+        "id": "de-DELFI_de:09776:1515",
+        "name": "Heimenkirch, Bahnhof",
+        "lat": 47.62891000000001,
+        "lon": 9.9021
+      },
+      {
+        "id": "de-DELFI_de:09776:1515",
+        "name": "Heimenkirch, Bahnhof",
+        "lat": 47.62891000000001,
+        "lon": 9.9021
+      },
+      {
+        "id": "de-DELFI_de:05513:5343:1:01",
+        "name": "Gelsenkirchen Marktstr.",
+        "lat": 51.558193,
+        "lon": 7.093214
+      },
+      {
+        "id": "de-DELFI_de:05513:5343:1:01",
+        "name": "Gelsenkirchen Marktstr.",
+        "lat": 51.558193,
+        "lon": 7.093214
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Rahden",
+      "lat": 52.43329176,
+      "lon": 8.6239759
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:05770:4738:91:91",
+        "name": "Rahden, Bahnhof",
+        "lat": 52.433228,
+        "lon": 8.623809
+      },
+      {
+        "id": "ie-transport-for-ireland_8220IR0035",
+        "name": "Raheny",
+        "lat": 53.38142399999999,
+        "lon": -6.175818
+      },
+      {
+        "id": "lt-LTG-Link_Raudėnai",
+        "name": "Raudėnai",
+        "lat": 55.998882,
+        "lon": 22.726383
+      },
+      {
+        "id": "de-DELFI_de:05770:4738:91:91",
+        "name": "Rahden, Bahnhof",
+        "lat": 52.433228,
+        "lon": 8.623809
+      },
+      {
+        "id": "de-DELFI_de:05770:4738:91:91",
+        "name": "Rahden, Bahnhof",
+        "lat": 52.433228,
+        "lon": 8.623809
+      },
+      {
+        "id": "de-DELFI_de:05770:4738:91:91",
+        "name": "Rahden, Bahnhof",
+        "lat": 52.433228,
+        "lon": 8.623809
+      },
+      {
+        "id": "de-DELFI_de:05770:4738:91:91",
+        "name": "Rahden, Bahnhof",
+        "lat": 52.433228,
+        "lon": 8.623809
+      },
+      {
+        "id": "ie-transport-for-ireland_8220IR0035",
+        "name": "Raheny",
+        "lat": 53.38142399999999,
+        "lon": -6.175818
+      },
+      {
+        "id": "ie-transport-for-ireland_8220IR0035",
+        "name": "Raheny",
+        "lat": 53.38142399999999,
+        "lon": -6.175818
+      },
+      {
+        "id": "ie-transport-for-ireland_8220IR0035",
+        "name": "Raheny",
+        "lat": 53.38142399999999,
+        "lon": -6.175818
+      },
+      {
+        "id": "lt-LTG-Link_Raudėnai",
+        "name": "Raudėnai",
+        "lat": 55.998882,
+        "lon": 22.726383
+      }
+    ]
+  },
+  {
+    "station": {
+      "name": "Rumeln",
+      "lat": 51.39832347,
+      "lon": 6.67547202
+    },
+    "candidates": [
+      {
+        "id": "de-DELFI_de:05112:16280:91:3",
+        "name": "Du Rumeln Bf",
+        "lat": 51.39793,
+        "lon": 6.676674
+      },
+      {
+        "id": "lu-administration-des-transports-publics_000221201014",
+        "name": "Rumelange, Gare",
+        "lat": 49.460056,
+        "lon": 6.032396
+      },
+      {
+        "id": "de-DELFI_de:05112:16280:91:3",
+        "name": "Du Rumeln Bf",
+        "lat": 51.39793,
+        "lon": 6.676674
+      },
+      {
+        "id": "de-DELFI_de:05112:16280:91:3",
+        "name": "Du Rumeln Bf",
+        "lat": 51.39793,
+        "lon": 6.676674
+      },
+      {
+        "id": "de-DELFI_de:05112:16280:91:3",
+        "name": "Du Rumeln Bf",
+        "lat": 51.39793,
+        "lon": 6.676674
+      },
+      {
+        "id": "de-DELFI_de:05112:16280:91:3",
+        "name": "Du Rumeln Bf",
+        "lat": 51.39793,
+        "lon": 6.676674
+      }
+    ]
+  }
+]

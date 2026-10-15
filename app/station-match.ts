@@ -16,6 +16,19 @@ export function stationDistanceMeters(a:NamedPoint,b:NamedPoint) {
   const h=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;
   return 6371000*2*Math.asin(Math.sqrt(Math.min(1,h)));
 }
+// Secondary aliases are accepted only at the station's coordinates. Keep
+// platform-independent roles (especially airport Fern-/Regionalbahnhof) intact.
+function stationAlias(value = "") {
+  return stationNameKey(value.replace(/\([^)]*\)/g," ")
+    .replace(/\bFernb(?:f)?\.?\b/gi,"Fernbahnhof"))
+    .replace(/\b(?:bahnhof|bf|hbf|markt)\b/g," ").replace(/\s+/g," ").trim();
+}
+function compatibleStationRoles(a:string,b:string) {
+  const roles=/\b(?:hbf|fern[a-z]*|regional[a-z]*|nord|sued|ost|west|mitte)\b/g;
+  const roleKey=(value:string)=>value.replace(/\b(nord|sued|ost|west)bahnhof\b/g,'$1').replace(/\bfernb(?:f)?\b/g,'fernbahnhof');
+  const left:string[]=roleKey(a).match(roles)??[],right:string[]=roleKey(b).match(roles)??[];
+  return left.every(role=>right.includes(role)) && right.every(role=>left.includes(role)||role==="hbf");
+}
 export function chooseStationMatch<T extends NamedPoint>(station:NamedPoint,candidates:T[]):T|null {
   const key=stationNameKey(station.name);
   if(!key)return null;
@@ -32,7 +45,14 @@ export function chooseStationMatch<T extends NamedPoint>(station:NamedPoint,cand
     // word suffixes and a much tighter bound than exact-name matches.
     const cityPrefixVariant=distance<=450&&key.length>=8&&name.length>=8&&
       (key.endsWith(' '+name)||name.endsWith(' '+key));
-    return distance<=1200&&(exact||qualified||cityPrefixVariant)?[{item,distance,score:exact?3:qualified?2:1}]:[];
+    const alias=stationAlias(station.name),otherAlias=stationAlias(item.name);
+    const aliasWords=alias.split(' '),otherWords=otherAlias.split(' ');
+    const sameAlias=alias===otherAlias||aliasWords.slice().sort().join(' ')===otherWords.slice().sort().join(' ');
+    const municipalAlias=alias.endsWith(' '+otherAlias)||otherAlias.endsWith(' '+alias);
+    const safeAlias=distance<=450&&alias.length>=4&&otherAlias.length>=4&&
+      compatibleStationRoles(stationNameKey((station.name??'').replace(/\bFernbf\b/gi,'Fernbahnhof')),name)&&
+      (sameAlias||municipalAlias);
+    return distance<=1200&&(exact||qualified||cityPrefixVariant||safeAlias)?[{item,distance,score:exact?3:qualified?2:cityPrefixVariant?1:0}]:[];
   }).sort((a,b)=>b.score-a.score||a.distance-b.distance);
   const [first]=ranked;
   if(!first)return null;

@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V60.0",date:"14. Oktober 2026 · Release-Kandidat",current:true,lead:"Praktischere Zugverfolgung, ehrliche Umstiege, teilbare Fahrten und weniger störende Bedienhürden.",tags:["Umstiege","Zugverfolgung","Teilen","Mobil"],changes:[
+ {version:"V60.1",date:"15. Oktober 2026",current:true,lead:"Bahnhofstafeln erkennen mehr deutsche Bahnhofsnamen zuverlässig.",tags:["Live-Tafeln","Bahnhofssuche","Fehlerbehebung"],changes:[["Bessere Bahnhofserkennung","Abweichende Ortszusätze und Bahnhofskürzel korrekt zuordnen; Fern- und Regionalbahnhöfe getrennt halten."],["Geografische Ersatzsuche","Fehlende Suchtreffer mit Namens- und Koordinatenprüfung ergänzen. Keine Bushaltestellen als Bahn-Halte verwenden."],["Abgesicherte Fehlerbehandlung","Abgebrochene Anfragen nicht zwischenspeichern und Anfragelimits ohne weitere Wiederholungen respektieren."]]},
+ {version:"V60.0",date:"14. Oktober 2026 · Release-Kandidat",current:false,lead:"Praktischere Zugverfolgung, ehrliche Umstiege, teilbare Fahrten und weniger störende Bedienhürden.",tags:["Umstiege","Zugverfolgung","Teilen","Mobil"],changes:[
   ["Besserer Zuglauf","Ankunft und Abfahrt an tatsächlich gemeldeten Halten, Datenstand, Aufenthalt und Filter für kommende Halte übersichtlich darstellen."],
   ["Ehrliche Umstiege","Rechnerischen Puffer aus Fahrzeiten und gemeldeten Fußwegen zeigen; fehlende Gehzeiten und unbekannte Anschlüsse offen benennen."],
   ["Nützliche Alternativen","Ausfälle ausblenden oder einblenden, Verbindungen nach Umstiegszeit und weiteren Fahrgastkriterien sortieren."],

@@ -1,3 +1,11 @@
+# V60.1 · Zuverlässigere Bahnhofstafeln
+
+- Abweichende Bahnhofsnamen, Ortszusätze und Kürzel werden bei passenden Koordinaten erkannt.
+- Begrenzte Ersatzsuche über vereinfachte Namen und geografische Haltestellentreffer.
+- Fern-/Regionalbahnhöfe bleiben getrennt; keine Bushaltestellen oder entfernten Nachbarstationen als Ersatz.
+- Regressionstests mit realen Anbieterantworten, Abbruchbehandlung und Schutz vor zusätzlichen Anfragen bei HTTP 429.
+- Die Fahrplandaten-Abdeckung des Anbieters bleibt begrenzt; keine Vollständigkeitsgarantie.
+
 # V60.0 · Next Generation – Fahrgastklarheit und zuverlässige Zugverfolgung
 
 - **Besserer Zug-Inspector:** Vollständige tatsächlich gemeldete Halte, nachvollziehbare Soll-/Prognosezeiten, Aufenthalte bis zur Abfahrt, optional nur kommende Halte und Datenstand der Quelle.

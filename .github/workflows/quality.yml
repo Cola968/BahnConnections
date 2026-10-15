@@ -32,6 +32,7 @@ jobs:
       - run: pnpm audit:v60-transfer
       - run: pnpm audit:v60-share
       - run: pnpm audit:v60-stations
+      - run: node scripts/station-resolution-audit.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime

@@ -31,17 +31,37 @@ export async function resolveTransitousStopId(station: Station, signal?: AbortSi
   const cached = stopIdCache.get(key);
   if (cached) return cached;
   const request = (async () => {
-    const url = new URL("https://api.transitous.org/api/v1/geocode");
-    url.searchParams.set("text", station.name);
-    url.searchParams.set("type", "STOP");
-    url.searchParams.set("mode", RAIL_MODES);
-    url.searchParams.set("language", "de");
-    url.searchParams.set("numResults", "12");
-    const response = await fetch(url, { signal:signal ? AbortSignal.any([signal,AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000), headers:transitousRequestHeaders() });
-    if (!response.ok) return null;
-    const payload = await response.json() as GeocodeStop[];
-    const candidates = payload.filter((item): item is GeocodeStop & { id:string; lat:number; lon:number } => item.type === "STOP" && Boolean(item.id) && Number.isFinite(item.lat) && Number.isFinite(item.lon));
-    return chooseStationMatch(station,candidates)?.id ?? null;
+    const lookupSignal=signal ? AbortSignal.any([signal,AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000);
+    const simplified=station.name.replace(/\([^)]*\)/g," ").replace(/\bSt\.?\s/gi,"Sankt ").replace(/\bFernbf\b/gi,"Fernbahnhof").replace(/\s+/g," ").trim();
+    const queries=[...new Set([station.name,simplified])];
+    for(const query of queries){
+      const url = new URL("https://api.transitous.org/api/v1/geocode");
+      url.searchParams.set("text", query);
+      url.searchParams.set("place", `${station.lat},${station.lon}`);
+      url.searchParams.set("type", "STOP");
+      url.searchParams.set("mode", RAIL_MODES);
+      url.searchParams.set("language", "de");
+      url.searchParams.set("numResults", "12");
+      const response = await fetch(url, { signal:lookupSignal, headers:transitousRequestHeaders() });
+      if (!response.ok) return null;
+      const payload = await response.json() as GeocodeStop[];
+      const candidates = payload.filter((item): item is GeocodeStop & { id:string; lat:number; lon:number } => item.type === "STOP" && Boolean(item.id) && Number.isFinite(item.lat) && Number.isFinite(item.lon));
+      const match=chooseStationMatch(station,candidates);
+      if(match)return match.id;
+    }
+    // Text search occasionally omits valid stops (e.g. Erdeborn). Reverse
+    // lookup is still checked by name AND position; bus-only stops are excluded.
+    const nearby=new URL("https://api.transitous.org/api/v1/reverse-geocode");
+    nearby.searchParams.set("place",`${station.lat},${station.lon}`);
+    nearby.searchParams.set("type","STOP");
+    nearby.searchParams.set("numResults","8");
+    const response=await fetch(nearby,{signal:lookupSignal,headers:transitousRequestHeaders()});
+    if(!response.ok)return null;
+    const payload=await response.json() as GeocodeStop[];
+    const candidates=payload.filter((item):item is GeocodeStop & {id:string;lat:number;lon:number}=>
+      item.type==="STOP"&&Boolean(item.id)&&Number.isFinite(item.lat)&&Number.isFinite(item.lon)&&
+      Boolean(item.modes?.some(mode=>RAIL_MODES.split(',').includes(mode))));
+    return chooseStationMatch(station,candidates)?.id??null;
   })().catch(() => null);
   // An aborted caller must not poison the station ID for other views or retries.
   const stopId = await request;
