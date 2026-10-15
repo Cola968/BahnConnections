@@ -40,8 +40,9 @@ async function evaluate(expression) {
 }
 async function click(selector) {
   const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)});return {x,y};})()`);
-  await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
-  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',buttons:1,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',buttons:0,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1,buttons:0});
   await pause(350);
 }
 async function screenshot(name) {
@@ -95,6 +96,9 @@ try {
     if(message.error)p.rejectCommand(Error(message.error.message));else p.resolveCommand(message.result);
   });
   await command('Page.enable');await command('Runtime.enable');await command('Network.enable');
+  // This suite exercises an active tab. Windows can otherwise background the
+  // headless target, correctly pausing the product's visibility-aware pollers.
+  await command('Emulation.setFocusEmulationEnabled',{enabled:true});
   await command('Network.setBypassServiceWorker',{bypass:true});
   await command('Page.addScriptToEvaluateOnNewDocument',{source:"navigator.serviceWorker.register=()=>Promise.reject(new Error('UI fixture QA'));"});
   await command('Fetch.enable',{patterns:[{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
