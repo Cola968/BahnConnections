@@ -80,6 +80,12 @@ assert.equal(switchedSnapshot.calls.size,0,"Never reuse another station's calls"
 const hermann={name:"Berlin Hermannstraße",lat:52.468,lon:13.43};
 const legitimate={id:"same-stop",name:"S+U Hermannstraße",lat:52.4682,lon:13.4302};
 assert.equal(stationNameKey("S+U Hermannstraße"),"hermannstrasse");
+assert.equal(stationNameKey("S+U Hermannstr. (Berlin)"),"hermannstrasse berlin");
+assert.equal(stationNameKey("S+U Gesundbrunnen Bhf (Berlin)"),"gesundbrunnen berlin");
+assert.equal(chooseStationMatch(hermann,[{...legitimate,name:"S+U Hermannstr. (Berlin)"}])?.id,"same-stop","Real VBB abbreviation must resolve to curated station");
+const gesund={name:"Berlin Gesundbrunnen",lat:52.5486,lon:13.3884};
+assert.equal(chooseStationMatch(gesund,[{id:"gesund",name:"S+U Gesundbrunnen Bhf (Berlin)",lat:52.5485,lon:13.3886}])?.id,"gesund","Provider Bhf suffix must resolve at same station");
+assert.equal(chooseStationMatch(gesund,[{id:"wrong",name:"S+U Gesundbrunnen Bhf (Berlin)",lat:52.56,lon:13.3886}]),null,"Distant station aliases must stay rejected");
 assert.equal(chooseStationMatch(hermann,[legitimate])?.id,"same-stop","City-prefix provider names must resolve");
 assert.equal(chooseStationMatch(hermann,[{...legitimate,lat:52.475}]),null,"Do not match different nearby stations merely by a name suffix");
 assert.equal(chooseStationMatch({name:"Berlin Hbf",lat:52.525,lon:13.369},[{name:"Hbf",lat:52.525,lon:13.369}]),null,"Never accept generic Hbf abbreviations without city");
