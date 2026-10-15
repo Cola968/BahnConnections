@@ -398,7 +398,8 @@ export default function Home() {
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState("half");
   }, []);
-  const stationRadar = useStationRadar(selected,liveVisible);
+  // Station timetables must work even when the optional map train layer is off.
+  const stationRadar = useStationRadar(selected,liveVisible || stationPanel==="live");
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
