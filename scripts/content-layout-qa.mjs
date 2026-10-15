@@ -231,7 +231,7 @@ try {
   if(stationLoadingOnly) {
     await pause(400);
     const metrics=await evaluate(`(() => {const p=window.stationPerf,c=document.querySelector('.leaflet-rail-routes-pane canvas');return {sheetFrame:p.sheetFrame,maxTask:Math.max(0,...p.tasks.map(t=>t.duration)),blockingTime:p.tasks.reduce((n,t)=>n+Math.max(0,t.duration-50),0),longTasks:p.tasks.length,maxFrameGap:Math.max(0,...p.gaps),routes:Number(c?.dataset.routeCount),added:Number(c?.dataset.routeAdded??0),requests:${JSON.stringify([...tripRequests.values()].reduce((a,b)=>a+b,0))}};})()`);
-    await tap('.station-section-tabs button:nth-child(2)');await screenshot('390-lines-loaded');
+    await tap('#station-tab-destinations');await screenshot('390-lines-loaded');
     await writeFile(join(outputDirectory,'station-loading-report.json'),JSON.stringify({fixture:true,cpuSlowdown:4,geometryPoints,lines:18,...metrics},null,2));
     console.log(JSON.stringify(metrics));
     await command('Emulation.setCPUThrottlingRate',{rate:1});
@@ -257,7 +257,7 @@ try {
   if(beforePan.transform===afterPan.transform || beforePan.revision!==afterPan.revision || afterPan.routes!==18 || afterPan.markers>120)throw new Error('Map pan regression: '+JSON.stringify({beforePan,afterPan}));
   await command('Emulation.setCPUThrottlingRate',{rate:1});
   checks.push({label:'4x CPU: pointer pan preserves all 18 dense routes',...afterPan});
-  await tap('.station-section-tabs button:nth-child(2)');
+  await tap('#station-tab-destinations');
   const requestCount=[...tripRequests.values()].reduce((a,b)=>a+b,0);
   await tap('.station-line-row');
   await waitFor(`Boolean(document.querySelector('.line-route-detail'))`,'Line detail missing');
@@ -297,7 +297,7 @@ try {
       await evaluate(`document.querySelector('.panel-body').scrollTop=160`);
       await inspect(label+' scrolled');
       await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
-      await tap('.station-section-tabs button:nth-child(2)');
+      await tap('#station-tab-destinations');
       await inspect(label+' lines');
       if(font==='normal')await screenshot(width+'-'+theme+'-lines');
       
