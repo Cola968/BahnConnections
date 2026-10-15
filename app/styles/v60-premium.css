@@ -321,3 +321,28 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .pl
 @media(forced-colors:active) {
   .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {animation:none;background:Canvas;border:1px solid CanvasText;}
 }
+
+/* A plain disclosure row, not a second promotional card. */
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more {
+  margin-top:14px;border-top:1px solid var(--line-subtle);color:var(--ink);
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:46px;cursor:pointer;font-size:.88rem;font-weight:600;
+  list-style:none;outline-offset:3px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary::-webkit-details-marker {display:none;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary::marker {content:"";}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {
+  width:17px;height:17px;flex:none;transition:transform 160ms ease;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] summary svg {transform:rotate(180deg);}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more-content {padding:0 0 5px;}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more-content p {
+  margin:9px 0;color:var(--muted);font-size:.81rem;line-height:1.5;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more-content strong {color:var(--ink);font-weight:650;}
+@media(prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {transition:none;}
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {transition:none;}
