@@ -82,6 +82,16 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     url.searchParams.set("stopId", stopId);
     const requestedCount=Number(query.get("n")??1400);
     url.searchParams.set("n",String(Number.isFinite(requestedCount)?Math.min(5000,Math.max(50,Math.floor(requestedCount))):1400));
+    // MOTIS returns at least n events OR the whole requested time window.
+    // A bounded window prevents distant future services from dominating the
+    // selected station's timetable and allows realistic station-wide coverage.
+    const requestedWindow=query.get("window");
+    if(requestedWindow!==null){
+      const seconds=Number(requestedWindow);
+      if(!/^\\d{1,6}$/.test(requestedWindow)||!Number.isSafeInteger(seconds)||seconds>86400)
+        return Response.json({stopTimes:[],warnings:["Ungültiges Zeitfenster"]},{status:400});
+      url.searchParams.set("window",String(seconds));
+    }
     const arrival = query.get("kind") === "arrival";
     url.searchParams.set("arriveBy", arrival ? "true" : "false");
     url.searchParams.set("direction", "LATER");
