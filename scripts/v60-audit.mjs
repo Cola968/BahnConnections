@@ -58,4 +58,18 @@ assert.match(motion,/board-row\.open/);
 assert.match(motion,/mobile-navigation/);
 assert.doesNotMatch(motion,/infinite|blink/,"No infinite attention-grabbing animations");
 
+const settings=read("app/settings-dialog.tsx");
+const premium=read("app/styles/v60-premium.css");
+const subscription=read("app/subscription-plans.ts");
+assert.match(settings,/<details className="plan-card plus"/,"Plus card must have a built-in keyboard-accessible expanded state");
+assert.match(settings,/<summary className="plus-plan-summary"/,"Tapping the Plus card must open its details");
+assert.match(settings,/PLUS_PRICING/,"Display planned prices from the shared subscription contract");
+assert.match(settings,/noch nicht buchbar/i,"Unreleased Plus must clearly say it cannot be bought");
+assert.match(settings,/keinen Starttermin/i,"Do not imply a launch date");
+assert.match(subscription,/checkoutEnabled:false/,"Plus details must not enable Stripe checkout");
+for(const color of ["#951e4d","#b63172","#873e98","#3a4a9b","#1f697d","#246e52"])
+  assert.ok(premium.includes(color),"Keep ruby-to-emerald design stop "+color);
+assert.match(premium,/prefers-reduced-motion:reduce/);
+assert.match(premium,/forced-colors:active/);
+
 console.log("V60 readiness audit: shortcuts, 20 planned features, motion, Render cleanup passed.");
