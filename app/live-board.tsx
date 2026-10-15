@@ -195,7 +195,12 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal,
   const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(22_000)]);
   const stopId = await requireTransitousStopId(station, requestSignal);
   const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/board`, window.location.origin);
-  url.searchParams.set("n", "1400");
+  // MOTIS returns all events in the requested window, with n as a minimum.
+  // Query the entire 500-minute board horizon (+ buffer) instead of an
+  // arbitrary 1400 events that can span multiple days at small stations.
+  url.searchParams.set("n", "50");
+  url.searchParams.set("window", "30600");
+  url.searchParams.set("time", new Date(Date.now() - 5*60_000).toISOString());
   url.searchParams.set("kind", kind);
   url.searchParams.set("stream","1");
   const response = await fetch(url, { signal:requestSignal });
