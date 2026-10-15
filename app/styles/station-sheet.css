@@ -26,6 +26,19 @@
 @media (max-width:1023px) {
 
   .app-shell .mobile-sheet-panel { scrollbar-gutter:auto; }
+  /* The entire sheet must NEVER scroll behind its own non-sticky header.
+     Only panel-body scrolls: two nested scrollers let header tabs overlap
+     close/minimize buttons after scrollIntoView or a breakpoint change. */
+  .app-shell .station-card.mobile-sheet-panel {
+    display:flex;
+    flex-direction:column;
+    overflow-y:hidden!important;
+  }
+  .app-shell .station-card.mobile-sheet-panel>.panel-body {
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+  }
   .app-shell .mobile-sheet-panel,
   .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel { background:linear-gradient(145deg,var(--glass-highlight-soft),transparent 44%),var(--glass-sheet-expanded)!important; -webkit-backdrop-filter:var(--glass-filter-strong)!important; backdrop-filter:var(--glass-filter-strong)!important; box-shadow:var(--glass-shadow)!important; }
   .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
