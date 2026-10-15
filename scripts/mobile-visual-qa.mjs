@@ -715,8 +715,25 @@ try {
     await evaluate(`(() => { const toggle=[...document.querySelectorAll('.settings-toggle')].find(node=>node.textContent.includes('Animationen reduzieren'));toggle.querySelector('input')?.click(); })()`);
     await screenshot(width+'-settings-display');
     await tap('.settings-tabs button[data-settings-tab="plans"]');
-    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.toLowerCase().includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus[open]'))`)) throw new Error('Plus details must start collapsed');
     await screenshot(width+'-settings-plans');
+    await tap('.plus-plan-summary');
+    await waitFor(`Boolean(document.querySelector('.plan-card.plus[open]'))`,'Tapping Plus must expand subscription information');
+    const plusDetails=await evaluate(`(() => {
+      const card=document.querySelector('.plan-card.plus'),content=card?.querySelector('.plus-plan-details');
+      return {visible:!!content&&content.getClientRects().length>0,pricing:content?.textContent.includes('29,99'),
+        planned:content?.textContent.includes('kein Abo abschließen'),
+        overflow:!!card&&card.scrollWidth>card.clientWidth+2};
+    })()`);
+    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||plusDetails.overflow)
+      throw new Error('Plus details not usable at '+width+': '+JSON.stringify(plusDetails));
+    await screenshot(width+'-settings-plus-expanded');
+    if(width!==320) {
+      await tap('.plus-plan-summary');
+      if(await evaluate(`Boolean(document.querySelector('.plan-card.plus[open]'))`))
+        throw new Error('Tapping Plus must also collapse the details');
+    }
     if(width===320) {
       await setViewport(320,568);
       await evaluate(`document.querySelector('.settings-content').scrollTop=document.querySelector('.settings-content').scrollHeight`);
