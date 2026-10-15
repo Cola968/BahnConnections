@@ -22,7 +22,12 @@ export function chooseStationMatch<T extends NamedPoint>(station:NamedPoint,cand
     // Require the same complete words and the existing geographic bound.
     const exact=name===key||name.split(' ').sort().join(' ')===key.split(' ').sort().join(' ');
     const qualified=key.length>=8&&name.length>=8&&(name.startsWith(key+' ')||key.startsWith(name+' '));
-    return distance<=1200&&(exact||qualified)?[{item,distance,score:exact?2:1}]:[];
+    // A provider may omit a city prefix ("S+U Hermannstraße") while the
+    // curated station has one ("Berlin Hermannstraße"). Accept only whole
+    // word suffixes and a much tighter bound than exact-name matches.
+    const cityPrefixVariant=distance<=450&&key.length>=8&&name.length>=8&&
+      (key.endsWith(' '+name)||name.endsWith(' '+key));
+    return distance<=1200&&(exact||qualified||cityPrefixVariant)?[{item,distance,score:exact?3:qualified?2:1}]:[];
   }).sort((a,b)=>b.score-a.score||a.distance-b.distance);
   const [first]=ranked;
   if(!first)return null;
