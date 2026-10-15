@@ -27,9 +27,9 @@ function parseStops(legs:Leg[]):DisplayStop[]{
   return stops;
 }
 /** Only fetch a trip on user selection; never fan out to thousands of trip endpoints. */
-export function StationRadarTripList({calls,direction,status,coverage,updatedAt}:{
+export function StationRadarTripList({calls,direction,status,coverage,updatedAt,onRefresh}:{
   calls:Map<string,StationCall>;direction:StationRadarDirection;
-  status:"loading"|"ready"|"error";coverage:"complete"|"partial"|"unknown";updatedAt:number;
+  status:"loading"|"ready"|"stale"|"error";coverage:"complete"|"partial"|"unknown";updatedAt:number;onRefresh:()=>void;
 }){
   const [open,setOpen]=useState(false),[query,setQuery]=useState("");
   const [limit,setLimit]=useState(60),[selected,setSelected]=useState<string|null>(null);
@@ -61,10 +61,11 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt}
     </button>
     {open&&<div id="station-radar-trip-browser-list" className="station-radar-trip-browser-list">
       <p className="station-radar-trip-disclosure" role="status">
-        {status==="loading"?"Halte werden geladen …":status==="error"?"Bahnhofshalte nicht erreichbar":`${rows.length} von ${calls.size} Fahrten`}
+        {status==="loading"?"Halte werden geladen …":status==="error"?"Bahnhofshalte nicht erreichbar":status==="stale"?`${rows.length} ältere Fahrten · Aktualisierung fehlgeschlagen (nicht live)`:`${rows.length} von ${calls.size} Fahrten`}
         {coverage==="partial"?" · Teilweise verfügbar":""}
         {updatedAt>0?` · Abgerufen ${time(updatedAt)}`:""} · Keine GPS-Positionen
       </p>
+      <button type="button" className="station-radar-trip-more" onClick={onRefresh} disabled={status==="loading"}>Aktualisieren</button>
       <label className="station-radar-trip-search">Fahrten durchsuchen
         <input type="search" value={query} onChange={event=>{setQuery(event.target.value);setLimit(60);}} placeholder="Linie, Ziel oder Fahrt-ID"/>
       </label>
@@ -72,7 +73,7 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt}
       {status==="ready"&&rows.length===0&&<p>Keine passenden Fahrten im gelieferten Zeitfenster.</p>}
       <ul className="station-radar-trip-rows">{rows.slice(0,limit).map(({tripId,call})=><li key={tripId}>
         <button type="button" aria-expanded={selected===tripId} aria-controls={selected===tripId?"station-radar-selected-trip":undefined} onClick={()=>toggle(tripId)}>
-          <b>{call.name??"Zugfahrt"}</b><span>{call.destination??"Ziel nicht gemeldet"}<small>{call.cancelled?"Halt entfällt":call.realtime?"Prognose vorhanden":"Fahrplan / Status unbekannt"}</small></span>
+          <b>{call.name??"Zugfahrt"}</b><span>{call.destination??"Ziel nicht gemeldet"}<small>{call.cancelled?"Halt entfällt":status==="stale"?"Alter Abruf – keine aktuelle Prognose":call.realtime?"Prognose vorhanden":"Fahrplan / Status unbekannt"}</small></span>
           <time>{time(direction==="inbound"?call.arrival??call.departure:call.departure??call.arrival)}</time>
         </button>
         {selected===tripId&&<div id="station-radar-selected-trip" className="station-radar-trip-detail" role="region" aria-label="Fahrtverlauf">

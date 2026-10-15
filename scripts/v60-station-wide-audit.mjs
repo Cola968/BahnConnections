@@ -3,6 +3,7 @@ import {readFileSync} from "node:fs";
 import {loadStationBoardWithFallback} from "../app/station-board-fallback.ts";
 import {combineStationCallResults,listStationCalls,matchesStationCall,stationCalls} from "../app/station-radar-data.ts";
 import {STATIONS} from "../app/network-data.ts";
+import {failedStationRadarSnapshot} from "../app/station-radar-state.ts";
 import {stationMarkerHierarchy} from "../app/station-marker.ts";
 const station= (name,id) => ({name,id});
 const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
@@ -43,6 +44,14 @@ assert.deepEqual(listStationCalls(callRows,"all").map(row=>row.tripId),["ice-100
 assert.deepEqual(listStationCalls(callRows,"outbound").map(row=>row.tripId),["ice-100","regional-20"]);
 assert.deepEqual(listStationCalls(callRows,"all","lübeck").map(row=>row.tripId),["cancelled"]);
 assert.deepEqual(listStationCalls(callRows,"inbound","ICE").map(row=>row.tripId),["ice-100"]);
+const oldSnapshot={key:"berlin",calls:callRows,status:"ready",updatedAt:Date.parse(at(0)),coverage:"complete"};
+const staleSnapshot=failedStationRadarSnapshot(oldSnapshot,"berlin");
+assert.equal(staleSnapshot.status,"stale","Failed refresh must preserve an existing station list");
+assert.equal(staleSnapshot.calls.size,3);
+assert.equal(staleSnapshot.updatedAt,oldSnapshot.updatedAt,"Old timestamp must remain visible");
+const switchedSnapshot=failedStationRadarSnapshot(oldSnapshot,"hamburg");
+assert.equal(switchedSnapshot.status,"error");
+assert.equal(switchedSnapshot.calls.size,0,"Never reuse another station's calls");
 // One algorithm must work for EVERY curated station, not only Berlin fixtures.
 // Dynamically discovered DB stops use the same marker/board code paths.
 const ids=new Set();
@@ -67,4 +76,6 @@ assert.match(page,/stationMarkerHierarchy/);
 assert.match(page,/station-tap-target/);
 assert.match(page,/StationRadarTripList key=\{selected.id\}/);
 assert.match(file("app/station-radar-trip-list.tsx"),/api\/trips\/transitous/);
+assert.match(file("app/station-radar-trip-list.tsx"),/Aktualisieren/);
+assert.match(file("app/station-radar-trip-list.tsx"),/Alter Abruf/);
 console.log("Station-wide timetable and UI regression: "+STATIONS.length+" curated stations + 5 station-provider scenarios + fallback/partial direction/touch tests passed.");
