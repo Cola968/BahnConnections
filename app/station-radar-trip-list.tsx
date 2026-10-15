@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
 import {RealtimeTime} from "./realtime-time";
+import {RealtimePlatform} from "./realtime-platform";
 
 type Stop={name?:string;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string;cancelled?:boolean};
 type Leg={from?:Stop;to?:Stop;intermediateStops?:Stop[];cancelled?:boolean};
@@ -30,6 +31,8 @@ function parseStops(legs:Leg[]):DisplayStop[]{
 function EventTime({call,kind,fresh}:{call:StationCall;kind:"arrival"|"departure";fresh:boolean}){
   const actual=call[kind],planned=kind==="arrival"?call.scheduledArrival:call.scheduledDeparture;
   const predicted=kind==="arrival"?call.arrivalRealtime:call.departureRealtime;
+  const platform=kind==="arrival"?call.arrivalTrack:call.departureTrack;
+  const plannedPlatform=kind==="arrival"?call.arrivalScheduledTrack:call.departureScheduledTrack;
   if(actual===undefined&&planned===undefined)return null;
   const label=kind==="arrival"?"Ankunft":"Abfahrt";
   // Expired predictions cannot masquerade as live after a failed poll.
@@ -41,6 +44,10 @@ function EventTime({call,kind,fresh}:{call:StationCall;kind:"arrival"|"departure
       :<RealtimeTime scheduled={planned!==undefined?new Date(planned).toISOString():undefined}
         actual={!predicted||fresh?new Date(current).toISOString():undefined}
         realtime={Boolean(predicted&&fresh)} cancelled={call.cancelled} compact />}
+    {(platform||plannedPlatform)&&<small className="station-radar-platform">
+      <RealtimePlatform scheduled={plannedPlatform}
+        actual={predicted&&fresh?platform:plannedPlatform??(!predicted?platform:undefined)} />
+    </small>}
   </span>;
 }
 /** Only fetch a trip on user selection; never fan out to thousands of trip endpoints. */
@@ -51,9 +58,17 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt,
   const [open,setOpen]=useState(false),[query,setQuery]=useState("");
   const [limit,setLimit]=useState(60),[selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<Detail|null>(null),[retry,setRetry]=useState(0);
+  const [clock,setClock]=useState(0);
+  useEffect(()=>{
+    const tick=()=>setClock(Date.now());
+    const initial=window.setTimeout(tick,0);
+    const timer=window.setInterval(tick,30_000);
+    return()=>{window.clearTimeout(initial);window.clearInterval(timer);};
+  },[]);
   const rows=useMemo(()=>listStationCalls(calls,direction,query),[calls,direction,query]);
-  // The poller marks failed refreshes as stale; render must remain pure.
-  const fresh=status==="ready"&&updatedAt>0;
+  // Render remains pure. Even a "ready" result expires while a page is hidden;
+  // its old predictions must never continue to look live after 150 seconds.
+  const fresh=status==="ready"&&clock>0&&updatedAt>0&&clock-updatedAt>=-10_000&&clock-updatedAt<=150_000;
   useEffect(()=>{
     if(!open||!selected)return;
     const controller=new AbortController();
@@ -81,7 +96,7 @@ export function StationRadarTripList({calls,direction,status,coverage,updatedAt,
     {open&&<div id="station-radar-trip-browser-list" className="station-radar-trip-browser-list">
       <p className="station-radar-trip-disclosure" role="status">
         {status==="loading"?"Halte werden geladen …":status==="error"?"Bahnhofshalte nicht erreichbar":status==="stale"?`${rows.length} ältere Fahrten · Aktualisierung fehlgeschlagen (nicht live)`:`${rows.length} von ${calls.size} Fahrten`}
-        {coverage==="partial"?" · Teilweise verfügbar":""}
+        {coverage==="partial"?" · Teilweise verfügbar":""}{status==="ready"&&!fresh&&clock>0?" · Echtzeitstand veraltet":""}
         {updatedAt>0?` · Abgerufen ${time(updatedAt)}`:""} · Keine GPS-Positionen
       </p>
       <button type="button" className="station-radar-trip-more" onClick={onRefresh} disabled={status==="loading"}>Aktualisieren</button>
