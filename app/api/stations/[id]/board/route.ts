@@ -1,5 +1,6 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { loadStationBoardWithFallback, StationSourceThrottledError, type StoptimesMode } from "../../../../station-board-fallback";
+import { boardRequestWindow } from "../../../../board-request-window";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
@@ -85,13 +86,10 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     // MOTIS returns at least n events OR the whole requested time window.
     // A bounded window prevents distant future services from dominating the
     // selected station's timetable and allows realistic station-wide coverage.
-    const requestedWindow=query.get("window");
-    if(requestedWindow!==null){
-      const seconds=Number(requestedWindow);
-      if(!/^\d{1,6}$/.test(requestedWindow)||!Number.isSafeInteger(seconds)||seconds>86400)
-        return Response.json({stopTimes:[],warnings:["Ungültiges Zeitfenster"]},{status:400});
-      url.searchParams.set("window",String(seconds));
-    }
+    const windowSeconds=boardRequestWindow(query.get("window"));
+    if(windowSeconds===undefined)
+      return Response.json({stopTimes:[],warnings:["Ungültiges Zeitfenster"]},{status:400});
+    if(windowSeconds!==null) url.searchParams.set("window",String(windowSeconds));
     const arrival = query.get("kind") === "arrival";
     url.searchParams.set("arriveBy", arrival ? "true" : "false");
     url.searchParams.set("direction", "LATER");
