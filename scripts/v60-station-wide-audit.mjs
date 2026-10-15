@@ -82,6 +82,7 @@ assert.match(page,/stationMarkerHierarchy/);
 assert.match(page,/station-tap-target/);
 assert.match(page,/StationRadarTripList key=\{selected.id\}/);
 assert.match(page,/className="station-radar-in-sheet"/,"Trip list must stay reachable when the floating card hides");
+assert.match(page,/useStationRadar\(selected,liveVisible \|\| stationPanel==="live"\)/,"Station tab must work when train markers are disabled");
 assert.match(file("app/station-radar-trip-list.tsx"),/EventTime call=\{call\} kind="arrival"/);
 assert.match(file("app/station-radar-trip-list.tsx"),/EventTime call=\{call\} kind="departure"/);
 assert.match(file("app/styles/v57-station-radar.css"),/station-radar-in-sheet/);
