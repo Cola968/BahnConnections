@@ -148,16 +148,15 @@ export function SettingsDialog(p:Props) {
           <details className="plan-card plus" key={plan.id}>
             <summary className="plus-plan-summary">
               <span className="plus-plan-topline"><strong className="plus-plan-title">BahnConnections Plus</strong><span className="plus-plan-status">Noch nicht buchbar</span></span>
-              <span className="plus-plan-description">Favoriten und Pendelstrecken auch auf anderen Geräten. Das ist für Plus geplant.</span>
-              <span className="plus-plan-price-preview">Vorgesehen: {formatEuro(PLUS_PRICING.month)} im Monat oder {formatEuro(PLUS_PRICING.year)} im Jahr</span>
-              <span className="plus-plan-expand"><span>Mehr zu Plus</span><UiIcon name="chevron"/></span>
+              <span className="plus-plan-description">Deine Strecken. Auf allen Geräten.</span>
+              <span className="plus-plan-expand"><span>Was ist drin?</span><UiIcon name="chevron"/></span>
             </summary>
             <div className="plus-plan-details">
-              <h4>Das ist geplant</h4>
+              <h4>Geplant für Plus</h4>
               <dl className="plus-plan-benefits">
-                <div><dt>Favoriten synchronisieren</dt><dd>Deine gespeicherten Bahnhöfe sollen auf Handy und Rechner verfügbar sein.</dd></div>
-                <div><dt>Hinweise zu deinen Fahrten</dt><dd>Informationen zu Störungen und Verspätungen auf gespeicherten Strecken – soweit die Daten vorliegen.</dd></div>
-                <div><dt>Pendelstrecken übernehmen</dt><dd>Gespeicherte Verbindungen auf einem anderen Gerät öffnen, ohne sie neu anzulegen.</dd></div>
+                <div><dt>Favoriten synchronisieren</dt><dd>Gespeicherte Bahnhöfe auf Handy und PC.</dd></div>
+                <div><dt>Hinweise zu deinen Fahrten</dt><dd>Verspätungen und Störungen auf deinen Strecken, sofern gemeldet.</dd></div>
+                <div><dt>Pendelstrecken übernehmen</dt><dd>Gespeicherte Strecken auf anderen Geräten öffnen.</dd></div>
               </dl>
               <h4>Vorgesehene Preise</h4>
               <div className="billing-price-options"><span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>pro Monat</small></span><span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>pro Jahr</small></span></div>
