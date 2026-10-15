@@ -5,6 +5,7 @@ import {combineStationCallResults,listStationCalls,matchesStationCall,stationCal
 import {STATIONS} from "../app/network-data.ts";
 import {failedStationRadarSnapshot} from "../app/station-radar-state.ts";
 import {stationMarkerHierarchy} from "../app/station-marker.ts";
+import {chooseStationMatch,stationNameKey} from "../app/station-match.ts";
 const station= (name,id) => ({name,id});
 const at = (minute) => new Date(Date.parse("2026-10-14T21:00:00Z")+minute*60000).toISOString();
 const cases=[station("Berlin Hermannstraße","de:test:hermannstr"),station("Berlin Hbf","de:test:hbf"),station("Hamburg Hbf","de:test:hamburg"),station("Lübeck Hbf","de:test:luebeck"),station("Dresden Hbf","de:test:dresden")];
@@ -55,6 +56,15 @@ assert.equal(staleSnapshot.updatedAt,oldSnapshot.updatedAt,"Old timestamp must r
 const switchedSnapshot=failedStationRadarSnapshot(oldSnapshot,"hamburg");
 assert.equal(switchedSnapshot.status,"error");
 assert.equal(switchedSnapshot.calls.size,0,"Never reuse another station's calls");
+// Provider stop-name normalization: S+U prefixes and omitted city prefixes
+// must not turn a real rail station into an unreachable board.
+const hermann={name:"Berlin Hermannstraße",lat:52.468,lon:13.43};
+const legitimate={id:"same-stop",name:"S+U Hermannstraße",lat:52.4682,lon:13.4302};
+assert.equal(stationNameKey("S+U Hermannstraße"),"hermannstrasse");
+assert.equal(chooseStationMatch(hermann,[legitimate])?.id,"same-stop","City-prefix provider names must resolve");
+assert.equal(chooseStationMatch(hermann,[{...legitimate,lat:52.475}]),null,"Do not match different nearby stations merely by a name suffix");
+assert.equal(chooseStationMatch({name:"Berlin Hbf",lat:52.525,lon:13.369},[{name:"Hbf",lat:52.525,lon:13.369}]),null,"Never accept generic Hbf abbreviations without city");
+assert.equal(chooseStationMatch({name:"Berlin Südkreuz",lat:52.4759,lon:13.3656},[{name:"S+U Südkreuz",lat:52.4758,lon:13.3657}])?.name,"S+U Südkreuz");
 // One algorithm must work for EVERY curated station, not only Berlin fixtures.
 // Dynamically discovered DB stops use the same marker/board code paths.
 const ids=new Set();
