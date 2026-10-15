@@ -2,7 +2,7 @@ import type { Station } from './network-data';
 import { requireTransitousStopId } from './transitous.ts';
 
 export type StationRadarDirection = 'all' | 'inbound' | 'outbound';
-export type StationCall = {arrival?:number;departure?:number;name?:string;destination?:string;cancelled?:boolean;realtime?:boolean};
+export type StationCall = {arrival?:number;departure?:number;scheduledArrival?:number;scheduledDeparture?:number;arrivalRealtime?:boolean;departureRealtime?:boolean;name?:string;destination?:string;cancelled?:boolean;realtime?:boolean};
 type Row = {tripId?:unknown;cancelled?:boolean;tripCancelled?:boolean;realTime?:boolean;displayName?:string;routeShortName?:string;headsign?:string;tripTo?:{name?:string};place?:{cancelled?:boolean;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string}};
 const safeLabel=(value:unknown)=>typeof value==='string'&&value.trim()?value.trim().slice(0,120):undefined;
 const timestamp = (value?: string) => { const n=Date.parse(value??''); return Number.isFinite(n)?n:undefined; };
@@ -18,6 +18,14 @@ export function stationCalls(arrivals: Row[], departures: Row[]): Map<string,Sta
       if(at===undefined)continue;
       const call=calls.get(row.tripId)??{};
       call[kind]=at;
+      const scheduled=timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
+      if(kind==='arrival'){
+        call.scheduledArrival=scheduled??call.scheduledArrival;
+        call.arrivalRealtime=Boolean(row.realTime===true&&actual!==undefined);
+      }else{
+        call.scheduledDeparture=scheduled??call.scheduledDeparture;
+        call.departureRealtime=Boolean(row.realTime===true&&actual!==undefined);
+      }
       call.name??=safeLabel(row.displayName)??safeLabel(row.routeShortName);
       call.destination??=safeLabel(row.headsign)??safeLabel(row.tripTo?.name);
       call.cancelled=Boolean(call.cancelled||row.cancelled||row.tripCancelled||row.place.cancelled);
@@ -65,7 +73,10 @@ export async function fetchStationCallSnapshot(station:Station,signal:AbortSigna
   const id=await requireTransitousStopId(station,signal);
   const time=new Date(Date.now()-45*60_000).toISOString();
   const fetchBoard=async(kind:'arrival'|'departure')=>{
-    const query=new URLSearchParams({kind,time,n:'5000',verify:'0'});
+    // An eight-hour horizon is meaningful to passengers; 5000 events per
+    // direction every 45 seconds overloaded busy stations and the provider.
+    // MOTIS 'window' guarantees horizon coverage while n is only a minimum.
+    const query=new URLSearchParams({kind,time,n:'80',window:'32400',verify:'0'});
     const response=await fetch(`/api/stations/${encodeURIComponent(id)}/board?${query}`,{signal:AbortSignal.any([signal,AbortSignal.timeout(20_000)]),cache:'no-store'});
     if(!response.ok)throw Error('Bahnhofshalte nicht erreichbar');
     const data=await response.json() as {stopTimes?:unknown};
