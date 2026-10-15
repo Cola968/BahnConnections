@@ -143,33 +143,30 @@ export function SettingsDialog(p:Props) {
         <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="location"/> Quellen & Transparenz</h3><p>Fahrplandaten werden von externen Verkehrsdatendiensten geladen. Ohne aktuelle Quelle zeigen wir keine bestätigte Pünktlichkeit.</p></div><p className="settings-note">Baustellen und Störungen werden nur für den gewählten Bahnhof und die aus der Quelle gemeldeten Fahrten angezeigt. Keine Garantie einer vollständigen Netzübersicht.</p></section>
       </>}
       {tab==="plans" && <>
-        <div className="settings-section-heading"><h3><UiIcon name="star"/> Abos</h3><p>Die wichtigsten Funktionen bleiben kostenlos. Plus ist noch in Arbeit.</p></div>
-        <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=>plan.id==="plus" ?
-          <details className="plan-card plus" key={plan.id}>
-            <summary className="plus-plan-summary">
-              <span className="plus-plan-topline"><strong className="plus-plan-title">BahnConnections Plus</strong><span className="plus-plan-status">Noch nicht buchbar</span></span>
-              <span className="plus-plan-description">Deine Strecken. Auf allen Geräten.</span>
-              <span className="plus-plan-expand"><span>Was ist drin?</span><UiIcon name="chevron"/></span>
-            </summary>
-            <div className="plus-plan-details">
-              <h4>Geplant für Plus</h4>
-              <dl className="plus-plan-benefits">
-                <div><dt>Favoriten synchronisieren</dt><dd>Gespeicherte Bahnhöfe auf Handy und PC.</dd></div>
-                <div><dt>Hinweise zu deinen Fahrten</dt><dd>Verspätungen und Störungen auf deinen Strecken, sofern gemeldet.</dd></div>
-                <div><dt>Pendelstrecken übernehmen</dt><dd>Gespeicherte Strecken auf anderen Geräten öffnen.</dd></div>
-              </dl>
-              <h4>Vorgesehene Preise</h4>
-              <div className="billing-price-options"><span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>pro Monat</small></span><span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>pro Jahr</small></span></div>
-              <p className="plus-plan-note">Die Preise sind noch nicht endgültig.</p>
-              <h4>Wann startet Plus?</h4>
-              <p className="plus-plan-note">Es gibt noch keinen Starttermin. Du kannst aktuell kein Abo abschließen.</p>
-              <p className="plus-plan-note">Deine Favoriten und Pendelstrecken bleiben bis dahin auf diesem Gerät gespeichert.</p>
+        <div className="settings-section-heading"><h3><UiIcon name="star"/> BahnConnections Plus</h3><p>Die Basis bleibt kostenlos. Plus ist noch nicht buchbar.</p></div>
+        <div className="plan-list plan-list-v60-simple">
+          <section className="plan-card free">
+            <div><h3>Free</h3><span>Aktiv</span></div>
+            <ul className="plan-feature-list">
+              <li><UiIcon name="check"/><span>Karte und Verbindungssuche</span></li>
+              <li><UiIcon name="check"/><span>Live-Abfahrten</span></li>
+              <li><UiIcon name="check"/><span>Profil, Favoriten und Pendelstrecken auf diesem Gerät</span></li>
+            </ul>
+          </section>
+          <section className="plan-card plus plus-simple">
+            <div className="plus-simple-heading"><h3>Plus</h3><span>Noch nicht buchbar</span></div>
+            <ul className="plan-feature-list">
+              <li><UiIcon name="check"/><span>Profil und Favoriten synchronisieren</span></li>
+              <li><UiIcon name="check"/><span>Hinweise zu deinen Fahrten</span></li>
+              <li><UiIcon name="check"/><span>Pendelstrecken auf mehreren Geräten nutzen</span></li>
+            </ul>
+            <div className="billing-price-options" aria-label="Vorgesehene Preise, noch nicht buchbar">
+              <span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>monatlich</small></span>
+              <span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>jährlich</small></span>
             </div>
-          </details> :
-          <section className="plan-card free" key={plan.id}>
-            <div><h3>{plan.name}</h3><span>Aktiv</span></div>
-            <ul className="plan-feature-list">{plan.features.map(feature=><li key={feature}><UiIcon name="check"/><span>{feature}</span></li>)}</ul>
-          </section>)}</div>
+            <p className="plus-simple-note">Geplante Funktionen und Preise. Noch kein Starttermin.</p>
+          </section>
+        </div>
       </>}
     </div>
   </dialog>;
