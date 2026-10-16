@@ -839,6 +839,39 @@ try {
   profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
+  // V61 provider-call browser: fixture proves search and direction filtering,
+  // never full live-provider coverage. Test compact phones and desktop separately.
+  const stationCallChecks=[];
+  for(const [width,height] of [[320,844],[390,844],[1440,900]]) {
+    await setViewport(width,height);
+    await command("Page.navigate",{url:new URL("/?station=berlin",url).toString()});
+    await waitFor(`Boolean(document.querySelector(".v61-call-toggle"))`,"V61 station calls control missing");
+    if(width<1024) await tap(".mobile-sheet-summary");
+    await tap(".v61-call-toggle");
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length>=1`,"No fixture calls loaded in station browser");
+    const initial=await evaluate(`(() => {
+      const root=document.querySelector(".v61-call-browser"),r=root.getBoundingClientRect();
+      return {expanded:root.querySelector(".v61-call-toggle").getAttribute("aria-expanded")==="true",
+        rows:root.querySelectorAll(".v61-call-row").length,
+        source:root.textContent.includes("Transitous / MOTIS"),
+        honesty:root.textContent.includes("keine Zugpositionen"),
+        overflow:root.scrollWidth>root.clientWidth+2 || document.documentElement.scrollWidth>innerWidth+2,
+        left:r.left,right:r.right};
+    })()`);
+    if(!initial.expanded||!initial.rows||!initial.source||!initial.honesty||initial.overflow)
+      throw new Error("V61 station calls fail at "+width+": "+JSON.stringify(initial));
+    await tap('.v61-call-directions button:last-child');
+    await waitFor(`document.querySelector(".v61-call-directions button:last-child").getAttribute("aria-pressed")==="true"`,"Departure filter did not activate");
+    await evaluate(`(() => {
+      const input=document.querySelector(".v61-call-filters input");
+      const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set;
+      setter.call(input,"ICE 1200");input.dispatchEvent(new Event("input",{bubbles:true}));
+    })()`);
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length===1`,"Train search did not filter fixture rows");
+    await screenshot(width+"-v61-station-calls");
+    stationCallChecks.push({width,initial,search:true});
+  }
+
   // Standalone marketing website: separate route, separate visual ownership.
   const websiteChecks = [];
   const websiteUrl = new URL("/website", url).toString();
@@ -888,7 +921,7 @@ try {
 
 
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
+  const report = { checkedAt:new Date().toISOString(), url, stationCallChecks, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } catch(error) {
