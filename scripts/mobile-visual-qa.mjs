@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { realtimeScenarios, journeyFixture, boardFixture } from "./realtime-fixtures.mjs";
+import { APP_VERSION } from "../app/app-version.ts";
 
 const argumentsWithoutSeparator = process.argv.slice(2).filter((value) => value !== "--");
 const url = argumentsWithoutSeparator[0] ?? "http://127.0.0.1:3102/?qa=mobile-visual";
@@ -848,6 +849,7 @@ try {
     await waitFor(`Boolean(document.querySelector(".v61-call-toggle"))`,"V61 station calls control missing");
     await tap(".v61-call-toggle");
     await waitFor(`document.querySelectorAll(".v61-call-list li").length>=1`,"No fixture calls loaded in station browser");
+    await waitFor(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),controls=document.querySelector('.v61-call-filters').getBoundingClientRect();return controls.top>=pane.top-1&&controls.bottom<=pane.bottom+1;})()`,"New station-call controls remain outside the visible pane");
     const initial=await evaluate(`(() => {
       const root=document.querySelector(".v61-call-browser"),r=root.getBoundingClientRect();
       const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect();
@@ -873,6 +875,46 @@ try {
     await screenshot(width+"-v61-station-calls");
     stationCallChecks.push({width,initial,search:true});
   }
+
+  // Mock only the service-worker boundary. A future update must leave station
+  // navigation reachable and activate through the normal App settings action.
+  const updateFixture=version=>`{
+    const waiting={state:'installed',postMessage(message){if(message.type==='SKIP_WAITING')document.documentElement.dataset.qaUpdateActivated='true';}};
+    navigator.serviceWorker.register=async()=>({waiting,installing:null,update:async()=>{},addEventListener(){},removeEventListener(){}});
+    const request=window.fetch;
+    window.fetch=(...args)=>{
+      const url=new URL(args[0] instanceof Request?args[0].url:String(args[0]),location.href);
+      return url.pathname==='/version.json'?Promise.resolve(new Response(JSON.stringify({version:${JSON.stringify(version)},label:${JSON.stringify('V'+version)}}),{headers:{'Content-Type':'application/json'}})):request(...args);
+    };
+  }`;
+  const updateScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture('99.0')});
+  const updateChecks=[];
+  for(const [width,height] of [[320,568],[390,844],[1440,900]]){
+    await setViewport(width,height);
+    await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+    await waitFor(`Boolean(document.querySelector('.app-update-status'))&&Boolean(document.querySelector('.station-sheet-header'))`,'Update availability missing');
+    const headerReachable=await evaluate(`Array.from(document.querySelectorAll('.station-sheet-header button')).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===button||button.contains(hit);})`);
+    if(!headerReachable||await evaluate(`Boolean(document.querySelector('.app-update-notice'))`))throw Error('Update notification covers station controls at '+width);
+    if(width<1024){
+      await tap('.mobile-navigation button:last-of-type');
+      if(!await evaluate(`document.querySelector('.simple-more-list>button:nth-child(2)').textContent.includes('V99.0')`))throw Error('More menu must expose the available update');
+      await tap('.simple-more-list>button:nth-child(2)');
+    }else{
+      await tap('.settings-trigger');
+      await tap('.settings-tabs button[data-settings-tab="about"]');
+    }
+    await waitFor(`Boolean(document.querySelector('.settings-dialog .pwa-update-action'))`,'Update action missing in App settings');
+    await screenshot(width+'-pwa-update-in-settings');
+    await tap('.settings-dialog .pwa-update-action');
+    await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'Update action did not activate the waiting worker');
+    updateChecks.push({width,height,headerReachable,activation:true});
+  }
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:updateScript.identifier});
+  const sameVersionScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture(APP_VERSION)});
+  await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+  await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
+  if(await evaluate(`Boolean(document.querySelector('.app-update-status,.app-update-notice'))`))throw Error('Already running version must not be announced as a new version');
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:sameVersionScript.identifier});
 
   // Standalone marketing website: separate route, separate visual ownership.
   const websiteChecks = [];
@@ -923,7 +965,7 @@ try {
 
 
 
-  const report = { checkedAt:new Date().toISOString(), url, stationCallChecks, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
+  const report = { checkedAt:new Date().toISOString(), url, stationCallChecks, updateChecks, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } catch(error) {

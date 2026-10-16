@@ -4,6 +4,7 @@
 - Die neuen Inhalte werden im vorhandenen Panel sichtbar gemacht; die Seite selbst scrollt nicht mit.
 - In kurzen Querformat-Ansichten haben die neuen Bedienelemente Vorrang.
 - Browser-Regressionen prüfen die halbhohe Ausgangsansicht und Fahrten am Listenende.
+- Update-Hinweise verdecken keine Bedienelemente mehr; Updates stehen unter Mehr und Einstellungen · App bereit. Der bereits laufende Versionsstand löst keinen neuen Hinweis aus.
 - Plus bleibt eine Vorschau ohne Zahlungen.
 
 # V61.0 · Weitere Bahnhofshalte sichtbar

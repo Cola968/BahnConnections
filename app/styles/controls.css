@@ -66,6 +66,11 @@
 .app-update-actions button:first-child { border:0; background:var(--accent); color:var(--paper); }
 .app-update-actions a { border:1px solid var(--line); color:var(--accent); background:var(--paper); }
 .app-update-actions .app-update-dismiss { border:0; background:none; color:var(--muted); }
+.nav-update-dot { display:inline-block; width:6px; height:6px; margin-inline-start:4px; border-radius:50%; background:var(--action); }
+.mobile-navigation .mobile-nav-icon { position:relative; }
+.mobile-nav-icon .nav-update-dot { position:absolute; top:1px; right:0; margin:0; }
+.settings-dialog .pwa-update-action { width:100%; min-width:0; border:1px solid var(--line); border-radius:10px; background:var(--soft); text-align:left; }
+.settings-dialog .pwa-update-action span { min-width:0; overflow-wrap:anywhere; }
 @media (max-width:680px) {
   .app-update-notice { top:max(8px,env(safe-area-inset-top)); align-items:stretch; flex-direction:column; gap:10px; padding:14px; }
   .app-update-actions { justify-content:stretch; }

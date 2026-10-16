@@ -159,7 +159,7 @@ try {
     await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:themeScript.identifier});
     assert.equal(await evaluate('document.documentElement.dataset.theme'),theme,'Actual theme differs from screenshot label');
     for(const state of width<1024?['half','expanded']:['desktop']) {
-      if(width<1024&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!==state)await click('.mobile-sheet-summary');
+      if(width<1024)for(let attempt=0;attempt<3&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!==state;attempt++)await click('.mobile-sheet-summary');
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await pause(300);
       const measure=await evaluate(`(() => {

@@ -9,6 +9,7 @@ import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "
 import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
+import { useAvailableAppUpdate } from "./pwa-update-state";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
 import { resolveV60Shortcut, type V60Shortcut } from "./v60-shortcuts";
@@ -175,6 +176,7 @@ function tripRealtimeLabel(trip: BoardMapTrip) {
 function PassengerLegend() { return <div className="passenger-legend"><span><i className="passenger-sample low"/>unter 100/Tag</span><span><i className="passenger-sample medium"/>100–1.000/Tag</span><span><i className="passenger-sample high"/>über 1.000/Tag</span><span><i className="passenger-sample known"/>Tageszahl veröffentlicht</span><span><i className="passenger-sample unknown"/>Keine Daten</span><small>Größere Fläche = höheres Tagesaufkommen. Klassen sind keine exakten Zahlen. Verfügbare Werte, Bezugsjahr und Quelle stehen beim Bahnhof.</small></div>; }
 
 export default function Home() {
+  const appUpdate=useAvailableAppUpdate();
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
   const [activeView, setActiveView] = useState<DesktopView>("map");
   const desktopView = activeView, mobileView = activeView;
@@ -1364,7 +1366,7 @@ export default function Home() {
             
             <div className="simple-more-list">
               <button type="button" onClick={() => {setSettingsInitialTab("profile");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
-              <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
+              <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>{appUpdate?`${appUpdate.label} verfügbar`:"Version, Changelog und Installation in Einstellungen"}</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
 
               {recentStationIds.length>0 && <div className="v60-recent-stations" aria-label="Zuletzt geöffnete Bahnhöfe">
