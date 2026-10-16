@@ -233,12 +233,12 @@
    the half-state preset; otherwise Android drags snap back to 51dvh. */
 @media (max-width:699px) and (min-height:521px) {
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] {
-    --sheet-preset:clamp(240px,38dvh,340px);
+    --sheet-preset:clamp(300px,38dvh,340px);
   }
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] .station-card.mobile-sheet-panel {
     box-sizing:border-box;
-    height:var(--mobile-sheet-height,clamp(240px,38dvh,340px))!important;
+    height:var(--mobile-sheet-height,clamp(300px,38dvh,340px))!important;
     min-height:0!important;
-    max-height:var(--mobile-sheet-height,clamp(240px,38dvh,340px))!important;
+    max-height:var(--mobile-sheet-height,clamp(300px,38dvh,340px))!important;
   }
 }
