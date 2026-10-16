@@ -1,4 +1,12 @@
-# V61.0 · Weitere Bahnhofshalte sichtbar (Release-Kandidat)
+# V61.1 · Geöffnete Bahnhofsinhalte bleiben sichtbar
+
+- Bahnhofshalte, Fahrtverläufe und Filter vergrößern das mobile Panel beim Öffnen.
+- Die neuen Inhalte werden im vorhandenen Panel sichtbar gemacht; die Seite selbst scrollt nicht mit.
+- In kurzen Querformat-Ansichten haben die neuen Bedienelemente Vorrang.
+- Browser-Regressionen prüfen die halbhohe Ausgangsansicht und Fahrten am Listenende.
+- Plus bleibt eine Vorschau ohne Zahlungen.
+
+# V61.0 · Weitere Bahnhofshalte sichtbar
 
 - Zusätzliche, durchsuchbare Bahnhofshalte-Liste direkt unter der Tafel: Ankünfte/Abfahrten, lokale Suche und schrittweises Nachladen der Anzeige.
 - Die Liste hängt nicht vom Kartenausschnitt ab; ein fehlender Kartenmarker wird nicht durch erfundene GPS-Daten ersetzt.

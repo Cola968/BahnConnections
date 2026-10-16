@@ -1,6 +1,7 @@
 "use client";
 
-import {useEffect,useId,useMemo,useState} from "react";
+import {useEffect,useId,useLayoutEffect,useMemo,useRef,useState} from "react";
+import {revealPanelContent} from "./panel-content-visibility";
 import {UiIcon} from "./ui-icon";
 import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
 
@@ -27,6 +28,18 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
   const [direction,setDirection]=useState<StationRadarDirection>("all");
   const [limit,setLimit]=useState(40);
   const [clock,setClock]=useState<number|null>(null);
+  const sectionRef=useRef<HTMLElement>(null);
+  const filtersRef=useRef<HTMLDivElement>(null);
+  const needsReveal=useRef(true);
+  useLayoutEffect(()=>{
+    if(!open){needsReveal.current=true;return;}
+    if(!needsReveal.current)return;
+    const frame=requestAnimationFrame(()=>{
+      revealPanelContent(sectionRef.current,filtersRef.current);
+      if(snapshot.status!=="loading")needsReveal.current=false;
+    });
+    return()=>cancelAnimationFrame(frame);
+  },[open,snapshot.status]);
   useEffect(()=>{
     if(!open)return;
     const update=()=>setClock(Date.now());
@@ -38,7 +51,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
   const visible=rows.slice(0,limit);
   const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock-snapshot.updatedAt<120_000;
   const partial=snapshot.coverage!=="complete";
-  return <section className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
+  return <section ref={sectionRef} className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
     <button type="button" className="v61-call-toggle" aria-expanded={open} aria-controls={regionId} onClick={onToggle}>
       <span><UiIcon name="train"/><span><strong>Weitere Bahnhofshalte</strong><small>Auch Fahrten ohne Kartenmarker</small></span></span>
       <UiIcon name="chevron" className={open?"v61-call-chevron is-open":"v61-call-chevron"}/>
@@ -52,7 +65,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
           <span>{snapshot.status==="stale"?"Letzte Abfrage fehlgeschlagen · älterer Stand":partial?"Ankunft oder Abfahrt teilweise nicht erreichbar":"Ankunft und Abfahrt abgefragt"}</span>
           <button type="button" onClick={snapshot.refresh}>Aktualisieren</button>
         </div>
-        <div className="v61-call-filters">
+        <div ref={filtersRef} className="v61-call-filters">
           <label htmlFor={regionId+"-search"}>Zug oder Ziel suchen</label>
           <input id={regionId+"-search"} type="search" maxLength={100} value={query} onChange={event=>{setQuery(event.target.value);setLimit(40);}} placeholder="z. B. ICE 100 oder Hamburg"/>
           <div className="v61-call-directions" role="group" aria-label="Bahnhofshalte nach Richtung filtern">

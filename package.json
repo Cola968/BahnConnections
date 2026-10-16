@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "61.0.0",
+  "version": "61.1.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"

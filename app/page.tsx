@@ -261,6 +261,12 @@ export default function Home() {
   const stationLinkAppliedRef = useRef(false);
   const plannerLinkAppliedRef = useRef(false);
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
+  const revealStationContent=useCallback(()=>{
+    if(window.matchMedia("(max-width: 1023px)").matches){
+      setMobileSheetHeight(null);
+      setMobileSheetState("expanded");
+    }
+  },[]);
   const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
   const [geoMessage, setGeoMessage] = useState("");
@@ -1400,8 +1406,8 @@ export default function Home() {
             <div className="panel-body">
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}>
-              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} />
-              <StationCallsBrowser key={`calls-${selected.id}`} stationName={stationDisplayName(selected.name)} open={stationCallsOpen} onToggle={()=>setStationCallsOpen(value=>!value)} snapshot={stationRadar} />
+              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} onRevealContent={revealStationContent} />
+              <StationCallsBrowser key={`calls-${selected.id}`} stationName={stationDisplayName(selected.name)} open={stationCallsOpen} onToggle={()=>{if(!stationCallsOpen)revealStationContent();setStationCallsOpen(value=>!value);}} snapshot={stationRadar} />
             </div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}

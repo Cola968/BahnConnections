@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import {APP_VERSION} from "../app/app-version.ts";
 import {readFileSync} from "node:fs";
 import {listStationCalls,stationCalls} from "../app/station-radar-data.ts";
 
@@ -45,9 +46,9 @@ assert.match(layout,/v61-station-calls.css/);
 assert.match(css,/prefers-reduced-motion:reduce/);
 assert.match(css,/data-motion="reduced"/);
 assert.match(css,/focus-visible/);
-assert.match(read("app/app-version.ts"),/APP_VERSION = "61.0"/);
-assert.match(read("docs/releases/V61.0-RELEASE-CHECKLIST.md"),/#67/);
-assert.match(read("docs/releases/V61.0-RELEASE-CHECKLIST.md"),/#66/);
-assert.match(read("docs/releases/V61.0-RELEASE-CHECKLIST.md"),/#77/);
-assert.match(read("docs/releases/V61.0-RELEASE-CHECKLIST.md"),/#78/);
+assert.match(APP_VERSION,/^61\.\d+$/);
+assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#67/);
+assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#66/);
+assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#77/);
+assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#78/);
 console.log("V61 regression: scoped station calls, filtering, honesty, responsive CSS and unresolved gates passed.");

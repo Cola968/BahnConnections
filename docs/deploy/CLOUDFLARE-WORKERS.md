@@ -1,12 +1,12 @@
 # BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Aktueller Release-Kandidat:** V61.0 auf dem noch unveröffentlichten V60.2-[PR #74](https://github.com/Cola968/BahnConnections/pull/74), der wiederum auf V58-[PR #72](https://github.com/Cola968/BahnConnections/pull/72) basiert. **Sites zeigt derzeit nur V60.2** unter https://bahnconnections-de.a-stad.chatgpt.site/, jedoch nicht automatisch alle neueren Branch-Commits (insbesondere die Plus-Detailansicht). In Cloudflare existiert noch kein BahnConnections-Worker. Verbindliche Gates: [V61.0-Release-Checkliste](../releases/V61.0-RELEASE-CHECKLIST.md).
+**Aktueller Release-Stand:** V61.1 mit Korrekturen für sichtbare Bahnhofshalte, Fahrtverläufe und Filter. Vor dieser Aktualisierung ist V61.0 auf https://bahnconnections-de.a-stad.chatgpt.site/ veröffentlicht. Den endgültigen Quell- und Deployment-Nachweis führt [PR #79](https://github.com/Cola968/BahnConnections/pull/79). Sites und ein eigenständiger Cloudflare-Worker sind getrennte Veröffentlichungswege. Checkliste: [V61.1](../releases/V61.1-RELEASE-CHECKLIST.md).
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
 Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token in GitHub Secrets**: Cloudflare richtet den Build-Token selbst ein. Du musst den GitHub-Zugriff einmalig im Dashboard autorisieren. Das geht auch am Smartphone.
 
-1. Zuerst die [Release-Checkliste V61.0](../releases/V61.0-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
+1. Zuerst die [Release-Checkliste V61.1](../releases/V61.1-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
 2. Zuerst den geprüften V58-PR #72 und anschließend den geprüften V60-PR #74 und danach den genehmigten V61-Draft-PR auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
 3. [Cloudflare Workers & Pages öffnen](https://dash.cloudflare.com/?to=/:account/workers-and-pages). **Create application → Import a repository** auswählen und GitHub verbinden.
 4. Repo **`Cola968/BahnConnections`**, Produktionsbranch **`main`**, Worker-Name **`bahnconnections-standalone`** wählen. Der Worker-Name muss mit `wrangler.jsonc` übereinstimmen.
@@ -20,7 +20,7 @@ Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token 
 | Deploy command | `pnpm deploy:cloudflare` |
 
 6. **Save and Deploy** nur nach erfolgter Freigabe ausführen. Eine tatsächliche `workers.dev`-URL wird erst **nach erfolgreichem** Deployment vergeben. Die vorherige ChatGPT-Sites-URL wird dadurch nicht aktualisiert.
-7. Neue Adresse öffnen, `/version.json` auf **`"version": "61.0"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
+7. Neue Adresse öffnen, `/version.json` auf **`"version": "61.1"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
 8. Bei Bedarf in **Settings → Builds** die gewünschte Auto-Deploy-/Preview-Branch-Strategie festlegen. Ein Push auf den Produktionsbranch kann einen neuen Build und eine Veröffentlichung auslösen.
 
 Cloudflare Dokumentation: [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) und [Build Settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
@@ -46,7 +46,7 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 ## Was bereits vorbereitet ist
 
 - Getrennter Cloudflare Worker mit `wrangler.jsonc`, `vite.cloudflare.config.ts`, `pnpm build:cloudflare` und `pnpm deploy:cloudflare`.
-- App-Version, PWA-Service-Worker-Cache, Installations-URL und Changelog sind im V61-Branch auf **V61.0** abgestimmt. Sites ist bereits auf einem älteren V60.2-Quellstand online; die neuen Plus-Änderungen des GitHub-Branches sind damit noch **nicht** automatisch veröffentlicht.
+- App-Version, PWA-Cache, Installations-URL und Changelog sind auf **V61.1** abgestimmt. GitHub-Commits veröffentlichen Sites nicht automatisch; der tatsächliche Deployment-Nachweis steht in PR #79.
 - Die Code-Tests werden über GitHub Actions ausgeführt; Status immer für den **neuesten** PR-Commit ansehen.
 
 ## Offene Freigaben und Grenzen
