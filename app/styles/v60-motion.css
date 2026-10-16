@@ -150,3 +150,24 @@ html[data-motion="reduced"] .v60-shortcut-dialog {
 .app-shell .train-inspector .train-action-row{flex-wrap:wrap}
 .app-shell .train-inspector .train-action-row .train-jump-next{flex:0 1 auto;max-width:100%;min-height:44px}
 .app-shell .train-inspector .train-action-row button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* V60.2 micro-interactions: navigation acknowledges touches without
+   moving panels, train positions, timestamps or the map. */
+.app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button svg,
+.app-shell .settings-tabs button svg {
+  transition:transform var(--v60-motion-normal) var(--v60-motion-ease);
+}
+@media(hover:hover) and (pointer:fine) {
+  .app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button:hover svg,
+  .app-shell .settings-tabs button:hover svg {
+    transform:translateY(-1px);
+  }
+}
+.app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button:active svg,
+.app-shell .settings-tabs button:active svg {
+  transform:scale(.94);
+}
+/* Switching settings sections fades in the content, not the surrounding dialog. */
+.app-shell .settings-dialog-v48[open] .settings-content {
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both;
+}
