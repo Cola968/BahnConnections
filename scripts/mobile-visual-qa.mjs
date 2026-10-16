@@ -716,22 +716,28 @@ try {
     await screenshot(width+'-settings-display');
     await tap('.settings-tabs button[data-settings-tab="plans"]');
     if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.toLowerCase().includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
-    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus[open]'))`)) throw new Error('Plus details must start collapsed');
+    if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`)) throw new Error('Plus details must start collapsed');
     await screenshot(width+'-settings-plans');
-    await tap('.plus-plan-summary');
-    await waitFor(`Boolean(document.querySelector('.plan-card.plus[open]'))`,'Tapping Plus must expand subscription information');
+    await tap('.plus-simple-more summary');
+    await waitFor(`Boolean(document.querySelector('.plus-simple-more[open]'))`,'Tapping Plus must expand subscription information');
     const plusDetails=await evaluate(`(() => {
-      const card=document.querySelector('.plan-card.plus'),content=card?.querySelector('.plus-plan-details');
-      return {visible:!!content&&content.getClientRects().length>0,pricing:content?.textContent.includes('29,99'),
-        planned:content?.textContent.includes('kein Abo abschließen'),
-        overflow:!!card&&card.scrollWidth>card.clientWidth+2};
+      const card=document.querySelector('.plan-card.plus'),details=card?.querySelector('.plus-simple-more');
+      const content=details?.querySelector('.plus-simple-more-content');
+      const prices=[...card.querySelectorAll('.billing-price-options strong')].map(node=>node.textContent.trim());
+      return {
+        visible:!!details?.open&&!!content&&content.getClientRects().length>0,
+        pricing:prices.length===2&&prices.every(price=>price.includes('€')),
+        planned:content?.textContent.includes('Noch kein Termin')&&content?.textContent.includes('vorläufig'),
+        unavailable:card.textContent.includes('Noch nicht buchbar')&&!card.querySelector('button[type="submit"],a[href*="checkout"]'),
+        overflow:card.scrollWidth>card.clientWidth+2
+      };
     })()`);
-    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||plusDetails.overflow)
+    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||!plusDetails.unavailable||plusDetails.overflow)
       throw new Error('Plus details not usable at '+width+': '+JSON.stringify(plusDetails));
     await screenshot(width+'-settings-plus-expanded');
     if(width!==320) {
-      await tap('.plus-plan-summary');
-      if(await evaluate(`Boolean(document.querySelector('.plan-card.plus[open]'))`))
+      await tap('.plus-simple-more summary');
+      if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`))
         throw new Error('Tapping Plus must also collapse the details');
     }
     if(width===320) {
