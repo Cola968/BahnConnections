@@ -81,11 +81,21 @@ function timetable() {
 }
 try {
   let targets;
-  for(let i=0;i<100;i++) {
-    if(browser.exitCode!==null)throw Error(browserError);
-    try{targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();break;}catch{await pause(100);}
+  // GitHub runners sometimes need more than 10 seconds to initialize Chromium.
+  // Poll the DevTools target without weakening any browser assertions.
+  for(let i=0;i<200;i++) {
+    if(browser.exitCode!==null)throw Error(`Chromium exited during startup: ${browserError}`);
+    try {
+      const response=await fetch(`http://127.0.0.1:${port}/json/list`);
+      if(response.ok) {
+        const candidates=await response.json();
+        if(candidates.some(target=>target.type==='page'&&target.webSocketDebuggerUrl)) {targets=candidates;break;}
+      }
+    } catch { /* Still starting; keep polling. */ }
+    await pause(150);
   }
-  assert.ok(targets?.length,browserError);
+  assert.ok(targets?.some(target=>target.type==='page'&&target.webSocketDebuggerUrl),
+    `Chromium DevTools target unavailable after 30 seconds. ${browserError}`);
   socket=new WebSocket(targets.find(t=>t.type==='page').webSocketDebuggerUrl);
   await new Promise((resolveOpen,rejectOpen)=>{socket.addEventListener('open',resolveOpen,{once:true});socket.addEventListener('error',rejectOpen,{once:true});});
   socket.addEventListener('message',event=>{
