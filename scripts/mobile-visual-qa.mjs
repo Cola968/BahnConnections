@@ -727,12 +727,13 @@ try {
       return {
         visible:!!details?.open&&!!content&&content.getClientRects().length>0,
         pricing:prices.length===2&&prices.every(price=>price.includes('€')),
-        planned:content?.textContent.includes('Noch kein Termin')&&content?.textContent.includes('vorläufig'),
+        planned:content?.textContent.includes('Wann Plus startet, steht noch nicht fest')&&content?.textContent.includes('vorläufig'),
+        icons:content?.querySelectorAll('.plus-detail-row > svg').length===3,
         unavailable:card.textContent.includes('Noch nicht buchbar')&&!card.querySelector('button[type="submit"],a[href*="checkout"]'),
         overflow:card.scrollWidth>card.clientWidth+2
       };
     })()`);
-    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||!plusDetails.unavailable||plusDetails.overflow)
+    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||!plusDetails.icons||!plusDetails.unavailable||plusDetails.overflow)
       throw new Error('Plus details not usable at '+width+': '+JSON.stringify(plusDetails));
     await screenshot(width+'-settings-plus-expanded');
     if(width!==320) {
