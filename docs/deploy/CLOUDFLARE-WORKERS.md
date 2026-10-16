@@ -1,6 +1,6 @@
 # BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Aktueller Release-Kandidat:** V61.0 auf dem noch unveröffentlichten V60.2-[PR #74](https://github.com/Cola968/BahnConnections/pull/74), der wiederum auf V58-[PR #72](https://github.com/Cola968/BahnConnections/pull/72) basiert. **Sites zeigt derzeit nur V60.2** unter https://bahnconnections-de.a-stad.chatgpt.site/, jedoch nicht automatisch alle neueren Branch-Commits (insbesondere die Plus-Detailansicht). In Cloudflare existiert noch kein BahnConnections-Worker. Verbindliche Gates: [V60.2-Release-Checkliste](../releases/V61.0-RELEASE-CHECKLIST.md).
+**Aktueller Release-Kandidat:** V61.0 auf dem noch unveröffentlichten V60.2-[PR #74](https://github.com/Cola968/BahnConnections/pull/74), der wiederum auf V58-[PR #72](https://github.com/Cola968/BahnConnections/pull/72) basiert. **Sites zeigt derzeit nur V60.2** unter https://bahnconnections-de.a-stad.chatgpt.site/, jedoch nicht automatisch alle neueren Branch-Commits (insbesondere die Plus-Detailansicht). In Cloudflare existiert noch kein BahnConnections-Worker. Verbindliche Gates: [V61.0-Release-Checkliste](../releases/V61.0-RELEASE-CHECKLIST.md).
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
@@ -20,7 +20,7 @@ Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token 
 | Deploy command | `pnpm deploy:cloudflare` |
 
 6. **Save and Deploy** nur nach erfolgter Freigabe ausführen. Eine tatsächliche `workers.dev`-URL wird erst **nach erfolgreichem** Deployment vergeben. Die vorherige ChatGPT-Sites-URL wird dadurch nicht aktualisiert.
-7. Neue Adresse öffnen, `/version.json` auf **`"version": "60.2"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
+7. Neue Adresse öffnen, `/version.json` auf **`"version": "61.0"`** prüfen. Bahnhofssuche, Abfahrten/Ankünfte, Störungsfilter, Journey Planner, Radar, Mobile und PWA-Update testen.
 8. Bei Bedarf in **Settings → Builds** die gewünschte Auto-Deploy-/Preview-Branch-Strategie festlegen. Ein Push auf den Produktionsbranch kann einen neuen Build und eine Veröffentlichung auslösen.
 
 Cloudflare Dokumentation: [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) und [Build Settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
@@ -46,7 +46,7 @@ Der Workflow [Standalone Cloudflare Workers](../../.github/workflows/cloudflare-
 ## Was bereits vorbereitet ist
 
 - Getrennter Cloudflare Worker mit `wrangler.jsonc`, `vite.cloudflare.config.ts`, `pnpm build:cloudflare` und `pnpm deploy:cloudflare`.
-- App-Version, PWA-Service-Worker-Cache, Installations-URL und Changelog sind auf **V60.2** abgestimmt. Sites ist bereits auf einem älteren V60.2-Quellstand online; die neuen Plus-Änderungen des GitHub-Branches sind damit noch **nicht** automatisch veröffentlicht.
+- App-Version, PWA-Service-Worker-Cache, Installations-URL und Changelog sind im V61-Branch auf **V61.0** abgestimmt. Sites ist bereits auf einem älteren V60.2-Quellstand online; die neuen Plus-Änderungen des GitHub-Branches sind damit noch **nicht** automatisch veröffentlicht.
 - Die Code-Tests werden über GitHub Actions ausgeführt; Status immer für den **neuesten** PR-Commit ansehen.
 
 ## Offene Freigaben und Grenzen
