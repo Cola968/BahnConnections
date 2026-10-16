@@ -71,10 +71,10 @@ jobs:
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
           pnpm audit:layout -- 'http://localhost:3000/?station=berlin' work/station-loading-qa --station-loading-only
-          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
           node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
           node scripts/planner-qa.mjs http://localhost:3000 work/planner-qa

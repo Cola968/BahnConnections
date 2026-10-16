@@ -561,7 +561,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips, onRev
   },[openKey]);
   useLayoutEffect(()=>{
     if(!filtersOpen)return;
-    const frame=requestAnimationFrame(()=>revealPanelContent(boardRef.current?.querySelector<HTMLElement>(".board-filter-panel")??null));
+    // Keep the toggle above the filter visible when a quick preset closes it.
+    const frame=requestAnimationFrame(()=>revealPanelContent(boardRef.current?.querySelector<HTMLElement>(".board-primary-bar")??null));
     return()=>cancelAnimationFrame(frame);
   },[filtersOpen]);
   useEffect(()=>{
