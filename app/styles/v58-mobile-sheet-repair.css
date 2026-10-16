@@ -229,17 +229,18 @@
   }
 }
 
-/* V60.2 station tap: keep the map visible. Half is a compact preview,
-   not an automatically expanded timetable; users may still drag it up. */
+/* V60.2 station tap: retain visible timetable rows below the 160px
+   station header. A 27dvh preview hid every row on phones; 47dvh keeps
+   the map visible while exposing at least three rows at 390x844. */
 @media (max-width:699px) and (min-height:521px) {
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] {
-    --sheet-preset:clamp(190px,27dvh,252px);
-    --mobile-sheet-height:clamp(190px,27dvh,252px);
+    --sheet-preset:clamp(250px,47dvh,420px);
+    --mobile-sheet-height:clamp(250px,47dvh,420px);
   }
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] .station-card.mobile-sheet-panel {
     box-sizing:border-box;
-    height:clamp(190px,27dvh,252px)!important;
+    height:clamp(250px,47dvh,420px)!important;
     min-height:0!important;
-    max-height:clamp(190px,27dvh,252px)!important;
+    max-height:clamp(250px,47dvh,420px)!important;
   }
 }
