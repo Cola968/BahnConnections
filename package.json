@@ -38,7 +38,8 @@
     "audit:v60-passenger": "node scripts/v60-passenger-audit.mjs",
     "audit:v60-transfer": "node scripts/v60-transfer-audit.mjs",
     "audit:v60-share": "node scripts/v60-share-audit.mjs",
-    "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs"
+    "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs",
+    "audit:v61": "node scripts/v61-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",
