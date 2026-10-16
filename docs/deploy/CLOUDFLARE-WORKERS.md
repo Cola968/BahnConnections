@@ -1,13 +1,13 @@
 # BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Aktueller Release-Kandidat:** [PR #74 (V60.2)](https://github.com/Cola968/BahnConnections/pull/74) auf [PR #72 (V58)](https://github.com/Cola968/BahnConnections/pull/72). **Sites zeigt bereits V60.2** unter https://bahnconnections-de.a-stad.chatgpt.site/, jedoch nicht automatisch alle neueren Branch-Commits (insbesondere die Plus-Detailansicht). In Cloudflare existiert noch kein BahnConnections-Worker. Verbindliche Gates: [V60.2-Release-Checkliste](../releases/V60.2-RELEASE-CHECKLIST.md).
+**Aktueller Release-Kandidat:** V61.0 auf dem noch unveröffentlichten V60.2-[PR #74](https://github.com/Cola968/BahnConnections/pull/74), der wiederum auf V58-[PR #72](https://github.com/Cola968/BahnConnections/pull/72) basiert. **Sites zeigt derzeit nur V60.2** unter https://bahnconnections-de.a-stad.chatgpt.site/, jedoch nicht automatisch alle neueren Branch-Commits (insbesondere die Plus-Detailansicht). In Cloudflare existiert noch kein BahnConnections-Worker. Verbindliche Gates: [V60.2-Release-Checkliste](../releases/V61.0-RELEASE-CHECKLIST.md).
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
 Wenn der Code freigegeben ist, braucht dieser Weg **keinen Cloudflare-API-Token in GitHub Secrets**: Cloudflare richtet den Build-Token selbst ein. Du musst den GitHub-Zugriff einmalig im Dashboard autorisieren. Das geht auch am Smartphone.
 
-1. Zuerst die [Release-Checkliste V60.2](../releases/V60.2-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
-2. Zuerst den geprüften V58-PR #72 und anschließend den geprüften V60-PR #74 auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
+1. Zuerst die [Release-Checkliste V61.0](../releases/V61.0-RELEASE-CHECKLIST.md) abhaken: erfolgreiche GitHub-Checks, Datenrechte (Transitous-Policy, Open-Source-Lizenz, keine ungeklärte kommerzielle Verwendung), Android-/PWA-Smoke und bewusste Veröffentlichungsgenehmigung.
+2. Zuerst den geprüften V58-PR #72 und anschließend den geprüften V60-PR #74 und danach den genehmigten V61-Draft-PR auf **`main`** übernehmen. Wenn du erst einen Teststand willst, nutze einen gesonderten Staging-/Preview-Prozess statt unbeabsichtigt Produktion zu überschreiben.
 3. [Cloudflare Workers & Pages öffnen](https://dash.cloudflare.com/?to=/:account/workers-and-pages). **Create application → Import a repository** auswählen und GitHub verbinden.
 4. Repo **`Cola968/BahnConnections`**, Produktionsbranch **`main`**, Worker-Name **`bahnconnections-standalone`** wählen. Der Worker-Name muss mit `wrangler.jsonc` übereinstimmen.
 5. In den Einstellungen folgende Werte eintragen:
