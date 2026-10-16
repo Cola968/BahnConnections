@@ -898,6 +898,11 @@ try {
     await waitFor(headerHitTest,'Visible station controls remain blocked during update notification at '+width);
     const headerReachable=await evaluate(headerHitTest);
     if(!headerReachable||await evaluate(`Boolean(document.querySelector('.app-update-notice'))`))throw Error('Update notification covers station controls at '+width);
+    await tap('#station-tab-stats');
+    await waitFor(`Boolean(document.querySelector('.station-info .station-share'))`,'Station info missing');
+    const infoActions=await evaluate(`(() => {const button=document.querySelector('.station-info .station-share'),title=document.querySelector('.station-info h2'),pane=document.querySelector('.station-card .panel-body');const b=button.getBoundingClientRect(),t=title.getBoundingClientRect(),p=pane.getBoundingClientRect();return {textFits:button.scrollWidth<=button.clientWidth+2,inside:b.right<=p.right&&b.left>=p.left,noOverlap:t.right<=b.left||t.bottom<=b.top||b.bottom<=t.top};})()`);
+    if(!infoActions.textFits||!infoActions.inside||!infoActions.noOverlap)throw Error('Station share action clips or overlaps at '+width+': '+JSON.stringify(infoActions));
+    await tap('#station-tab-live');
     if(width<1024){
       await tap('.mobile-navigation button:last-of-type');
       if(!await evaluate(`document.querySelector('.simple-more-list>button:nth-child(2)').textContent.includes('V99.0')`))throw Error('More menu must expose the available update');
