@@ -280,14 +280,14 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-card.plus {animatio
   border:1px solid rgba(187,66,103,.36);
   /* All eight hues remain visible across the card, while only their tint moves. */
   background:linear-gradient(105deg,
-    rgba(157,36,79,.14) 0%,
-    rgba(184,59,104,.13) 13%,
-    rgba(205,100,63,.13) 27%,
-    rgba(205,158,58,.12) 41%,
-    rgba(56,128,85,.13) 55%,
-    rgba(36,130,132,.13) 69%,
-    rgba(57,92,164,.13) 83%,
-    rgba(121,69,154,.14) 100%);
+    rgba(157,36,79,.18) 0%,
+    rgba(184,59,104,.17) 13%,
+    rgba(205,100,63,.16) 27%,
+    rgba(205,158,58,.16) 41%,
+    rgba(56,128,85,.17) 55%,
+    rgba(36,130,132,.17) 69%,
+    rgba(57,92,164,.17) 83%,
+    rgba(121,69,154,.18) 100%);
   background-size:115% 115%;
   animation:v60-plus-tint-drift 26s ease-in-out infinite alternate;
 }
@@ -372,5 +372,109 @@ html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .pl
 @media(forced-colors:active) {
   .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple {
     animation:none;background:Canvas;
+  }
+}
+
+/* V60.2 Plus details — conventional subscription disclosure, no extra sales card.
+   Motion is decorative only and never moves the copy or price while reading. */
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary:focus-visible {
+  outline:2px solid var(--action);
+  outline-offset:3px;
+  border-radius:5px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary svg {
+  color:var(--ink);
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more-content {
+  display:grid;
+  gap:0;
+  padding:0 0 4px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-intro {
+  margin:0 0 5px;
+  font-size:.79rem;
+  line-height:1.45;
+  color:var(--muted);
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row {
+  display:grid;
+  grid-template-columns:26px minmax(0,1fr);
+  align-items:start;
+  column-gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line-subtle);
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row:last-child {
+  border-bottom:0;
+  padding-bottom:4px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row>svg {
+  width:23px;
+  height:23px;
+  color:var(--muted);
+  margin-top:2px;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row>span {
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row strong {
+  font-size:.84rem;
+  line-height:1.35;
+  color:var(--ink);
+  font-weight:650;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row small {
+  font-size:.79rem;
+  line-height:1.45;
+  color:var(--muted);
+  overflow-wrap:break-word;
+}
+@keyframes v60-plus-details-in {
+  from {opacity:0;transform:translateY(4px);}
+  to {opacity:1;transform:translateY(0);}
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] .plus-detail-row {
+  animation:v60-plus-details-in 200ms cubic-bezier(.22,1,.36,1) both;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] .plus-detail-row:nth-of-type(2) {
+  animation-delay:35ms;
+}
+.settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] .plus-detail-row:nth-of-type(3) {
+  animation-delay:70ms;
+}
+@media (hover:hover) and (pointer:fine) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more summary:hover {
+    color:var(--action);
+  }
+  .settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options>span {
+    transition:border-color 190ms ease,background-color 190ms ease;
+  }
+  .settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options>span:hover {
+    background:rgba(255,255,255,.31);
+    border-color:var(--line);
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] .plus-detail-row {
+    animation:none;
+  }
+  .settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options>span {
+    transition:none;
+  }
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .plus-simple-more[open] .plus-detail-row {
+  animation:none;
+}
+html[data-motion="reduced"] .settings-dialog-v48[open] .plan-list-v60-simple .billing-price-options>span {
+  transition:none;
+}
+@media(forced-colors:active) {
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row {
+    border-color:CanvasText;
+  }
+  .settings-dialog-v48[open] .plan-list-v60-simple .plus-detail-row :is(svg,strong,small) {
+    color:CanvasText;
   }
 }
