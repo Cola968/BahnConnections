@@ -27,6 +27,7 @@ import {stationCondition} from "./board-health";
 import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
+import { StationCallsBrowser } from "./station-calls-browser";
 import { matchesStationCall, type StationRadarDirection } from "./station-radar-data";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
@@ -226,6 +227,7 @@ export default function Home() {
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [radarDirection,setRadarDirection] = useState<StationRadarDirection>("all");
+  const [stationCallsOpen,setStationCallsOpen] = useState(false);
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
   const [selectedLiveTrip, setSelectedLiveTrip] = useState<LiveTrip | null>(null);
@@ -301,7 +303,7 @@ export default function Home() {
     if (match.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((station) => station.id === match.id) ? current : [...current, match]);
     setRecentStationIds(current=>nextRecentStations(current,match.id));
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
-    setRadarDirection("all");setTrackedRadarAnchor(null);setJourneyMessage("");
+    setRadarDirection("all");setStationCallsOpen(false);setTrackedRadarAnchor(null);setJourneyMessage("");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
     setMobileSheetState("half");
     setActiveView("departures");
@@ -398,7 +400,7 @@ export default function Home() {
     setMobileSheetState("half");
   }, []);
   // Station timetables must work even when the optional map train layer is off.
-  const stationRadar = useStationRadar(selected,liveVisible);
+  const stationRadar = useStationRadar(selected,liveVisible || stationCallsOpen);
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
@@ -1399,6 +1401,7 @@ export default function Home() {
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}>
               <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} />
+              <StationCallsBrowser key={`calls-${selected.id}`} stationName={stationDisplayName(selected.name)} open={stationCallsOpen} onToggle={()=>setStationCallsOpen(value=>!value)} snapshot={stationRadar} />
             </div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
