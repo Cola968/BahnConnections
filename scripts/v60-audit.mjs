@@ -68,7 +68,12 @@ assert.match(settings,/PLUS_PRICING/,"Read planned prices from the shared subscr
 assert.match(settings,/Noch nicht buchbar/,"Plus must clearly remain unavailable");
 assert.match(settings,/<details className="plus-simple-more">/,"Plus details must remain expandable");
 assert.match(settings,/<summary>Mehr zu Plus/,"Expandable Plus details must have a visible label");
-assert.match(settings,/Noch kein Termin/,"Do not imply a launch date");
+assert.match(settings,/Wann Plus startet, steht noch nicht fest/,"Do not imply a launch date");
+assert.match(settings,/Das ist für Plus geplant:/,"Subscription features must be described as planned");
+for(const icon of ["devices","bell","euro"]) {
+ assert.match(settings,new RegExp('name="'+icon+'"'),"Show a clear icon for "+icon);
+}
+assert.match(premium,/v60-plus-details-in/,"Expand details with restrained motion");
 assert.doesNotMatch(settings,/<details className="plan-card plus"/,"Do not restore the oversized expandable Plus card");
 assert.match(premium,/plan-list-v60-simple/,"Keep the restrained card styling");
 assert.match(subscription,/checkoutEnabled:false/,"Plus details must not enable Stripe checkout");
