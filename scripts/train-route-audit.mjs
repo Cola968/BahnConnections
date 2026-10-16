@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {normaliseTrainStops} from '../app/train-inspector-data.ts';
+import {normaliseTrainStops,nextTrainStopIndex,relevantTrainStops,stopEventTime,trainStopPhase} from '../app/train-inspector-data.ts';
 import {stationCalls,matchesStationCall} from '../app/station-radar-data.ts';
 const stops=normaliseTrainStops([
  {mode:'REGIONAL_RAIL',realTime:true,from:{name:'Start',departure:'2026-10-13T10:00:00Z'},to:{name:'Berlin Hbf',arrival:'2026-10-13T10:30:00Z'}},
@@ -9,6 +9,27 @@ assert.deepEqual(stops.map(s=>s.name),['Start','Berlin Hbf','Ziel'],'A dwell at 
 assert.equal(stops[1].arrival,'2026-10-13T10:30:00Z');
 assert.equal(stops[1].departure,'2026-10-13T10:35:00Z');
 assert.equal(stops[1].platform,'7');
+// A provider may send prediction-shaped fields while realTime=false.
+const unconfirmed=normaliseTrainStops([{
+ mode:'REGIONAL_RAIL',realTime:false,
+ from:{name:'Start',departure:'2026-10-13T10:45:00Z',scheduledDeparture:'2026-10-13T10:00:00Z'},
+ intermediateStops:[{name:'Mitte',arrival:'2026-10-13T10:50:00Z',scheduledArrival:'2026-10-13T10:20:00Z',departure:'2026-10-13T10:52:00Z',scheduledDeparture:'2026-10-13T10:22:00Z'}],
+ to:{name:'Ziel',arrival:'2026-10-13T11:30:00Z',scheduledArrival:'2026-10-13T11:00:00Z'}
+}]);
+const afterMiddle=Date.parse('2026-10-13T10:30:00Z');
+assert.equal(stopEventTime(unconfirmed[0],'departure'),'2026-10-13T10:00:00Z','Progress starts from the planned departure');
+assert.equal(stopEventTime(unconfirmed[2],'arrival'),'2026-10-13T11:00:00Z','Progress ends at the planned arrival');
+assert.equal(nextTrainStopIndex(unconfirmed,afterMiddle),2,'Unconfirmed delayed times must not keep passed stops current');
+assert.equal(trainStopPhase(unconfirmed[1],afterMiddle),'departed','An unconfirmed delay cannot extend a station dwell');
+assert.equal(relevantTrainStops(unconfirmed,afterMiddle,true,true).hidden,2);
+const confirmed=unconfirmed.map(stop=>({...stop,realtime:true}));
+assert.equal(stopEventTime(confirmed[0],'departure'),'2026-10-13T10:45:00Z');
+assert.equal(nextTrainStopIndex(confirmed,afterMiddle),0,'Confirmed predictions remain usable');
+assert.equal(trainStopPhase(confirmed[1],afterMiddle),'approaching');
+const noScheduled={...unconfirmed[0],scheduledDeparture:undefined};
+assert.equal(stopEventTime(noScheduled,'departure'),'2026-10-13T10:45:00Z','Keep a usable time when the timetable is missing');
+const invalidScheduled={...unconfirmed[0],scheduledDeparture:'invalid'};
+assert.equal(stopEventTime(invalidScheduled,'departure'),'2026-10-13T10:45:00Z','Ignore malformed planned timestamps');
 const long=normaliseTrainStops([{mode:'REGIONAL_RAIL',from:{name:'Start'},intermediateStops:Array.from({length:151},(_,i)=>({name:'Halt '+i})),to:{name:'Ziel'}}]);
 assert.equal(long.at(-1).name,'Ziel','Complete route retains destination on a long service');
 assert.equal(long.length,153);

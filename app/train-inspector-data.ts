@@ -44,6 +44,13 @@ export function normaliseTrainStops(legs:RawLeg[]):TrainStop[] {
   }
   return result;
 }
+/** Prefer scheduled events when the provider has not confirmed realtime.
+ * Only confirmed predictions may drive stop ordering and route progress. */
+export function stopEventTime(stop:TrainStop,event:"arrival"|"departure"):string|undefined {
+  const scheduled=validatedTime(event==="arrival"?stop.scheduledArrival:stop.scheduledDeparture);
+  const reported=validatedTime(event==="arrival"?stop.arrival:stop.departure);
+  return stop.realtime ? reported??scheduled : scheduled??reported;
+}
 const stopTime=(value?:string):number|null=>{
   const time=Date.parse(value??"");
   return Number.isFinite(time)?time:null;
@@ -54,8 +61,8 @@ export function nextTrainStopIndex(stops:TrainStop[],now:number):number {
   if(!Number.isFinite(now))return -1;
   return stops.findIndex(stop=>{
     if(stop.cancelled)return false;
-    const arrival=stopTime(stop.arrival)??stopTime(stop.scheduledArrival);
-    const departure=stopTime(stop.departure)??stopTime(stop.scheduledDeparture);
+    const arrival=stopTime(stopEventTime(stop,"arrival"));
+    const departure=stopTime(stopEventTime(stop,"departure"));
     const end=departure!==null&&(arrival===null||departure>=arrival)?departure:arrival;
     return end!==null&&end>=now-60_000;
   });
@@ -71,8 +78,8 @@ export function relevantTrainStops(stops:TrainStop[],now:number,onlyRemaining:bo
 /** A timetable-based phase, not proof of a measured train position or door status. */
 export function trainStopPhase(stop:TrainStop,now:number):"approaching"|"at-stop"|"departed"|"unknown" {
   if(stop.cancelled||!Number.isFinite(now))return "unknown";
-  const arrival=stopTime(stop.arrival)??stopTime(stop.scheduledArrival);
-  const departure=stopTime(stop.departure)??stopTime(stop.scheduledDeparture);
+  const arrival=stopTime(stopEventTime(stop,"arrival"));
+  const departure=stopTime(stopEventTime(stop,"departure"));
   if(arrival!==null&&departure!==null&&departure>=arrival){
     if(now<arrival)return "approaching";
     return now<=departure?"at-stop":"departed";
