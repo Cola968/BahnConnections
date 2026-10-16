@@ -66,7 +66,9 @@ assert.match(settings,/className="plan-card plus plus-simple"/,"Plus must remain
 assert.match(settings,/billing-price-options/,"Planned prices must remain visible");
 assert.match(settings,/PLUS_PRICING/,"Read planned prices from the shared subscription contract");
 assert.match(settings,/Noch nicht buchbar/,"Plus must clearly remain unavailable");
-assert.match(settings,/Noch kein Starttermin/,"Do not imply a launch date");
+assert.match(settings,/<details className="plus-simple-more">/,"Plus details must remain expandable");
+assert.match(settings,/<summary>Mehr zu Plus/,"Expandable Plus details must have a visible label");
+assert.match(settings,/Noch kein Termin/,"Do not imply a launch date");
 assert.doesNotMatch(settings,/<details className="plan-card plus"/,"Do not restore the oversized expandable Plus card");
 assert.match(premium,/plan-list-v60-simple/,"Keep the restrained card styling");
 assert.match(subscription,/checkoutEnabled:false/,"Plus details must not enable Stripe checkout");
