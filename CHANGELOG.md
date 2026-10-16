@@ -1,3 +1,12 @@
+# V61.0 · Weitere Bahnhofshalte sichtbar (Release-Kandidat)
+
+- Zusätzliche, durchsuchbare Bahnhofshalte-Liste direkt unter der Tafel: Ankünfte/Abfahrten, lokale Suche und schrittweises Nachladen der Anzeige.
+- Die Liste hängt nicht vom Kartenausschnitt ab; ein fehlender Kartenmarker wird nicht durch erfundene GPS-Daten ersetzt.
+- Datenstand, Teilantworten, Fehler und fehlende Echtzeitprognosen transparent dargestellt.
+- Plus-Vorschau aus V60.2 mit klaren Symbolen und dezenter Bewegung übernommen; keine Kaufmöglichkeit.
+- Regressionstests, PWA-Versionswechsel und getrennte V61-Release-Checkliste ergänzt.
+- **Wichtig:** Der Code ist ein unveröffentlichter Release-Kandidat. Die offenen Datenrechte, die Abdeckung der Bahnhofskomplexe und die physische Android-PWA-Abnahme bleiben ausdrücklich offen.
+
 # V60.2 · Eine gemeinsame Bahnhofstafel
 
 - Tafel und Fahrten zu einer Bahnhofstafel zusammengeführt; vier klare Bahnhofstabs.
