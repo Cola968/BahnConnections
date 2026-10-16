@@ -229,18 +229,16 @@
   }
 }
 
-/* V60.2 station tap: show usable timetable rows below the 160px
-   station header. Chromium measured zero rows at 27dvh and only two at
-   47dvh (390x844); 51dvh retains the map while allowing three rows. */
+/* V60.3: Station sheets start compact. A live drag height must override
+   the half-state preset; otherwise Android drags snap back to 51dvh. */
 @media (max-width:699px) and (min-height:521px) {
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] {
-    --sheet-preset:clamp(260px,51dvh,440px);
-    --mobile-sheet-height:clamp(260px,51dvh,440px);
+    --sheet-preset:clamp(240px,38dvh,340px);
   }
   .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] .station-card.mobile-sheet-panel {
     box-sizing:border-box;
-    height:clamp(260px,51dvh,440px)!important;
+    height:var(--mobile-sheet-height,clamp(240px,38dvh,340px))!important;
     min-height:0!important;
-    max-height:clamp(260px,51dvh,440px)!important;
+    max-height:var(--mobile-sheet-height,clamp(240px,38dvh,340px))!important;
   }
 }
