@@ -1,6 +1,6 @@
 "use client";
 
-import {useId,useMemo,useState} from "react";
+import {useEffect,useId,useMemo,useState} from "react";
 import {UiIcon} from "./ui-icon";
 import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
 
@@ -26,9 +26,17 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
   const [query,setQuery]=useState("");
   const [direction,setDirection]=useState<StationRadarDirection>("all");
   const [limit,setLimit]=useState(40);
+  const [clock,setClock]=useState<number|null>(null);
+  useEffect(()=>{
+    if(!open)return;
+    const update=()=>setClock(Date.now());
+    const start=window.setTimeout(update,0);
+    const timer=window.setInterval(update,30_000);
+    return()=>{window.clearTimeout(start);window.clearInterval(timer);};
+  },[open]);
   const rows=useMemo(()=>listStationCalls(snapshot.calls,direction,query),[snapshot.calls,direction,query]);
   const visible=rows.slice(0,limit);
-  const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&Date.now()-snapshot.updatedAt<120_000;
+  const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock-snapshot.updatedAt<120_000;
   const partial=snapshot.coverage!=="complete";
   return <section className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
     <button type="button" className="v61-call-toggle" aria-expanded={open} aria-controls={regionId} onClick={onToggle}>
