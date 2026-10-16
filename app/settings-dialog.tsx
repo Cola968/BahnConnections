@@ -167,9 +167,19 @@ export function SettingsDialog(p:Props) {
             <details className="plus-simple-more">
               <summary>Mehr zu Plus <UiIcon name="chevron"/></summary>
               <div className="plus-simple-more-content">
-                <p><strong>Synchronisierung</strong> – Favoriten und Pendelstrecken sollen auf deinen Geräten verfügbar sein.</p>
-                <p><strong>Fahrthinweise</strong> – Meldungen zu gespeicherten Strecken, sofern entsprechende Daten vorliegen.</p>
-                <p><strong>Start und Preise</strong> – Noch kein Termin. Die angezeigten Preise sind vorläufig; Plus kann nicht gebucht werden.</p>
+                <p className="plus-detail-intro">Das ist für Plus geplant:</p>
+                <div className="plus-detail-row">
+                  <UiIcon name="devices"/>
+                  <span><strong>Auf Handy und PC</strong><small>Favoriten und Pendelstrecken auf beiden Geräten wiederfinden.</small></span>
+                </div>
+                <div className="plus-detail-row">
+                  <UiIcon name="bell"/>
+                  <span><strong>Fahrthinweise</strong><small>Meldungen zu gespeicherten Fahrten, wenn passende Daten vorliegen.</small></span>
+                </div>
+                <div className="plus-detail-row">
+                  <UiIcon name="euro"/>
+                  <span><strong>Preis und Start</strong><small>Wann Plus startet, steht noch nicht fest. Die Preise sind vorläufig.</small></span>
+                </div>
               </div>
             </details>
           </section>
