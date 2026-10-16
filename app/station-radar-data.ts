@@ -14,12 +14,15 @@ export function stationCalls(arrivals: Row[], departures: Row[]): Map<string,Sta
   for(const [rows,kind] of [[arrivals,'arrival'],[departures,'departure']] as const){
     for(const row of rows){
       if(!row || typeof row.tripId!=='string' || !row.tripId || row.tripId.length>500 || !row.place)continue;
-      const actual=timestamp(row.place[kind]);
-      const at=actual??timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
+      const predicted=timestamp(row.place[kind]);
+      const scheduled=timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
+      // Provider fields can contain a prediction even when realTime is false.
+      // Never prefer that value over a known timetable unless it is confirmed.
+      const actual=row.realTime===true?predicted:undefined;
+      const at=actual??scheduled??predicted;
       if(at===undefined)continue;
       const call=calls.get(row.tripId)??{};
       call[kind]=at;
-      const scheduled=timestamp(kind==='arrival'?row.place.scheduledArrival:row.place.scheduledDeparture);
       if(kind==='arrival'){
         call.scheduledArrival=scheduled??call.scheduledArrival;
         call.arrivalRealtime=Boolean(row.realTime===true&&actual!==undefined);

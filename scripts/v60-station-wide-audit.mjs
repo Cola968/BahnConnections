@@ -61,6 +61,17 @@ assert.equal(callRows.get("ice-100")?.departureScheduledTrack,"7");
 assert.equal(callRows.get("ice-100")?.departure,Date.parse(at(12)));
 assert.equal(callRows.get("ice-100")?.departureRealtime,false,"Scheduled departures must not inherit an unrelated arrival prediction");
 assert.equal(callRows.get("ice-100")?.realtime,true);
+const mixedTimes=stationCalls([
+ {tripId:"schedule-only",realTime:false,place:{arrival:at(17),scheduledArrival:at(15)}},
+ {tripId:"prediction",realTime:true,place:{arrival:at(17),scheduledArrival:at(15)}},
+ {tripId:"missing-schedule",realTime:false,place:{arrival:at(21)}}
+],[]);
+assert.equal(mixedTimes.get("schedule-only")?.arrival,Date.parse(at(15)),"Unconfirmed prediction must not override timetable time");
+assert.equal(mixedTimes.get("schedule-only")?.arrivalRealtime,false,"Unconfirmed arrival is not live");
+assert.equal(mixedTimes.get("prediction")?.arrival,Date.parse(at(17)),"Confirmed realtime arrival must win");
+assert.equal(mixedTimes.get("prediction")?.arrivalRealtime,true);
+assert.equal(mixedTimes.get("missing-schedule")?.arrival,Date.parse(at(21)),"Provider time is usable if no scheduled time exists");
+assert.equal(mixedTimes.get("missing-schedule")?.arrivalRealtime,false);
 assert.equal(callRows.get("cancelled")?.cancelled,true);
 assert.equal(matchesStationCall(callRows.get("cancelled"),"all"),false);
 assert.deepEqual(listStationCalls(callRows,"all").map(row=>row.tripId),["ice-100","cancelled","regional-20"]);
