@@ -893,7 +893,10 @@ try {
     await setViewport(width,height);
     await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
     await waitFor(`Boolean(document.querySelector('.app-update-status'))&&Boolean(document.querySelector('.station-sheet-header'))`,'Update availability missing');
-    const headerReachable=await evaluate(`Array.from(document.querySelectorAll('.station-sheet-header button')).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===button||button.contains(hit);})`);
+    // Desktop text-size controls stay mounted but have no mobile hit surface.
+    const headerHitTest=`Array.from(document.querySelectorAll('.station-sheet-header button')).filter(button=>{const r=button.getBoundingClientRect();return r.width>0&&r.height>0;}).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===button||button.contains(hit);})`;
+    await waitFor(headerHitTest,'Visible station controls remain blocked during update notification at '+width);
+    const headerReachable=await evaluate(headerHitTest);
     if(!headerReachable||await evaluate(`Boolean(document.querySelector('.app-update-notice'))`))throw Error('Update notification covers station controls at '+width);
     if(width<1024){
       await tap('.mobile-navigation button:last-of-type');
