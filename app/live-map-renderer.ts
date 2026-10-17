@@ -6,7 +6,7 @@ import { headingDegrees } from './train-inspector-data';
 import { railDistanceKm } from './rail-geometry';
 
 export type LiveMapOptions={zoom:number;view:'trains'|'stress';trails:boolean;trackedId:string|null;selectedId?:string|null;radarStatus?:'loading'|'ready'|'stale'|'error';radarUpdatedAtMs?:number|null;appearance?:string};
-type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;members:LiveTrip[];signature:string;trail:Leaflet.Polyline|null};
+type MarkerEntry={marker:Leaflet.Marker;trip:LiveTrip|null;members:LiveTrip[];signature:string;trail:Leaflet.Polyline|null;zIndexOffset:number};
 type Desired={id:string;position:[number,number];trip:LiveTrip|null;members:LiveTrip[]};
 
 /** Marker identity belongs to a trip, not a React render or animation tick. */
@@ -69,14 +69,21 @@ export class LiveMapRenderer {
         if(!entry){
           const railGlyph='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="15" rx="4"/><path d="M6 10h12M12 3v7M8 21l2-3m6 3-2-3"/><path d="M9 14h.01M15 14h.01"/></svg>';
           const marker=this.L.marker(item.position,{zIndexOffset:item.trip?900:0,icon:this.L.divIcon({className:item.trip?'live-train-wrap':'live-cluster-wrap',html:item.trip?`<div class="live-train-marker glyph"><i>${railGlyph}</i></div>`:`<div class="live-cluster">${railGlyph}<b></b></div>`,iconSize:[44,44],iconAnchor:[22,22]})}).addTo(this.layer);
-          entry={marker,trip:null,members:[],signature:'',trail:null};this.entries.set(item.id,entry);
+          entry={marker,trip:null,members:[],signature:'',trail:null,zIndexOffset:item.trip?900:0};this.entries.set(item.id,entry);
           const current=entry;
           const activate=()=>{current.marker.closeTooltip();if(current.trip)this.select(current.trip);else if(current.members.length===1)this.select(current.members[0]);else this.map.setView(current.marker.getLatLng(),Math.max(this.map.getZoom()+2,11),{animate:true});};
           marker.on('click',activate);
           marker.on('keydown',event=>{const key=event.originalEvent as KeyboardEvent;if(key.key==='Enter'||key.key===' '){key.preventDefault();activate();}});
           const element=marker.getElement();if(element){element.dataset.tripId=item.id;element.setAttribute('role','button');element.setAttribute('tabindex','0');}
         }
-        if(item.trip){const highlighted=item.trip.tripId===options.selectedId||item.trip.tripId===options.trackedId;entry.marker.setZIndexOffset(item.trip.tripId===options.trackedId?1450:highlighted?1250:900);}
+        if(item.trip){
+          const highlighted=item.trip.tripId===options.selectedId||item.trip.tripId===options.trackedId;
+          const zIndexOffset=item.trip.tripId===options.trackedId?1450:highlighted?1250:900;
+          // Leaflet writes the marker DOM style on every setZIndexOffset call.
+          // With hundreds of markers a 4-second radar tick must not rewrite
+          // unchanged z-index values and trigger unnecessary layout work.
+          if(entry.zIndexOffset!==zIndexOffset){entry.marker.setZIndexOffset(zIndexOffset);entry.zIndexOffset=zIndexOffset;}
+        }
         entry.members=item.members;
         const old=entry.marker.getLatLng();
         const changed=old.lat!==item.position[0]||old.lng!==item.position[1];
