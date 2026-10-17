@@ -3,6 +3,7 @@ import {transitAlerts,transitAlertContent,type TransitAlert} from './transit-ale
 import { compactStationLabel } from "./transit-style";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
+import { boundedJourneySignal } from "./journey-request-budget";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -634,10 +635,12 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
     return url;
   };
 
+  // Prevent a stalled primary provider from hiding completed DB results.
+  const transitousSignal=boundedJourneySignal(request.signal,14_000);
   const transitousTask = (async () => {
-    const [fromPlace, toPlace] = await Promise.all([transitousPlace(request.from, request.signal), transitousPlace(request.to, request.signal)]);
+    const [fromPlace, toPlace] = await Promise.all([transitousPlace(request.from, transitousSignal), transitousPlace(request.to, transitousSignal)]);
     const results = await Promise.allSettled([makeUrl(fromPlace, toPlace, false), makeUrl(fromPlace, toPlace, true)].map(async (url) => {
-      const response = await fetch(url, { signal:request.signal, headers:transitousRequestHeaders() });
+      const response = await fetch(url, { signal:transitousSignal, headers:transitousRequestHeaders() });
       if (!response.ok) throw new Error(`Verbindungssuche ${response.status}`);
       return await response.json() as { itineraries?: ApiItinerary[] };
     }));
@@ -662,7 +665,9 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
     throw new Error(`Beide Fahrplanquellen sind derzeit nicht erreichbar (${transitousReason}; ${dbReason}). Bitte erneut versuchen.`);
   }
 
-  const completed = transitousJourneys.length ? await completeMissingDirectTrips(request, transitousJourneys) : [];
+  // Optional enrichment must not consume the entire 23-second API deadline.
+  const completionSignal=boundedJourneySignal(request.signal,3_500);
+  const completed = transitousJourneys.length ? await completeMissingDirectTrips({...request,signal:completionSignal}, transitousJourneys) : [];
   const journeys = mergeJourneys([...transitousJourneys, ...completed, ...dbJourneys], dbResult.status === "rejected");
   return journeys.sort((a, b) => request.arriveBy
     ? new Date(b.startTime).getTime() - new Date(a.startTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
