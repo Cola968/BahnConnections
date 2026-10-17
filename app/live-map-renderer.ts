@@ -102,12 +102,18 @@ export class LiveMapRenderer {
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
           // Derive north-relative train heading from consecutive valid interpolated
           // track positions. Both the icon and the underlying position remain estimates.
-          if(glyph){const progress=liveTripProgress(trip,at);
+          if(glyph && (changed || entry.trip!==trip)){
+            // Reusing the same interpolated position should never rescan the
+            // route geometry or rewrite 180 unchanged marker styles per tick.
+            const progress=liveTripProgress(trip,at);
             const before=pointOnTrip(trip,Math.max(0,progress-.004));
             const after=pointOnTrip(trip,Math.min(1,progress+.004));
             const heading=headingDegrees(before,after);
-            if(heading!==null) glyph.setAttribute("style",`--train-heading:${heading}deg;--train-direction-visible:1`);
-            else glyph.removeAttribute("style");
+            const style=heading!==null?`--train-heading:${heading}deg;--train-direction-visible:1`:'';
+            if(glyph.getAttribute('style')!==style){
+              if(style)glyph.setAttribute('style',style);
+              else glyph.removeAttribute('style');
+            }
           }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}:${options.selectedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}${options.selectedId===trip.tripId?' selected':''}`;
