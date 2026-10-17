@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {loadStationBoardWithFallback} from '../app/station-board-fallback.ts';
+import {loadStationBoardWithFallback,StationSourceThrottledError} from '../app/station-board-fallback.ts';
 import {stationCalls} from '../app/station-radar-data.ts';
 
 // Synthetic fault injection, not a claim about current provider services.
@@ -27,3 +27,26 @@ const bare={tripId:'test:bare',place:{departure:planned}};
 const bareResult=await loadStationBoardWithFallback(async mode=>mode==='REALTIME'?[]:[bare]);
 assert.equal(bareResult.stopTimes[0].place.departure,planned,'OFF-only provider timetable without duplicate scheduled field remains usable');
 console.log('Fallback provenance: scheduled times/platforms, consumer flags, immutability and primary realtime passed');
+
+const throttled=new StationSourceThrottledError('OFF rate limit');
+await assert.rejects(loadStationBoardWithFallback(async mode=>{
+  if(mode==='REALTIME')throw new Error('primary 503');
+  throw throttled;
+}),error=>error===throttled,'Fallback 429 must reach the API instead of being masked by the primary 503');
+let abortedAttempts=0;
+const cancelled=new DOMException('Station changed','AbortError');
+await assert.rejects(loadStationBoardWithFallback(async()=>{
+  abortedAttempts++;
+  throw cancelled;
+}),error=>error===cancelled);
+assert.equal(abortedAttempts,1,'An aborted board request must not start a timetable fallback');
+await assert.rejects(loadStationBoardWithFallback(async mode=>{
+  if(mode==='REALTIME')throw new Error('primary 503');
+  throw cancelled;
+}),error=>error===cancelled,'Cancellation during OFF must not be masked either');
+const timedOut=await loadStationBoardWithFallback(async mode=>{
+  if(mode==='REALTIME')throw new DOMException('Provider timeout','TimeoutError');
+  return [bare];
+});
+assert.equal(timedOut.fallback,true,'Provider timeout may still recover through timetable fallback');
+console.log('Fallback failure precedence: OFF 429, caller abort, fallback abort and recoverable timeout passed');

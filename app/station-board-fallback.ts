@@ -12,6 +12,7 @@ export type StationBoardResult = {
   fallback:boolean;
   warning?:string;
 };
+const isCallerAbort=(error:unknown)=>error instanceof Error && error.name==="AbortError";
 export async function loadStationBoardWithFallback(
   request:(mode:StoptimesMode)=>Promise<unknown>
 ):Promise<StationBoardResult>{
@@ -22,7 +23,7 @@ export async function loadStationBoardWithFallback(
     const rows=validTransitousBoardRows(raw);
     if(rows.length)return {stopTimes:rows,mode:"REALTIME",fallback:false};
   }catch(error){
-    if(error instanceof StationSourceThrottledError)throw error;
+    if(error instanceof StationSourceThrottledError||isCallerAbort(error))throw error;
     primaryError=error;
   }
   try{
@@ -41,6 +42,9 @@ export async function loadStationBoardWithFallback(
     return {stopTimes:scheduledRows,mode:"OFF",fallback:true,
       warning:"Echtzeit-Tafel unvollständig. Gezeigt werden ausschließlich vom Anbieter gelieferte Fahrplandaten."};
   }catch(error){
+    // A newer provider throttle/caller cancellation takes precedence over an
+    // earlier service error; the route must preserve 429 + Retry-After.
+    if(error instanceof StationSourceThrottledError||isCallerAbort(error))throw error;
     throw primaryError ?? error;
   }
 }
