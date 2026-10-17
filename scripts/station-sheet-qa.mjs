@@ -46,14 +46,14 @@ async function click(selector) {
   await pause(350);
 }
 // Real touch events, not synthetic React clicks: verify Android-style sheet gestures.
-async function touchSwipe(selector, distanceY) {
+async function touchSwipe(selector, distanceY, steps = 8) {
   const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing touch target');const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await command('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
   try {
     await command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
-    for(let i=1;i<=8;i++){
-      await command('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x,y:point.y+distanceY*i/8}]});
-      await pause(24);
+    for(let i=1;i<=steps;i++){
+      await command('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x,y:point.y+distanceY*i/steps}]});
+      if(steps > 1) await pause(24);
     }
     await command('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await pause(450);
