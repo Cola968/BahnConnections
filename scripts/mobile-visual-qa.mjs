@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { realtimeScenarios, journeyFixture, boardFixture } from "./realtime-fixtures.mjs";
+import { APP_VERSION } from "../app/app-version.ts";
 
 const argumentsWithoutSeparator = process.argv.slice(2).filter((value) => value !== "--");
 const url = argumentsWithoutSeparator[0] ?? "http://127.0.0.1:3102/?qa=mobile-visual";
@@ -839,6 +840,90 @@ try {
   profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
 
+  // V61 provider-call browser: fixture proves search and direction filtering,
+  // never full live-provider coverage. Test compact phones and desktop separately.
+  const stationCallChecks=[];
+  for(const [width,height] of [[320,844],[390,844],[1440,900]]) {
+    await setViewport(width,height);
+    await command("Page.navigate",{url:new URL("/?station=berlin",url).toString()});
+    await waitFor(`Boolean(document.querySelector(".v61-call-toggle"))`,"V61 station calls control missing");
+    await tap(".v61-call-toggle");
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length>=1`,"No fixture calls loaded in station browser");
+    await waitFor(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),controls=document.querySelector('.v61-call-filters').getBoundingClientRect();return controls.top>=pane.top-1&&controls.bottom<=pane.bottom+1;})()`,"New station-call controls remain outside the visible pane");
+    const initial=await evaluate(`(() => {
+      const root=document.querySelector(".v61-call-browser"),r=root.getBoundingClientRect();
+      const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect();
+      const controls=root.querySelector('.v61-call-filters').getBoundingClientRect();
+      return {expanded:root.querySelector(".v61-call-toggle").getAttribute("aria-expanded")==="true",
+        controlsVisible:controls.top>=pane.top-1&&controls.bottom<=pane.bottom+1,
+        rows:root.querySelectorAll(".v61-call-row").length,
+        source:root.textContent.includes("Transitous / MOTIS"),
+        honesty:root.textContent.includes("keine Zugpositionen"),
+        overflow:root.scrollWidth>root.clientWidth+2 || document.documentElement.scrollWidth>innerWidth+2,
+        left:r.left,right:r.right};
+    })()`);
+    if(!initial.expanded||!initial.rows||!initial.source||!initial.honesty||initial.overflow||!initial.controlsVisible)
+      throw new Error("V61 station calls fail at "+width+": "+JSON.stringify(initial));
+    await tap('.v61-call-directions button:last-child');
+    await waitFor(`document.querySelector(".v61-call-directions button:last-child").getAttribute("aria-pressed")==="true"`,"Departure filter did not activate");
+    await evaluate(`(() => {
+      const input=document.querySelector(".v61-call-filters input");
+      const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set;
+      setter.call(input,"ICE 1200");input.dispatchEvent(new Event("input",{bubbles:true}));
+    })()`);
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length===1`,"Train search did not filter fixture rows");
+    await screenshot(width+"-v61-station-calls");
+    stationCallChecks.push({width,initial,search:true});
+  }
+
+  // Mock only the service-worker boundary. A future update must leave station
+  // navigation reachable and activate through the normal App settings action.
+  const updateFixture=version=>`{
+    const waiting={state:'installed',postMessage(message){if(message.type==='SKIP_WAITING')document.documentElement.dataset.qaUpdateActivated='true';}};
+    navigator.serviceWorker.register=async()=>({waiting,installing:null,update:async()=>{},addEventListener(){},removeEventListener(){}});
+    const request=window.fetch;
+    window.fetch=(...args)=>{
+      const url=new URL(args[0] instanceof Request?args[0].url:String(args[0]),location.href);
+      return url.pathname==='/version.json'?Promise.resolve(new Response(JSON.stringify({version:${JSON.stringify(version)},label:${JSON.stringify('V'+version)}}),{headers:{'Content-Type':'application/json'}})):request(...args);
+    };
+  }`;
+  const updateScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture('99.0')});
+  const updateChecks=[];
+  for(const [width,height] of [[320,568],[390,844],[1440,900]]){
+    await setViewport(width,height);
+    await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+    await waitFor(`Boolean(document.querySelector('.app-update-status'))&&Boolean(document.querySelector('.station-sheet-header'))`,'Update availability missing');
+    // Desktop text-size controls stay mounted but have no mobile hit surface.
+    const headerHitTest=`Array.from(document.querySelectorAll('.station-sheet-header button')).filter(button=>{const r=button.getBoundingClientRect();return r.width>0&&r.height>0;}).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===button||button.contains(hit);})`;
+    await waitFor(headerHitTest,'Visible station controls remain blocked during update notification at '+width);
+    const headerReachable=await evaluate(headerHitTest);
+    if(!headerReachable||await evaluate(`Boolean(document.querySelector('.app-update-notice'))`))throw Error('Update notification covers station controls at '+width);
+    await tap('#station-tab-stats');
+    await waitFor(`Boolean(document.querySelector('.station-info .station-share'))`,'Station info missing');
+    const infoActions=await evaluate(`(() => {const button=document.querySelector('.station-info .station-share'),title=document.querySelector('.station-info h2'),pane=document.querySelector('.station-card .panel-body');const b=button.getBoundingClientRect(),t=title.getBoundingClientRect(),p=pane.getBoundingClientRect();return {textFits:button.scrollWidth<=button.clientWidth+2,inside:b.right<=p.right&&b.left>=p.left,noOverlap:t.right<=b.left||t.bottom<=b.top||b.bottom<=t.top};})()`);
+    if(!infoActions.textFits||!infoActions.inside||!infoActions.noOverlap)throw Error('Station share action clips or overlaps at '+width+': '+JSON.stringify(infoActions));
+    await tap('#station-tab-live');
+    if(width<1024){
+      await tap('.mobile-navigation button:last-of-type');
+      if(!await evaluate(`document.querySelector('.simple-more-list>button:nth-child(2)').textContent.includes('V99.0')`))throw Error('More menu must expose the available update');
+      await tap('.simple-more-list>button:nth-child(2)');
+    }else{
+      await tap('.settings-trigger');
+      await tap('.settings-tabs button[data-settings-tab="about"]');
+    }
+    await waitFor(`Boolean(document.querySelector('.settings-dialog .pwa-update-action'))`,'Update action missing in App settings');
+    await screenshot(width+'-pwa-update-in-settings');
+    await tap('.settings-dialog .pwa-update-action');
+    await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'Update action did not activate the waiting worker');
+    updateChecks.push({width,height,headerReachable,activation:true});
+  }
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:updateScript.identifier});
+  const sameVersionScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture(APP_VERSION)});
+  await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+  await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
+  if(await evaluate(`Boolean(document.querySelector('.app-update-status,.app-update-notice'))`))throw Error('Already running version must not be announced as a new version');
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:sameVersionScript.identifier});
+
   // Standalone marketing website: separate route, separate visual ownership.
   const websiteChecks = [];
   const websiteUrl = new URL("/website", url).toString();
@@ -888,7 +973,7 @@ try {
 
 
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
+  const report = { checkedAt:new Date().toISOString(), url, stationCallChecks, updateChecks, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } catch(error) {

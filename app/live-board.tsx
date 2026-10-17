@@ -17,7 +17,8 @@ import { BoardToolbar, BoardQuickFilters } from "./board-toolbar";
 import {activeBoardQuickView,boardQuickSelection,type BoardQuickView} from "./board-quick-view";
 import { UiIcon } from "./ui-icon";
 import { deriveRealtimePresentation } from "./realtime-presentation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { revealPanelContent } from "./panel-content-visibility";
 import type { Station } from "./network-data";
 import { decodePolyline } from "./live-trains";
 import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
@@ -296,7 +297,8 @@ function mapTrip(entry: BoardEntry, detail: TripDetail, fresh=tripDetailFresh(de
   };
 }
 
-export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { station: Station; onSummary?: (summary: BoardSummary) => void; onMapTrip?: (trip: BoardMapTrip) => void; onStationTrips?: (trips: BoardMapTrip[]) => void }) {
+export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips, onRevealContent }: { station: Station; onSummary?: (summary: BoardSummary) => void; onMapTrip?: (trip: BoardMapTrip) => void; onStationTrips?: (trips: BoardMapTrip[]) => void; onRevealContent?: () => void }) {
+  const boardRef=useRef<HTMLElement>(null);
   const [mode, setMode] = useState<BoardMode>("departures");
   const [productFilter, setProductFilter] = useState<ProductFilter>("all");
   const [delayFilter, setDelayFilter] = useState<BoardDelayFilter>("all");
@@ -541,6 +543,7 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
 
   function toggleRow(entry: BoardEntry) {
     const key=entryKey(entry);
+    if(!expandedRows.includes(key))onRevealContent?.();
     setExpandedRows(current=>current.includes(key)?[]:[key]);
   }
 
@@ -548,6 +551,20 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const openKey=openEntry?entryKey(openEntry):undefined;
   const openTripId=openEntry?.tripId;
   const openReferenceTime=openEntry?.plannedWhen??openEntry?.when;
+  useLayoutEffect(()=>{
+    if(!openKey)return;
+    const frame=requestAnimationFrame(()=>{
+      const row=boardRef.current?.querySelector<HTMLElement>(".board-row.open");
+      revealPanelContent(row??null,row?.querySelector<HTMLElement>(".trip-stop-heading"));
+    });
+    return()=>cancelAnimationFrame(frame);
+  },[openKey]);
+  useLayoutEffect(()=>{
+    if(!filtersOpen)return;
+    // Keep the toggle above the filter visible when a quick preset closes it.
+    const frame=requestAnimationFrame(()=>revealPanelContent(boardRef.current?.querySelector<HTMLElement>(".board-primary-bar")??null));
+    return()=>cancelAnimationFrame(frame);
+  },[filtersOpen]);
   useEffect(()=>{
     if(!openKey||!openTripId)return;
     // Trip forecasts own their refresh cycle; a board refresh cannot renew them.
@@ -574,11 +591,11 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   }
 
   return (
-    <section className="live-board realistic" aria-live="polite">
+    <section ref={boardRef} className="live-board realistic" aria-live="polite">
       <BoardToolbar mode={mode} onMode={setMode} filtersOpen={filtersOpen}
 
         filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 500}
-        onFilters={() => setFiltersOpen(value => !value)} />
+        onFilters={() => {if(!filtersOpen)onRevealContent?.();setFiltersOpen(value => !value);}} />
 
       {status === "ready" && (!boardLive || verificationStatus === "different") && <p className="board-quality-notice" role="status">{!boardLive ? "Echtzeitdaten veraltet · Fahrplanzeiten angezeigt" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
 
