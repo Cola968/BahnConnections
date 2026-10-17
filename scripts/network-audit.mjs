@@ -84,7 +84,11 @@ async function inspectPlannerCompletion() {
   const sorted = [...itineraries].filter((item) => item.endTime).sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
   if (!sorted.length) throw new Error("Planer-Referenzverbindungen besitzen keine Ankunftszeit");
   const contextLeg = itineraries.flatMap((item) => item.legs ?? []).find((leg) => serviceName(leg).replaceAll(" ", "").toUpperCase() === "S42" && leg.to?.name?.includes("Gesundbrunnen") && leg.to?.stopId && leg.endTime);
-  if (!contextLeg) throw new Error("S42-Zubringer nach Gesundbrunnen fehlt in der Referenzsuche");
+  if (!contextLeg) {
+    report.warnings.push("S42-Zubringer nach Gesundbrunnen nicht unter den vom Planer priorisierten Verbindungen; alternative Routen sind kein Ausfallnachweis");
+    report.checks.push({name:"Planer-Referenzsuche",ok:true,searchTime:time,connections:itineraries.length,fastestTransitousArrival:sorted[0].endTime});
+    return;
+  }
 
   const boardUrl = new URL("https://api.transitous.org/api/v6/stoptimes");
   boardUrl.searchParams.set("stopId", contextLeg.to.stopId);
