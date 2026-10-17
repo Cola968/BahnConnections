@@ -20,3 +20,13 @@ GitHub bleibt die überprüfbare Quelle für Änderungen. Bestehende ChatGPT-Sit
 ## Für spätere Automatisierung
 
 Falls ChatGPT Sites künftig einen offiziell unterstützten Deploy-Endpunkt oder eine GitHub-Integration anbietet, kann ein abgesicherter GitHub-Actions-Workflow die Build-Artefakte übertragen. Vorher die offizielle API dokumentieren und erforderliche Credentials ausschließlich als GitHub Actions Secrets konfigurieren; keine nicht unterstützten Aufrufe erfinden.
+
+## Site-Automationen (neu geprüft am 17.10.2026)
+
+Die [offizielle OpenAI-Hilfe](https://help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites) dokumentiert jetzt **Site-spezifische Cloud-Automationen**, soweit diese Funktion im Konto verfügbar ist. Öffne die **bereits existierende** BahnConnections-Site unter Sites → Automations → Create schedule. Nur der Eigentümer kann die Site mit seiner Schedule verknüpfen. Auch ohne offenen Codex-Chat kann eine solche Aufgabe im Hintergrund laufen.
+
+**Empfohlener stündlicher Auftrag (zunächst KEIN automatisches Veröffentlichen):** „Vergleiche `Cola968/BahnConnections` Branch `feat/v60-next-generation-20261014` gegen die zuletzt gespeicherte Sites-Version für Site-Projekt `appgprj_6a9069a2d9848191b604e8fb97e1c05f`. Prüfe SHA, Quality-/Browser-CI, Datenquellen, #66 und #67; falls alles freigegeben und tatsächlich Site-kompatibel ist, baue eine neue *gespeicherte Version zur Freigabe*, prüfe mobile Planer/Stationsanzeige, protokolliere SHA/Testergebnisse in PR #74. Wenn eine Berechtigung, Quelle oder Tests fehlen, veröffentliche nichts und dokumentiere den Blocker.“
+
+Site-Verknüpfung: `.openai/hosting.json` enthält die bestehende `project_id`. Diese ID **nicht** durch eine neu erzeugte Site-ID ersetzen. Neue Versionen und Deployments sind getrennte Aktionen, laut [Sites-Handbuch](https://learn.chatgpt.com/docs/sites/managing-a-site).
+
+**Grenze:** Eine Website-Schedule ist **keine belegte direkte GitHub-Actions→Sites-Deploy-API**. Es muss im Site-Konto ausprobiert werden, ob die Schedule Quellcodeänderungen automatisch von GitHub laden kann und selbstständig eine gespeicherte Version anlegen darf. Solange diese Probe fehlt: keine automatische Publikationszusage. Siehe auch das [offizielle Sites-Toolkit](https://github.com/openai/sites) (`@openai/sites-vite-plugin` zum Verpacken kompatibler Projekte; kein belegter Publish-Token/CLI-Deploy).
