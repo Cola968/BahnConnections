@@ -1,4 +1,4 @@
-import { chooseStationMatch, type NamedPoint } from "./station-match";
+import { chooseStationMatch, type NamedPoint } from "./station-match.ts";
 
 type DbCandidate = {
   id?: string;
