@@ -4,6 +4,7 @@ import { compactStationLabel } from "./transit-style";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
 import { boundedJourneySignal } from "./journey-request-budget";
+import { chooseDbJourneyStation } from "./db-journey-station";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -341,11 +342,7 @@ async function dbLocation(station: Station, signal?: AbortSignal) {
     url.searchParams.set("addresses", "false");
     url.searchParams.set("poi", "false");
     const items = await fetchJsonWithTimeout<DbLocation[]>(url, signal, 4_500);
-    return items.filter((item) => item.type === "stop" && item.id).sort((left, right) => {
-      const leftPoint = left.location?.latitude != null && left.location?.longitude != null ? { lat:left.location.latitude, lon:left.location.longitude } : null;
-      const rightPoint = right.location?.latitude != null && right.location?.longitude != null ? { lat:right.location.latitude, lon:right.location.longitude } : null;
-      return (leftPoint ? coordinateDistance(station, leftPoint) : Number.MAX_SAFE_INTEGER) - (rightPoint ? coordinateDistance(station, rightPoint) : Number.MAX_SAFE_INTEGER);
-    })[0] ?? null;
+    return chooseDbJourneyStation(station,items);
   })().catch(() => null);
   dbLocationCache.set(key, request);
   return request;
