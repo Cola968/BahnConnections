@@ -45,6 +45,22 @@ async function click(selector) {
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1,buttons:0});
   await pause(350);
 }
+// Real touch events, not synthetic React clicks: verify Android-style sheet gestures.
+async function touchSwipe(selector, distanceY) {
+  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing touch target');const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  await command('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+  try {
+    await command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+    for(let i=1;i<=8;i++){
+      await command('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x,y:point.y+distanceY*i/8}]});
+      await pause(24);
+    }
+    await command('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    await pause(450);
+  }finally{
+    await command('Emulation.setTouchEmulationEnabled',{enabled:false});
+  }
+}
 async function screenshot(name) {
   const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
@@ -214,7 +230,7 @@ try {
       }
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls: '+JSON.stringify(measure.search));}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=3,name+' visible rows under the redesigned V58 controls');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls: '+JSON.stringify(measure.search));}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=1,name+' compact station sheet must expose at least one complete departure');else assert.ok(measure.visibleRows>=3,name+' expanded station sheet must expose at least three complete departures');}}
       if(!baseline && width===390 && state==='expanded' && theme==='light') {
         await click('.mobile-sheet-actions button:first-child');
         await pause(280);
@@ -309,6 +325,19 @@ try {
         assert.equal(await evaluate("document.querySelector('.board-filter-panel').textContent.includes('Mehr Zeilendetails')"),false,'Do not expose an option without additional information');
         await click('.board-filter-close');
         assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Closing filters restores departures');
+        if(theme==='light') {
+          const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
+          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+initialHeight);
+          await touchSwipe('.station-sheet-header .mobile-sheet-summary',90);
+          const shorter=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
+          assert.ok(shorter<initialHeight-55,'Touch swipe down must actually resize the sheet: '+JSON.stringify({initialHeight,shorter}));
+          await touchSwipe('.station-sheet-header .mobile-sheet-summary',210);
+          const collapsed=await evaluate("({state:document.querySelector('.app-shell').dataset.mobileSheet,height:document.querySelector('.station-card').getBoundingClientRect().height})");
+          assert.equal(collapsed.state,'collapsed','Second downward swipe must minimize the station sheet');
+          assert.ok(collapsed.height<=68,'Minimized sheet must be compact: '+JSON.stringify(collapsed));
+          await click('.station-sheet-header .mobile-sheet-summary');
+          assert.equal(await evaluate("document.querySelector('.app-shell').dataset.mobileSheet"),'half','Tapping minimized sheet must restore the compact preset');
+        }
       }
     }
     if(!baseline&&width===390) {
