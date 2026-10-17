@@ -328,7 +328,7 @@ try {
         if(theme==='light') {
           const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
           assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+initialHeight);
-          await touchSwipe('.station-sheet-header .mobile-sheet-summary',90);
+          await touchSwipe('.station-sheet-header .mobile-sheet-summary',90,1);
           const shorter=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
           assert.ok(shorter<initialHeight-55,'Touch swipe down must actually resize the sheet: '+JSON.stringify({initialHeight,shorter}));
           await touchSwipe('.station-sheet-header .mobile-sheet-summary',210);
