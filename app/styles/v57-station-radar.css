@@ -225,3 +225,17 @@
   color:var(--status-delay,var(--ink));font-weight:650
 }
 .app-shell .station-radar-platform .realtime-platform__arrow{font-style:normal}
+
+/* Provider-confirmed station calls are independently browseable without fake GPS. */
+.station-radar-calls{min-width:0;border-top:1px solid var(--line-subtle);padding-top:6px}
+.station-radar-calls summary{cursor:pointer;font-size:.8rem;font-weight:650;min-height:34px;display:list-item;list-style-position:inside}
+.station-radar-call-search{display:block;margin:6px 0}
+.station-radar-call-search input{width:100%;min-height:40px;border:1px solid var(--line-subtle);border-radius:9px;background:var(--paper);color:var(--ink);padding:8px;font:inherit;font-size:.82rem}
+.station-radar-call-note{font-size:.71rem;line-height:1.45;color:var(--muted);margin:6px 0}
+.station-radar-call-list{list-style:none;margin:4px 0 0;padding:0;max-height:min(35dvh,300px);overflow-y:auto;overscroll-behavior:contain}
+.station-radar-call-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line-subtle)}
+.station-radar-call-list li>span{display:grid;min-width:0;gap:2px}
+.station-radar-call-list li b,.station-radar-call-list li small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.station-radar-call-list time{white-space:nowrap;font-size:.72rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+.station-radar-calls summary:focus-visible,.station-radar-call-search input:focus-visible{outline:2px solid var(--action);outline-offset:2px}
+@media(max-height:550px){.station-radar-call-list{max-height:25dvh}.station-radar-call-note{display:block}}
