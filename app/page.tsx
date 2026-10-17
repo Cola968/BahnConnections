@@ -1119,7 +1119,7 @@ export default function Home() {
     } catch (error) {
       if (controller.signal.aborted || generation !== plannerGenerationRef.current || (error as Error).name === "AbortError") return;
       setPlannerState("error");
-      setJourneyMessage("Verbindungssuche derzeit nicht erreichbar. Bitte erneut versuchen.");
+      setJourneyMessage(error instanceof Error && error.message.trim() ? `Verbindungssuche fehlgeschlagen: ${error.message.slice(0,240)}. Bitte erneut versuchen.` : "Verbindungssuche derzeit nicht erreichbar. Bitte erneut versuchen.");
     }
   }
 
