@@ -30,7 +30,15 @@ export async function loadStationBoardWithFallback(
     if(!Array.isArray(raw))throw new Error("Invalid scheduled stopTimes array");
     const rows=validTransitousBoardRows(raw);
     if(!rows.length&&primaryError)throw primaryError;
-    return {stopTimes:rows,mode:"OFF",fallback:true,
+    // Consumers inspect per-row flags, not just the response status. Enforce
+    // OFF provenance here so neither the board nor radar can promote a stray
+    // provider prediction to live data. Keep the original response untouched.
+    const scheduledRows=rows.map(row=>({...row,realTime:false,place:{...row.place,
+      arrival:row.place?.scheduledArrival??row.place?.arrival,
+      departure:row.place?.scheduledDeparture??row.place?.departure,
+      track:row.place?.scheduledTrack??row.place?.track,
+    }}));
+    return {stopTimes:scheduledRows,mode:"OFF",fallback:true,
       warning:"Echtzeit-Tafel unvollständig. Gezeigt werden ausschließlich vom Anbieter gelieferte Fahrplandaten."};
   }catch(error){
     throw primaryError ?? error;
