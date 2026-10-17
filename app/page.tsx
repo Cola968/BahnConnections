@@ -27,7 +27,7 @@ import {stationCondition} from "./board-health";
 import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
-import { matchesStationCall, type StationRadarDirection } from "./station-radar-data";
+import { listStationCalls, matchesStationCall, type StationRadarDirection } from "./station-radar-data";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
 import { TrainRadarHud } from "./train-radar-hud";
@@ -226,6 +226,7 @@ export default function Home() {
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [radarDirection,setRadarDirection] = useState<StationRadarDirection>("all");
+  const [radarTripQuery,setRadarTripQuery] = useState("");
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
   const [selectedLiveTrip, setSelectedLiveTrip] = useState<LiveTrip | null>(null);
@@ -400,6 +401,7 @@ export default function Home() {
   // Station timetables must work even when the optional map train layer is off.
   const stationRadar = useStationRadar(selected,liveVisible);
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
+  const stationRadarCallList = useMemo(() => listStationCalls(stationRadar.calls,radarDirection,radarTripQuery),[stationRadar.calls,radarDirection,radarTripQuery]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
@@ -1336,6 +1338,12 @@ export default function Home() {
           {liveVisible && selected && !selectedLiveTrip && !plannerVisible && !journey && !settingsOpen && !liveFiltersOpen && !moreMenuOpen && mobileSheetState!=="expanded" && <div className="station-radar-scope" aria-label="Bahnhofsradar">
             <div><b>{stationDisplayName(selected.name)}</b><small role="status">{stationRadar.status==="loading"?"Halte werden geprüft …":stationRadar.status==="error"?"Bahnhofshalte nicht erreichbar":stationRadar.status==="stale"?"Aktualisierung fehlgeschlagen · keine aktuellen Kartenmarker":`${visibleLiveTrips.length} Züge auf der Karte · ${stationRadar.calls.size} Fahrten mit Halt im Zeitfenster${stationRadar.coverage==="partial"?" · Daten teilweise verfügbar":""}`}</small></div>
             <div className="radar-direction-control" role="group" aria-label="Fahrtrichtung am Bahnhof">{([["all",language==="en"?"Show all":"Alle"],["inbound",language==="en"?"Inbound":"Ankommend"],["outbound",language==="en"?"Outbound":"Abgehend"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={radarDirection===id} onClick={()=>setRadarDirection(id)}>{label}</button>)}</div>
+            <details className="station-radar-calls"><summary>Bahnhofsfahrten ({stationRadarCallList.length})</summary>
+              <label className="station-radar-call-search"><span className="sr-only">Bahnhofsfahrten suchen</span><input aria-label="Bahnhofsfahrten suchen" type="search" value={radarTripQuery} onChange={event=>setRadarTripQuery(event.target.value)} placeholder="Zug oder Ziel suchen" /></label>
+              <p className="station-radar-call-note">Bestätigte Halte aus der Bahnhofstafel. Nur Züge mit verfügbarer Geometrie erscheinen auf der Karte.</p>
+              <ul className="station-radar-call-list">{stationRadarCallList.map(({tripId,call})=><li key={tripId}><span><b>{call.name??"Fahrt"}</b><small>{call.destination??"Ziel unbekannt"}{call.cancelled?" · Ausfall":""}</small></span><time dateTime={new Date(call.departure??call.arrival??0).toISOString()}>{new Date(call.departure??call.arrival??0).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}{call.realtime?" · Live":" · Plan"}</time></li>)}</ul>
+              {!stationRadarCallList.length && <p className="station-radar-call-note">Keine passenden Fahrten im aktuellen Zeitfenster.</p>}
+            </details>
           </div>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached map-filters-v57" id="map-view-menu" role="dialog" aria-label="Kartenfilter">
