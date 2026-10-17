@@ -89,6 +89,14 @@ html,body{background:var(--soft);color:var(--ink);}
 .app-shell .board-row-summary:active {background:color-mix(in srgb,var(--accent) 8%,transparent);}
 .app-shell .board-row.open {background:color-mix(in srgb,var(--accent) 4%,var(--paper))!important;}
 .app-shell .board-row-detail {background:transparent!important;border:0!important;}
+.app-shell .trip-stop-list .stop-description b{white-space:normal;overflow-wrap:anywhere;line-height:1.4;}
+.app-shell .trip-stop-list .trip-stop-times{display:grid;gap:8px;min-width:0;max-width:150px;}
+.app-shell .trip-stop-event{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:baseline;gap:6px;}
+.app-shell .trip-stop-event>small{font-size:11px;color:var(--muted);}
+.app-shell .trip-stop-event .realtime-time{min-width:0;align-items:flex-end;}
+.app-shell .trip-stop-heading{position:static;flex-wrap:wrap;gap:6px;}
+.app-shell .trip-stop-heading button{min-height:44px;background:transparent;color:var(--ink);border-radius:10px;}
+.app-shell .trip-stop-heading button:hover{background:var(--soft);color:var(--ink);}
 .app-shell .board-time{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
 .app-shell .board-platform {font-variant-numeric:tabular-nums;}
 .app-shell .board-quality-notice {margin-block:7px;padding:9px 12px;border-inline-start:3px solid var(--warning);border-radius:5px;background:color-mix(in srgb,var(--warning) 7%,transparent);line-height:1.45;}

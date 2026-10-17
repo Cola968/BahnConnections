@@ -1,6 +1,7 @@
 import type { LiveJourney } from './live-journey';
+import {minimumTransferBuffer} from './v60-transfer-assessment.ts';
 
-export type JourneySort='recommended'|'arrival'|'duration'|'changes'|'walking';
+export type JourneySort='recommended'|'arrival'|'duration'|'changes'|'walking'|'transfer';
 export function journeyDateRange(journey:LiveJourney):string {
   if(!Number.isFinite(Date.parse(journey.startTime))||!Number.isFinite(Date.parse(journey.endTime)))return 'Datum unbekannt';
   const format=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'medium'});
@@ -18,8 +19,16 @@ export function shiftPlannerDay(value:string,days:number):string|null {
 }
 export const walkingMinutes=(journey:LiveJourney)=>Math.ceil(journey.legs.filter(leg=>leg.category==='walk').reduce((seconds,leg)=>seconds+Math.max(0,leg.durationSeconds),0)/60);
 const timestamp=(value:string)=>Number.isFinite(Date.parse(value))?Date.parse(value):Infinity;
-export function sortJourneys(journeys:LiveJourney[],order:JourneySort):LiveJourney[] {
+export function sortJourneys(journeys:LiveJourney[],order:JourneySort,now=Date.now()):LiveJourney[] {
   if(order==='recommended')return [...journeys];
+  if(order==='transfer')return [...journeys].sort((a,b)=>{
+    const rank=(journey:LiveJourney)=>{
+      if(journey.transitLegs.length<=1)return Number.POSITIVE_INFINITY; // No connection to miss.
+      return minimumTransferBuffer(journey,now)??Number.NEGATIVE_INFINITY; // Unknown is not safe.
+    };
+    const left=rank(a),right=rank(b);
+    return Number(a.cancelled)-Number(b.cancelled)||(left===right?0:left>right?-1:1)||timestamp(a.startTime)-timestamp(b.startTime)||a.id.localeCompare(b.id);
+  });
   const value=(journey:LiveJourney)=>order==='arrival'?timestamp(journey.endTime):order==='duration'?journey.durationSeconds:order==='changes'?journey.transfers:walkingMinutes(journey);
   return [...journeys].sort((a,b)=>Number(a.cancelled)-Number(b.cancelled)||value(a)-value(b)||timestamp(a.startTime)-timestamp(b.startTime)||a.id.localeCompare(b.id));
 }

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "scope": "Newly reproduced items since the 2026-10-17 roadmap baseline; earlier work is not retroactively counted",
+  "roadmapComment": "https://github.com/Cola968/BahnConnections/pull/74#issuecomment-6233491416",
+  "planned": {
+    "bugfixes": 50,
+    "features": 25,
+    "improvements": 10
+  },
+  "implemented": {
+    "bugfixes": 3,
+    "features": 0,
+    "improvements": 0
+  },
+  "verified": {
+    "bugfixes": 0,
+    "features": 0,
+    "improvements": 0
+  },
+  "verificationRule": "Verified requires red-before/green-after regression and completed successful Quality CI for the code commit; do not count snapshots, tests or documentation as product features",
+  "checks": {
+    "codeCommit": "851a58ae7f6d61e2f346a5244ae232160c2b0eda",
+    "quality": {
+      "url": "https://github.com/Cola968/BahnConnections/actions/runs/39035582167",
+      "status": "pending"
+    },
+    "workerDryRun": {
+      "url": "https://github.com/Cola968/BahnConnections/actions/runs/39035582257",
+      "status": "success"
+    }
+  },
+  "items": [
+    {
+      "id": "BC-001",
+      "kind": "bugfix",
+      "title": "OFF rows could leak realtime flags and predictions into consumers",
+      "commit": "9ec4d09bdfe0610cf29f86851ace533a4d0125e4",
+      "status": "implemented",
+      "redEvidence": "board-fallback-audit.mjs: true !== false; actual GET route test also fails against baseline",
+      "regression": "node scripts/board-fallback-audit.mjs && node scripts/board-api-audit.mjs"
+    },
+    {
+      "id": "BC-002",
+      "kind": "bugfix",
+      "title": "Primary 503 masked subsequent OFF 429 and prevented Retry-After response",
+      "commit": "851a58ae7f6d61e2f346a5244ae232160c2b0eda",
+      "status": "implemented",
+      "redEvidence": "Expected OFF StationSourceThrottledError, received primary 503",
+      "regression": "node scripts/board-fallback-audit.mjs && node scripts/board-api-audit.mjs"
+    },
+    {
+      "id": "BC-003",
+      "kind": "bugfix",
+      "title": "Caller abort started unnecessary timetable fallback",
+      "commit": "851a58ae7f6d61e2f346a5244ae232160c2b0eda",
+      "status": "implemented",
+      "redEvidence": "Expected one provider attempt after abort, received two",
+      "regression": "node scripts/board-fallback-audit.mjs && node scripts/board-api-audit.mjs"
+    }
+  ],
+  "blocked": [
+    {
+      "issue": 77,
+      "reason": "Default MOTIS hierarchy observed at six stations, but full coverage/cross-feed dedup/UI comparison remains unproved; Erdeborn currently exposed as BUS and rail-only board is empty"
+    },
+    {
+      "issue": 78,
+      "reason": "Station-wide data layer exists; independent radar list and on-demand selection outside loaded map extent still need UI integration and regression"
+    },
+    {
+      "issue": 66,
+      "reason": "Owner physical Android/PWA acceptance remains open"
+    },
+    {
+      "issue": 67,
+      "reason": "Owner data rights/licensing decision remains open"
+    }
+  ]
+}

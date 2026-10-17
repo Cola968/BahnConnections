@@ -10,14 +10,15 @@ import { readBoardStream } from "./board-stream";
 import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
 import { boardDisplayActual,boardDisplayPlatform,boardEventTime,boardPredictionFresh } from "./board-time";
+import { tripDetailFresh } from "./trip-detail-freshness";
+import { TripStopTimes } from "./trip-stop-times";
 import { RealtimePlatform } from "./realtime-platform";
-import { BoardToolbar } from "./board-toolbar";
+import { BoardToolbar, BoardQuickFilters } from "./board-toolbar";
 import {activeBoardQuickView,boardQuickSelection,type BoardQuickView} from "./board-quick-view";
 import { UiIcon } from "./ui-icon";
 import { deriveRealtimePresentation } from "./realtime-presentation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Station } from "./network-data";
-import { occupancyForecast } from "./occupancy";
 import { decodePolyline } from "./live-trains";
 import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
 import { berlinTimestamp, inBatches, requireTransitousStopId } from "./transitous";
@@ -122,7 +123,7 @@ type TripLeg = {
   legGeometry?: { points?: string; precision?: number };
 };
 
-type TripDetail = { stops: TripPlace[]; points: [number, number][]; segments: [number, number][][]; realtime: boolean; origin?: string; destination?: string; color?: string; textColor?: string };
+type TripDetail = { fetchedAt: number; stops: TripPlace[]; points: [number, number][]; segments: [number, number][][]; realtime: boolean; origin?: string; destination?: string; color?: string; textColor?: string };
 
 function delayMinutes(entry: BoardEntry, fresh:boolean) {
   if (!fresh || !entry.realtime || !entry.when || !entry.plannedWhen) return 0;
@@ -196,7 +197,12 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal,
   const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(22_000)]);
   const stopId = await requireTransitousStopId(station, requestSignal);
   const url = new URL(`/api/stations/${encodeURIComponent(stopId)}/board`, window.location.origin);
-  url.searchParams.set("n", "1400");
+  // MOTIS returns all events in the requested window, with n as a minimum.
+  // Query the entire 500-minute board horizon (+ buffer) instead of an
+  // arbitrary 1400 events that can span multiple days at small stations.
+  url.searchParams.set("n", "50");
+  url.searchParams.set("window", "30600");
+  url.searchParams.set("time", new Date(Date.now() - 5*60_000).toISOString());
   url.searchParams.set("kind", kind);
   url.searchParams.set("stream","1");
   const response = await fetch(url, { signal:requestSignal });
@@ -264,6 +270,7 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
   const selectedSegments = "trimmed" in selected && selected.trimmed && segments.length === 1 && selected.points.length > 1 ? [selected.points] : segments;
   const legs = payload.legs ?? [];
   return {
+    fetchedAt:Date.now(),
     stops:selected.stops,
     points:selected.points,
     segments:selectedSegments,
@@ -275,17 +282,17 @@ async function loadTrip(tripId: string, station?: Station, referenceTime?: strin
   };
 }
 
-function mapTrip(entry: BoardEntry, detail: TripDetail): BoardMapTrip {
+function mapTrip(entry: BoardEntry, detail: TripDetail, fresh=tripDetailFresh(detail.fetchedAt,Date.now())): BoardMapTrip {
   return {
     tripId:entry.tripId ?? entryKey(entry),
     name:entry.line?.name ?? "Fahrt",
     category:entry.line?.product === "sbahn" ? "sbahn" : entry.line?.product === "ubahn" ? "ubahn" : entry.line?.product === "tram" ? "tram" : ["fern","fern-express"].includes(entry.line?.product ?? "") ? "fern" : "regional",
-    realtime:Boolean(entry.realtime || detail.realtime),
+    realtime:Boolean(fresh && detail.realtime),
     color:entry.line?.color ?? detail.color,
     textColor:entry.line?.textColor ?? detail.textColor,
     points:detail.points,
     segments:detail.segments,
-    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:compactStationLabel(stop.name) ?? stop.name, lat:stop.lat, lon:stop.lon, arrival:stop.arrival, departure:stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled, realtime:stop.realtime })),
+    stops:detail.stops.filter((stop): stop is TripPlace & { name:string } => Boolean(stop.name)).map((stop) => ({ name:compactStationLabel(stop.name) ?? stop.name, lat:stop.lat, lon:stop.lon, arrival:!fresh && stop.realtime ? stop.scheduledArrival : stop.arrival, departure:!fresh && stop.realtime ? stop.scheduledDeparture : stop.departure, scheduledArrival:stop.scheduledArrival, scheduledDeparture:stop.scheduledDeparture, track:!fresh && stop.realtime ? stop.scheduledTrack : stop.track, scheduledTrack:stop.scheduledTrack, cancelled:stop.cancelled, realtime:fresh && stop.realtime })),
   };
 }
 
@@ -295,9 +302,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [delayFilter, setDelayFilter] = useState<BoardDelayFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("time");
-  const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(240);
+  const [windowMinutes, setWindowMinutes] = useState<BoardWindow>(500);
   const [query, setQuery] = useState("");
-  const [compact, setCompact] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
   function setQuickView(view:BoardQuickView){
     const preset=boardQuickSelection(view);
@@ -331,15 +337,9 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [now, setNow] = useState(0);
   const boardLive=boardPredictionFresh(updatedAt,now,stale);
   const [refreshToken, setRefreshToken] = useState(0);
-  const [displayLimit, setDisplayLimit] = useState(50);
+  const [tripRefreshToken, setTripRefreshToken] = useState(0);
+  const [displayLimit, setDisplayLimit] = useState(120);
   const previewSignatureRef = useRef("");
-  const rowRequestRef = useRef<AbortController | null>(null);
-  useEffect(() => {
-    // Switching stations or direction must invalidate pending detail requests.
-    const controller = new AbortController();
-    rowRequestRef.current = controller;
-    return () => { controller.abort(); if(rowRequestRef.current===controller)rowRequestRef.current=null; };
-  }, [station.id,mode]);
   const enrichmentAttemptsRef = useRef<Map<string,number>>(new Map());
 
   useEffect(() => {
@@ -423,9 +423,9 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const displayedEntries = useMemo(() => visibleEntries.slice(0, displayLimit), [displayLimit, visibleEntries]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDisplayLimit(compact ? 50 : 100), 0);
+    const timer = window.setTimeout(() => setDisplayLimit(120), 0);
     return () => window.clearTimeout(timer);
-  }, [compact, delayFilter, mode, platformFilter, productFilter, query, sortMode, station.id, windowMinutes]);
+  }, [delayFilter, mode, platformFilter, productFilter, query, sortMode, station.id, windowMinutes]);
 
   const summary = useMemo((): BoardSummary => {
     const scoped = entries.filter((entry) => {
@@ -539,31 +539,32 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
     });
   }
 
-  async function toggleRow(entry: BoardEntry) {
-    const key = entryKey(entry);
-    const opening = !expandedRows.includes(key);
-    setExpandedRows((current) => opening ? [...current, key] : current.filter((item) => item !== key));
-    if (!opening || !entry.tripId || tripDetailState[key] === "loading") return;
-    const existing = tripDetails[key];
-    if (existing) {
-      setTripDetailState((current) => ({ ...current, [key]:"ready" }));
-      if (existing.points.length) onMapTrip?.(mapTrip(entry, existing));
-      return;
-    }
-    setTripDetailState((current) => ({ ...current, [key]:"loading" }));
-    const controller = rowRequestRef.current ?? new AbortController();
-    rowRequestRef.current = controller;
-    try {
-      const detail = await loadTrip(entry.tripId, station, entry.when ?? entry.plannedWhen, controller.signal);
-      if (controller.signal.aborted) return;
-      setTripDetails((current) => ({ ...current, [key]:detail }));
-      setTripDetailState((current) => ({ ...current, [key]:"ready" }));
-      if (detail.points.length) onMapTrip?.(mapTrip(entry, detail));
-    } catch {
-      if (controller.signal.aborted) return;
-      setTripDetailState((current) => ({ ...current, [key]:"error" }));
-    }
+  function toggleRow(entry: BoardEntry) {
+    const key=entryKey(entry);
+    setExpandedRows(current=>current.includes(key)?[]:[key]);
   }
+
+  const openEntry=entries.find(entry=>entryKey(entry)===expandedRows[0]);
+  const openKey=openEntry?entryKey(openEntry):undefined;
+  const openTripId=openEntry?.tripId;
+  const openReferenceTime=openEntry?.plannedWhen??openEntry?.when;
+  useEffect(()=>{
+    if(!openKey||!openTripId)return;
+    // Trip forecasts own their refresh cycle; a board refresh cannot renew them.
+    const poller=new VisibilityPoller(async signal=>{
+      setTripDetailState(current=>current[openKey]?current:{...current,[openKey]:"loading"});
+      try {
+        const detail=await loadTrip(openTripId,station,openReferenceTime,signal);
+        if(signal.aborted)return;
+        setNow(Date.now());
+        setTripDetails(current=>({...current,[openKey]:detail}));
+        setTripDetailState(current=>({...current,[openKey]:"ready"}));
+      } catch {
+        if(!signal.aborted)setTripDetailState(current=>({...current,[openKey]:"error"}));
+      }
+    },75_000,document);
+    return()=>poller.dispose();
+  },[mode,openKey,openTripId,openReferenceTime,refreshToken,station,tripRefreshToken]);
 
   function openBoardWindow() {
     const url = new URL(window.location.href);
@@ -573,16 +574,17 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   }
 
   return (
-    <section className={`live-board realistic${compact ? " compact" : " expanded-detail"}`} aria-live="polite">
+    <section className="live-board realistic" aria-live="polite">
       <BoardToolbar mode={mode} onMode={setMode} filtersOpen={filtersOpen}
-        quickView={activeBoardQuickView({delay:delayFilter,windowMinutes,otherFilters:productFilter!=="all"||platformFilter!=="all"||sortMode!=="time"||Boolean(query.trim())})} onQuickView={setQuickView}
-        filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 240}
+
+        filtersActive={productFilter !== "all" || Boolean(query) || delayFilter !== "all" || platformFilter !== "all" || sortMode !== "time" || windowMinutes !== 500}
         onFilters={() => setFiltersOpen(value => !value)} />
 
       {status === "ready" && (!boardLive || verificationStatus === "different") && <p className="board-quality-notice" role="status">{!boardLive ? "Echtzeitdaten veraltet · Fahrplanzeiten angezeigt" : "Quellenabweichung"} · Details unter Quelle & Aktualisierung</p>}
 
       {filtersOpen && <div className="board-filter-panel" id="board-filters" onKeyDown={event=>{if(event.key==="Escape"){event.stopPropagation();setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}}>
         <div className="board-filter-heading"><div><b>{mode==="arrivals"?"Ankünfte filtern":"Abfahrten filtern"}</b><small>{visibleEntries.length} von {entries.length} Fahrten · {mode==="arrivals"?"Ankunft":"Abfahrt"}</small></div><button type="button" className="board-filter-close" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}} aria-label="Filter schließen"><UiIcon name="close"/></button></div>
+        <BoardQuickFilters quickView={activeBoardQuickView({delay:delayFilter,windowMinutes,otherFilters:productFilter!=="all"||platformFilter!=="all"||sortMode!=="time"||Boolean(query.trim())})} onQuickView={setQuickView} />
         <div className="board-search-row"><label className="board-search"><UiIcon name="search"/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Zug, Ziel oder Gleis suchen" aria-label="Innerhalb der Bahnhofstafel suchen"/>{query&&<button type="button" onClick={()=>setQuery("")} aria-label="Suche leeren"><UiIcon name="close"/></button>}</label></div>
         <div className="board-filter-block"><div className="board-filter-section-title">Verkehrsmittel</div><div className="board-product-tabs" aria-label="Verkehrsmittel">
           {([["all","Alle",entries.length],["fern","Fernverkehr",productCounts.fern],["regional","Regional",productCounts.regional],["sbahn","S-Bahn",productCounts.sbahn],["ubahn","U-Bahn",productCounts.ubahn],["tram","Tram",productCounts.tram]] as const).map(([id,label,count])=><button type="button" key={id} aria-pressed={productFilter===id} className={productFilter===id?"active":""} onClick={()=>setProductFilter(id)}>{label}<small>{count}</small></button>)}
@@ -595,10 +597,15 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
           <label>Zeitraum<select value={windowMinutes} onChange={event=>setWindowMinutes(Number(event.target.value) as BoardWindow)}><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="180">3 Stunden</option><option value="240">4 Stunden</option><option value="500">Bis zu 8 Std. 20 Min.</option></select></label>
           <label>Sortierung<select value={sortMode} onChange={event=>setSortMode(event.target.value as SortMode)}><option value="time">{mode==="arrivals"?"Ankunftszeit":"Abfahrtszeit"}</option><option value="delay">Größte Verspätung</option><option value="platform">Gleis</option><option value="product">Zuggattung</option></select></label>
         </div>
-        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
-        <details className="board-filter-extra"><summary>Weitere Tafeloptionen</summary><div className="board-filter-utilities"><button type="button" aria-pressed={!compact} onClick={()=>setCompact(value=>!value)}>{compact?"Mehr Zeilendetails":"Kompakte Zeilen"}</button><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div></details>
+        <div className="board-filter-bottom"><button type="button" className="board-filter-reset" onClick={()=>{setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(500);}}>Zurücksetzen</button><button type="button" className="board-filter-apply" onClick={event=>{setFiltersOpen(false);event.currentTarget.closest(".live-board")?.querySelector<HTMLButtonElement>(".board-filter-toggle")?.focus();}}>{visibleEntries.length} Ergebnisse ansehen</button></div>
+        <div className="board-filter-utilities"><button type="button" onClick={openBoardWindow}>Tafel in eigenem Fenster</button></div>
       </div>}
 
+      {status === "ready" && <p className="board-results-summary" role="status">
+        {visibleEntries.length} {mode === "arrivals" ? "Ankünfte" : "Abfahrten"}
+        {visibleEntries.length > displayedEntries.length ? ` · ${displayedEntries.length} geladen` : ""}
+        {stale ? " · letzter bekannter Stand" : ""}
+      </p>}
       <div className="board-table">
         <div className="board-table-head"><span /><span>Zug / Linie</span><span>Zeit</span><span>Über</span><span>{mode === "arrivals" ? "Von" : "Ziel"}</span><span>Gleis</span></div>
         {status === "loading" && <div className="board-skeleton" aria-label="Live-Daten werden geladen">{[1,2,3,4,5].map((item) => <div key={item}><i /><span><i /><i /></span><span><i /><i /></span></div>)}</div>}
@@ -610,10 +617,10 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
               const key = entryKey(entry);
               const rowOpen = expandedRows.includes(key);
               const brand = brandFor(entry);
-              const forecast = occupancyForecast(boardDisplayActual(entry,boardLive) ?? entry.plannedWhen, entry.line?.name);
                const shownPlatform = boardDisplayPlatform(entry,boardLive);
               const detail = tripDetails[key];
               const detailState = tripDetailState[key];
+              const detailFresh=detailState!=="error" && tripDetailFresh(detail?.fetchedAt,now);
               const severity = presentation.kind === "cancelled" ? "cancel" : presentation.severe ? "severe" : presentation.kind;
               const destination = entry.kind === "arrival" ? entry.provenance ?? entry.direction ?? "Ziel wird ermittelt …" : entry.direction ?? "Ziel wird ermittelt …";
               return (
@@ -626,14 +633,14 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
                     <span className="board-platform">{/^\d/.test(shownPlatform ?? entry.plannedPlatform ?? "") && <span className="board-platform-label" aria-hidden="true">Gl. </span>}<RealtimePlatform scheduled={entry.plannedPlatform} actual={shownPlatform} compact /></span>
                   </button>
                   {rowOpen && <div className="board-row-detail">
-                    <div className="trip-detail-summary"><div>{entry.canceled ? <b>Fahrt entfällt</b> : null}{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>{alert}</small>)}</div><div className={`occupancy-forecast level-${forecast.level}`}><b>Auslastung {forecast.label.toLocaleLowerCase("de")}</b><span className="occupancy-bars" aria-hidden="true">{[1,2,3].map((item) => <i className={item <= forecast.level ? "active" : ""} key={item} />)}</span></div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
-                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. Die Tafelzeile bleibt verfügbar.</p>}{detailState === "ready" && detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const actual=stop.departure ?? stop.arrival; const planned=stop.scheduledDeparture ?? stop.scheduledArrival; const stopName=compactStationLabel(stop.name) ?? stop.name; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stopName}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={boardDisplayPlatform({platform:stop.track,plannedPlatform:stop.scheduledTrack,realtime:stop.realtime},boardLive)} /></small></span><RealtimeTime scheduled={planned} actual={actual} realtime={boardLive&&stop.realtime} cancelled={stop.cancelled} compact /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
+                    <div className="trip-detail-summary"><div>{entry.canceled ? <b>Fahrt entfällt</b> : null}{entry.alerts?.slice(0,2).map((alert, alertIndex) => <small className="board-alert" key={`${alert}-${alertIndex}`}>{alert}</small>)}</div><button className={pinned.includes(key) ? "pin active" : "pin"} onClick={() => togglePinned(entry)}>{pinned.includes(key) ? "★ Gemerkt" : "☆ Merken"}</button></div>
+                    <div className="trip-stop-panel"><div className="trip-stop-heading"><b>Fahrtverlauf</b><span>{detail?.stops.length ? `${detail.stops.length} Halte` : ""}</span>{detail?.points.length ? <button onClick={() => onMapTrip?.(mapTrip(entry, detail,detailFresh))}>◎ Auf Karte</button> : null}</div>{detailState === "loading" && !detail && <p className="trip-stop-state">Halte und Zeiten werden live geladen …</p>}{detailState === "error" && <p className="trip-stop-state error">Der Live-Fahrtverlauf ist gerade nicht erreichbar. {detail ? "Letzte Haltefolge mit Fahrplanzeiten angezeigt." : "Die Tafelzeile bleibt verfügbar."} <button type="button" onClick={()=>setTripRefreshToken(value=>value+1)}>Fahrtverlauf erneut laden</button></p>}{detail?.stops.length ? <ol className="trip-stop-list">{detail.stops.map((stop, stopIndex) => { const stopName=compactStationLabel(stop.name) ?? stop.name; return <li className={stop.cancelled ? "cancelled" : ""} key={`${stop.name}-${stopIndex}`}><i aria-hidden="true" /><span className="stop-description"><b>{stopName}</b><small><RealtimePlatform scheduled={stop.scheduledTrack} actual={boardDisplayPlatform({platform:stop.track,plannedPlatform:stop.scheduledTrack,realtime:stop.realtime},detailFresh)} /></small></span><TripStopTimes stop={stop} fresh={detailFresh} /></li>; })}</ol> : null}{detailState === "ready" && detail?.stops.length && !detail.points.length ? <p className="trip-stop-state geometry-missing">Die Halte sind verfügbar; die Quelle liefert für diese Fahrt gerade keine belastbare Streckengeometrie. Deshalb wird keine Luftlinie gezeichnet.</p> : null}{detailState === "ready" && !detail?.stops.length && <p className="trip-stop-state">Für diese Fahrt liefert die Quelle derzeit keine Haltefolge.</p>}{!entry.tripId && <p className="trip-stop-state">Für diese Fahrplanzeile ist keine abrufbare Fahrt-ID vorhanden.</p>}</div>
                   </div>}
                 </article>
               );
             })}
-            {!visibleEntries.length && <div className="board-state board-empty-state" role="status"><b>{entries.length ? "Keine Fahrten mit diesen Filtern" : "Keine Fahrten verfügbar"}</b><span>{entries.length ? "Ändere Filter oder Zeitraum, um weitere Verbindungen zu sehen." : "Für diese Station wurden momentan keine Fahrten geliefert."}</span>{entries.length ? <button type="button" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(240);}}>Alle Fahrten anzeigen</button> : <button type="button" onClick={() => setRefreshToken(value => value + 1)}>Erneut laden</button>}</div>}
-            {displayedEntries.length < visibleEntries.length && <button className="board-more" onClick={() => setDisplayLimit((value) => value + 50)}>Weitere 50 Fahrten anzeigen <span>{displayedEntries.length}/{visibleEntries.length}</span></button>}
+            {!visibleEntries.length && <div className="board-state board-empty-state" role="status"><b>{entries.length ? "Keine Fahrten mit diesen Filtern" : "Keine Fahrten verfügbar"}</b><span>{entries.length ? "Ändere Filter oder Zeitraum, um weitere Verbindungen zu sehen." : "Für diese Station wurden momentan keine Fahrten geliefert."}</span>{entries.length ? <button type="button" onClick={() => {setProductFilter("all");setQuery("");setDelayFilter("all");setPlatformFilter("all");setSortMode("time");setWindowMinutes(500);}}>Alle Fahrten anzeigen</button> : <button type="button" onClick={() => setRefreshToken(value => value + 1)}>Erneut laden</button>}</div>}
+            {displayedEntries.length < visibleEntries.length && <button className="board-more" onClick={() => setDisplayLimit((value) => value + 120)}>Weitere 120 Fahrten anzeigen <span>{displayedEntries.length}/{visibleEntries.length}</span></button>}
           </div>
         )}
       </div>

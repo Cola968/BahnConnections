@@ -1,0 +1,173 @@
+/* V60 Motion Contract — motion communicates state and never changes transport data.
+   Single global control: system prefers-reduced-motion OR settings data-motion.
+   Avoid map canvas animation, forced flashes, z-axis/depth effects and layout shifts. */
+:root{--v60-motion-quick:120ms;--v60-motion-normal:190ms;--v60-motion-open:220ms;--v60-motion-ease:cubic-bezier(.22,1,.36,1)}
+@keyframes v60-enter {from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes v60-soft-appear {from{opacity:0}to{opacity:1}}
+@keyframes v60-dialog-in {from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.app-shell .v60-shortcuts-trigger{
+  display:inline-grid;place-items:center;min-width:44px;min-height:44px;
+  font-weight:750;font-size:1rem;cursor:pointer
+}
+.app-shell .v60-shortcuts-trigger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.v60-shortcut-backdrop{
+  position:fixed;inset:0;z-index:4000;display:grid;place-items:center;
+  padding:clamp(12px,3vw,24px);background:rgba(8,25,36,.44);
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both
+}
+.v60-shortcut-dialog{
+  box-sizing:border-box;width:min(100%,460px);max-height:min(85dvh,710px);overflow:auto;
+  border:1px solid var(--line-subtle);border-radius:24px;
+  padding:20px 22px 18px;color:var(--ink);background:var(--paper);
+  box-shadow:0 22px 60px rgba(7,29,42,.22);
+  animation:v60-dialog-in var(--v60-motion-open) var(--v60-motion-ease) both
+}
+.v60-shortcut-dialog>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.v60-shortcut-dialog header small{color:var(--muted);font-size:.77rem}
+.v60-shortcut-dialog h2{margin:5px 0 0;font-size:1.45rem;letter-spacing:-.035em}
+.v60-shortcut-dialog header button{
+  flex:none;width:44px;height:44px;display:grid;place-items:center;
+  background:var(--soft);color:var(--ink);border:1px solid var(--line-subtle);
+  border-radius:12px;font-size:1.1rem;cursor:pointer
+}
+.v60-shortcut-dialog>p{line-height:1.5;color:var(--muted);font-size:.87rem}
+.v60-shortcut-dialog dl{margin:16px 0;display:grid;gap:0}
+.v60-shortcut-dialog dl>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line-subtle)}
+.v60-shortcut-dialog dl>div:last-child{border-bottom:1px solid var(--line-subtle)}
+.v60-shortcut-dialog dt{min-width:0;font-size:.9rem}
+.v60-shortcut-dialog dd{margin:0;flex:none;text-align:right}
+.v60-shortcut-dialog kbd{display:inline-block;padding:5px 8px;border-radius:8px;
+  border:1px solid var(--line);background:var(--soft);font:600 .79rem/1.2 system-ui,sans-serif;color:var(--ink)}
+.v60-shortcut-dialog .v60-shortcut-hint{font-size:.78rem}
+.v60-shortcut-dialog button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* Scoped motion for every major workflow. Avoid animating row heights and map tiles. */
+.app-shell .station-section-tabs>button,
+.app-shell .mobile-navigation>button,
+.app-shell .desktop-navigation>button,
+.app-shell .board-quick-views>button{
+  transition:color var(--v60-motion-quick) ease,
+    background-color var(--v60-motion-normal) ease,border-color var(--v60-motion-normal) ease!important
+}
+.app-shell .board-row.open>.board-row-detail,
+.app-shell .trip-stop-panel,
+.app-shell .station-lines .line-route-detail{
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both
+}
+.app-shell :is(.map-filters-v57,.simple-more-popover,.board-filter-panel){
+  animation:v60-enter var(--v60-motion-open) var(--v60-motion-ease) both
+}
+.app-shell :is(.station-line-row,.incident-card,.journey-alternatives button,
+.saved-route-open,.station-radar-scope button) {
+  transition:background-color var(--v60-motion-normal) ease,
+    border-color var(--v60-motion-normal) ease,box-shadow var(--v60-motion-normal) ease
+}
+/* Never flash live / late / canceled status, and never imply continuous GPS motion. */
+.app-shell :is(.board-row,.board-time,.realtime-time,.v58-map-source-pulse) {animation-duration:0ms}
+@media(max-width:1023px){
+  /* The header already contains app/install/theme/search; help stays in More on phones. */
+  .app-shell .v60-shortcuts-trigger{display:none}
+  .v60-shortcut-dialog{padding:18px;max-height:calc(100dvh - 32px);border-radius:20px}
+}
+
+/* Global station-board interaction contract: the same controls for every stop.
+   Four short labels fit a 320px handset; no offscreen fourth button. */
+.app-shell .board-results-summary{
+  margin:2px 0 8px;padding:0 2px;color:var(--muted);
+  font-size:.75rem;line-height:1.45;overflow-wrap:anywhere
+}
+.app-shell .board-results-summary[role="status"]{animation:none}
+.app-shell .board-filter-toggle:focus-visible,
+.app-shell .board-quick-views button:focus-visible,
+.app-shell .board-mode-tabs button:focus-visible{
+  outline:2px solid var(--action);outline-offset:2px
+}
+.app-shell .board-quick-views button:active{transform:scale(.98)}
+@media(max-width:1023px){
+  .app-shell[data-primary-panel="station"]:not([data-mobile-sheet="collapsed"]) .station-radar-scope{
+    display:none!important /* One station sheet, not another competing radar card */
+  }
+  .app-shell .board-quick-views{
+    box-sizing:border-box;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px!important;width:100%;min-width:0;max-width:100%;
+    overflow:visible!important;padding:0!important
+  }
+  .app-shell .board-quick-views button{
+    box-sizing:border-box;min-width:0;min-height:44px!important;
+    padding:7px 2px!important;border-radius:12px!important;
+    font-size:clamp(.67rem,2.7vw,.8rem)!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .app-shell .board-mode-tabs button,
+  .app-shell .board-filter-toggle{min-height:44px!important}
+  .app-shell .board-filter-toggle{min-width:68px;padding-inline:8px!important}
+}
+
+/* User preference is as important as the system-wide accessibility setting. */
+@media(prefers-reduced-motion:reduce) {
+  .app-shell,.app-shell *, .app-shell *::before,.app-shell *::after,
+  .v60-shortcut-backdrop,.v60-shortcut-dialog{
+    animation:none!important;transition:none!important;scroll-behavior:auto!important
+  }
+}
+html[data-motion="reduced"] .app-shell,
+html[data-motion="reduced"] .app-shell *,
+html[data-motion="reduced"] .app-shell *::before,
+html[data-motion="reduced"] .app-shell *::after,
+html[data-motion="reduced"] .v60-shortcut-backdrop,
+html[data-motion="reduced"] .v60-shortcut-dialog {
+  animation:none!important;transition:none!important;scroll-behavior:auto!important
+}
+@media(forced-colors:active){
+  .v60-shortcut-dialog,.v60-shortcut-dialog header button{border:1px solid CanvasText;background:Canvas;color:CanvasText}
+}
+
+/* V60 recent stations — informational, not a second full-page navigation. */
+.app-shell .v60-recent-stations{display:grid;gap:2px;border-block:1px solid var(--line-subtle);padding:10px 0;margin:5px 0}
+.app-shell .v60-recent-stations>div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 10px 4px}
+.app-shell .v60-recent-stations>div strong{font-size:.84rem}
+.app-shell .v60-recent-stations>div button{font-size:.76rem;color:var(--muted);text-decoration:underline;text-underline-offset:3px;min-height:44px;background:none;border:0;padding:0 6px}
+.app-shell .v60-recent-stations>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:44px;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:var(--ink)}
+.app-shell .v60-recent-stations>button:active{background:var(--soft)}
+.app-shell .v60-recent-stations>button>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .v60-recent-stations>button svg{width:17px;height:17px;color:var(--muted)}
+.app-shell .v60-recent-stations button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* V60 operational controls use the existing timetable visual language. */
+.app-shell .v60-alternative-available{
+  display:flex;align-items:center;gap:10px;min-height:44px;
+  margin:4px 0 10px;padding:8px 10px;color:var(--ink);
+  font-size:.84rem;line-height:1.35;cursor:pointer;
+  border-block:1px solid var(--line-subtle)
+}
+.app-shell .v60-alternative-available input{flex:none;width:18px;height:18px;accent-color:var(--accent)}
+.app-shell .v60-alternative-available:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.app-shell .v60-alternative-empty{margin:12px 4px;color:var(--muted);font-size:.84rem;line-height:1.5}
+@media(forced-colors:active){.app-shell .v60-alternative-available{border-color:CanvasText}}
+
+/* Train sharing remains reachable on 320px handsets without forcing horizontal overflow. */
+.app-shell .train-inspector .train-action-row{flex-wrap:wrap}
+.app-shell .train-inspector .train-action-row .train-jump-next{flex:0 1 auto;max-width:100%;min-height:44px}
+.app-shell .train-inspector .train-action-row button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* V60.2 micro-interactions: navigation acknowledges touches without
+   moving panels, train positions, timestamps or the map. */
+.app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button svg,
+.app-shell .settings-tabs button svg {
+  transition:transform var(--v60-motion-normal) var(--v60-motion-ease);
+}
+@media(hover:hover) and (pointer:fine) {
+  .app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button:hover svg,
+  .app-shell .settings-tabs button:hover svg {
+    transform:translateY(-1px);
+  }
+}
+.app-shell :is(.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views) button:active svg,
+.app-shell .settings-tabs button:active svg {
+  transform:scale(.94);
+}
+/* Switching settings sections fades in the content, not the surrounding dialog. */
+.app-shell .settings-dialog-v48[open] .settings-content {
+  animation:v60-soft-appear var(--v60-motion-normal) ease-out both;
+}

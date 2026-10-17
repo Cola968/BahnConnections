@@ -1,0 +1,683 @@
+{
+  "startedAt": "2026-10-17T13:14:20.202Z",
+  "referenceTime": "2026-10-17T13:14:20.202Z",
+  "scope": "60-minute provider window; n=50 is a minimum and may extend beyond it",
+  "method": "Default MOTIS parent/child/equivalence expansion; no radius; original stop IDs retained",
+  "completenessVerified": false,
+  "stations": [
+    {
+      "name": "Berlin Hbf",
+      "id": "berlin",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 148,
+          "valid": 148,
+          "deduplicated": 148,
+          "returnedStopIds": [
+            "de-DELFI_de:11000:900003200:2:52",
+            "de-VBB_de:11000:900003201:3:55",
+            "de-VBB_de:11000:900003201:3:54",
+            "de-VBB_de:11000:900003201::3",
+            "de-DELFI_de:11000:900003200:3:54",
+            "de-VBB_de:11000:900003201::2",
+            "de-VBB_de:11000:900003201::10",
+            "de-VBB_de:11000:900003200:3:54",
+            "de-DELFI_de:11000:900003200:3:55",
+            "de-VBB_de:11000:900003200:3:55",
+            "de-VBB_de:11000:900003200:5:58",
+            "at-Railway-Current-Reference-Data-2026_de:11000:900003200:2:52",
+            "de-DELFI_de:11000:900003200:4:57",
+            "de-DELFI_de:11000:900003200:1:51",
+            "de-DELFI_de:11000:900003200:2:53",
+            "de-DELFI_de:11000:900003200:1:50",
+            "de-VBB_de:11000:900003200:1:50",
+            "de-DELFI_de:11000:900003200_G",
+            "de-DELFI_de:11000:900003200:4:56",
+            "de-VBB_de:11000:900003200:2:53",
+            "at-Railway-Current-Reference-Data-2026_de:11000:900003200:4:56",
+            "de-VBB_de:11000:900003200:2:52",
+            "de-VBB_de:11000:900003200:4:56"
+          ],
+          "returnedParentIds": [
+            "de-DELFI_de:11000:900003201",
+            "de-VBB_de:11000:900003201"
+          ],
+          "modes": [
+            "HIGHSPEED_RAIL",
+            "SUBURBAN",
+            "TRAM",
+            "LONG_DISTANCE",
+            "SUBWAY",
+            "REGIONAL_RAIL"
+          ],
+          "realtimeRows": 113,
+          "rawEvidenceSha256": "4acac829639a803456a84fab1f1d61e7a9831a8699ada2383099ba7d17301d2d"
+        },
+        {
+          "kind": "departure",
+          "raw": 149,
+          "valid": 149,
+          "deduplicated": 149,
+          "returnedStopIds": [
+            "de-VBB_de:11000:900003201:3:55",
+            "de-VBB_de:11000:900003201:3:54",
+            "de-VBB_de:11000:900003201::3",
+            "de-VBB_de:11000:900003200:1:50",
+            "de-VBB_de:11000:900003201::2",
+            "de-VBB_de:11000:900003200:5:58",
+            "de-VBB_de:11000:900003201::10",
+            "de-DELFI_de:11000:900003200:3:54",
+            "de-DELFI_de:11000:900003200_G",
+            "de-DELFI_de:11000:900003200:2:52",
+            "de-VBB_de:11000:900003200:3:54",
+            "de-DELFI_de:11000:900003200:1:50",
+            "de-DELFI_de:11000:900003200:3:55",
+            "de-VBB_de:11000:900003200:3:55",
+            "de-DELFI_de:11000:900003200:2:53",
+            "at-Railway-Current-Reference-Data-2026_de:11000:900003200:2:52",
+            "de-DELFI_de:11000:900003200:4:56",
+            "de-DELFI_de:11000:900003200:1:51",
+            "de-DELFI_de:11000:900003200",
+            "de-VBB_de:11000:900003200:2:53",
+            "at-Railway-Current-Reference-Data-2026_de:11000:900003200:4:56"
+          ],
+          "returnedParentIds": [
+            "de-VBB_de:11000:900003201",
+            "de-DELFI_de:11000:900003201"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "TRAM",
+            "REGIONAL_RAIL",
+            "SUBWAY",
+            "LONG_DISTANCE",
+            "HIGHSPEED_RAIL"
+          ],
+          "realtimeRows": 108,
+          "rawEvidenceSha256": "684bedc852375d48d64ab13dbe455f857825378b4e6760672892be88ae97509f"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "at-Railway-Current-Reference-Data-2026_de:11000:900003200:1:51",
+      "radarCalls": 179,
+      "radarListRows": 179,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "Hamburg Hbf",
+      "id": "hamburg",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 190,
+          "valid": 190,
+          "deduplicated": 190,
+          "returnedStopIds": [
+            "de-DELFI_de:02000:10905:1:109013",
+            "de-DELFI_de:02000:10950_G",
+            "de-DELFI_de:02000:10906:2:109016",
+            "de-DELFI_de:02000:10905:2:109012",
+            "de-DELFI_de:02000:10906:1:109014",
+            "de-DELFI_de:02000:10906:1:109015",
+            "de-DELFI_de:02000:10906:2:109017",
+            "de-DELFI_de:02000:10950",
+            "dk-rejseplanen_000008020400"
+          ],
+          "returnedParentIds": [],
+          "modes": [
+            "SUBWAY",
+            "SUBURBAN",
+            "REGIONAL_RAIL",
+            "HIGHSPEED_RAIL"
+          ],
+          "realtimeRows": 188,
+          "rawEvidenceSha256": "b22141e7f85a9ad00d114c81a78d950dc5ed2765f2b7ca29ff09b941be76c9a3"
+        },
+        {
+          "kind": "departure",
+          "raw": 187,
+          "valid": 187,
+          "deduplicated": 187,
+          "returnedStopIds": [
+            "de-DELFI_de:02000:10950_G",
+            "de-DELFI_de:02000:10905:1:109013",
+            "de-DELFI_de:02000:10906:2:109016",
+            "de-DELFI_de:02000:10905:2:109012",
+            "de-DELFI_de:02000:10906:1:109014",
+            "de-DELFI_de:02000:10950",
+            "de-DELFI_de:02000:10906:2:109017",
+            "de-DELFI_de:02000:10906:1:109015",
+            "dk-rejseplanen_000008020400"
+          ],
+          "returnedParentIds": [],
+          "modes": [
+            "SUBURBAN",
+            "SUBWAY",
+            "REGIONAL_RAIL",
+            "HIGHSPEED_RAIL"
+          ],
+          "realtimeRows": 185,
+          "rawEvidenceSha256": "abfba0025a59bb62e87edc8f6fdbae0c1d4310f055eef1af6ba0754e75403f31"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "at-Railway-Current-Reference-Data-2026_de:02000:10950:11:1",
+      "radarCalls": 204,
+      "radarListRows": 204,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "München Hbf",
+      "id": "muenchen",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 261,
+          "valid": 261,
+          "deduplicated": 261,
+          "returnedStopIds": [
+            "de-DELFI_de:09162:100:11:15",
+            "de-DELFI_de:09162:6:52:54",
+            "de-DELFI_de:09162:7000:2:2",
+            "de-DELFI_de:09162:6:55:56",
+            "de-DELFI_de:09162:7000:5:4",
+            "de-DELFI_de:09162:6:2:1",
+            "de-DELFI_de:09162:5000:2:1",
+            "de-DELFI_de:09162:6:51:53",
+            "de-DELFI_de:09162:6:55:55",
+            "de-DELFI_de:09162:6:2:2",
+            "de-DELFI_de:09162:7000:5:5",
+            "de-DELFI_de:09162:7000:1:1",
+            "de-DELFI_de:09162:6:52:52",
+            "de-DELFI_de:09162:100:22:24",
+            "de-DELFI_de:09162:6:51:51",
+            "de-DELFI_de:09162:100:5:9",
+            "de-DELFI_de:09162:100:16:19",
+            "de-DELFI_de:09162:5000:2:2",
+            "de-DELFI_de:09162:6:2:5",
+            "de-DELFI_de:09162:100:5:10",
+            "de-DELFI_de:09162:100_G",
+            "de-DELFI_de:09162:100:27:27",
+            "de-DELFI_de:09162:100:27:28",
+            "de-DELFI_de:09162:100:27:36",
+            "de-DELFI_de:09162:100:11:14",
+            "de-DELFI_de:09162:100:27:32",
+            "de-DELFI_de:09162:100:22:25",
+            "de-DELFI_de:09162:100:16:21",
+            "nl-OpenOV_2993496",
+            "at-Railway-Current-Reference-Data-2026_de:09162:100:11:12",
+            "de-DELFI_de:09162:100:11:12",
+            "de-DELFI_de:09162:100:16:18",
+            "de-DELFI_de:09162:100:11:11",
+            "at-Railway-Current-Reference-Data-2026_de:09162:100:11:11",
+            "de-DELFI_de:09162:100:11:13",
+            "de-DELFI_de:09162:100:27:34",
+            "de-DELFI_de:09162:100:22:23"
+          ],
+          "returnedParentIds": [
+            "de-DELFI_de:09162:100",
+            "de-DELFI_de:09162:6",
+            "de-DELFI_de:09162:7000",
+            "de-DELFI_de:09162:5000",
+            "nl-OpenOV_stoparea:489911"
+          ],
+          "modes": [
+            "HIGHSPEED_RAIL",
+            "SUBWAY",
+            "TRAM",
+            "REGIONAL_RAIL",
+            "SUBURBAN",
+            "LONG_DISTANCE"
+          ],
+          "realtimeRows": 244,
+          "rawEvidenceSha256": "9c9d95c28dfea02e8953b8543e8987be2b2024f4dbd53cdf53543162f10e22f2"
+        },
+        {
+          "kind": "departure",
+          "raw": 262,
+          "valid": 262,
+          "deduplicated": 262,
+          "returnedStopIds": [
+            "de-DELFI_de:09162:100:27:36",
+            "de-DELFI_de:09162:7000:2:2",
+            "de-DELFI_de:09162:6:55:56",
+            "de-DELFI_de:09162:7000:5:4",
+            "de-DELFI_de:09162:6:2:1",
+            "de-DELFI_de:09162:5000:2:1",
+            "de-DELFI_de:09162:6:52:54",
+            "de-DELFI_de:09162:6:51:53",
+            "de-DELFI_de:09162:100_G",
+            "de-DELFI_de:09162:6:2:2",
+            "de-DELFI_de:09162:6:55:55",
+            "de-DELFI_de:09162:100:22:22",
+            "de-DELFI_de:09162:7000:5:5",
+            "de-DELFI_de:09162:7000:1:1",
+            "de-DELFI_de:09162:6:51:51",
+            "de-DELFI_de:09162:6:52:52",
+            "de-DELFI_de:09162:5000:2:2",
+            "at-Railway-Current-Reference-Data-2026_de:09162:100:11:14",
+            "de-DELFI_de:09162:100:5:10",
+            "de-DELFI_de:09162:6:2:5",
+            "de-DELFI_de:09162:100:22:25",
+            "at-Railway-Current-Reference-Data-2026_de:09162:100:11:12",
+            "de-DELFI_de:09162:100:11:13",
+            "de-DELFI_de:09162:100:27:27",
+            "de-DELFI_de:09162:100:27:34",
+            "de-DELFI_de:09162:100:16:19",
+            "de-DELFI_de:09162:100:11:12",
+            "at-Railway-Current-Reference-Data-2026_de:09162:100:5:8",
+            "de-DELFI_de:09162:100:11:14",
+            "de-DELFI_de:09162:100:27:31",
+            "de-DELFI_de:09162:100:27:32",
+            "de-DELFI_de:09162:100:22:23",
+            "de-DELFI_de:09162:100:5:9",
+            "de-DELFI_de:09162:100:27:29",
+            "de-DELFI_de:09162:100:27:33",
+            "de-DELFI_de:09162:100:16:16",
+            "de-DELFI_de:09162:100:16:18",
+            "de-DELFI_de:09162:100:27:28"
+          ],
+          "returnedParentIds": [
+            "de-DELFI_de:09162:100",
+            "de-DELFI_de:09162:6",
+            "de-DELFI_de:09162:7000",
+            "de-DELFI_de:09162:5000"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "TRAM",
+            "SUBWAY",
+            "HIGHSPEED_RAIL",
+            "REGIONAL_RAIL"
+          ],
+          "realtimeRows": 243,
+          "rawEvidenceSha256": "0a0b1bf0face60f6afaed363c107d125fc1b4a404df3fd076c47a0b7b33553d7"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "at-Railway-Current-Reference-Data-2026_de:09162:100:11:11",
+      "radarCalls": 256,
+      "radarListRows": 256,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "Leipzig Hbf",
+      "id": "leipzig",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 118,
+          "valid": 118,
+          "deduplicated": 118,
+          "returnedStopIds": [
+            "de-DELFI_de:14713:8010205",
+            "de-DELFI_de:14713:13000::03",
+            "de-DELFI_de:14713:13000::04",
+            "de-DELFI_de:14713:8098205",
+            "de-DELFI_de:14713:13000",
+            "de-DELFI_de:14713:13000::01"
+          ],
+          "returnedParentIds": [],
+          "modes": [
+            "REGIONAL_RAIL",
+            "TRAM",
+            "SUBURBAN",
+            "HIGHSPEED_RAIL",
+            "LONG_DISTANCE"
+          ],
+          "realtimeRows": 117,
+          "rawEvidenceSha256": "026f7e011bcc22de30d61b9fe9b00ababfa3546f0376621e346f136090661a37"
+        },
+        {
+          "kind": "departure",
+          "raw": 121,
+          "valid": 121,
+          "deduplicated": 121,
+          "returnedStopIds": [
+            "de-DELFI_de:14713:13000::03",
+            "de-DELFI_de:14713:13000::04",
+            "de-DELFI_de:14713:8098205",
+            "de-DELFI_de:14713:13000",
+            "de-DELFI_de:14713:8010205",
+            "de-DELFI_de:14713:13000::01"
+          ],
+          "returnedParentIds": [],
+          "modes": [
+            "TRAM",
+            "SUBURBAN",
+            "HIGHSPEED_RAIL",
+            "REGIONAL_RAIL",
+            "LONG_DISTANCE"
+          ],
+          "realtimeRows": 120,
+          "rawEvidenceSha256": "23232b3f0f375d0fab5404f5aa2e0cf89e3f6610f5db29138a2a06c0c59b827f"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "de-DELFI_de:14713:8010205",
+      "radarCalls": 131,
+      "radarListRows": 131,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "Berlin Hermannstraße",
+      "id": "audit-hermann",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 50,
+          "valid": 50,
+          "deduplicated": 50,
+          "returnedStopIds": [
+            "de-VBB_de:11000:900079221:1:50",
+            "de-VBB_de:11000:900079221:1:51",
+            "de-VBB_de:11000:900079221::2"
+          ],
+          "returnedParentIds": [
+            "de-VBB_de:11000:900079221"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "SUBWAY"
+          ],
+          "realtimeRows": 42,
+          "rawEvidenceSha256": "3bf03eb0258232efb535d58a99a596ac2d5cb5d6a23aa02a8d7c82745990b80f"
+        },
+        {
+          "kind": "departure",
+          "raw": 50,
+          "valid": 50,
+          "deduplicated": 50,
+          "returnedStopIds": [
+            "de-VBB_de:11000:900079221:1:50",
+            "de-VBB_de:11000:900079221:1:51",
+            "de-VBB_de:11000:900079221::2"
+          ],
+          "returnedParentIds": [
+            "de-VBB_de:11000:900079221"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "SUBWAY"
+          ],
+          "realtimeRows": 36,
+          "rawEvidenceSha256": "5be600f0809da863bfd432c2a0a2db6da403322ccf0b1325cc9701ce3ebde368"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "de-VBB_de:11000:900079221",
+      "radarCalls": 66,
+      "radarListRows": 66,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "Berlin Gesundbrunnen",
+      "id": "audit-gesund",
+      "directions": [
+        {
+          "kind": "arrival",
+          "raw": 92,
+          "valid": 92,
+          "deduplicated": 92,
+          "returnedStopIds": [
+            "de-VBB_de:11000:900007102:2:52",
+            "de-VBB_de:11000:900007102:1:50",
+            "de-VBB_de:11000:900007102::2",
+            "de-VBB_de:11000:900007102::1",
+            "de-VBB_de:11000:900007102:2:53",
+            "de-DELFI_de:11000:900007102:4:57",
+            "de-VBB_de:11000:900007102:1:51",
+            "de-DELFI_de:11000:900007102:3:55",
+            "de-DELFI_de:11000:900007102:5:58",
+            "de-VBB_de:11000:900007102:5:58",
+            "de-DELFI_de:11000:900007102:4:56",
+            "de-VBB_de:11000:900007102:4:57",
+            "de-VBB_de:11000:900007102:5:59",
+            "de-DELFI_de:11000:900007102:5:59"
+          ],
+          "returnedParentIds": [
+            "de-VBB_de:11000:900007102",
+            "de-DELFI_de:11000:900007102"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "SUBWAY",
+            "REGIONAL_RAIL",
+            "HIGHSPEED_RAIL"
+          ],
+          "realtimeRows": 76,
+          "rawEvidenceSha256": "f52a16cb7723f2c532d2527d851675155d1e767d3d79cd4632937780a8023013"
+        },
+        {
+          "kind": "departure",
+          "raw": 91,
+          "valid": 91,
+          "deduplicated": 91,
+          "returnedStopIds": [
+            "de-VBB_de:11000:900007102:1:51",
+            "de-VBB_de:11000:900007102:2:52",
+            "de-VBB_de:11000:900007102::2",
+            "de-VBB_de:11000:900007102::1",
+            "de-VBB_de:11000:900007102:2:53",
+            "de-VBB_de:11000:900007102:1:50",
+            "de-DELFI_de:11000:900007102:4:57",
+            "de-DELFI_de:11000:900007102:3:55",
+            "de-DELFI_de:11000:900007102:4:56",
+            "de-DELFI_de:11000:900007102:5:58",
+            "de-VBB_de:11000:900007102:5:58",
+            "de-VBB_de:11000:900007102:4:57",
+            "de-VBB_de:11000:900007102:5:59",
+            "de-DELFI_de:11000:900007102:5:59"
+          ],
+          "returnedParentIds": [
+            "de-VBB_de:11000:900007102",
+            "de-DELFI_de:11000:900007102"
+          ],
+          "modes": [
+            "SUBURBAN",
+            "SUBWAY",
+            "REGIONAL_RAIL",
+            "HIGHSPEED_RAIL"
+          ],
+          "realtimeRows": 75,
+          "rawEvidenceSha256": "f9ed8adb2e4244b88464fb6e52ffed647ce2e801edee2969de15a8cef6f16322"
+        }
+      ],
+      "completenessVerified": false,
+      "providerStopId": "de-DELFI_de:11000:900007102",
+      "radarCalls": 100,
+      "radarListRows": 100,
+      "browserVisibleRows": null,
+      "status": "observed"
+    },
+    {
+      "name": "Erdeborn",
+      "id": "audit-er",
+      "directions": [],
+      "status": "failed",
+      "error": "Keine eindeutige Haltestellen-ID für Erdeborn gefunden.",
+      "completenessVerified": false,
+      "evidence": "erdebornTrace, erdebornStop, erdebornRailBoard below record the failed lookup and independent rail-only query"
+    }
+  ],
+  "source": "https://api.transitous.org",
+  "specification": "https://github.com/motis-project/motis/blob/master/openapi.yaml",
+  "erdebornTrace": [
+    {
+      "url": "https://api.transitous.org/api/v1/geocode?text=Erdeborn&place=51.46878295%2C11.63691551&type=STOP&mode=HIGHSPEED_RAIL%2CLONG_DISTANCE%2CNIGHT_RAIL%2CREGIONAL_FAST_RAIL%2CREGIONAL_RAIL%2CSUBURBAN%2CSUBWAY%2CTRAM&language=de&numResults=12",
+      "status": 200,
+      "body": []
+    },
+    {
+      "url": "https://api.transitous.org/api/v1/reverse-geocode?place=51.46878295%2C11.63691551&type=STOP&numResults=8",
+      "status": 200,
+      "body": [
+        {
+          "type": "STOP",
+          "tokens": [],
+          "name": "Erdeborn",
+          "id": "de-DELFI_de:15087:8011496",
+          "lat": 51.4688,
+          "lon": 11.636964999999998,
+          "country": "DE",
+          "zip": "06317",
+          "tz": "Europe/Berlin",
+          "areas": [
+            {
+              "name": "Deutschland",
+              "adminLevel": 2.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Sachsen-Anhalt",
+              "adminLevel": 4.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Mansfeld-Südharz",
+              "adminLevel": 6.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Seegebiet Mansfelder Land",
+              "adminLevel": 8.0,
+              "matched": true,
+              "unique": true,
+              "default": true
+            },
+            {
+              "name": "Erdeborn",
+              "adminLevel": 10.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            }
+          ],
+          "score": -6.082606315612793,
+          "modes": [
+            "BUS"
+          ],
+          "importance": 4.348833499534521e-06
+        },
+        {
+          "type": "STOP",
+          "tokens": [],
+          "name": "Erdeborn, Zuckerfabrik bzw. Thälmannstr.",
+          "id": "de-DELFI_000000420601",
+          "lat": 51.470375000000004,
+          "lon": 11.630867999999998,
+          "country": "DE",
+          "zip": "06317",
+          "tz": "Europe/Berlin",
+          "areas": [
+            {
+              "name": "Deutschland",
+              "adminLevel": 2.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Sachsen-Anhalt",
+              "adminLevel": 4.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Mansfeld-Südharz",
+              "adminLevel": 6.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "Seegebiet Mansfelder Land",
+              "adminLevel": 8.0,
+              "matched": true,
+              "unique": true,
+              "default": true
+            },
+            {
+              "name": "Erdeborn",
+              "adminLevel": 10.0,
+              "matched": true,
+              "unique": false,
+              "default": false
+            }
+          ],
+          "score": 444.7619323730469,
+          "modes": [
+            "BUS"
+          ],
+          "importance": 9.135595178122458e-07
+        }
+      ]
+    }
+  ],
+  "erdebornStop": {
+    "url": "https://api.transitous.org/api/v6/stop?stopId=de-DELFI_de%3A15087%3A8011496&mode=HIGHSPEED_RAIL%2CLONG_DISTANCE%2CNIGHT_RAIL%2CREGIONAL_FAST_RAIL%2CREGIONAL_RAIL%2CSUBURBAN%2CSUBWAY%2CTRAM&n=5&window=3600&realtimeMode=OFF",
+    "status": 200,
+    "payload": {
+      "place": {
+        "name": "Erdeborn",
+        "stopId": "de-DELFI_de:15087:8011496",
+        "importance": 4.348833499534521e-06,
+        "lat": 51.4688,
+        "lon": 11.636964999999998,
+        "tz": "Europe/Berlin",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "routes": [
+        {
+          "routeId": "de-DELFI_3222872_3",
+          "routeShortName": "S7",
+          "routeLongName": "",
+          "mode": "BUS",
+          "agencyId": "11961",
+          "agencyName": "Abellio Rail Mitteldeutschland GmbH",
+          "agencyUrl": "",
+          "routeColor": "0a579b",
+          "routeTextColor": "ffffff",
+          "routeType": 3
+        }
+      ]
+    }
+  },
+  "erdebornRailBoard": {
+    "url": "https://api.transitous.org/api/v6/stoptimes?stopId=de-DELFI_de%3A15087%3A8011496&mode=HIGHSPEED_RAIL%2CLONG_DISTANCE%2CNIGHT_RAIL%2CREGIONAL_FAST_RAIL%2CREGIONAL_RAIL%2CSUBURBAN%2CSUBWAY%2CTRAM&n=5&window=3600&realtimeMode=OFF",
+    "status": 200,
+    "payload": {
+      "stopTimes": [],
+      "place": {
+        "name": "Erdeborn",
+        "stopId": "de-DELFI_de:15087:8011496",
+        "importance": 4.348833499534521e-06,
+        "lat": 51.4688,
+        "lon": 11.636964999999998,
+        "tz": "Europe/Berlin",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "previousPageCursor": "",
+      "nextPageCursor": ""
+    }
+  }
+}

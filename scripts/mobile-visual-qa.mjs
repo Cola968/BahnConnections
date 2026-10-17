@@ -482,16 +482,26 @@ try {
     const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
     return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
   })()`);
-  if (!simpleMore || simpleMore.count !== 4) throw new Error('Mehr-Menü ist nicht auf vier Kernaktionen begrenzt: '+JSON.stringify(simpleMore));
+  if (!simpleMore || simpleMore.count !== 5) throw new Error('V60 Mehr-Menü muss genau fünf Kernaktionen zeigen: '+JSON.stringify(simpleMore));
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Tastenkürzel','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
   await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
+  await tap('.mobile-navigation button:last-of-type');
+  await tap('.simple-more-list>button:nth-of-type(4)');
+  if (!await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog[role=dialog]'))"))
+    throw new Error('V60 Tastaturhilfe lässt sich im mobilen Mehr-Menü nicht öffnen');
+  if (await evaluate("Boolean(document.querySelector('.simple-more-popover'))"))
+    throw new Error('Mehr-Menü bleibt unter Tastaturhilfe sichtbar');
+  await tap('.v60-shortcut-dialog header button');
+  if (await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog'))"))
+    throw new Error('Tastaturhilfe lässt sich nicht schließen');
+
 
   const radarChecks=[];
   if (useJourneyFixture) {
@@ -662,7 +672,7 @@ try {
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
         if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
-        await tap('.station-section-tabs button:nth-child(4)');
+        await tap('#station-tab-stats');
         await matrixCapture('station-info');
         await tap(nav(2));
         await matrixCapture('planner');
@@ -705,8 +715,32 @@ try {
     await evaluate(`(() => { const toggle=[...document.querySelectorAll('.settings-toggle')].find(node=>node.textContent.includes('Animationen reduzieren'));toggle.querySelector('input')?.click(); })()`);
     await screenshot(width+'-settings-display');
     await tap('.settings-tabs button[data-settings-tab="plans"]');
-    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.toLowerCase().includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`)) throw new Error('Plus details must start collapsed');
     await screenshot(width+'-settings-plans');
+    await tap('.plus-simple-more summary');
+    await waitFor(`Boolean(document.querySelector('.plus-simple-more[open]'))`,'Tapping Plus must expand subscription information');
+    const plusDetails=await evaluate(`(() => {
+      const card=document.querySelector('.plan-card.plus'),details=card?.querySelector('.plus-simple-more');
+      const content=details?.querySelector('.plus-simple-more-content');
+      const prices=[...card.querySelectorAll('.billing-price-options strong')].map(node=>node.textContent.trim());
+      return {
+        visible:!!details?.open&&!!content&&content.getClientRects().length>0,
+        pricing:prices.length===2&&prices.every(price=>price.includes('€')),
+        planned:content?.textContent.includes('Wann Plus startet, steht noch nicht fest')&&content?.textContent.includes('vorläufig'),
+        icons:content?.querySelectorAll('.plus-detail-row > svg').length===3,
+        unavailable:card.textContent.includes('Noch nicht buchbar')&&!card.querySelector('button[type="submit"],a[href*="checkout"]'),
+        overflow:card.scrollWidth>card.clientWidth+2
+      };
+    })()`);
+    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||!plusDetails.icons||!plusDetails.unavailable||plusDetails.overflow)
+      throw new Error('Plus details not usable at '+width+': '+JSON.stringify(plusDetails));
+    await screenshot(width+'-settings-plus-expanded');
+    if(width!==320) {
+      await tap('.plus-simple-more summary');
+      if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`))
+        throw new Error('Tapping Plus must also collapse the details');
+    }
     if(width===320) {
       await setViewport(320,568);
       await evaluate(`document.querySelector('.settings-content').scrollTop=document.querySelector('.settings-content').scrollHeight`);
@@ -742,7 +776,7 @@ try {
     }
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
     await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
-    if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
+    await waitFor(`!document.querySelector('.settings-dialog[open]')`,'Escape failed to close native settings dialog');
     profileChecks.push({width,saved:true,settings:true,plannedBilling:true,noOverflow:true});
   }
   for(const width of [320,390,1440]) {

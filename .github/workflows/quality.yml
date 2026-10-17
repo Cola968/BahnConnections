@@ -27,6 +27,15 @@ jobs:
       - run: pnpm audit:release
       - run: pnpm audit:play-hosting
       - run: pnpm audit:railglass
+      - run: pnpm audit:v60
+      - run: pnpm audit:v60-passenger
+      - run: pnpm audit:v60-transfer
+      - run: pnpm audit:v60-share
+      - run: pnpm audit:v60-stations
+      - run: node scripts/board-fallback-audit.mjs
+      - run: node scripts/board-api-audit.mjs
+      - run: node scripts/station-resolution-audit.mjs
+      - run: node scripts/trip-detail-freshness-audit.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
@@ -62,6 +71,7 @@ jobs:
             sleep 2
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
           pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
           pnpm audit:layout -- 'http://localhost:3000/?station=berlin' work/station-loading-qa --station-loading-only
@@ -94,6 +104,7 @@ jobs:
             work/station-sheet-qa/
             work/live-map-qa/
             work/board-stream-qa/
+            work/station-landscape-qa/
             work/station-loading-qa/
             work/planner-qa/
             work/station-radar-qa/

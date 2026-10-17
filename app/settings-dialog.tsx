@@ -4,8 +4,10 @@ import type { Station } from "./network-data";
 import { UiIcon } from "./ui-icon";
 import { SavedRoutesPanel } from "./saved-routes-panel";
 import type { SavedRoute } from "./saved-routes";
-import { SUBSCRIPTION_PLANS } from "./subscription-plans";
+import { PLUS_PRICING } from "./subscription-plans";
 import { APP_VERSION_LABEL } from "./app-version";
+
+const formatEuro=(cents:number)=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(cents/100);
 
 export type LocalProfile={name:string;homeStationId:string;homeStationName:string;favoriteLine:string;avatarDataUrl:string;initials:string};
 export function parseLocalProfile(value:unknown):LocalProfile {
@@ -64,7 +66,7 @@ export function SettingsDialog(p:Props) {
   const tabIndex=tab==="profile"?0:tab==="settings"?1:tab==="about"?2:3;
   const locationText=`${p.locationStatus}${p.locationAccuracy!==undefined ? ` · ±${Math.round(p.locationAccuracy)} m` : ""}`;
 
-  return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={p.onClose} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
+  return <dialog ref={dialog} className="settings-dialog settings-dialog-v48" aria-labelledby="settings-title" onCancel={event=>{event.preventDefault();p.onClose();}} onKeyDownCapture={event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();p.onClose();}}} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)p.onClose();}}}>
     <header className="settings-heading">
       <div className="settings-heading-copy"><h2 id="settings-title">Einstellungen</h2><p className="settings-subtitle">Passe die App an dich an</p></div>
       <button type="button" className="round-button" onClick={p.onClose} aria-label="Einstellungen schließen"><UiIcon name="close"/></button>
@@ -141,12 +143,47 @@ export function SettingsDialog(p:Props) {
         <section className="settings-group"><div className="settings-section-heading"><h3><UiIcon name="location"/> Quellen & Transparenz</h3><p>Fahrplandaten werden von externen Verkehrsdatendiensten geladen. Ohne aktuelle Quelle zeigen wir keine bestätigte Pünktlichkeit.</p></div><p className="settings-note">Baustellen und Störungen werden nur für den gewählten Bahnhof und die aus der Quelle gemeldeten Fahrten angezeigt. Keine Garantie einer vollständigen Netzübersicht.</p></section>
       </>}
       {tab==="plans" && <>
-        <div className="settings-section-heading"><h3><UiIcon name="star"/> BahnConnections Plus</h3><p>Ein Überblick über aktuelle und geplante Funktionen. Die Basis bleibt kostenlos.</p></div>
-        <div className="plan-list">{SUBSCRIPTION_PLANS.map(plan=><section className={"plan-card "+plan.id} key={plan.id}>
-          <div><h3>{plan.name}</h3><span>{plan.availability==="available"?"Aktiv":"noch nicht buchbar"}</span></div>
-          <ul className="plan-feature-list">{plan.features.map(feature=><li key={feature}><UiIcon name="check"/><span>{feature}</span></li>)}</ul>
-          {plan.availability==="planned"&&<><div className="billing-price-options"><span><strong>3,99 €</strong><small>monatlich</small></span><span><strong>29,99 €</strong><small>jährlich</small></span></div></>}
-        </section>)}</div>
+        <div className="settings-section-heading"><h3><UiIcon name="star"/> BahnConnections Plus</h3><p>Die Basis bleibt kostenlos. Plus ist noch nicht buchbar.</p></div>
+        <div className="plan-list plan-list-v60-simple">
+          <section className="plan-card free">
+            <div><h3>Free</h3><span>Aktiv</span></div>
+            <ul className="plan-feature-list">
+              <li><UiIcon name="check"/><span>Karte und Verbindungssuche</span></li>
+              <li><UiIcon name="check"/><span>Live-Abfahrten</span></li>
+              <li><UiIcon name="check"/><span>Profil, Favoriten und Pendelstrecken auf diesem Gerät</span></li>
+            </ul>
+          </section>
+          <section className="plan-card plus plus-simple">
+            <div className="plus-simple-heading"><h3>Plus</h3><span>Noch nicht buchbar</span></div>
+            <ul className="plan-feature-list">
+              <li><UiIcon name="check"/><span>Profil und Favoriten synchronisieren</span></li>
+              <li><UiIcon name="check"/><span>Hinweise zu deinen Fahrten</span></li>
+              <li><UiIcon name="check"/><span>Pendelstrecken auf mehreren Geräten nutzen</span></li>
+            </ul>
+            <div className="billing-price-options" aria-label="Vorgesehene Preise, noch nicht buchbar">
+              <span><strong>{formatEuro(PLUS_PRICING.month)}</strong><small>monatlich</small></span>
+              <span><strong>{formatEuro(PLUS_PRICING.year)}</strong><small>jährlich</small></span>
+            </div>
+            <details className="plus-simple-more">
+              <summary>Mehr zu Plus <UiIcon name="chevron"/></summary>
+              <div className="plus-simple-more-content">
+                <p className="plus-detail-intro">Das ist für Plus geplant:</p>
+                <div className="plus-detail-row">
+                  <UiIcon name="devices"/>
+                  <span><strong>Auf Handy und PC</strong><small>Favoriten und Pendelstrecken auf beiden Geräten wiederfinden.</small></span>
+                </div>
+                <div className="plus-detail-row">
+                  <UiIcon name="bell"/>
+                  <span><strong>Fahrthinweise</strong><small>Meldungen zu gespeicherten Fahrten, wenn passende Daten vorliegen.</small></span>
+                </div>
+                <div className="plus-detail-row">
+                  <UiIcon name="euro"/>
+                  <span><strong>Preis und Start</strong><small>Wann Plus startet, steht noch nicht fest. Die Preise sind vorläufig.</small></span>
+                </div>
+              </div>
+            </details>
+          </section>
+        </div>
       </>}
     </div>
   </dialog>;

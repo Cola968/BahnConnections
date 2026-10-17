@@ -56,7 +56,9 @@
   .planner-panel-header::before { content:""; position:absolute; top:4px; left:calc(50% - 16px); width:32px; height:3px; border-radius:2px; background:var(--muted); opacity:.4; }
   .planner-header-actions .planner-expand { display:grid; }
   .planner-text-size { display:none; }
-  .app-shell[data-primary-panel="planner"][data-mobile-sheet="half"] .planner-panel { height:min(var(--mobile-sheet-height,480px),var(--sheet-limit)); }
+  /* Keep the journey planner below the map instead of opening as a near-fullscreen sheet. */
+  .app-shell[data-primary-panel="planner"][data-mobile-sheet="half"] .planner-panel { height:min(var(--mobile-sheet-height,42dvh),var(--sheet-limit)); }
+  .app-shell[data-primary-panel="planner"][data-mobile-sheet="expanded"] .planner-panel { height:min(var(--mobile-sheet-height,72dvh),var(--sheet-limit)); }
   .app-shell[data-primary-panel="planner"][data-mobile-sheet="collapsed"] .planner-panel { height:66px; }
   .app-shell[data-keyboard="open"] .mobile-navigation { display:none; }
   .app-shell[data-keyboard="open"] { --bottom-navigation:0px; }
