@@ -242,3 +242,28 @@
     max-height:var(--mobile-sheet-height,clamp(300px,38dvh,340px))!important;
   }
 }
+
+/* V60 compact journey cards: map stays useful on narrow phones. */
+@media (max-width:767px) {
+  .app-shell[data-primary-panel="journey"][data-mobile-sheet="half"] .journey-card.mobile-sheet-panel {
+    height:min(43dvh,340px)!important;
+    max-height:min(43dvh,340px)!important;
+  }
+  .app-shell .journey-card .panel-body { padding:8px 14px 16px!important; }
+  .app-shell .journey-card .journey-mobile-overview { gap:8px; }
+  .app-shell .journey-card .journey-mobile-route { min-width:0; }
+  .app-shell .journey-card .journey-alternatives { margin-block:6px!important; }
+  .app-shell .journey-card .journey-secondary-info { margin-top:8px; }
+  .app-shell .journey-card .journey-alternatives>summary,
+  .app-shell .journey-card .journey-secondary-info>summary { min-height:44px; }
+  .app-shell .leaflet-tooltip.station-route-label.live {
+    max-width:min(200px,48vw)!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    padding:5px 8px!important;
+    border-radius:9px!important;
+    box-shadow:0 2px 7px rgba(15,35,45,.12)!important;
+    font-size:12px!important;
+  }
+}
