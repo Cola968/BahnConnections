@@ -56,3 +56,48 @@ export function routeDetourWarnings(journey:RouteEvidenceJourney):string[]{
   if(!affected.length)return [];
   return [`Betriebshinweis zu ${[...new Set(affected)].slice(0,4).join(", ")}: Umleitung oder geänderte Bedienung gemeldet. Der tatsächliche Fahrweg ist nicht unabhängig bestätigt. Bitte beim Verkehrsunternehmen gegenprüfen.`];
 }
+
+/**
+ * Reuse the same evidence checks on unmodified MOTIS trip payloads.
+ * Always preserve the original provider response and do not invent stop times.
+ */
+type RawTripPlace=RouteEvidenceStop&{alerts?:readonly RawTripAlert[]};
+type RawTripAlert={effect?:string|number;header?:string;description?:string;
+  headerText?:unknown;descriptionText?:unknown};
+export type RawTripEvidenceLeg={
+  mode?:string;displayName?:string;tripShortName?:string;routeShortName?:string;
+  startTime?:string;endTime?:string;scheduledStartTime?:string;scheduledEndTime?:string;
+  from?:RawTripPlace;to?:RawTripPlace;intermediateStops?:RawTripPlace[];
+  alerts?:RawTripAlert[];
+};
+
+function rawAlert(alert:RawTripAlert):RouteEvidenceAlert|null{
+  const readable=(value:unknown):string=>{
+    if(typeof value==="string")return value.slice(0,1200);
+    if(!value||typeof value!=="object")return "";
+    const translations=(value as {translation?:{text?:unknown;language?:string}[]}).translation;
+    const selected=translations?.find(entry=>typeof entry.text==="string" && /^de(?:-|$)/i.test(entry.language??""))
+      ??translations?.find(entry=>typeof entry.text==="string");
+    return typeof selected?.text==="string"?selected.text.slice(0,1200):"";
+  };
+  const header=readable(alert.header??alert.headerText);
+  const description=readable(alert.description??alert.descriptionText);
+  return header||description||alert.effect?{header:header||description||"Betriebshinweis",
+    description,effect:alert.effect}:null;
+}
+
+export function assessRawTransitTrip(input:readonly RawTripEvidenceLeg[]){
+  const legs:RouteEvidenceLeg[]=input.filter(leg=>leg.mode&&leg.mode!=="WALK"&&leg.from&&leg.to)
+    .map(leg=>{
+      const stops=[leg.from!,...(leg.intermediateStops??[]),leg.to!];
+      const alerts=[...(leg.alerts??[]),...stops.flatMap(stop=>stop.alerts??[])]
+        .map(rawAlert).filter((alert):alert is RouteEvidenceAlert=>Boolean(alert));
+      return {category:leg.mode!,name:leg.displayName||leg.tripShortName||leg.routeShortName||"Fahrt",
+        startTime:leg.startTime??"",endTime:leg.endTime??"",
+        scheduledStartTime:leg.scheduledStartTime??leg.startTime??"",
+        scheduledEndTime:leg.scheduledEndTime??leg.endTime??"",stops,alerts};
+    });
+  const incomplete=legs.some(leg=>!leg.startTime||!leg.endTime||!leg.scheduledStartTime||!leg.scheduledEndTime);
+  return {conflict:incomplete?null:routeChronologyConflict({transitLegs:legs}),
+    warnings:routeDetourWarnings({transitLegs:legs})};
+}
