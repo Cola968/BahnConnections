@@ -109,9 +109,7 @@ export class LiveMapRenderer {
         // Avoid expensive Leaflet projection and DOM positioning for tiny
         // sub-pixel changes during high-frequency interpolation ticks.
         // Keep the last rendered coordinate until its screen position moves.
-        const previousPoint=this.map.latLngToLayerPoint(old);
-        const nextPoint=this.map.latLngToLayerPoint(item.position);
-        const screenChanged=changed && previousPoint.distanceTo(nextPoint)>=0.75;
+        const screenChanged=changed && this.map.latLngToLayerPoint(old).distanceTo(this.map.latLngToLayerPoint(item.position))>=0.75;
         if(screenChanged)entry.marker.setLatLng(item.position);
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
