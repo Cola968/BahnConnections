@@ -44,7 +44,7 @@ export function journeyIntegrityConflict(journey:JourneyShape):string|null{
     // Names are deliberately exact after normalization; don't block e.g. other cities' "Altmarkt".
     const anchors=["Straßburger Platz","Postplatz","Georg-Arnhold-Bad","Lennéplatz",
       "Hauptbahnhof Nord","Prager Straße","Altmarkt","Pirnaischer Platz","Deutsches Hygiene-Museum"];
-    const touchesDresdenRoute=stops.some(stop=>anchors.some(anchor=>stopName(stop.name)===stopName(anchor)));
+    const touchesDresdenRoute=stops.some(stop=>/\bdresden\b/i.test(stop.name)||anchors.filter(anchor=>anchor!=="Altmarkt").some(anchor=>stopName(stop.name)===stopName(anchor)));
     if(!touchesDresdenRoute)continue;
     const forbidden=["Altmarkt","Pirnaischer Platz","Deutsches Hygiene-Museum"];
     if(forbidden.some(name=>hasStop(stops,name))){
