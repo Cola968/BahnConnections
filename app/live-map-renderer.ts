@@ -16,7 +16,6 @@ export class LiveMapRenderer {
   private generation=0;
   private canvas:Leaflet.Canvas;
   private mapIsMoving=false;
-  private pendingSync: {trips:LiveTrip[];options:LiveMapOptions;at:number}|null=null;
   private retryMissingPositions:number|null=null;
   // Leaflet changes marker transforms while navigating. Never interpolate
   // positions during user gestures, follow camera moves or zoom animations.
@@ -155,11 +154,9 @@ export class LiveMapRenderer {
     };
     if(desired.length)this.frame=requestAnimationFrame(draw);
     if(deferredPositions){
-      this.pendingSync={trips,options,at};
       this.retryMissingPositions=requestAnimationFrame(()=>{
         this.retryMissingPositions=null;
-        const retry=this.pendingSync;this.pendingSync=null;
-        if(retry&&generation===this.generation)this.sync(retry.trips,retry.options,retry.at);
+        if(generation===this.generation)this.sync(trips,options,at);
       });
     }
   }
@@ -167,7 +164,6 @@ export class LiveMapRenderer {
     ++this.generation;
     if(this.frame!==null)cancelAnimationFrame(this.frame);
     if(this.retryMissingPositions!==null)cancelAnimationFrame(this.retryMissingPositions);
-    this.pendingSync=null;
     this.map.off('movestart',this.pauseMarkerGlide);
     this.map.off('zoomstart',this.pauseMarkerGlide);
     this.map.off('moveend',this.resumeMarkerGlide);
