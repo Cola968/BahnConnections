@@ -106,7 +106,13 @@ export class LiveMapRenderer {
           entry.trip && item.trip && !this.mapIsMoving && changed &&
           Number.isFinite(jump) && jump>0 && jump<=.5
         ));
-        if(changed)entry.marker.setLatLng(item.position);
+        // Avoid expensive Leaflet projection and DOM positioning for tiny
+        // sub-pixel changes during high-frequency interpolation ticks.
+        // Keep the last rendered coordinate until its screen position moves.
+        const previousPoint=this.map.latLngToLayerPoint(old);
+        const nextPoint=this.map.latLngToLayerPoint(item.position);
+        const screenChanged=changed && previousPoint.distanceTo(nextPoint)>=0.75;
+        if(screenChanged)entry.marker.setLatLng(item.position);
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
