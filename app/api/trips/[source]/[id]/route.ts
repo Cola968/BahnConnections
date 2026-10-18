@@ -17,7 +17,11 @@ export async function GET(request: Request, context: { params:Promise<{ source:s
     url.searchParams.set("language", "de");
     const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(12_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
-    const trip = await response.json() as { legs?:{ realTime?:boolean; cancelled?:boolean }[] };
+    const trip = await response.json() as { legs?:{ realTime?:boolean; cancelled?:boolean; mode?:string;
+      displayName?:string;tripShortName?:string;routeShortName?:string;
+      startTime?:string;scheduledStartTime?:string;
+      from?:{name?:string};to?:{name?:string};intermediateStops?:{name?:string}[];
+    }[] };
     const conflict=transitousTripIntegrityConflict(trip.legs??[]);
     if(conflict)return Response.json({trip:null,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",
       warnings:["Der Fahrtverlauf widerspricht einer bestätigten Umleitung. Alte Haltefolgen werden nicht angezeigt.",conflict]},
