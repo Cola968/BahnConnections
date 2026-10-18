@@ -61,3 +61,19 @@ export function journeyIntegrityConflict(journey:JourneyShape):string|null{
   }
   return null;
 }
+
+/** Apply the same safeguard when users open a whole trip outside the journey planner. */
+export function transitousTripIntegrityConflict(input:readonly {
+  mode?:string;displayName?:string;tripShortName?:string;routeShortName?:string;
+  startTime?:string;scheduledStartTime?:string;
+  from?:{name?:string};to?:{name?:string};intermediateStops?:{name?:string}[];
+}[]):string|null{
+  const legs=input.filter(item=>item.mode==="TRAM"&&item.from?.name&&item.to?.name)
+    .map(item=>{
+      const from={name:item.from!.name!},to={name:item.to!.name!};
+      return {category:"tram",name:item.displayName||item.tripShortName||item.routeShortName||"",
+        startTime:item.startTime||"",scheduledStartTime:item.scheduledStartTime||item.startTime||"",
+        from,to,stops:[from,...(item.intermediateStops??[]).filter(stop=>Boolean(stop.name)).map(stop=>({name:stop.name!})),to]};
+    });
+  return journeyIntegrityConflict({transitLegs:legs});
+}
