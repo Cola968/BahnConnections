@@ -6,6 +6,7 @@ import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequest
 import { boundedJourneySignal } from "./journey-request-budget";
 import { chooseDbJourneyStation } from "./db-journey-station";
 import { journeyIntegrityConflict } from "./journey-integrity";
+import {routeChronologyConflict,routeDetourWarnings} from "./journey-validity";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -28,6 +29,7 @@ export type LiveJourneyStop = {
 export type LiveJourneyAlert = {
   header: string;
   description?: string;
+  effect?: string | number;
 };
 
 export type LiveJourneyLeg = {
@@ -103,6 +105,7 @@ type ApiPlace = {
 };
 
 type ApiAlert = {
+  effect?: string | number;
   headerText?: unknown;
   descriptionText?: unknown;
   header?: string;
@@ -172,7 +175,7 @@ function stop(place: ApiPlace | undefined, fallback: string): LiveJourneyStop {
 function parseAlert(alert: ApiAlert): LiveJourneyAlert | null {
   const {header,detail}=transitAlertContent(alert);
   if (!header) return null;
-  return { header, description: detail || undefined };
+  return { header, description: detail || undefined, effect: alert.effect };
 }
 
 function uniqueStops(stops: LiveJourneyStop[]) {
@@ -559,7 +562,7 @@ async function completeMissingDirectTrips(request: LiveJourneyRequest, base: Liv
 }
 
 function journeySignature(item: LiveJourney) {
-  return `${item.startTime.slice(0,16)}|${item.endTime.slice(0,16)}|${item.transitLegs.map((leg) => normaliseStopName(leg.name)).join("+")}`;
+  return `${item.startTime.slice(0,16)}|${item.endTime.slice(0,16)}|${item.transitLegs.map((leg) => normaliseStopName(leg.name)+":"+leg.stops.map(stop=>normaliseStopName(stop.name)).join(">")).join("+")}`;
 }
 
 function serviceSignature(item: LiveJourney) {
@@ -589,8 +592,12 @@ function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
         const primary = item.source === "db-transport" ? crossSource : item;
         const other = primary === item ? crossSource : item;
         const arrivalDifference = Math.round(Math.abs(new Date(primary.endTime).getTime() - new Date(other.endTime).getTime()) / 60_000);
-        const warning = `Die DB-Gegenprüfung weicht bei der erwarteten Ankunft um ${arrivalDifference} Min. ab. Gezeigt wird die vollständig belegte Transitous-Fahrt ohne Datenmischung.`;
-        const verified = { ...primary, sourceLabel:"Transitous · DB-Abweichung", realtimeStatus:"partial" as const, warnings:[...new Set([...primary.warnings, warning])] };
+        const sameSequence=matchingStopSequences(primary,other);
+        const warning = sameSequence
+          ? `Abweichende Ankunftsprognosen der Anbieter (${arrivalDifference} Min.). Fahrwegdaten stimmen überein, Zeiten nicht.`
+          : "Die zweite Fahrplanquelle bestätigt den tatsächlichen Verlauf nicht. Haltefolge der Fahrt muss beim Betreiber geprüft werden.";
+        const verified = { ...primary, sourceLabel:sameSequence?"Transitous · Prognoseabweichung":"Transitous · Verlauf nicht gegengeprüft",
+          realtimeStatus:"partial" as const,warnings:[...new Set([...primary.warnings, warning])] };
         const index = merged.indexOf(crossSource);
         if (index >= 0) merged[index] = verified;
         continue;
@@ -685,15 +692,19 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
   // Providers may both serve obsolete schedules: do not let source agreement override
   // an independently confirmed operator diversion or silently invent a replacement.
   const allJourneys=[...transitousJourneys,...completed,...dbJourneys];
-  const rejected=allJourneys.map(journeyIntegrityConflict).filter((reason):reason is string=>Boolean(reason));
-  const admissible=allJourneys.filter(item=>!journeyIntegrityConflict(item));
+  const conflictFor=(item:LiveJourney)=>journeyIntegrityConflict(item)??routeChronologyConflict(item);
+  const rejected=allJourneys.map(conflictFor).filter((reason):reason is string=>Boolean(reason));
+  const admissible=allJourneys.filter(item=>!conflictFor(item));
   if(!admissible.length&&rejected.length)throw new Error(
-    "Die Fahrplandaten widersprechen einer bestätigten Baustellenumleitung. Unsichere Verbindungen werden nicht angezeigt. Bitte die Auskunft des Verkehrsunternehmens nutzen."
+    "Gelieferte Verbindungen widersprechen nachweisbaren Baustellen- oder Zeitangaben. Es werden keine unsicheren Fahrtverläufe erfunden. Bitte Betreiberinformationen prüfen."
   );
-  const journeys = mergeJourneys(admissible, dbResult.status === "rejected").map(item=>
-    rejected.length ? {...item,realtimeStatus:"partial" as const,
-      warnings:[...new Set([...item.warnings,"Einige vorgeschlagene Verbindungen wurden wegen nachweislich falscher Baustellen-Haltefolgen ausgeblendet."])]} : item
-  );
+  const journeys = mergeJourneys(admissible, dbResult.status === "rejected").map(item=>{
+    const detourWarnings=routeDetourWarnings(item);
+    const integrityWarnings=rejected.length?["Einige Routen mit nachweislich fehlerhafter Streckenführung oder Zeitreihenfolge wurden ausgeblendet."]:[];
+    return {...item,
+      realtimeStatus:detourWarnings.length||rejected.length?"partial" as const:item.realtimeStatus,
+      warnings:[...new Set([...item.warnings,...detourWarnings,...integrityWarnings])]};
+  });
   return journeys.sort((a, b) => request.arriveBy
     ? new Date(b.startTime).getTime() - new Date(a.startTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
     : new Date(a.endTime).getTime() - new Date(b.endTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
