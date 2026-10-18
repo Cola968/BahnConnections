@@ -16,6 +16,8 @@ export class LiveMapRenderer {
   private generation=0;
   private canvas:Leaflet.Canvas;
   private mapIsMoving=false;
+  private pendingSync: {trips:LiveTrip[];options:LiveMapOptions;at:number}|null=null;
+  private retryMissingPositions:number|null=null;
   // Leaflet changes marker transforms while navigating. Never interpolate
   // positions during user gestures, follow camera moves or zoom animations.
   private pauseMarkerGlide=()=>{
@@ -33,10 +35,19 @@ export class LiveMapRenderer {
   }
   sync(trips:LiveTrip[],options:LiveMapOptions,at=Date.now()){
     const generation=++this.generation;if(this.frame!==null)cancelAnimationFrame(this.frame);
+    if(this.retryMissingPositions!==null){cancelAnimationFrame(this.retryMissingPositions);this.retryMissingPositions=null;}
+    let deferredPositions=false;
     const desired:Desired[]=[];
     const groups=new Map<string,Desired & {screen:Leaflet.Point}>();
     for(const trip of trips){
-      const position=activeEstimatedPosition(trip,at);if(!position)continue;
+      const position=activeEstimatedPosition(trip,at);
+      if(!position){
+        // Unindexed route geometry is temporarily unavailable. Retry on the
+        // next frame instead of permanently hiding otherwise active trains.
+        const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
+        if(Number.isFinite(start)&&Number.isFinite(end)&&start<=at&&at<=end)deferredPositions=true;
+        continue;
+      }
       if((options.zoom<10||options.view==='stress') && trip.tripId!==options.selectedId && trip.tripId!==options.trackedId){
         // Group by visible spacing, including neighbouring grid cells. Fixed
         // geographic buckets can leave overlapping bubbles when zoomed out.
@@ -143,10 +154,20 @@ export class LiveMapRenderer {
       if(cursor<desired.length)this.frame=requestAnimationFrame(draw);
     };
     if(desired.length)this.frame=requestAnimationFrame(draw);
+    if(deferredPositions){
+      this.pendingSync={trips,options,at};
+      this.retryMissingPositions=requestAnimationFrame(()=>{
+        this.retryMissingPositions=null;
+        const retry=this.pendingSync;this.pendingSync=null;
+        if(retry&&generation===this.generation)this.sync(retry.trips,retry.options,retry.at);
+      });
+    }
   }
   dispose(){
     ++this.generation;
     if(this.frame!==null)cancelAnimationFrame(this.frame);
+    if(this.retryMissingPositions!==null)cancelAnimationFrame(this.retryMissingPositions);
+    this.pendingSync=null;
     this.map.off('movestart',this.pauseMarkerGlide);
     this.map.off('zoomstart',this.pauseMarkerGlide);
     this.map.off('moveend',this.resumeMarkerGlide);
