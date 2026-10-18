@@ -696,7 +696,9 @@ export default function Home() {
         }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const showPermanentStopLabel = routeZoom >= 11;
+        // Only the two ends and transfers get persistent map labels.
+        // Dense tram routes must not blanket the map with overlapping boards.
+        const showPermanentStopLabel = routeZoom >= 13 && (isStart || isEnd || isTransfer);
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:showPermanentStopLabel, className:showPermanentStopLabel ? "station-route-label live" : "" });
       });
     } else if (stationTrip && exactTripSegments(stationTrip).length) {
@@ -713,7 +715,7 @@ export default function Home() {
         const point = L.circleMarker([stop.lat, stop.lon], { radius:isEnd ? 6.8 : 4.2, color:"#fff", weight:isEnd ? 3 : 2, fillColor:color, fillOpacity:1, className:"live-journey-stop" }).addTo(layer);
         const actual = stop.departure ?? stop.arrival;
         const planned = stop.scheduledDeparture ?? stop.scheduledArrival;
-        const permanent = routeZoom >= 11 && !selectedLiveTrip;
+        const permanent = routeZoom >= 13 && !selectedLiveTrip && isEnd;
         point.bindTooltip(realtimeTooltip(stop.name, { scheduled:planned, actual, realtime:stop.realtime, cancelled:stop.cancelled }, { scheduled:stop.scheduledTrack, actual:stop.track }), { direction:"top", offset:[0,-6], permanent:permanent, className:permanent ? "station-route-label live" : "" });
       });
     } else if (stationTrips.length) {
