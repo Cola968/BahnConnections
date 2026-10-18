@@ -1430,6 +1430,8 @@ export default function Home() {
             <div className="panel-body">
             <div className="journey-desktop-identity"><b>{primaryJourneyLeg?.name ?? "Verbindung"}</b><span>{stationDisplayName(selectedJourneyStart.name)} → {stationDisplayName(selectedJourneyTarget.name)}</span></div>
             <NetworkNotice/>
+            {journey.warnings.some(message=>/umleitung|fahrweg|haltefolge|streckenf.hrung|baustellen/i.test(message)) &&
+              <div className="journey-source-warnings" role="alert"><p><b>Streckenführung prüfen:</b> {journey.warnings.find(message=>/umleitung|fahrweg|haltefolge|streckenf.hrung|baustellen/i.test(message))}</p></div>}
             <div className="journey-mobile-overview">
               <div className="journey-mobile-route">
                 <p className="journey-date-range">{journeyDateRange(journey)}</p>
