@@ -1,5 +1,6 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { transitousRequestHeaders } from "../../../../transitous";
+import {transitousTripIntegrityConflict} from "../../../../journey-integrity";
 
 export async function GET(request: Request, context: { params:Promise<{ source:string; id:string }> }) {
   const { source, id } = await context.params;
@@ -17,6 +18,10 @@ export async function GET(request: Request, context: { params:Promise<{ source:s
     const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(12_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const trip = await response.json() as { legs?:{ realTime?:boolean; cancelled?:boolean }[] };
+    const conflict=transitousTripIntegrityConflict(trip.legs??[]);
+    if(conflict)return Response.json({trip:null,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",
+      warnings:["Der Fahrtverlauf widerspricht einer bestätigten Umleitung. Alte Haltefolgen werden nicht angezeigt.",conflict]},
+      {status:502,headers:{"Cache-Control":"no-store"}});
     const hasRealtime = (trip.legs ?? []).some((leg) => leg.realTime);
     const cancelled = (trip.legs ?? []).some((leg) => leg.cancelled);
     return Response.json({ trip, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:cancelled ? ["Mindestens ein Fahrtabschnitt ist als ausgefallen gemeldet."] : [] });
