@@ -84,8 +84,23 @@ export function liveTripProgress(trip: LiveTrip, at = Date.now()) {
 
 type GeometryIndex = { cumulative:Float64Array; total:number; valid:boolean };
 const geometryIndexes=new WeakMap<LiveTrip['points'],GeometryIndex>();
-function geometryIndex(points:LiveTrip['points']):GeometryIndex {
+// Keep a short, per-animation-frame budget so one 180-vehicle fixture cannot
+// synchronously index every 6,000-point polyline on a single frame.
+let geometryBuildsThisFrame=0;
+let geometryFramePending=false;
+function reserveGeometryBuild():boolean {
+  if(geometryBuildsThisFrame>=4)return false;
+  geometryBuildsThisFrame++;
+  if(!geometryFramePending){
+    geometryFramePending=true;
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{geometryBuildsThisFrame=0;geometryFramePending=false;});
+    else {geometryBuildsThisFrame=0;geometryFramePending=false;}
+  }
+  return true;
+}
+function geometryIndex(points:LiveTrip['points']):GeometryIndex|null {
   const cached=geometryIndexes.get(points);if(cached)return cached;
+  if(typeof window!=='undefined' && !reserveGeometryBuild())return null;
   const cumulative=new Float64Array(points.length);let valid=points.length>1;
   for(let i=0;i<points.length;i++) {
     const point=points[i];
@@ -103,7 +118,7 @@ function segmentAt(index:GeometryIndex,progress:number) {
 export function pointOnTrip(trip:LiveTrip,progress=liveTripProgress(trip)):[number,number]|null {
   const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||!Number.isFinite(progress))return null;
-  const index=geometryIndex(trip.points);if(!index.valid)return null;
+  const index=geometryIndex(trip.points);if(!index?.valid)return null;
   const selected=segmentAt(index,progress),a=trip.points[selected.end-1],b=trip.points[selected.end];
   const length=index.cumulative[selected.end]-index.cumulative[selected.end-1];
   if(length>2)return null; // Hide only this gap, retain continuous source sections.
@@ -121,7 +136,8 @@ export function activeEstimatedPosition(trip:LiveTrip,at=Date.now()):[number,num
 }
 export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
   const position=pointOnTrip(trip,progress);if(!position)return [];
-  const index=geometryIndex(trip.points),{end}=segmentAt(index,progress);
+  const index=geometryIndex(trip.points);if(!index)return [];
+  const {end}=segmentAt(index,progress);
   let start=Math.max(0,end-Math.max(2,Math.round(trip.points.length*.16)));
   for(let i=end-1;i>start;i--)if(index.cumulative[i]-index.cumulative[i-1]>2){start=i;break;}
   // End before the interpolation segment: never overshoot the estimated position.
