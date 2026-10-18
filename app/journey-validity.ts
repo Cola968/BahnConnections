@@ -52,7 +52,7 @@ export function routeDetourWarnings(journey:RouteEvidenceJourney):string[]{
     const body=normalized([alert.header,alert.description??""].join(" "));
     return /\b(umleitung|umgeleitet|umgeleitete|streckenfuhrung|streckenanderung|halte entfallen|haltestelle entfallt|detour|diversion|stop moved)\b/.test(body)
       && !/\b(keine umleitung|umleitung aufgehoben|umleitung beendet|no detour)\b/.test(body);
-  })).map(leg=>leg.name));
+  })).map(leg=>leg.name);
   if(!affected.length)return [];
   return [`Betriebshinweis zu ${[...new Set(affected)].slice(0,4).join(", ")}: Umleitung oder geänderte Bedienung gemeldet. Der tatsächliche Fahrweg ist nicht unabhängig bestätigt. Bitte beim Verkehrsunternehmen gegenprüfen.`];
 }
