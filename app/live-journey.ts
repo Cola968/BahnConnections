@@ -5,6 +5,7 @@ import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
 import { boundedJourneySignal } from "./journey-request-budget";
 import { chooseDbJourneyStation } from "./db-journey-station";
+import { journeyIntegrityConflict } from "./journey-integrity";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -564,6 +565,18 @@ function journeySignature(item: LiveJourney) {
 function serviceSignature(item: LiveJourney) {
   return item.transitLegs.map((leg) => normaliseStopName(leg.name)).join("|");
 }
+/** A similar train number and departure time do not prove that two feeds agree on stops. */
+function matchingStopSequences(left:LiveJourney,right:LiveJourney):boolean{
+  if(left.transitLegs.length!==right.transitLegs.length)return false;
+  return left.transitLegs.every((leg,index)=>{
+    const opposite=right.transitLegs[index];
+    const stops=leg.stops.map(stop=>normaliseStopName(stop.name));
+    const others=opposite.stops.map(stop=>normaliseStopName(stop.name));
+    // Without intermediate stops, diversion geometry cannot be independently verified.
+    return stops.length>=3&&stops.length===others.length&&stops.every((name,position)=>name===others[position]);
+  });
+}
+
 
 function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
   const sorted = [...items].sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers);
@@ -587,7 +600,11 @@ function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
     }
     if (duplicate.source !== item.source && [duplicate.source, item.source].includes("db-transport")) {
       const primary = item.source === "db-transport" ? duplicate : item;
-      const verified = { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Gegenprüfung" };
+      const matching=matchingStopSequences(duplicate,item);
+      const verified = matching
+        ? { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Gegenprüfung" }
+        : { ...primary, realtimeStatus:"partial" as const, sourceLabel:"Transitous · Haltefolge nicht gegengeprüft",
+            warnings:[...new Set([...primary.warnings,"Zweite Quelle liefert keine identisch überprüfbare Haltefolge. Fahrweg nicht unabhängig bestätigt."])] };
       const index = merged.indexOf(duplicate);
       if (index >= 0) merged[index] = verified;
     }
@@ -665,7 +682,18 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
   // Optional enrichment must not consume the entire 23-second API deadline.
   const completionSignal=boundedJourneySignal(request.signal,3_500);
   const completed = transitousJourneys.length ? await completeMissingDirectTrips({...request,signal:completionSignal}, transitousJourneys) : [];
-  const journeys = mergeJourneys([...transitousJourneys, ...completed, ...dbJourneys], dbResult.status === "rejected");
+  // Providers may both serve obsolete schedules: do not let source agreement override
+  // an independently confirmed operator diversion or silently invent a replacement.
+  const allJourneys=[...transitousJourneys,...completed,...dbJourneys];
+  const rejected=allJourneys.map(journeyIntegrityConflict).filter((reason):reason is string=>Boolean(reason));
+  const admissible=allJourneys.filter(item=>!journeyIntegrityConflict(item));
+  if(!admissible.length&&rejected.length)throw new Error(
+    "Die Fahrplandaten widersprechen einer bestätigten Baustellenumleitung. Unsichere Verbindungen werden nicht angezeigt. Bitte die Auskunft des Verkehrsunternehmens nutzen."
+  );
+  const journeys = mergeJourneys(admissible, dbResult.status === "rejected").map(item=>
+    rejected.length ? {...item,realtimeStatus:"partial" as const,
+      warnings:[...new Set([...item.warnings,"Einige vorgeschlagene Verbindungen wurden wegen nachweislich falscher Baustellen-Haltefolgen ausgeblendet."])]} : item
+  );
   return journeys.sort((a, b) => request.arriveBy
     ? new Date(b.startTime).getTime() - new Date(a.startTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
     : new Date(a.endTime).getTime() - new Date(b.endTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
