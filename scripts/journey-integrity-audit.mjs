@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {journeyIntegrityConflict} from "../app/journey-integrity.ts";
+import {journeyIntegrityConflict,transitousTripIntegrityConflict} from "../app/journey-integrity.ts";
 
 const stop=(name)=>({name});
 const safe=["Straßburger Platz","Georg-Arnhold-Bad","Lennéplatz","Hauptbahnhof Nord","Prager Straße","Postplatz"];
@@ -24,4 +24,10 @@ assert.match(journeyIntegrityConflict(journey(broken,{start:"2026-10-24T03:29:59
 assert.equal(journeyIntegrityConflict(journey(broken,{start:"2026-10-24T03:30:00+02:00"})),null,"Expired rules must not linger");
 assert.equal(journeyIntegrityConflict(journey(["Altmarkt","Rathaus"],{line:"1"})),null,"Never block another city's Altmarkt");
 assert.equal(journeyIntegrityConflict({transitLegs:[]}),null,"Empty itinerary has no diversion contradiction");
-console.log("Journey disruption integrity audit passed: 24 checks.");
+const rawTrip={mode:"TRAM",displayName:"1",startTime:"2026-10-18T14:00:00+02:00",
+  scheduledStartTime:"2026-10-18T14:00:00+02:00",from:stop(broken[0]),to:stop(broken.at(-1)),
+  intermediateStops:broken.slice(1,-1).map(stop)};
+assert.match(transitousTripIntegrityConflict([rawTrip]),/Umleitung/,"Full trip detail must not repeat broken route");
+const validTrip={...rawTrip,from:stop(safe[0]),to:stop(safe.at(-1)),intermediateStops:safe.slice(1,-1).map(stop)};
+assert.equal(transitousTripIntegrityConflict([validTrip]),null,"Correct full trip detail remains available");
+console.log("Journey disruption integrity audit passed: 30 checks.");
