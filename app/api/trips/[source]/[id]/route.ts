@@ -1,6 +1,7 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { transitousRequestHeaders } from "../../../../transitous";
 import {transitousTripIntegrityConflict} from "../../../../journey-integrity";
+import {assessRawTransitTrip,type RawTripEvidenceLeg} from "../../../../journey-validity";
 
 export async function GET(request: Request, context: { params:Promise<{ source:string; id:string }> }) {
   const { source, id } = await context.params;
@@ -17,18 +18,18 @@ export async function GET(request: Request, context: { params:Promise<{ source:s
     url.searchParams.set("language", "de");
     const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(12_000)]) });
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
-    const trip = await response.json() as { legs?:{ realTime?:boolean; cancelled?:boolean; mode?:string;
-      displayName?:string;tripShortName?:string;routeShortName?:string;
-      startTime?:string;scheduledStartTime?:string;
-      from?:{name?:string};to?:{name?:string};intermediateStops?:{name?:string}[];
-    }[] };
-    const conflict=transitousTripIntegrityConflict(trip.legs??[]);
+    const trip = await response.json() as {legs?:(RawTripEvidenceLeg&{realTime?:boolean;cancelled?:boolean})[]};
+    const assessment=assessRawTransitTrip(trip.legs??[]);
+    const conflict=transitousTripIntegrityConflict(trip.legs??[])??assessment.conflict;
     if(conflict)return Response.json({trip:null,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",
-      warnings:["Der Fahrtverlauf widerspricht einer bestätigten Umleitung. Alte Haltefolgen werden nicht angezeigt.",conflict]},
+      warnings:["Der Fahrtverlauf widerspricht verifizierbaren Strecken- oder Zeitangaben. Er wird nicht angezeigt.",conflict]},
       {status:502,headers:{"Cache-Control":"no-store"}});
     const hasRealtime = (trip.legs ?? []).some((leg) => leg.realTime);
     const cancelled = (trip.legs ?? []).some((leg) => leg.cancelled);
-    return Response.json({ trip, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:cancelled ? ["Mindestens ein Fahrtabschnitt ist als ausgefallen gemeldet."] : [] });
+    return Response.json({ trip, source:"Transitous / MOTIS", updatedAt, 
+      realtimeStatus:assessment.warnings.length?"partial":hasRealtime?"live":"schedule",
+      warnings:[...(cancelled?["Mindestens ein Fahrtabschnitt ist als ausgefallen gemeldet."]:[]),...assessment.warnings],
+    },{headers:{"Cache-Control":"no-store"}});
   } catch (error) {
     return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Fahrtverlauf nicht erreichbar"] }, { status:502 });
   }
