@@ -61,6 +61,16 @@ assert.equal(callRows.get("ice-100")?.departureScheduledTrack,"7");
 assert.equal(callRows.get("ice-100")?.departure,Date.parse(at(12)));
 assert.equal(callRows.get("ice-100")?.departureRealtime,false,"Scheduled departures must not inherit an unrelated arrival prediction");
 assert.equal(callRows.get("ice-100")?.realtime,true);
+// A duplicate stop-time event for the same provider trip must never downgrade
+// a confirmed prediction to a later timetable-only duplicate.
+const duplicatePrediction=stationCalls([
+ {tripId:'same-trip',realTime:true,place:{arrival:at(18),scheduledArrival:at(14),track:'8',scheduledTrack:'7'}},
+ {tripId:'same-trip',realTime:false,place:{arrival:at(14),scheduledArrival:at(14),track:'7',scheduledTrack:'7'}}
+],[]);
+assert.equal(duplicatePrediction.get('same-trip')?.arrival,Date.parse(at(18)),'Confirmed arrival survives a schedule-only duplicate');
+assert.equal(duplicatePrediction.get('same-trip')?.arrivalRealtime,true,'Confirmed realtime provenance survives duplicate');
+assert.equal(duplicatePrediction.get('same-trip')?.arrivalTrack,'8','Confirmed live platform survives a schedule-only duplicate');
+
 const mixedTimes=stationCalls([
  {tripId:"schedule-only",realTime:false,place:{arrival:at(17),scheduledArrival:at(15)}},
  {tripId:"prediction",realTime:true,place:{arrival:at(17),scheduledArrival:at(15)}},
