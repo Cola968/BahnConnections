@@ -22,17 +22,27 @@ export function stationCalls(arrivals: Row[], departures: Row[]): Map<string,Sta
       const at=actual??scheduled??predicted;
       if(at===undefined)continue;
       const call=calls.get(row.tripId)??{};
-      call[kind]=at;
+      const confirmed=row.realTime===true&&actual!==undefined;
+      const previouslyConfirmed=kind==='arrival'?call.arrivalRealtime===true:call.departureRealtime===true;
+      // A provider can return the same trip from a parent stop and a child
+      // platform. Never let a later timetable-only duplicate overwrite a
+      // confirmed prediction or platform change.
+      const preferRow=!previouslyConfirmed||confirmed;
+      if(preferRow)call[kind]=at;
       if(kind==='arrival'){
-        call.scheduledArrival=scheduled??call.scheduledArrival;
-        call.arrivalRealtime=Boolean(row.realTime===true&&actual!==undefined);
+        if(preferRow){
+          call.scheduledArrival=scheduled??call.scheduledArrival;
+          call.arrivalRealtime=confirmed;
+          call.arrivalTrack=safeTrack(row.place.track)??call.arrivalTrack;
+        }
         call.arrivalScheduledTrack=safeTrack(row.place.scheduledTrack)??call.arrivalScheduledTrack;
-        call.arrivalTrack=safeTrack(row.place.track)??call.arrivalTrack;
       }else{
-        call.scheduledDeparture=scheduled??call.scheduledDeparture;
-        call.departureRealtime=Boolean(row.realTime===true&&actual!==undefined);
+        if(preferRow){
+          call.scheduledDeparture=scheduled??call.scheduledDeparture;
+          call.departureRealtime=confirmed;
+          call.departureTrack=safeTrack(row.place.track)??call.departureTrack;
+        }
         call.departureScheduledTrack=safeTrack(row.place.scheduledTrack)??call.departureScheduledTrack;
-        call.departureTrack=safeTrack(row.place.track)??call.departureTrack;
       }
       call.name??=safeLabel(row.displayName)??safeLabel(row.routeShortName);
       call.destination??=safeLabel(row.headsign)??safeLabel(row.tripTo?.name);
