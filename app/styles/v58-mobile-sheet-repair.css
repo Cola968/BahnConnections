@@ -246,8 +246,9 @@
 /* V60 compact journey cards: map stays useful on narrow phones. */
 @media (max-width:767px) {
   .app-shell[data-primary-panel="journey"][data-mobile-sheet="half"] .journey-card.mobile-sheet-panel {
-    height:min(43dvh,340px)!important;
-    max-height:min(43dvh,340px)!important;
+    /* A user drag sets --mobile-sheet-height; never clamp that to the compact preset. */
+    height:var(--mobile-sheet-height,min(43dvh,340px))!important;
+    max-height:var(--mobile-sheet-height,min(43dvh,340px))!important;
   }
   .app-shell .journey-card .panel-body { padding:8px 14px 16px!important; }
   .app-shell .journey-card .journey-mobile-overview { gap:8px; }
