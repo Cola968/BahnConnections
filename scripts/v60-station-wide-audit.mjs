@@ -92,9 +92,9 @@ assert.equal(mixedTimes.get("missing-schedule")?.arrival,Date.parse(at(21)),"Pro
 assert.equal(mixedTimes.get("missing-schedule")?.arrivalRealtime,false);
 assert.equal(callRows.get("cancelled")?.cancelled,true);
 assert.equal(matchesStationCall(callRows.get("cancelled"),"all"),false);
-assert.deepEqual(listStationCalls(callRows,"all").map(row=>row.tripId),["ice-100","cancelled","regional-20"]);
+assert.deepEqual(listStationCalls(callRows,"all").map(row=>row.tripId),["ice-100","regional-20"]);
 assert.deepEqual(listStationCalls(callRows,"outbound").map(row=>row.tripId),["ice-100","regional-20"]);
-assert.deepEqual(listStationCalls(callRows,"all","lübeck").map(row=>row.tripId),["cancelled"]);
+assert.deepEqual(listStationCalls(callRows,"all","lübeck").map(row=>row.tripId),[]);
 assert.deepEqual(listStationCalls(callRows,"inbound","ICE").map(row=>row.tripId),["ice-100"]);
 const oldSnapshot={key:"berlin",calls:callRows,status:"ready",updatedAt:Date.parse(at(0)),coverage:"complete"};
 const staleSnapshot=failedStationRadarSnapshot(oldSnapshot,"berlin");
