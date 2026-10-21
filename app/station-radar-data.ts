@@ -69,7 +69,8 @@ export function listStationCalls(calls:Map<string,StationCall>,direction:Station
   const needle=query.trim().toLocaleLowerCase('de');
   const at=(call:StationCall)=>direction==='inbound'?call.arrival??Infinity:direction==='outbound'?call.departure??Infinity:Math.min(call.arrival??Infinity,call.departure??Infinity);
   return [...calls.entries()].filter(([id,call])=>
-    (direction==='all'||(direction==='inbound'?call.arrival!==undefined:call.departure!==undefined))
+    !call.cancelled
+    &&(direction==='all'||(direction==='inbound'?call.arrival!==undefined:call.departure!==undefined))
     &&(!needle||[id,call.name,call.destination].some(value=>value?.toLocaleLowerCase('de').includes(needle))))
     .sort(([idA,a],[idB,b])=>at(a)-at(b)||idA.localeCompare(idB,'de'))
     .map(([tripId,call])=>({tripId,call}));
