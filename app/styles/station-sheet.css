@@ -226,3 +226,50 @@
   .app-shell .board-primary-bar { flex-wrap:nowrap; min-height:48px; }
   .app-shell .board-actions { margin-left:auto; }
 }
+
+
+/* V60 Glassy UI-inspired station-board clarity (independent original CSS).
+   Keep real-time information crisp and flat, reserve glass for the shell. */
+.app-shell .station-card {
+  --board-surface:var(--paper);
+}
+.app-shell .live-board .board-row {
+  background:var(--board-surface);
+}
+.app-shell .board-row-summary {
+  isolation:isolate;
+  transition:background-color var(--motion-fast) ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .app-shell .board-row-summary:hover {
+    background:color-mix(in srgb,var(--accent) 5%,var(--paper));
+  }
+}
+.app-shell .board-row-summary:focus-visible,
+.app-shell .board-row-summary:focus-within {
+  outline:2px solid var(--accent);
+  outline-offset:-2px;
+  border-radius:var(--radius-control);
+}
+.app-shell .board-row-summary .board-destination b {
+  overflow-wrap:anywhere;
+}
+.app-shell .board-row-summary .board-time {
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+@media (max-width:390px) {
+  .app-shell .board-row-summary {
+    column-gap:6px;
+  }
+  .app-shell .board-row-summary .board-destination {
+    min-width:0;
+    overflow:hidden;
+  }
+  .app-shell .board-row-summary .board-destination b {
+    line-height:1.28;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .board-row-summary {transition:none;}
+}
