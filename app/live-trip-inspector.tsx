@@ -1,5 +1,7 @@
 "use client";
 
+import {readTripResponse,tripRevision} from './trip-response';
+import {RouteValidityError} from './journey-validity';
 import {useEffect,useEffectEvent,useRef,useState} from 'react';
 import {PanelTools,type MobileSheetState,type PanelControls} from './panel-tools';
 import {RealtimeTime} from './realtime-time';
@@ -35,9 +37,9 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
       const controller=new AbortController();pending=controller;
       try{
         if(!trip.tripId||trip.tripId.length>500)throw Error('Keine abrufbare Fahrt-ID');
+        const revision=tripRevision(trip.tripId);
         const response=await fetch(`/api/trips/transitous/${encodeURIComponent(trip.tripId)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(16000)]),cache:'no-store'});
-        if(!response.ok)throw Error('Fahrtverlauf nicht erreichbar');
-        const data=await response.json() as {trip?:{legs?:unknown};updatedAt?:string};
+        const data=await readTripResponse<{trip?:{legs?:unknown};updatedAt?:string}>(response,trip.tripId,revision);
         const stops=normaliseTrainStops(Array.isArray(data.trip?.legs)?data.trip.legs:[]);
         if(!stops.length)throw Error('Keine Halte');
         if(!disposed&&!controller.signal.aborted){
@@ -49,7 +51,7 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
           });
           setRoute(segments.length?{tripId:trip.tripId,name:trip.name,category:trip.category,realtime:stops.some(stop=>stop.realtime),segments,points:segments.flat(),stops:stops.map(stop=>({...stop,track:stop.platform}))}:null);
         }
-      }catch{if(!disposed&&!controller.signal.aborted)setDetails(previous=>({tripId:trip.tripId,stops:previous.tripId===trip.tripId?previous.stops:[],state:'error',updatedAt:previous.tripId===trip.tripId?previous.updatedAt:null}));}
+      }catch(error){if(!disposed&&!controller.signal.aborted){if(error instanceof RouteValidityError)setRoute(null);setDetails(previous=>({tripId:trip.tripId,stops:error instanceof RouteValidityError?[]:previous.tripId===trip.tripId?previous.stops:[],state:'error',updatedAt:error instanceof RouteValidityError?null:previous.tripId===trip.tripId?previous.updatedAt:null}));}}
       finally{if(pending===controller)pending=null;}
     }
     void load();const timer=window.setInterval(()=>void load(),60_000);const visible=()=>{if(!document.hidden)void load();};document.addEventListener('visibilitychange',visible);

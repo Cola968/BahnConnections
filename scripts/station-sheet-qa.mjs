@@ -137,7 +137,7 @@ try {
   await command('Emulation.setFocusEmulationEnabled',{enabled:true});
   await command('Network.setBypassServiceWorker',{bypass:true});
   await command('Page.addScriptToEvaluateOnNewDocument',{source:"navigator.serviceWorker.register=()=>Promise.reject(new Error('UI fixture QA'));"});
-  await command('Fetch.enable',{patterns:[{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
+  await command('Fetch.enable',{patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
   if(args.includes('--stream'))await command('Page.addScriptToEvaluateOnNewDocument',{source:`
     const originalFetch=window.fetch;
     window.fetch=async (...args)=>{

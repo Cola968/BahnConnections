@@ -1,3 +1,4 @@
+import {assessStationRows} from "../../../../station-route-validity";
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 
@@ -37,11 +38,13 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
   const [stopResult,timeResult]=await Promise.allSettled([load(stopUrl,"routes"),load(timeUrl,"stopTimes")]);
   const warnings:string[]=[];
   const routes=stopResult.status==="fulfilled"?stopResult.value:[];
-  const stopTimes=timeResult.status==="fulfilled"?timeResult.value:[];
+  const rawStopTimes=timeResult.status==="fulfilled"?timeResult.value:[];
+  const guarded=assessStationRows(rawStopTimes);
+  const stopTimes=guarded.stopTimes;warnings.push(...guarded.warnings);
   if(stopResult.status!=="fulfilled")warnings.push("Linien-Stammliste derzeit unvollständig.");
   if(timeResult.status!=="fulfilled")warnings.push("Fahrten und Endziele derzeit unvollständig.");
   if(!routes.length&&!stopTimes.length)
-    return Response.json({routes,stopTimes,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",warnings},{status:502,headers:{"Cache-Control":"no-store"}});
+    return Response.json({...guarded,routes,stopTimes,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",warnings},{status:502,headers:{"Cache-Control":"no-store"}});
   const hasRealtime=stopTimes.some(item=>Boolean(item && typeof item==="object" && (item as {realTime?:unknown}).realTime));
-  return Response.json({routes,stopTimes,source:"Transitous / MOTIS",updatedAt,realtimeStatus:warnings.length?"partial":hasRealtime?"live":"schedule",warnings},{headers:{"Cache-Control":"no-store"}});
+  return Response.json({...guarded,routes,stopTimes,source:"Transitous / MOTIS",updatedAt,realtimeStatus:warnings.length?"partial":hasRealtime?"live":"schedule",warnings},{headers:{"Cache-Control":"no-store"}});
 }

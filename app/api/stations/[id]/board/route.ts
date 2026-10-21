@@ -1,3 +1,4 @@
+import {assessStationRows} from "../../../../station-route-validity";
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { loadStationBoardWithFallback, StationSourceThrottledError, type StoptimesMode } from "../../../../station-board-fallback";
 import { boardRequestWindow } from "../../../../board-request-window";
@@ -111,10 +112,12 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
       const responseData=await response.json() as {stopTimes?:unknown}|null;
       return responseData?.stopTimes;
     };
-    const {stopTimes,fallback,warning}=await loadStationBoardWithFallback(requestRows);
+    const {stopTimes:rawStopTimes,fallback,warning}=await loadStationBoardWithFallback(requestRows);
+    const guarded=assessStationRows(rawStopTimes);
+    const stopTimes=guarded.stopTimes;
     const hasRealtime = !fallback && stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
-    const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    const primary = { ...guarded,stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
     // The disruption screen needs route-specific alerts, not a second DB check
     // for each direction. Streamed live boards retain full verification.
     if(query.get("verify")==="0" && query.get("stream")!=="1"){
@@ -138,9 +141,9 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
       });
       return new Response(body,{headers:{"Content-Type":"application/x-ndjson; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
     }
-    return Response.json({...primary,...await verify()});
+    return Response.json({...primary,...await verify()},{headers:{"Cache-Control":"no-store"}});
   } catch (error) {
     const throttled=error instanceof StationSourceThrottledError;
-    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:throttled?429:502,headers:throttled?{"Retry-After":"60"}:undefined });
+    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:throttled?429:502,headers:{"Cache-Control":"no-store",...(throttled?{"Retry-After":"60"}:{})} });
   }
 }

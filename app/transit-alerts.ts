@@ -1,5 +1,9 @@
 /** MOTIS v6 uses plain text; older GTFS payloads use translation objects. */
-export type TransitAlert={header?:string;description?:string;headerText?:unknown;descriptionText?:unknown;effect?:string|number};
+export type TransitAlert={header?:string;description?:string;headerText?:unknown;descriptionText?:unknown;effect?:string|number;
+ activePeriods?:readonly {start?:string|number;end?:string|number}[];
+ activePeriod?:readonly {start?:string|number;end?:string|number}[];
+ active_period?:readonly {start?:string|number;end?:string|number}[];
+ url?:string;};
 export function transitAlertText(value:unknown,max=6000):string {
  if(typeof value==='string')return value.trim().replace(/\s+/g,' ').slice(0,max);
  if(!value||typeof value!=='object'||Array.isArray(value))return '';

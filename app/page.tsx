@@ -32,6 +32,7 @@ import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
 import { TrainRadarHud } from "./train-radar-hud";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
+import {ROUTE_INVALIDATED_EVENT} from './trip-response';
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
 import { fetchLiveJourneys, journeyPoints, type LiveJourney, type PlannerCategory } from "./live-journey";
 import { activeEstimatedPosition, matchesLiveStatus, type LiveTrainCategory, type LiveTrip } from "./live-trains";
@@ -276,6 +277,20 @@ export default function Home() {
   const handleStationLineSummary = useCallback((summary: StationLineSummary) => setStationLineSummary(summary), []);
   const handleStationTrips = useCallback((trips: BoardMapTrip[]) => setStationTrips(trips), []);
   const handleRadarRoute = useCallback((trip:BoardMapTrip)=>setStationTrip(trip),[]);
+  useEffect(()=>{
+    const invalidate=(event:Event)=>{
+      const {id,reason}=(event as CustomEvent<{id:string;reason:string}>).detail;
+      setStationTrip(current=>current?.tripId===id?null:current);
+      setStationTrips(current=>current.filter(trip=>trip.tripId!==id));
+      setSelectedLiveTrip(current=>current?.tripId===id?null:current);
+      setTrackedTripId(current=>current===id?null:current);
+      setJourney(current=>current?.transitLegs.some(leg=>leg.tripId===id)?null:current);
+      setJourneyOptions(current=>current.filter(item=>!item.transitLegs.some(leg=>leg.tripId===id)));
+      setJourneyMessage(reason);
+    };
+    window.addEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+    return()=>window.removeEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+  },[]);
 
   const {mapReady,mapZoom,mapViewportToken,mapElementRef,mapRef,overlayRef,stationLayerRef,routeRendererRef,liveLayerRef,locationLayerRef,walkingLayerRef,leafletRef} = useLeafletMap();
   const stationPreviewRef = useRef<StationMapRenderer | null>(null);
@@ -380,7 +395,7 @@ export default function Home() {
   const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(liveRadarCentre,liveVisible,trips => {
     // Keep a selected journey visible if it leaves this station-centred radar scan;
     // the inspector marks it as not currently verified rather than silently closing.
-    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
+    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? null : null);
   });
   useEffect(()=>{if(!preferencesReady)return;document.documentElement.lang=language;try{localStorage.setItem("bahnconnections-language",language);}catch{/* optional */}},[language,preferencesReady]);
   useEffect(()=>{

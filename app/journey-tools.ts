@@ -1,3 +1,4 @@
+import {requireUsableJourney} from './journey-validity.ts';
 import type { LiveJourney } from './live-journey';
 import {minimumTransferBuffer} from './v60-transfer-assessment.ts';
 
@@ -34,6 +35,7 @@ export function sortJourneys(journeys:LiveJourney[],order:JourneySort,now=Date.n
 }
 const clock=(value:string)=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Zeit unbekannt';
 export function journeyText(journey:LiveJourney):string {
+  requireUsableJourney(journey);
   const lines=['BahnConnections – Reiseübersicht',`Stand: ${clock(journey.updatedAt)} · Gespeicherte Momentaufnahme, keine laufende Echtzeit.`,journey.cancelled?'ACHTUNG: Verbindung enthält Ausfälle.':'',`${clock(journey.startTime)} → ${clock(journey.endTime)}`,`${journey.transfers} Umstiege · ${walkingMinutes(journey)} Min. Fußweg`,...journey.legs.map(leg=>`${leg.cancelled?'AUSFALL · ':''}${leg.name}: ${leg.from.name} (${clock(leg.startTime)}) → ${leg.to.name} (${clock(leg.endTime)})${leg.from.track?` · Abfahrt Gleis ${leg.from.track}`:''}${leg.to.track?` · Ankunft Gleis ${leg.to.track}`:''} · ${leg.realtime?'Prognose zum angegebenen Stand':'Fahrplan'}`),...journey.warnings.map(warning=>`Hinweis: ${warning}`),`Quelle: ${journey.sourceLabel}`];
   return lines.filter(Boolean).join('\n');
 }
@@ -45,6 +47,7 @@ function foldCalendar(line:string):string {
 }
 const calendarTime=(value:string)=>new Date(value).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
 function calendarSchedule(journey:LiveJourney) {
+  requireUsableJourney(journey);
   if(journey.cancelled||journey.transitLegs.some(leg=>leg.cancelled||leg.from.cancelled||leg.to.cancelled))throw new Error('Ausgefallene Verbindungen können nicht als Reise in den Kalender übernommen werden.');
   const start=journey.scheduledStartTime,end=journey.scheduledEndTime;
   if(!Number.isFinite(Date.parse(start))||!Number.isFinite(Date.parse(end))||Date.parse(end)<=Date.parse(start))throw new Error('Keine gültigen Fahrplanzeiten für den Kalender.');

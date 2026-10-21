@@ -1,6 +1,5 @@
 import { decodeRouteSegment } from "../../../decode-route-segment";
 import { transitousRequestHeaders } from "../../../../transitous";
-import {transitousTripIntegrityConflict} from "../../../../journey-integrity";
 import {assessRawTransitTrip,type RawTripEvidenceLeg} from "../../../../journey-validity";
 
 export async function GET(request: Request, context: { params:Promise<{ source:string; id:string }> }) {
@@ -20,17 +19,17 @@ export async function GET(request: Request, context: { params:Promise<{ source:s
     if (!response.ok) throw new Error(`Transitous ${response.status}`);
     const trip = await response.json() as {legs?:(RawTripEvidenceLeg&{realTime?:boolean;cancelled?:boolean})[]};
     const assessment=assessRawTransitTrip(trip.legs??[]);
-    const conflict=transitousTripIntegrityConflict(trip.legs??[])??assessment.conflict;
+    const conflict=assessment.conflict;
     if(conflict)return Response.json({trip:null,source:"Transitous / MOTIS",updatedAt,realtimeStatus:"partial",
-      warnings:["Der Fahrtverlauf widerspricht verifizierbaren Strecken- oder Zeitangaben. Er wird nicht angezeigt.",conflict]},
-      {status:502,headers:{"Cache-Control":"no-store"}});
+      routeValidity:assessment.validity,warnings:["Der Fahrtverlauf widerspricht verifizierbaren Strecken- oder Zeitangaben. Er wird nicht angezeigt.",conflict]},
+      {status:409,headers:{"Cache-Control":"no-store"}});
     const hasRealtime = (trip.legs ?? []).some((leg) => leg.realTime);
     const cancelled = (trip.legs ?? []).some((leg) => leg.cancelled);
-    return Response.json({ trip, source:"Transitous / MOTIS", updatedAt, 
+    return Response.json({ trip, routeValidity:assessment.validity,source:"Transitous / MOTIS", updatedAt,
       realtimeStatus:assessment.warnings.length?"partial":hasRealtime?"live":"schedule",
       warnings:[...(cancelled?["Mindestens ein Fahrtabschnitt ist als ausgefallen gemeldet."]:[]),...assessment.warnings],
     },{headers:{"Cache-Control":"no-store"}});
   } catch (error) {
-    return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Fahrtverlauf nicht erreichbar"] }, { status:502 });
+    return Response.json({ trip:null, source, updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Fahrtverlauf nicht erreichbar"] }, { status:502,headers:{"Cache-Control":"no-store"} });
   }
 }

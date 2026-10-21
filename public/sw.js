@@ -25,6 +25,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
+  if(url.pathname.startsWith("/api/")){event.respondWith(fetch(event.request,{cache:"no-store"}));return;}
   // Authentication redirects must be handled by the browser itself. Following
   // them inside a service worker can fail CORS and incorrectly show "offline".
   if (event.request.mode === "navigate" && isAuthenticationRequest(url)) return;

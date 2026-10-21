@@ -30,12 +30,12 @@ const raw={mode:"SUBURBAN",displayName:"S4",startTime:t("12:00"),endTime:t("12:1
   to:{name:"Wedemark Mellendorf",scheduledArrival:t("12:12")},
   intermediateStops:[{name:"Wedemark Bissendorf",scheduledArrival:t("12:06")}],
   alerts:[{effect:"DETOUR",headerText:"Linienumleitung aufgrund Bauarbeiten"}]};
-assert.equal(assessRawTransitTrip([raw]).conflict,null);
-assert.equal(assessRawTransitTrip([raw]).warnings.length,1);
+assert.match(assessRawTransitTrip([raw]).conflict,/Bedienung/,'Active unresolved diversion must fail closed');
+assert.ok(assessRawTransitTrip([raw]).warnings.length>=1);
 assert.match(assessRawTransitTrip([{...raw,intermediateStops:[{name:"Wedemark Bissendorf",scheduledArrival:t("11:58")}]}]).conflict,/Haltefolge/);
 assert.equal(assessRawTransitTrip([{...raw,alerts:[{headerText:"Regelbetrieb"}]}]).warnings.length,0);
-assert.equal(assessRawTransitTrip([{...raw,startTime:undefined,endTime:undefined}]).conflict,null,
-  "An incomplete provider trip is not necessarily chronologically impossible");
+assert.ok(assessRawTransitTrip([{...raw,startTime:undefined,endTime:undefined}]).conflict,
+  'Missing times cannot exempt an active diversion');
 const effected=section({alert:{header:"Betriebshinweis",effect:"STOP_MOVED"}});
 assert.equal(routeDetourWarnings(trip(effected)).length,1);
 assert.equal(routeDetourWarnings(trip(section({alert:{header:"Keine Umleitung nötig"}}))).length,0);

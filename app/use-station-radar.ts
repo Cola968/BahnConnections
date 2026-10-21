@@ -1,4 +1,5 @@
 "use client";
+import {ROUTE_INVALIDATED_EVENT} from './trip-response';
 import {useCallback,useEffect,useState} from 'react';
 import type {Station} from './network-data';
 import {fetchStationCallSnapshot,type StationCall} from './station-radar-data';
@@ -9,6 +10,10 @@ export function useStationRadar(station:Station|null,enabled:boolean){
   const key=station?`${station.id}:${station.lat}:${station.lon}`:null;
   const [snapshot,setSnapshot]=useState<StationRadarSnapshot>({key:null,calls:new Map(),status:'loading',updatedAt:0,coverage:'unknown'});
   const [refreshVersion,setRefreshVersion]=useState(0);
+  useEffect(()=>{
+    const invalidate=(event:Event)=>{const id=(event as CustomEvent<{id:string}>).detail.id;setSnapshot(current=>{const calls=new Map(current.calls);calls.delete(id);return {...current,calls};});};
+    window.addEventListener(ROUTE_INVALIDATED_EVENT,invalidate);return()=>window.removeEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+  },[]);
   const refresh=useCallback(()=>setRefreshVersion(version=>version+1),[]);
   useEffect(()=>{
     if(!station||!enabled)return;

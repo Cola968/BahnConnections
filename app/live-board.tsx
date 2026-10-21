@@ -1,4 +1,7 @@
 "use client";
+import {readTripResponse,tripRevision,invalidateTrip,ROUTE_INVALIDATED_EVENT} from './trip-response';
+import {RouteValidityError} from './journey-validity';
+
 
 import { boardDelayStatistics } from "./board-statistics";
 import { safeBoardAlertHeaders, safeBoardMetadata } from "./board-verification";
@@ -192,7 +195,7 @@ function deduplicate(entries: BoardEntry[]) {
 
 const safeBoardText=(value:unknown):string|undefined=>typeof value==="string"?value:undefined;
 
-type BoardPayload = { type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
+type BoardPayload = { blockedTrips?:{tripId:string;reason:string}[]; type?:"board"|"verification"; stopTimes?:TransitousEntry[]; source?:string; updatedAt?:string; warnings?:string[]; verification?:{status?:BoardVerificationStatus;message?:string} };
 async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal, onPrimary:(board:ReturnType<typeof boardResult>)=>void, onVerification:(payload:BoardPayload)=>void) {
   const requestSignal=AbortSignal.any([signal,AbortSignal.timeout(22_000)]);
   const stopId = await requireTransitousStopId(station, requestSignal);
@@ -217,6 +220,7 @@ async function loadBoard(station: Station, kind: BoardKind, signal: AbortSignal,
   } else {const payload=await response.json() as BoardPayload;requestSignal.throwIfAborted();onPrimary(boardResult(payload,kind));}
 }
 function boardResult(payload:BoardPayload,kind:BoardKind) {
+  for(const item of payload.blockedTrips??[])invalidateTrip(item.tripId,item.reason);
   const arrivals=kind==="arrival";
   // One malformed row must not blank the complete live board.
   const validRows=Array.isArray(payload.stopTimes) ? payload.stopTimes.filter(entry=>entry && entry.place && typeof entry.place==="object" && !Array.isArray(entry.place)) : [];
@@ -242,9 +246,9 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(tripId)}`, window.location.origin);
   const tripSignal=signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000);
-  const response = await fetch(url, { signal:tripSignal });
-  if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
-  const envelope = await response.json() as { trip?: { legs?: TripLeg[] } };
+  const revision=tripRevision(tripId);
+  const response = await fetch(url, { signal:tripSignal,cache:"no-store" });
+  const envelope = await readTripResponse<{ trip?: { legs?: TripLeg[] } }>(response,tripId,revision);
   const payload = envelope.trip ?? {};
   const stops: TripPlace[] = [];
   const segments: [number, number][][] = [];
@@ -325,6 +329,17 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [tripDetails, setTripDetails] = useState<Record<string, TripDetail>>({});
   const [tripDetailState, setTripDetailState] = useState<Record<string, "loading" | "ready" | "error">>({});
+  useEffect(()=>{
+    const invalidate=(event:Event)=>{
+      const {id,reason}=(event as CustomEvent<{id:string;reason:string}>).detail;
+      setTripDetails({});
+      setExpandedRows([]);
+      setEntries(current=>current.filter(entry=>entry.tripId!==id));
+      setSourceWarnings(current=>[...new Set([...current,reason])]);
+    };
+    window.addEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+    return()=>window.removeEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+  },[]);
   const [pinned, setPinned] = useState<string[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [statusMessage, setStatusMessage] = useState("");
@@ -559,8 +574,14 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips }: { s
         setNow(Date.now());
         setTripDetails(current=>({...current,[openKey]:detail}));
         setTripDetailState(current=>({...current,[openKey]:"ready"}));
-      } catch {
-        if(!signal.aborted)setTripDetailState(current=>({...current,[openKey]:"error"}));
+      } catch(error) {
+        if(!signal.aborted){
+          if(error instanceof RouteValidityError){
+            setTripDetails(current=>{const next={...current};delete next[openKey];return next;});
+            setSourceWarnings(current=>[...new Set([...current,error.message])]);
+          }
+          setTripDetailState(current=>({...current,[openKey]:"error"}));
+        }
       }
     },75_000,document);
     return()=>poller.dispose();

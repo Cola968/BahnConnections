@@ -1,3 +1,4 @@
+import {invalidateTrip} from './trip-response.ts';
 import type { Station } from './network-data';
 import { requireTransitousStopId } from './transitous.ts';
 
@@ -98,7 +99,8 @@ export async function fetchStationCallSnapshot(station:Station,signal:AbortSigna
     const query=new URLSearchParams({kind,time,n:'80',window:'32400',verify:'0'});
     const response=await fetch(`/api/stations/${encodeURIComponent(id)}/board?${query}`,{signal:AbortSignal.any([signal,AbortSignal.timeout(20_000)]),cache:'no-store'});
     if(!response.ok)throw Error('Bahnhofshalte nicht erreichbar');
-    const data=await response.json() as {stopTimes?:unknown};
+    const data=await response.json() as {stopTimes?:unknown;blockedTrips?:{tripId:string;reason:string}[]};
+    for(const item of data.blockedTrips??[])invalidateTrip(item.tripId,item.reason);
     if(!Array.isArray(data.stopTimes))throw Error('Ungültige Bahnhofshalte');
     return data.stopTimes as Row[];
   };

@@ -5,7 +5,7 @@
  * This is NOT a general live-disruption feed. Rules must cite the operator,
  * apply only to their verified window, and expire automatically.
  */
-type StopShape={name:string};
+type StopShape={name:string;lat?:number;lon?:number;arrival?:string;departure?:string;scheduledArrival?:string;scheduledDeparture?:string};
 type LegShape={
   category:string;
   name:string;
@@ -29,25 +29,30 @@ function stopName(value:string):string{
 function isLine129(value:string){
   return /^(?:linie\s*)?(?:1|2|9)$/.test(stopName(value));
 }
-function hasStop(stops:readonly StopShape[],name:string){
-  const key=stopName(name);
-  return stops.some(stop=>stopName(stop.name)===key);
-}
 
 /** Returns a precise reason only for proven contradictions, never invents substitute trips. */
 export function journeyIntegrityConflict(journey:JourneyShape):string|null{
   for(const leg of journey.transitLegs){
     if(leg.category!=="tram"||!isLine129(leg.name))continue;
     const departure=Date.parse(leg.scheduledStartTime||leg.startTime);
-    if(!Number.isFinite(departure)||departure<DRESDEN_WORKS_START||departure>=DRESDEN_WORKS_END)continue;
+
     const stops=leg.stops.length?leg.stops:[leg.from,leg.to];
+    const duringWorks=(stop:StopShape)=>{
+      const values=[stop.scheduledArrival,stop.scheduledDeparture,stop.arrival,stop.departure].filter(Boolean).map(value=>Date.parse(value!)).filter(Number.isFinite);
+      return values.length?values.some(t=>t>=DRESDEN_WORKS_START&&t<DRESDEN_WORKS_END):Number.isFinite(departure)&&departure>=DRESDEN_WORKS_START&&departure<DRESDEN_WORKS_END;
+    };
+    if(!stops.some(duringWorks))continue;
     // Names are deliberately exact after normalization; don't block e.g. other cities' "Altmarkt".
     const anchors=["Straßburger Platz","Postplatz","Georg-Arnhold-Bad","Lennéplatz",
       "Hauptbahnhof Nord","Prager Straße","Altmarkt","Pirnaischer Platz","Deutsches Hygiene-Museum"];
-    const touchesDresdenRoute=stops.some(stop=>/\bdresden\b/i.test(stop.name)||anchors.filter(anchor=>anchor!=="Altmarkt").some(anchor=>stopName(stop.name)===stopName(anchor)));
+    const located=stops.filter(stop=>Number.isFinite(stop.lat)&&Number.isFinite(stop.lon));
+    if(located.length&&!located.some(stop=>stop.lat!>=50.94&&stop.lat!<=51.14&&stop.lon!>=13.55&&stop.lon!<=13.95))continue;
+    const touchesDresdenRoute=stops.some(stop=>/\bdresden\b/i.test(stop.name))
+      ||located.some(stop=>stop.lat!>=50.94&&stop.lat!<=51.14&&stop.lon!>=13.55&&stop.lon!<=13.95)
+      ||anchors.filter(anchor=>stops.some(stop=>stopName(stop.name)===stopName(anchor))).length>=2;
     if(!touchesDresdenRoute)continue;
     const forbidden=["Altmarkt","Pirnaischer Platz","Deutsches Hygiene-Museum"];
-    if(forbidden.some(name=>hasStop(stops,name))){
+    if(forbidden.some(name=>stops.some(stop=>stopName(stop.name)===stopName(name)&&duringWorks(stop)))){
       return `DVB-Umleitung: Linie ${leg.name} bedient diesen Halt vom 09.10. bis 24.10.2026 nicht. Die gelieferte Haltefolge widerspricht der DVB-Baustellenmeldung (${DRESDEN_SOURCE}).`;
     }
     const from=stops.findIndex(stop=>stopName(stop.name)===stopName("Straßburger Platz"));
@@ -55,7 +60,9 @@ export function journeyIntegrityConflict(journey:JourneyShape):string|null{
     if(from===-1||to===-1)continue;
     const between=stops.slice(Math.min(from,to),Math.max(from,to)+1);
     const via=["Georg-Arnhold-Bad","Lennéplatz","Hauptbahnhof Nord","Prager Straße"];
-    if(!via.every(name=>hasStop(between,name))){
+    const ordered=from<to?via:[...via].reverse();
+    const actual=between.slice(1,-1).map(stop=>stopName(stop.name));
+    if(actual.length!==ordered.length||!ordered.every((name,index)=>actual[index]===stopName(name))){
       return `DVB-Umleitung: Linie ${leg.name} zwischen Straßburger Platz und Postplatz muss vom 09.10. bis 24.10.2026 über Georg-Arnhold-Bad, Lennéplatz, Hauptbahnhof Nord und Prager Straße führen. Die Datenquelle liefert diese Haltefolge nicht (${DRESDEN_SOURCE}).`;
     }
   }

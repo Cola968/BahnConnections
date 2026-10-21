@@ -5,8 +5,8 @@ import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
 import { boundedJourneySignal } from "./journey-request-budget";
 import { chooseDbJourneyStation } from "./db-journey-station";
-import { journeyIntegrityConflict } from "./journey-integrity";
-import {routeChronologyConflict,routeDetourWarnings} from "./journey-validity";
+
+import {assessRouteCandidates,assessJourneyValidity,routeDetourWarnings,type RouteValidity} from "./journey-validity";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -24,9 +24,10 @@ export type LiveJourneyStop = {
   track?: string;
   scheduledTrack?: string;
   cancelled: boolean;
+  alerts?:TransitAlert[];
 };
 
-export type LiveJourneyAlert = {
+export type LiveJourneyAlert = TransitAlert & {
   header: string;
   description?: string;
   effect?: string | number;
@@ -58,6 +59,7 @@ export type LiveJourneyLeg = {
 };
 
 export type LiveJourney = {
+  routeValidity?:RouteValidity;
   id: string;
   durationSeconds: number;
   transfers: number;
@@ -104,7 +106,7 @@ type ApiPlace = {
   cancelled?: boolean;
 };
 
-type ApiAlert = {
+type ApiAlert = TransitAlert & {
   effect?: string | number;
   headerText?: unknown;
   descriptionText?: unknown;
@@ -169,13 +171,14 @@ function stop(place: ApiPlace | undefined, fallback: string): LiveJourneyStop {
     track: place?.track,
     scheduledTrack: place?.scheduledTrack,
     cancelled: Boolean(place?.cancelled),
+    alerts:place?.alerts,
   };
 }
 
 function parseAlert(alert: ApiAlert): LiveJourneyAlert | null {
   const {header,detail}=transitAlertContent(alert);
-  if (!header) return null;
-  return { header, description: detail || undefined, effect: alert.effect };
+  if (!header&&!alert.effect) return null;
+  return { ...alert,header:header||'Betriebshinweis', description: detail || undefined };
 }
 
 function uniqueStops(stops: LiveJourneyStop[]) {
@@ -193,7 +196,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
   const category = categoryForMode(leg.mode);
   const encoded = leg.legGeometry?.points;
   const points = encoded ? decodePolyline(encoded, leg.legGeometry?.precision ?? 6) : [] as [number, number][];
-  const alerts = transitAlerts(leg.alerts,leg.from.alerts,leg.to.alerts,...(leg.intermediateStops??[]).map(item=>item.alerts)).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
+  const alerts = transitAlerts(leg.alerts).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
   return {
     mode: leg.mode ?? "WALK",
     category,
@@ -216,7 +219,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
     cancelled: Boolean(leg.cancelled || from.cancelled || to.cancelled),
     bikesAllowed: leg.bikesAllowed,
     wheelchairAccessible: leg.wheelchairAccessible,
-    alerts: alerts.filter((item,index,all)=>all.findIndex(other=>other.header===item.header&&other.description===item.description)===index),
+    alerts,
   };
 }
 
@@ -270,6 +273,7 @@ type DbLocation = { id?: string; name?: string; type?: string; location?: { lati
 type DbLine = { name?: string; product?: string; operator?: { name?: string } };
 type DbStopover = {
   stop?: DbLocation;
+  remarks?:{summary?:string;text?:string}[];
   arrival?: string;
   plannedArrival?: string;
   departure?: string;
@@ -303,7 +307,7 @@ type DbLeg = {
 type DbJourney = { legs?: DbLeg[] };
 
 const dbLocationCache = new Map<string, Promise<DbLocation | null>>();
-const tripLegCache = new Map<string, Promise<LiveJourneyLeg[]>>();
+
 
 function normaliseStopName(value = "") {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de")
@@ -374,6 +378,7 @@ function dbStop(place: DbLocation | undefined, values: Partial<DbStopover>, fall
     track:values.departurePlatform ?? values.arrivalPlatform,
     scheduledTrack:values.plannedDeparturePlatform ?? values.plannedArrivalPlatform,
     cancelled:Boolean(values.cancelled),
+    alerts:values.remarks?.map(remark=>({header:remark.summary??remark.text,description:remark.text})),
   };
 }
 
@@ -480,8 +485,6 @@ function sliceTripLeg(leg: LiveJourneyLeg, originId: string, originName: string,
 }
 
 async function fetchTransitousTripLegs(tripId: string, signal?: AbortSignal) {
-  const cached = tripLegCache.get(tripId);
-  if (cached) return cached;
   const request = (async () => {
     const url = new URL("https://api.transitous.org/api/v6/trip");
     url.searchParams.set("tripId", tripId);
@@ -494,8 +497,6 @@ async function fetchTransitousTripLegs(tripId: string, signal?: AbortSignal) {
     const payload = await response.json() as { legs?: ApiLeg[] };
     return (payload.legs ?? []).map(parseLeg).filter((item): item is LiveJourneyLeg => Boolean(item));
   })();
-  tripLegCache.set(tripId, request);
-  request.catch(() => tripLegCache.delete(tripId));
   return request;
 }
 
@@ -609,7 +610,7 @@ function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
       const primary = item.source === "db-transport" ? duplicate : item;
       const matching=matchingStopSequences(duplicate,item);
       const verified = matching
-        ? { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Gegenprüfung" }
+        ? { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Fahrplanabgleich" }
         : { ...primary, realtimeStatus:"partial" as const, sourceLabel:"Transitous · Haltefolge nicht gegengeprüft",
             warnings:[...new Set([...primary.warnings,"Zweite Quelle liefert keine identisch überprüfbare Haltefolge. Fahrweg nicht unabhängig bestätigt."])] };
       const index = merged.indexOf(duplicate);
@@ -692,16 +693,14 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
   // Providers may both serve obsolete schedules: do not let source agreement override
   // an independently confirmed operator diversion or silently invent a replacement.
   const allJourneys=[...transitousJourneys,...completed,...dbJourneys];
-  const conflictFor=(item:LiveJourney)=>journeyIntegrityConflict(item)??routeChronologyConflict(item);
-  const rejected=allJourneys.map(conflictFor).filter((reason):reason is string=>Boolean(reason));
-  const admissible=allJourneys.filter(item=>!conflictFor(item));
+  const {admissible,rejected}=assessRouteCandidates(allJourneys);
   if(!admissible.length&&rejected.length)throw new Error(
     "Gelieferte Verbindungen widersprechen nachweisbaren Baustellen- oder Zeitangaben. Es werden keine unsicheren Fahrtverläufe erfunden. Bitte Betreiberinformationen prüfen."
   );
   const journeys = mergeJourneys(admissible, dbResult.status === "rejected").map(item=>{
     const detourWarnings=routeDetourWarnings(item);
     const integrityWarnings=rejected.length?["Einige Routen mit nachweislich fehlerhafter Streckenführung oder Zeitreihenfolge wurden ausgeblendet."]:[];
-    return {...item,
+    return {...item,routeValidity:assessJourneyValidity(item),
       realtimeStatus:detourWarnings.length||rejected.length?"partial" as const:item.realtimeStatus,
       warnings:[...new Set([...item.warnings,...detourWarnings,...integrityWarnings])]};
   });

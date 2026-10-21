@@ -182,18 +182,11 @@ export function matchesLiveStatus(trip:LiveTrip,filter:'all'|'delayed'|'ontime')
 }
 
 export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Promise<LiveTrip[]> {
-  const now = Date.now();
-  const url = new URL("https://api.transitous.org/api/v6/map/trips");
-  url.searchParams.set("zoom", "11");
-  url.searchParams.set("min", `${(station.lat - 0.04).toFixed(4)},${(station.lon - 0.06).toFixed(4)}`);
-  url.searchParams.set("max", `${(station.lat + 0.04).toFixed(4)},${(station.lon + 0.06).toFixed(4)}`);
-  url.searchParams.set("startTime", new Date(now - 45_000).toISOString());
-  url.searchParams.set("endTime", new Date(now + 45_000).toISOString());
-  url.searchParams.set("precision", "4");
-  url.searchParams.set("language", "de");
-  const response = await fetch(url, { signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000) });
-  if (!response.ok) throw new Error(`Live-Radar ${response.status}`);
-  const payload = await response.json() as ApiTripSegment[];
+  const query=new URLSearchParams({lat:String(station.lat),lon:String(station.lon)});
+  const response=await fetch(`/api/radar?${query}`,{signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000),cache:'no-store'});
+  if(!response.ok)throw new Error(`Live-Radar ${response.status}`);
+  const envelope=await response.json() as {segments?:ApiTripSegment[]};
+  const payload=envelope.segments??[];
   const found = new Map<string, LiveTrip>();
   let prepared=0;
   for (const segment of payload) {

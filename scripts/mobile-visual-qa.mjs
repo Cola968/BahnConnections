@@ -147,6 +147,7 @@ try {
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/board') ? {...boardFixture(),stopTimes:[...boardFixture().stopTimes,...(radarFixtureEnabled?[{tripId:'qa-ice-241',mode:'HIGHSPEED_RAIL',displayName:'ICE 241',realTime:true,place:{arrival:radarFixture()[0].arrival,departure:radarFixture()[0].departure}}]:[])]}
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
+        : requestUrl.pathname==='/api/radar' ? {segments:radarFixtureEnabled?radarFixture():[]}
         : requestUrl.pathname.endsWith('/map/trips') ? (radarFixtureEnabled ? radarFixture() : [])
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
         : requestUrl.pathname.includes('/api/trips/') && requestUrl.pathname.includes('qa-ice-241') ? {trip:{legs:[{...radarFixture()[0],from:{...radarFixture()[0].from,departure:radarFixture()[0].departure,scheduledDeparture:radarFixture()[0].scheduledDeparture},to:{...radarFixture()[0].to,arrival:radarFixture()[0].arrival,scheduledArrival:radarFixture()[0].scheduledArrival},legGeometry:{points:radarPolyline,precision:4}}]},updatedAt:new Date().toISOString()} : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{mode:trip.mode,from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
@@ -271,7 +272,7 @@ try {
     await command("Page.addScriptToEvaluateOnNewDocument", { source:`if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('Worker disabled for deterministic UI fixtures'));` });
   }
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);
   await command("Emulation.setLocaleOverride", { locale:"de-DE" });
   await command("Emulation.setTimezoneOverride", { timezoneId:"Europe/Berlin" });
