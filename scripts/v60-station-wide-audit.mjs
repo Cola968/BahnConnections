@@ -70,6 +70,14 @@ const duplicatePrediction=stationCalls([
 assert.equal(duplicatePrediction.get('same-trip')?.arrival,Date.parse(at(18)),'Confirmed arrival survives a schedule-only duplicate');
 assert.equal(duplicatePrediction.get('same-trip')?.arrivalRealtime,true,'Confirmed realtime provenance survives duplicate');
 assert.equal(duplicatePrediction.get('same-trip')?.arrivalTrack,'8','Confirmed live platform survives a schedule-only duplicate');
+const duplicateCancellation=stationCalls([
+ {tripId:'active-trip',realTime:true,place:{arrival:at(18),scheduledArrival:at(14)}},
+ {tripId:'active-trip',realTime:false,place:{scheduledArrival:at(14)}}
+],[]);
+assert.equal(duplicateCancellation.get('active-trip')?.realtime,true,'Duplicate does not downgrade realtime provenance');
+const invalidScheduledTime=stationCalls([{tripId:'bad-time',realTime:false,place:{scheduledArrival:'not a date',arrival:'also invalid'}}],[]);
+assert.equal(invalidScheduledTime.size,0,'Invalid timestamps never create synthetic radar calls');
+
 
 const mixedTimes=stationCalls([
  {tripId:"schedule-only",realTime:false,place:{arrival:at(17),scheduledArrival:at(15)}},
