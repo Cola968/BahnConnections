@@ -97,26 +97,28 @@ export class LiveMapRenderer {
         entry.members=item.members;
         const old=entry.marker.getLatLng();
         const changed=old.lat!==item.position[0]||old.lng!==item.position[1];
+        // Re-project first: subpixel jitter should not trigger heading scans,
+        // map marker animation, or rail-distance calculations on 180 trains.
+        const screenChanged=changed && this.map.latLngToLayerPoint(old).distanceTo(this.map.latLngToLayerPoint(item.position))>=0.75;
         const icon=entry.marker.getElement();
-        const jump=changed?railDistanceKm([old.lat,old.lng],item.position):0;
+        const jump=screenChanged?railDistanceKm([old.lat,old.lng],item.position):0;
         // Only animate a continuous, plausible four-second position update.
         // New markers, stale discontinuities and moving/zooming maps snap
         // immediately rather than traversing a fictional straight line.
         icon?.classList.toggle('rail-marker-glide',Boolean(
-          entry.trip && item.trip && !this.mapIsMoving && changed &&
+          entry.trip && item.trip && !this.mapIsMoving && screenChanged &&
           Number.isFinite(jump) && jump>0 && jump<=.5
         ));
         // Avoid expensive Leaflet projection and DOM positioning for tiny
         // sub-pixel changes during high-frequency interpolation ticks.
         // Keep the last rendered coordinate until its screen position moves.
-        const screenChanged=changed && this.map.latLngToLayerPoint(old).distanceTo(this.map.latLngToLayerPoint(item.position))>=0.75;
         if(screenChanged)entry.marker.setLatLng(item.position);
         const element=entry.marker.getElement(),glyph=element?.firstElementChild;
         if(item.trip){
           const trip=item.trip,state=deriveRealtimePresentation({scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
           // Derive north-relative train heading from consecutive valid interpolated
           // track positions. Both the icon and the underlying position remain estimates.
-          if(glyph && (changed || entry.trip!==trip)){
+          if(glyph && (screenChanged || entry.trip!==trip)){
             // Reusing the same interpolated position should never rescan the
             // route geometry or rewrite 180 unchanged marker styles per tick.
             const progress=liveTripProgress(trip,at);
