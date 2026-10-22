@@ -87,3 +87,8 @@ console.log("V60 readiness audit: shortcuts, 20 planned features, motion, Render
 const stationLines=read("app/station-lines.tsx");
 assert.match(stationLines,/\.catch\(error => \{ if\(cache\.get\(key\)===request\)cache\.delete\(key\); throw error; \}\)/,"Successful station trip fetches must remain cached for line detail expansion");
 assert.match(stationLines,/key\.endsWith\(`\|\$\{id\}`\)/,"Invalidated trips must be evicted from the geometry cache");
+
+const stationSheetCss=read("app/styles/station-sheet.css");
+assert.match(stationSheetCss,/V60\.3: readable station-board focus states/,"Station-board keyboard focus must remain visible");
+assert.match(stationSheetCss,/@media \(forced-colors:active\)/,"High contrast station controls must receive visible focus outlines");
+assert.match(stationSheetCss,/font-variant-numeric:tabular-nums/,"Station times need aligned numeric glyphs");
