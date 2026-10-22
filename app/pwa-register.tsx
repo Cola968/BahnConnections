@@ -2,24 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { APP_VERSION, APP_VERSION_LABEL, isNewerAppVersion } from "./app-version";
+import { publishAvailableAppUpdate } from "./pwa-update-state";
 
 type VersionPayload = {
   version?: string;
   label?: string;
-  installPath?: string;
 };
 
 type UpdateNotice = {
   label: string;
-  installPath: string;
   waiting?: ServiceWorker;
 };
-
-const DISMISSED_UPDATE_KEY = "bahnconnections-dismissed-update";
-
-function fallbackInstallPath(label: string) {
-  return `/install?update=${encodeURIComponent(label)}`;
-}
 
 export function PwaRegister() {
   const [notice, setNotice] = useState<UpdateNotice | null>(null);
@@ -37,12 +30,16 @@ export function PwaRegister() {
     const showNotice = (payload?: VersionPayload, waiting?: ServiceWorker | null) => {
       if (!active) return;
       const version = payload?.version?.replace(/^v/i, "");
+      if(version===APP_VERSION){
+        // The new page is already running; finish its cache update without a prompt.
+        try { waiting?.postMessage({type:"SKIP_WAITING"}); } catch { /* Another tab may have activated it. */ }
+        setNotice(null);
+        return;
+      }
       const label = payload?.label || (version ? `V${version}` : "Neue Version");
-      const installPath = payload?.installPath || fallbackInstallPath(label);
       const hasNewVersion = Boolean(waiting) || Boolean(version && isNewerAppVersion(version, APP_VERSION));
       if (!hasNewVersion) return;
-      try { if (window.localStorage.getItem(DISMISSED_UPDATE_KEY) === label) return; } catch { /* Storage can be blocked in private browsing. */ }
-      setNotice({ label, installPath, waiting:waiting ?? undefined });
+      setNotice({ label, waiting:waiting ?? undefined });
     };
 
     const fetchVersion = async () => {
@@ -121,33 +118,19 @@ export function PwaRegister() {
     };
   }, []);
 
-  if (!notice) return null;
+  useEffect(()=>{
+    if(!notice){publishAvailableAppUpdate(null);return;}
+    publishAvailableAppUpdate({label:notice.label,activate:()=>{
+      const worker=notice.waiting;
+      if(!worker||worker.state==="activated"||worker.state==="redundant"){
+        window.location.reload();
+        return;
+      }
+      reloadRequestedRef.current=true;
+      worker.postMessage({type:"SKIP_WAITING"});
+    }});
+    return()=>publishAvailableAppUpdate(null);
+  },[notice]);
 
-  const activateWaitingUpdate = () => {
-    if (!notice.waiting) {
-      window.location.assign(notice.installPath);
-      return;
-    }
-    reloadRequestedRef.current = true;
-    notice.waiting.postMessage({ type:"SKIP_WAITING" });
-  };
-
-  const dismiss = () => {
-    try { window.localStorage.setItem(DISMISSED_UPDATE_KEY, notice.label); } catch { /* Dismissal still works for this session. */ }
-    setNotice(null);
-  };
-
-  return (
-    <aside className="app-update-notice" role="status" aria-live="polite">
-      <div>
-        <b>Neue BahnConnections-Version verfügbar</b>
-        <span>{notice.label} kann jetzt geladen werden. Du nutzt aktuell {APP_VERSION_LABEL}.</span>
-      </div>
-      <div className="app-update-actions">
-        <button type="button" onClick={activateWaitingUpdate}>{notice.waiting ? "Jetzt aktualisieren" : "Update prüfen"}</button>
-        <a href={notice.installPath}>Download / Installation</a>
-        <button type="button" className="app-update-dismiss" onClick={dismiss} aria-label="Update-Hinweis später anzeigen">Später</button>
-      </div>
-    </aside>
-  );
+  return notice?<span className="sr-only app-update-status" role="status" aria-live="polite">{notice.label} ist im Menü Mehr oder unter Einstellungen · App verfügbar. Aktuell {APP_VERSION_LABEL}.</span>:null;
 }

@@ -175,7 +175,8 @@ try {
     await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:themeScript.identifier});
     assert.equal(await evaluate('document.documentElement.dataset.theme'),theme,'Actual theme differs from screenshot label');
     for(const state of width<1024?['half','expanded']:['desktop']) {
-      if(state==='expanded')await click('.mobile-sheet-summary');
+      if(width<1024)for(let attempt=0;attempt<3&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!==state;attempt++)await click('.mobile-sheet-summary');
+      await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await pause(300);
       const measure=await evaluate(`(() => {
         const panel=document.querySelector('.station-card'),body=panel.querySelector('.panel-body'),header=panel.querySelector('.station-sheet-header')??panel.querySelector('.panel-tools'),tabs=panel.querySelector('.station-section-tabs'),bar=panel.querySelector('.board-primary-bar');
@@ -253,6 +254,8 @@ try {
         assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .trip-stop-event').length"),2,'Arrival and departure at the station must both remain visible');
         assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:last-child .trip-stop-event').length"),1,'Do not invent a departure at the destination');
         assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .realtime-time[data-tone=warning]').length"),1,'Departure delay must not be copied to the arrival');
+        const tripVisibility=await evaluate(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),heading=document.querySelector('.board-row.open .trip-stop-heading').getBoundingClientRect();return {top:heading.top,bottom:heading.bottom,paneTop:pane.top,paneBottom:pane.bottom};})()`);
+        assert.ok(tripVisibility.top>=tripVisibility.paneTop-1&&tripVisibility.bottom<=tripVisibility.paneBottom+1,'Opened trip heading must be visible: '+JSON.stringify(tripVisibility));
         await screenshot('390-light-unified-station-board');
         await click('.board-row-summary');
         const beforeReopen=tripRequests;
@@ -282,6 +285,12 @@ try {
         }
         assert.equal(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"),false,'Retry must recover the trip independently');
         tripRevision=0;
+        await evaluate("document.querySelector('.board-row.open .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row.open .board-row-summary');
+        await evaluate("document.querySelector('.board-row:last-of-type .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row:last-of-type .board-row-summary');
+        const lastTripVisibility=await evaluate(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),heading=document.querySelector('.board-row.open .trip-stop-heading').getBoundingClientRect();return heading.top>=pane.top-1&&heading.bottom<=pane.bottom+1;})()`);
+        assert.equal(lastTripVisibility,true,'Opening a trip at the end of the list must reveal its details');
         await evaluate("document.querySelector('.board-row.open .board-row-summary').scrollIntoView({block:'center'})");
         await click('.board-row.open .board-row-summary');
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
@@ -326,8 +335,12 @@ try {
         await click('.board-filter-close');
         assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Closing filters restores departures');
         if(theme==='light') {
+          // Prior filter and detail interactions can leave the sheet expanded.
+          // Restore its compact preset using the real UI before checking swipe gestures.
+          const beforePreset=await evaluate("document.querySelector('.app-shell').dataset.mobileSheet");
+          if(beforePreset==='expanded'||beforePreset==='collapsed') await click('.station-sheet-header .mobile-sheet-summary');
           const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
-          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+initialHeight);
+          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+JSON.stringify({height:initialHeight,state:await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")}));
           await touchSwipe('.station-sheet-header .mobile-sheet-summary',90,1);
           const shorter=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
           assert.ok(shorter<initialHeight-55,'Touch swipe down must actually resize the sheet: '+JSON.stringify({initialHeight,shorter}));

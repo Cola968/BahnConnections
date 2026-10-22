@@ -142,7 +142,7 @@ assert.match(listing,/writePreference\(localStorage/,"Pin action must be safe wh
 assert.match(listing,/Alle Fahrten anzeigen/);
 assert.doesNotMatch(listing,/document\.querySelector<HTMLButtonElement>\("\.board-filter-toggle"\)/,"Filter dismissal must return focus to the current board rather than a globally selected hidden toolbar");
 const update=source("app/pwa-register.tsx");
-assert.match(update,/Storage can be blocked in private browsing/);
+assert.doesNotMatch(update,/localStorage/,"Update availability must work without browser storage");
 const css=source("app/styles/v56-experience.css");
 assert.match(css,/@media \(max-width: 350px\)/);
 assert.match(css,/@media \(forced-colors: active\)/);
