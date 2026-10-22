@@ -52,7 +52,7 @@ class MainActivity : Activity() {
     webView.loadUrl(origin)
     val filter = IntentFilter("de.bahnconnections.android.FOLLOW_STOPPED")
     if (Build.VERSION.SDK_INT >= 33) registerReceiver(followStoppedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-    else @Suppress("DEPRECATION") registerReceiver(followStoppedReceiver, filter)
+    else registerReceiver(followStoppedReceiver, filter)
   }
 
   override fun onDestroy() {
