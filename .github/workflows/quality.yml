@@ -25,6 +25,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:release
+      - run: node scripts/pwa-patch-version-audit.mjs
       - run: pnpm audit:play-hosting
       - run: pnpm audit:railglass
       - run: pnpm audit:v60
@@ -34,6 +35,10 @@ jobs:
       - run: pnpm audit:v60-stations
       - run: node scripts/board-fallback-audit.mjs
       - run: node scripts/board-api-audit.mjs
+      - run: node scripts/board-request-budget-audit.mjs
+      - run: node scripts/board-place-metadata-audit.mjs
+      - run: node scripts/android-follow-bridge-audit.mjs
+      - run: node scripts/panel-reveal-resize-audit.mjs
       - run: pnpm audit:v61
       - run: node scripts/station-resolution-audit.mjs
       - run: node scripts/trip-detail-freshness-audit.mjs
@@ -78,6 +83,7 @@ jobs:
             sleep 2
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-hit-probe --probe
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
@@ -112,6 +118,7 @@ jobs:
             work/mobile-qa/
             work/layout-qa/
             work/station-sheet-qa/
+            work/station-hit-probe/
             work/live-map-qa/
             work/board-stream-qa/
             work/station-landscape-qa/

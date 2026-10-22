@@ -37,6 +37,9 @@ next-env.d.ts
 *.tsbuildinfo
 /outputs/
 /work/
+/android/.gradle/
+/android/**/build/
+/android/local.properties
 
 # local Codex test and deployment artifacts
 .codex-*.log

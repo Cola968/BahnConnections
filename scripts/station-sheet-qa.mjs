@@ -39,9 +39,21 @@ async function evaluate(expression) {
   return response.result?.value;
 }
 async function click(selector) {
-  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)});return {x,y};})()`);
-  await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',buttons:1,clickCount:1});
-  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',buttons:0,clickCount:1});
+  const point=await evaluate(`(() => {
+    const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});
+    const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,h=document.elementFromPoint(x,y);
+    const pane=e.closest('.panel-body'),panel=e.closest('.mobile-sheet-panel');
+    const rect=node=>{const b=node?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,height:b.height}:null;};
+    return {x,y,hit:Boolean(h&&(e===h||e.contains(h))),target:rect(e),pane:rect(pane),panel:rect(panel),scroll:pane?.scrollTop,
+      state:document.querySelector('.app-shell')?.dataset.mobileSheet,occluder:h?{tag:h.tagName,classes:h.className,text:h.textContent?.slice(0,100)}:null};
+  })()`);
+  if(!point.hit){
+    await screenshot('failed-hit-target');
+    await writeFile(join(output,'failed-hit-target.json'),JSON.stringify({selector,...point},null,2));
+    throw Error('Occluded: '+selector+' '+JSON.stringify(point));
+  }
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',buttons:1,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',buttons:0,clickCount:1});
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1,buttons:0});
   await pause(350);
 }
@@ -244,6 +256,11 @@ try {
         await pause(260);
         assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),4,'Four clear station sections');
         assert.equal(await evaluate("Boolean(document.querySelector('#station-tab-trips'))"),false,'No duplicate trip browser');
+        // Restoring a minimized panel preserves its scroll position. Scroll to
+        // the row this scenario intends to open; click() still requires a real,
+        // unobscured hit target and dispatches actual mouse events.
+        await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+        await pause(300);
         await click('.board-row-summary');
         assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','A journey opens directly in the board');
         assert.ok(await evaluate("Boolean(document.querySelector('.board-row-detail .trip-stop-panel'))"),'Journey detail stays reachable from the board');
@@ -337,8 +354,12 @@ try {
         if(theme==='light') {
           // Prior filter and detail interactions can leave the sheet expanded.
           // Restore its compact preset using the real UI before checking swipe gestures.
-          const beforePreset=await evaluate("document.querySelector('.app-shell').dataset.mobileSheet");
-          if(beforePreset==='expanded'||beforePreset==='collapsed') await click('.station-sheet-header .mobile-sheet-summary');
+          // The real cycle is expanded -> collapsed -> half -> expanded.
+          // A single click from expanded intentionally minimizes the sheet.
+          for(let attempt=0;attempt<2&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!=='half';attempt++) {
+            await click('.station-sheet-header .mobile-sheet-summary');
+          }
+          assert.equal(await evaluate("document.querySelector('.app-shell').dataset.mobileSheet"),'half','Preset setup must reach half through real controls');
           const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
           assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+JSON.stringify({height:initialHeight,state:await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")}));
           await touchSwipe('.station-sheet-header .mobile-sheet-summary',90,1);

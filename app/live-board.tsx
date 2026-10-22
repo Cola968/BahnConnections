@@ -14,6 +14,7 @@ import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
 import { boardDisplayActual,boardDisplayPlatform,boardEventTime,boardPredictionFresh } from "./board-time";
 import { tripDetailFresh } from "./trip-detail-freshness";
+import { boardTripRequest } from "./board-request-budget";
 import { TripStopTimes } from "./trip-stop-times";
 import { RealtimePlatform } from "./realtime-platform";
 import { BoardToolbar, BoardQuickFilters } from "./board-toolbar";
@@ -21,7 +22,7 @@ import {activeBoardQuickView,boardQuickSelection,type BoardQuickView} from "./bo
 import { UiIcon } from "./ui-icon";
 import { deriveRealtimePresentation } from "./realtime-presentation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { revealPanelContent } from "./panel-content-visibility";
+import { revealPanelContent,observePanelReveal } from "./panel-content-visibility";
 import type { Station } from "./network-data";
 import { decodePolyline } from "./live-trains";
 import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
@@ -247,9 +248,13 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(tripId)}`, window.location.origin);
   const tripSignal=signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000);
-  const revision=tripRevision(tripId);
-  const response = await fetch(url, { signal:tripSignal,cache:"no-store" });
-  const envelope = await readTripResponse<{ trip?: { legs?: TripLeg[] } }>(response,tripId,revision);
+  const envelope = await boardTripRequest(async()=>{
+    tripSignal.throwIfAborted();
+    const revision=tripRevision(tripId);
+    const response=await fetch(url,{signal:tripSignal,cache:"no-store"});
+    // Keep the slot until the response body and conflict checks are complete.
+    return readTripResponse<{ trip?: { legs?: TripLeg[] } }>(response,tripId,revision);
+  },tripSignal);
   const payload = envelope.trip ?? {};
   const stops: TripPlace[] = [];
   const segments: [number, number][][] = [];
@@ -568,11 +573,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips, onRev
   const openReferenceTime=openEntry?.plannedWhen??openEntry?.when;
   useLayoutEffect(()=>{
     if(!openKey)return;
-    const frame=requestAnimationFrame(()=>{
-      const row=boardRef.current?.querySelector<HTMLElement>(".board-row.open");
-      revealPanelContent(row??null,row?.querySelector<HTMLElement>(".trip-stop-heading"));
-    });
-    return()=>cancelAnimationFrame(frame);
+    const row=boardRef.current?.querySelector<HTMLElement>(".board-row.open");
+    return observePanelReveal(row??null,row?.querySelector<HTMLElement>(".trip-stop-heading"));
   },[openKey]);
   useLayoutEffect(()=>{
     if(!filtersOpen)return;

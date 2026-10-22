@@ -10,6 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/live-map-qa');
 const baseline = args.includes('--baseline');
+const profile = args.includes('--profile');
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -17,7 +18,7 @@ await rm(join(output,'report.json'),{force:true});
 const browser = spawn(process.env.EDGE_PATH ?? '/usr/bin/chromium',[
   '--headless=new', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === '1' ? ['--no-sandbox'] : []),
-  '--no-first-run', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(),`bahn-station-${process.pid}`)}`, 'about:blank',
+    '--no-first-run', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(),`bahn-station-${process.pid}-${Date.now()}`)}`, 'about:blank',
 ],{stdio:['ignore','ignore','pipe']});
 let browserError = '';
 browser.stderr.on('data',chunk => {browserError=(browserError+chunk).slice(-4000);});
@@ -54,11 +55,11 @@ function trips(){const now=Date.now();return Array.from({length:count},(_,i)=>{c
 let requests=0;
 try {
   let targets;
-  for(let i=0;i<100;i++) {
+  for(let i=0;i<300;i++) {
     if(browser.exitCode!==null)throw Error(browserError);
     try{targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();break;}catch{await pause(100);}
   }
-  assert.ok(targets?.length,browserError);
+  assert.ok(targets?.length,'Chromium did not expose a page within 30 seconds. '+browserError);
   socket=new WebSocket(targets.find(t=>t.type==='page').webSocketDebuggerUrl);
   await new Promise((resolveOpen,rejectOpen)=>{socket.addEventListener('open',resolveOpen,{once:true});socket.addEventListener('error',rejectOpen,{once:true});});
 
@@ -66,7 +67,7 @@ try {
     const m=JSON.parse(String(event.data));
     if(m.method==='Fetch.requestPaused'){
       const path=new URL(m.params.request.url).pathname;
-      const payload=path==='/api/radar'?{segments:(requests++,trips())}:path.endsWith('/map/trips')?(requests++,trips()):path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:trips().map(t=>({tripId:t.trips[0].tripId,place:{arrival:t.arrival,departure:t.departure}})),updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
+      const payload=path==='/api/radar'?{segments:(requests++,trips())}:path.endsWith('/map/trips')?(requests++,trips()):path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:trips().map(t=>({tripId:t.trips[0].tripId,displayName:t.trips[0].displayName,mode:t.mode,tripTo:t.to,realTime:t.realTime,place:{arrival:t.arrival,departure:t.departure}})),updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
       void command('Fetch.fulfillRequest',{requestId:m.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(()=>{});return;
     }
     const p=pending.get(m.id);if(!p)return;clearTimeout(p.timer);pending.delete(m.id);if(m.error)p.rejectCommand(Error(m.error.message));else p.resolveCommand(m.result);
@@ -85,13 +86,27 @@ try {
   await command('Input.dispatchKeyEvent',{type:'keyDown',key:'l',code:'KeyL',windowsVirtualKeyCode:76});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'l',code:'KeyL',windowsVirtualKeyCode:76});
   for(let i=0;i<200;i++){if(await evaluate(`document.querySelectorAll('.live-train-wrap').length===${count}`))break;await pause(100);}
   assert.equal(await evaluate("document.querySelectorAll('.live-train-wrap').length"),count,'All fixture trains must render');
+  if(!baseline)assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),0,'Closed radar calls must not build hidden rows');
   await command('Emulation.setCPUThrottlingRate',{rate:4});
+  if(profile){await command('Profiler.enable');await command('Profiler.start');}
   await evaluate(`window.radarQa={original:[...document.querySelectorAll('.live-train-wrap')],tasks:[],gaps:[],mutations:0};new PerformanceObserver(list=>window.radarQa.tasks.push(...list.getEntries().map(e=>e.duration))).observe({type:'longtask',buffered:false});new MutationObserver(list=>window.radarQa.mutations+=list.reduce((n,e)=>n+[...e.addedNodes,...e.removedNodes].filter(v=>v.nodeType===1&&v.classList?.contains('live-train-wrap')).length,0)).observe(document.querySelector('.leaflet-marker-pane'),{childList:true});let prior=performance.now();function frame(now){window.radarQa.gaps.push(now-prior);prior=now;requestAnimationFrame(frame);}requestAnimationFrame(frame);`);
   await pause(17000);
   const metrics=await evaluate(`(() => {const p=window.radarQa;return {retained:p.original.filter(e=>e.isConnected).length,mutations:p.mutations,maxTask:Math.max(0,...p.tasks),blockingTime:p.tasks.reduce((n,t)=>n+Math.max(0,t-50),0),longTasks:p.tasks.length,maxFrameGap:Math.max(0,...p.gaps),markers:document.querySelectorAll('.live-train-wrap').length};})()`);
+  if(profile){const result=await command('Profiler.stop');await writeFile(join(output,'radar.cpuprofile'),JSON.stringify(result.profile));await command('Profiler.disable');}
   await command('Emulation.setCPUThrottlingRate',{rate:1});await screenshot('1440-radar');
   await writeFile(join(output,'report.json'),JSON.stringify({fixture:true,baseline,cpuSlowdown:4,count,pointsPerTrip,requests,...metrics},null,2));console.log(JSON.stringify(metrics));
   if(!baseline){
+    await click('.station-radar-calls summary');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),40,'Open radar calls in a bounded first page');
+    assert.ok(await evaluate("document.querySelector('.radar-calls-more').getBoundingClientRect().height>=44"),'More calls must have a 44px touch target');
+    await click('.radar-calls-more');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),80,'More exposes the next page without dropping previous calls');
+    await click('.station-radar-call-search input');
+    await command('Input.insertText',{text:'RE 179'});await pause(250);
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),1,'Search must include calls beyond the rendered page');
+    assert.match(await evaluate("document.querySelector('.station-radar-call-list').textContent"),/RE 179/);
+    await click('.station-radar-calls summary');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),0,'Closing releases the rendered rows');
     await evaluate("window.radarQa.original[0].focus()");await pause(4100);
     assert.equal(await evaluate("document.activeElement===window.radarQa.original[0]"),true,'Animation ticks retain keyboard focus');
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});

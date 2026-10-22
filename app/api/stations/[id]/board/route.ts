@@ -6,11 +6,11 @@ import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
-type TransitousPlace = { name?:string; lat?:number; lon?:number };
+type TransitousPlace = { name?:string; lat?:number; lon?:number; stopId?:string; parentId?:string };
 type DbLocation = { id?:string; name?:string; type?:string; location?:{ latitude?:number; longitude?:number } };
 
 async function json<T>(url: URL, signal?:AbortSignal) {
-  const response = await fetch(url, { signal, headers:{ Accept:"application/json", "User-Agent":"BahnConnections/24" } });
+  const response = await fetch(url, { signal, headers:transitousRequestHeaders() });
   if (!response.ok) throw new Error(`${url.hostname} ${response.status}`);
   return await response.json() as T;
 }
@@ -32,17 +32,15 @@ async function resolveDbStop(place: TransitousPlace, signal:AbortSignal) {
 
 }
 
-async function crossCheck(stopId:string, stopTimes:TransitousBoardRow[], arrival:boolean, startTime:Date, requestSignal:AbortSignal): Promise<BoardCrossCheck> {
+async function crossCheck(place:TransitousPlace|undefined, stopTimes:TransitousBoardRow[], arrival:boolean, startTime:Date, requestSignal:AbortSignal): Promise<BoardCrossCheck> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 2_800);
   const signal = AbortSignal.any([controller.signal, requestSignal]);
   const checkedAt = new Date().toISOString();
   try {
-    const stopUrl = new URL("https://api.transitous.org/api/v6/stop");
-    stopUrl.searchParams.set("stopId", stopId);
-    stopUrl.searchParams.set("language", "de");
-    const stopPayload = await json<{ place?:TransitousPlace }>(stopUrl, signal);
-    const dbStop = await resolveDbStop(stopPayload.place ?? {}, signal);
+    // MOTIS exposes the requested stop as Place on /stoptimes. There is no
+    // /api/v6/stop endpoint in its published schema; avoid that undocumented dependency.
+    const dbStop = await resolveDbStop(place ?? {}, signal);
     const boardUrl = new URL(`https://v6.db.transport.rest/stops/${encodeURIComponent(dbStop.id)}/${arrival ? "arrivals" : "departures"}`);
     boardUrl.searchParams.set("when", startTime.toISOString());
     boardUrl.searchParams.set("duration", "500");
@@ -103,13 +101,15 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     if (requestedTime) url.searchParams.set("time", requestedTime);
     // Per-station and per-direction: no map viewport is consulted.
     // If realtime fails or lacks records, retry the same stop as timetable-only.
+    let providerPlace:TransitousPlace|undefined;
     const requestRows=async(mode:StoptimesMode):Promise<unknown>=>{
       const candidate=new URL(url);
       candidate.searchParams.set("realtimeMode",mode);
       const response=await fetch(candidate,{headers:transitousRequestHeaders(),signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)])});
       if(response.status===429)throw new StationSourceThrottledError("Transitous meldet eine Abfragesperre (429). Bitte später erneut versuchen.");
       if(!response.ok)throw new Error(`Transitous ${response.status}`);
-      const responseData=await response.json() as {stopTimes?:unknown}|null;
+      const responseData=await response.json() as {stopTimes?:unknown;place?:TransitousPlace}|null;
+      providerPlace=responseData?.place;
       return responseData?.stopTimes;
     };
     const {stopTimes:rawStopTimes,fallback,warning}=await loadStationBoardWithFallback(requestRows);
@@ -117,7 +117,12 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const stopTimes=guarded.stopTimes;
     const hasRealtime = !fallback && stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
-    const primary = { ...guarded,stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
+    // MOTIS's default scope includes the parent and same-name stations plus
+    // their children. Preserve its opaque IDs; never trim IDs or mix a radius.
+    const safeId=(value:unknown)=>typeof value==='string'&&value.length<=500?value:undefined;
+    const stationScope={requestedStopId:stopId,providerStopId:safeId(providerPlace?.stopId),parentId:safeId(providerPlace?.parentId),
+      grouping:'MOTIS default parent/same-name grouping',operatorCoverage:'unverified'};
+    const primary = { ...guarded,stopTimes,stationScope, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
     // The disruption screen needs route-specific alerts, not a second DB check
     // for each direction. Streamed live boards retain full verification.
     if(query.get("verify")==="0" && query.get("stream")!=="1"){
@@ -126,7 +131,7 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const verificationController=new AbortController();
     const verificationSignal=AbortSignal.any([request.signal,verificationController.signal]);
     const verify = async () => {
-      const verification = await crossCheck(stopId,stopTimes,arrival,Number.isNaN(startTime.getTime()) ? new Date() : startTime,verificationSignal);
+      const verification = await crossCheck(providerPlace,stopTimes,arrival,Number.isNaN(startTime.getTime()) ? new Date() : startTime,verificationSignal);
       return { verification, source:verification.status === "matched" ? "Transitous / MOTIS · DB-Gegenprüfung" : primary.source,
         warnings:[...primary.warnings,...(verification.status === "matched" ? [] : [verification.message])] };
     };
