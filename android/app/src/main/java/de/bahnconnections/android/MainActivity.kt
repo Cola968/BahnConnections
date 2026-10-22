@@ -33,7 +33,9 @@ class MainActivity : Activity() {
       override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
         val uri = request.url
         if (uri.scheme == "https" && uri.host == allowedHost) return false
-        startActivity(Intent(Intent.ACTION_VIEW, uri))
+        if (uri.scheme == "https" || uri.scheme == "mailto" || uri.scheme == "tel") {
+          runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+        }
         return true
       }
     }
