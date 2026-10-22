@@ -192,7 +192,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     const existing = tripCacheRef.current.get(key);
     if (existing) return existing;
     const cache = tripCacheRef.current;
-    const request = loadFullTrip(line, sample, station, signal, processorRef.current!).finally(() => { if(cache.get(key)===request)cache.delete(key); });
+    const request = loadFullTrip(line, sample, station, signal, processorRef.current!).catch(error => { if(cache.get(key)===request)cache.delete(key); throw error; });
     cache.set(key, request);
     return request;
   }
