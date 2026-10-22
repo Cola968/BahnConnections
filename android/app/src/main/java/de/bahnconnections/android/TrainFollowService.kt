@@ -15,7 +15,6 @@ class TrainFollowService : Service() {
     private const val CHANNEL = "active_train_follow"
     private const val NOTIFICATION = 552
   }
-  private var tripId: String? = null
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onCreate() {
@@ -32,7 +31,7 @@ class TrainFollowService : Service() {
       return START_NOT_STICKY
     }
     if (intent?.action != START) return START_NOT_STICKY
-    val id = intent.getStringExtra("id")?.takeIf { it.isNotBlank() } ?: return START_NOT_STICKY
+    if (intent.getStringExtra("id").isNullOrBlank()) return START_NOT_STICKY
     val name = intent.getStringExtra("name").orEmpty().take(100)
     val from = intent.getStringExtra("from").orEmpty().take(120)
     val to = intent.getStringExtra("to").orEmpty().take(120)
