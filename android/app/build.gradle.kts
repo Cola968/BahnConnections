@@ -4,6 +4,11 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
   namespace = "de.bahnconnections.android"
   compileSdk = 35
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+  kotlinOptions { jvmTarget = "17" }
   buildFeatures { buildConfig = true }
   defaultConfig {
     val origin = providers.gradleProperty("bahnConnectionsOrigin").orElse("https://bahnconnections-de.a-stad.chatgpt.site").get().trimEnd('/')
