@@ -419,6 +419,11 @@ export default function Home() {
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const stationRadarCallList = useMemo(() => listStationCalls(stationRadar.calls,radarDirection,radarTripQuery),[stationRadar.calls,radarDirection,radarTripQuery]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
+  useEffect(()=>{
+    const stopped=()=>setTrackedTripId(null);
+    window.addEventListener("bahnconnections-native-follow-stopped",stopped);
+    return ()=>window.removeEventListener("bahnconnections-native-follow-stopped",stopped);
+  },[]);
   // Android notifications run only while the user explicitly follows this train.
   // Do not stop/restart the native service on every radar refresh.
   const nativeFollowId=trackedTripId && selectedLiveTrip?.tripId===trackedTripId ? trackedTripId : null;
