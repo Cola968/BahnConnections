@@ -48,7 +48,7 @@ class TrainFollowService : Service() {
     val builder = Notification.Builder(this, CHANNEL)
       .setSmallIcon(android.R.drawable.ic_menu_directions)
       .setContentTitle("$name · $from → $to")
-      .setContentText("Fahrtfortschritt zeitlich geschätzt · kein GPS")
+      .setContentText("Zeitbasierte Schätzung · kein Live-GPS")
       .setContentIntent(openIntent)
       .setOngoing(true)
       .addAction(Notification.Action.Builder(null, "Verfolgung beenden", stopIntent).build())
