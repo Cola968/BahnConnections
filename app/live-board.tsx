@@ -22,7 +22,7 @@ import {activeBoardQuickView,boardQuickSelection,type BoardQuickView} from "./bo
 import { UiIcon } from "./ui-icon";
 import { deriveRealtimePresentation } from "./realtime-presentation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { revealPanelContent } from "./panel-content-visibility";
+import { revealPanelContent,observePanelReveal } from "./panel-content-visibility";
 import type { Station } from "./network-data";
 import { decodePolyline } from "./live-trains";
 import { compactStationLabel, serviceBadgeStyle } from "./transit-style";
@@ -573,11 +573,8 @@ export function LiveBoard({ station, onSummary, onMapTrip, onStationTrips, onRev
   const openReferenceTime=openEntry?.plannedWhen??openEntry?.when;
   useLayoutEffect(()=>{
     if(!openKey)return;
-    const frame=requestAnimationFrame(()=>{
-      const row=boardRef.current?.querySelector<HTMLElement>(".board-row.open");
-      revealPanelContent(row??null,row?.querySelector<HTMLElement>(".trip-stop-heading"));
-    });
-    return()=>cancelAnimationFrame(frame);
+    const row=boardRef.current?.querySelector<HTMLElement>(".board-row.open");
+    return observePanelReveal(row??null,row?.querySelector<HTMLElement>(".trip-stop-heading"));
   },[openKey]);
   useLayoutEffect(()=>{
     if(!filtersOpen)return;
