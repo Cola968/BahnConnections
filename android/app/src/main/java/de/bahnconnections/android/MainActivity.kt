@@ -27,7 +27,7 @@ class MainActivity : Activity() {
     super.onCreate(savedInstanceState)
     // Set the real HTTPS origin for your own deployment before packaging an APK.
     val origin = BuildConfig.WEB_ORIGIN
-    require(origin.startsWith("https://")) { "HTTPS origin required" }
+    require(Uri.parse(origin).scheme == "https") { "HTTPS origin required" }
     webView = WebView(this)
     webView.settings.javaScriptEnabled = true
     webView.settings.domStorageEnabled = true
