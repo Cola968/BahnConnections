@@ -31,6 +31,7 @@ import { listStationCalls, matchesStationCall, type StationRadarDirection } from
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
 import { TrainRadarHud } from "./train-radar-hud";
+import { syncAndroidFollow } from "./android-follow-bridge";
 import { JourneyAlternatives, TransferNotice } from "./journey-alternatives";
 import {ROUTE_INVALIDATED_EVENT} from './trip-response';
 import { LiveBoard, type BoardMapTrip, type BoardSummary } from "./live-board";
@@ -418,6 +419,12 @@ export default function Home() {
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const stationRadarCallList = useMemo(() => listStationCalls(stationRadar.calls,radarDirection,radarTripQuery),[stationRadar.calls,radarDirection,radarTripQuery]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
+  // Android service is opt-in: only an explicit active trackedTripId can show it.
+  // A missing train never manufactures a GPS position or journey progress.
+  useEffect(()=>{
+    syncAndroidFollow(trackedTripId ? currentTrackedTrip??selectedLiveTrip : null);
+    return ()=>syncAndroidFollow(null);
+  },[trackedTripId,currentTrackedTrip,selectedLiveTrip]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
     if (!liveCategories.includes(trip.category)) return false;
