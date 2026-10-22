@@ -335,8 +335,12 @@ try {
         await click('.board-filter-close');
         assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Closing filters restores departures');
         if(theme==='light') {
+          // Prior filter and detail interactions can leave the sheet expanded.
+          // Restore its compact preset using the real UI before checking swipe gestures.
+          const beforePreset=await evaluate("document.querySelector('.app-shell').dataset.mobileSheet");
+          if(beforePreset==='expanded'||beforePreset==='collapsed') await click('.station-sheet-header .mobile-sheet-summary');
           const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
-          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+initialHeight);
+          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+JSON.stringify({height:initialHeight,state:await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")}));
           await touchSwipe('.station-sheet-header .mobile-sheet-summary',90,1);
           const shorter=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
           assert.ok(shorter<initialHeight-55,'Touch swipe down must actually resize the sheet: '+JSON.stringify({initialHeight,shorter}));
