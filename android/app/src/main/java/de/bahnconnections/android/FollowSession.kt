@@ -11,7 +11,7 @@ data class FollowSession(
 ) {
   fun isValid() = id.isNotBlank() && id.length <= 500 && name.isNotBlank() && name.length <= 100 &&
     from.isNotBlank() && to.isNotBlank() && from.length <= 120 && to.length <= 120 &&
-    departure.length <= 80 && arrival.length <= 80 && status in setOf("unverified", "blocked", "cancelled")
+    departure.length <= 80 && arrival.length <= 80 && status in setOf("unverified", "blocked", "cancelled", "stop-cancelled")
 
   fun progress(now: Long): Int? {
     // Stale, cancelled, blocked or non-realtime metadata cannot imply live progress.
@@ -25,6 +25,7 @@ data class FollowSession(
   fun delayLabel(now: Long): String = when {
     status == "blocked" -> "Routenkonflikt · Verlauf nicht bestätigt"
     status == "cancelled" -> "Fahrt fällt aus"
+    status == "stop-cancelled" -> "Halt entfällt · Verlauf prüfen"
     !realtime || now < updatedAt || now - updatedAt > 150_000 -> "Daten veraltet · keine aktuelle Prognose"
     delay == null -> "Verspätung unbekannt"
     delay > 0 -> "+$delay min · gemeldete Prognose"

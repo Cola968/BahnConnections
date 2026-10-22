@@ -144,11 +144,12 @@ class TrainFollowService : Service() {
         val arrival = to.optString("arrival")
         val actual = runCatching { Instant.parse(departure).toEpochMilli() }.getOrNull()
         val scheduled = runCatching { Instant.parse(from.optString("scheduledDeparture")).toEpochMilli() }.getOrNull()
-        val cancelled = leg.optBoolean("cancelled") || from.optBoolean("cancelled") || to.optBoolean("cancelled")
+        val cancelled = leg.optBoolean("cancelled")
+        val stopCancelled = from.optBoolean("cancelled") || to.optBoolean("cancelled")
         return s.copy(departure = departure, arrival = arrival,
           delay = if (actual != null && scheduled != null) ((actual - scheduled) / 60_000).toInt() else null,
-          realtime = leg.optBoolean("realTime") && !cancelled, updatedAt = System.currentTimeMillis(),
-          status = if (cancelled) "cancelled" else "unverified")
+          realtime = leg.optBoolean("realTime") && !cancelled && !stopCancelled, updatedAt = System.currentTimeMillis(),
+          status = if (cancelled) "cancelled" else if (stopCancelled) "stop-cancelled" else "unverified")
       }
       return s.copy(realtime = false, status = "blocked")
     } finally { connection = null; http.disconnect() }

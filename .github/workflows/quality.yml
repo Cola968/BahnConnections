@@ -82,6 +82,7 @@ jobs:
             sleep 2
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-hit-probe --probe
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
@@ -116,6 +117,7 @@ jobs:
             work/mobile-qa/
             work/layout-qa/
             work/station-sheet-qa/
+            work/station-hit-probe/
             work/live-map-qa/
             work/board-stream-qa/
             work/station-landscape-qa/

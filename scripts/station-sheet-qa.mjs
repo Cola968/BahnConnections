@@ -39,9 +39,21 @@ async function evaluate(expression) {
   return response.result?.value;
 }
 async function click(selector) {
-  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)});return {x,y};})()`);
-  await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',buttons:1,clickCount:1});
-  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',buttons:0,clickCount:1});
+  const point=await evaluate(`(() => {
+    const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});
+    const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,h=document.elementFromPoint(x,y);
+    const pane=e.closest('.panel-body'),panel=e.closest('.mobile-sheet-panel');
+    const rect=node=>{const b=node?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,height:b.height}:null;};
+    return {x,y,hit:Boolean(h&&(e===h||e.contains(h))),target:rect(e),pane:rect(pane),panel:rect(panel),scroll:pane?.scrollTop,
+      state:document.querySelector('.app-shell')?.dataset.mobileSheet,occluder:h?{tag:h.tagName,classes:h.className,text:h.textContent?.slice(0,100)}:null};
+  })()`);
+  if(!point.hit){
+    await screenshot('failed-hit-target');
+    await writeFile(join(output,'failed-hit-target.json'),JSON.stringify({selector,...point},null,2));
+    throw Error('Occluded: '+selector+' '+JSON.stringify(point));
+  }
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',buttons:1,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',buttons:0,clickCount:1});
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1,buttons:0});
   await pause(350);
 }

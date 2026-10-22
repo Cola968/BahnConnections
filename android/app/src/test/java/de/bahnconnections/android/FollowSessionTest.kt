@@ -34,4 +34,11 @@ class FollowSessionTest {
     assertFalse(trip().copy(id = "a".repeat(501)).isValid())
     assertFalse(trip().copy(status = "verified").isValid())
   }
+  @Test fun skippedStopIsNotClaimedAsFullTripCancellation() {
+    val s = trip().copy(status = "stop-cancelled")
+    assertTrue(s.isValid())
+    assertNull(s.progress(s.updatedAt))
+    assertTrue(s.delayLabel(s.updatedAt).contains("Halt entfällt"))
+    assertFalse(s.delayLabel(s.updatedAt).contains("Fahrt fällt aus"))
+  }
 }
