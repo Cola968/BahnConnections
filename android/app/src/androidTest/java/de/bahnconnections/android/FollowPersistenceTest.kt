@@ -18,8 +18,13 @@ class FollowPersistenceTest {
     val session = FollowSession("fixture", "ICE 100", "Berlin", "Hamburg", "", "", null, false, 0)
     assertTrue(FollowStore(context).save(session))
     assertEquals(session, FollowStore(context).read())
-    // A null action follows the same persisted-state restoration branch as a sticky restart.
-    instrumentation.uiAutomation.executeShellCommand("am start-foreground-service -n ${context.packageName}/.TrainFollowService").close()
+    // Start from the app's visible Activity and UID. The service is deliberately
+    // not exported, so a shell am start-service would test a permission denial.
+    val activity = instrumentation.startActivitySync(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    // A null action follows the persisted-state branch used by a sticky restart.
+    instrumentation.runOnMainSync {
+      context.startForegroundService(Intent(context, TrainFollowService::class.java))
+    }
     val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     val deadline = System.currentTimeMillis() + 8_000
     while (notifications.activeNotifications.isEmpty() && System.currentTimeMillis() < deadline) Thread.sleep(50)
@@ -30,5 +35,6 @@ class FollowPersistenceTest {
     assertNull(FollowStore(context).read())
     while (notifications.activeNotifications.isNotEmpty() && System.currentTimeMillis() < stopped) Thread.sleep(50)
     assertTrue("Explicit stop must remove the notification", notifications.activeNotifications.isEmpty())
+    instrumentation.runOnMainSync { activity.finish() }
   }
 }
