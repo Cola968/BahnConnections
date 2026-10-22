@@ -33,6 +33,7 @@ class MainActivity : Activity() {
     webView.settings.domStorageEnabled = true
     webView.settings.allowFileAccess = false
     webView.settings.allowContentAccess = false
+    webView.settings.javaScriptCanOpenWindowsAutomatically = false
     val allowedHost = Uri.parse(origin).host ?: error("Invalid HTTPS origin")
     originHost = allowedHost
     webView.webViewClient = object : WebViewClient() {
