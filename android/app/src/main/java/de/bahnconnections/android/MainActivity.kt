@@ -13,7 +13,6 @@ import android.net.Uri
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
-import android.webkit.WebResourceRequest
 
 class MainActivity : Activity() {
   private lateinit var webView: WebView
@@ -80,8 +79,9 @@ class MainActivity : Activity() {
 
   private inner class FollowBridge {
     @JavascriptInterface fun start(id: String, name: String, from: String, to: String, departure: String, arrival: String) {
-      if (!isTrustedPage() || id.isBlank() || id.length > 500 || name.isBlank() || name.length > 100 || from.isBlank() || to.isBlank() || from.length > 120 || to.length > 120) return
+      if (id.isBlank() || id.length > 500 || name.isBlank() || name.length > 100 || from.isBlank() || to.isBlank() || from.length > 120 || to.length > 120) return
       runOnUiThread {
+        if (!isTrustedPage()) return@runOnUiThread
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
           requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
           return@runOnUiThread
@@ -96,8 +96,8 @@ class MainActivity : Activity() {
     }
 
     @JavascriptInterface fun stop() {
-      if (!isTrustedPage()) return
       runOnUiThread {
+        if (!isTrustedPage()) return@runOnUiThread
         startService(Intent(this@MainActivity, TrainFollowService::class.java).apply { action = TrainFollowService.STOP })
       }
     }
