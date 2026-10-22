@@ -32,9 +32,9 @@ jobs:
       - run: pnpm audit:v60-transfer
       - run: pnpm audit:v60-share
       - run: pnpm audit:v60-stations
-      - run: pnpm audit:v61
       - run: node scripts/board-fallback-audit.mjs
       - run: node scripts/board-api-audit.mjs
+      - run: pnpm audit:v61
       - run: node scripts/station-resolution-audit.mjs
       - run: node scripts/trip-detail-freshness-audit.mjs
       - run: pnpm exec tsc --noEmit

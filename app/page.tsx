@@ -231,8 +231,8 @@ export default function Home() {
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [radarDirection,setRadarDirection] = useState<StationRadarDirection>("all");
-  const [stationCallsOpen,setStationCallsOpen] = useState(false);
   const [radarTripQuery,setRadarTripQuery] = useState("");
+  const [stationCallsOpen,setStationCallsOpen] = useState(false);
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
   const [selectedLiveTrip, setSelectedLiveTrip] = useState<LiveTrip | null>(null);

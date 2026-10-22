@@ -16,11 +16,10 @@ const calls=stationCalls([
  {tripId:"c",displayName:"ICE 1205",headsign:"München Hbf",place:{scheduledDeparture:minute(15)}},
  {tripId:"d",displayName:"RB 12",headsign:"Oranienburg",tripCancelled:true,place:{scheduledDeparture:minute(5)}},
 ]);
-assert.equal(listStationCalls(calls,"all").some(item=>item.tripId==="d"),false,"Cancelled calls are never selectable for map follow");
 assert.equal(calls.size,4,"Do not filter out trips lacking map markers or polyline geometry");
-assert.deepEqual(listStationCalls(calls,"all","",true).map(item=>item.tripId),["d","c","a","b"],"Calls sorted by stop event time");
+assert.deepEqual(listStationCalls(calls,"all").map(item=>item.tripId),["c","a","b"],"Calls sorted by stop event time");
 assert.deepEqual(listStationCalls(calls,"inbound").map(item=>item.tripId),["c","a","b"]);
-assert.deepEqual(listStationCalls(calls,"outbound","",true).map(item=>item.tripId),["d","c","a"]);
+assert.deepEqual(listStationCalls(calls,"outbound").map(item=>item.tripId),["c","a"]);
 assert.deepEqual(listStationCalls(calls,"all","ice 100").map(item=>item.tripId),["a"],"Case-insensitive train search");
 assert.deepEqual(listStationCalls(calls,"all","HAMBURG").map(item=>item.tripId),["a"],"Destination search");
 assert.equal(listStationCalls(calls,"all","nicht vorhanden").length,0,"No fabricated results");
@@ -32,7 +31,7 @@ const page=read("app/page.tsx"),panel=read("app/station-calls-browser.tsx");
 const css=read("app/styles/v61-station-calls.css"),layout=read("app/layout.tsx");
 assert.match(page,/liveVisible \|\| stationCallsOpen/,"Load provider calls on demand even with map radar disabled");
 assert.match(page,/StationCallsBrowser key=\{\`calls-/,"Station list belongs to selected station");
-assert.match(panel,/listStationCalls\(snapshot.calls,direction,query,true\)/,"Use the actual shared provider call list");
+assert.match(panel,/listStationCalls\(snapshot.calls,direction,query\)/,"Use the actual shared provider call list");
 assert.match(panel,/type="search"/);
 assert.match(panel,/onClick=\{\(\)=>\{setDirection/);
 assert.match(panel,/rows.slice\(0,limit\)/,"Bound DOM work for busy stations");

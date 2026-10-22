@@ -47,7 +47,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
     const timer=window.setInterval(update,30_000);
     return()=>{window.clearTimeout(start);window.clearInterval(timer);};
   },[open]);
-  const rows=useMemo(()=>listStationCalls(snapshot.calls,direction,query,true),[snapshot.calls,direction,query]);
+  const rows=useMemo(()=>listStationCalls(snapshot.calls,direction,query),[snapshot.calls,direction,query]);
   const visible=rows.slice(0,limit);
   const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock-snapshot.updatedAt<120_000;
   const partial=snapshot.coverage!=="complete";

@@ -1,9 +1,8 @@
-# V61.2 · Zusammengeführtes Webupdate
+# V61.2 · 22.10.2026
 
-- Globale Routengültigkeitsprüfung und begrenzte Fahrtabfragen aus dem GitHub-Entwicklungsstand integriert.
-- V61.1-Bahnhofshalte, sichtbare Panelinhalte und ruhige PWA-Updates erhalten.
-- Kompaktere mobile Panels und überarbeitete Einstellungen.
-- Die native Android-Benachrichtigung erfordert eine separat gebaute und getestete Android-App.
+- Neueste Routenkonfliktprüfung und Zugverfolgung aus PR #74 mit den veröffentlichten V61.1-Panelkorrekturen zusammengeführt.
+- Versionsdatei und PWA-Cache auf V61.2 angehoben.
+- Betreiberabdeckung und reale Android-Abnahme bleiben unvollständig.
 
 # V61.1 · Geöffnete Bahnhofsinhalte bleiben sichtbar
 
