@@ -21,7 +21,15 @@ class MainActivity : Activity() {
     webView = WebView(this)
     webView.settings.javaScriptEnabled = true
     webView.settings.domStorageEnabled = true
-    webView.webViewClient = WebViewClient()
+    webView.settings.allowFileAccess = false
+    webView.settings.allowContentAccess = false
+    val allowedHost = android.net.Uri.parse(origin).host
+    webView.webViewClient = object : WebViewClient() {
+      override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
+        val uri = request.url
+        return uri.scheme != "https" || uri.host != allowedHost
+      }
+    }
     webView.addJavascriptInterface(FollowBridge(), "BahnConnectionsAndroid")
     setContentView(webView)
     webView.loadUrl(origin)
