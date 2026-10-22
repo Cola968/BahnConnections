@@ -45,7 +45,6 @@ class MainActivity : Activity() {
   }
 
   override fun onDestroy() {
-    if (isFinishing) startService(Intent(this, TrainFollowService::class.java).apply { action = TrainFollowService.STOP })
     webView.destroy()
     super.onDestroy()
   }
