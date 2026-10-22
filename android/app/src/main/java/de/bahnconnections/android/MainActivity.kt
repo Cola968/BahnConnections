@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebResourceRequest
 import android.net.Uri
 
 class MainActivity : Activity() {
@@ -37,6 +36,12 @@ class MainActivity : Activity() {
     webView.addJavascriptInterface(FollowBridge(), "BahnConnectionsAndroid")
     setContentView(webView)
     webView.loadUrl(origin)
+  }
+
+  override fun onDestroy() {
+    if (isFinishing) startService(Intent(this, TrainFollowService::class.java).apply { action = TrainFollowService.STOP })
+    webView.destroy()
+    super.onDestroy()
   }
 
   @Deprecated("Deprecated in Java")
