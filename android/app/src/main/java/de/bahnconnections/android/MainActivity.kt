@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebResourceRequest
+import android.net.Uri
 
 class MainActivity : Activity() {
   private lateinit var webView: WebView
@@ -23,11 +25,13 @@ class MainActivity : Activity() {
     webView.settings.domStorageEnabled = true
     webView.settings.allowFileAccess = false
     webView.settings.allowContentAccess = false
-    val allowedHost = android.net.Uri.parse(origin).host
+    val allowedHost = Uri.parse(origin).host
     webView.webViewClient = object : WebViewClient() {
       override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
         val uri = request.url
-        return uri.scheme != "https" || uri.host != allowedHost
+        if (uri.scheme == "https" && uri.host == allowedHost) return false
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
+        return true
       }
     }
     webView.addJavascriptInterface(FollowBridge(), "BahnConnectionsAndroid")
@@ -42,7 +46,7 @@ class MainActivity : Activity() {
 
   private inner class FollowBridge {
     @JavascriptInterface fun start(id: String, name: String, from: String, to: String, departure: String, arrival: String) {
-      if (id.isBlank() || id.length > 500 || name.length > 100 || from.length > 120 || to.length > 120) return
+      if (id.isBlank() || id.length > 500 || name.isBlank() || name.length > 100 || from.isBlank() || to.isBlank() || from.length > 120 || to.length > 120) return
       runOnUiThread {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
           requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
