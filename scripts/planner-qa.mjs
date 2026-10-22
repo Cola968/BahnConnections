@@ -119,6 +119,7 @@ try {
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/services') ? serviceFixture : requestUrl.pathname.endsWith('/board') ? boardFixture()
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
+        : requestUrl.pathname==='/api/radar' ? {segments:[]}
         : requestUrl.pathname.endsWith('/map/trips') ? []
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
         : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled,legGeometry:{points:denseGeometry,precision:6}}]}}
@@ -208,7 +209,7 @@ try {
     await command("Page.addScriptToEvaluateOnNewDocument", { source:`if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('Worker disabled for deterministic UI fixtures'));` });
   }
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/stations/*/services*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{urlPattern:"*://*/api/stations/*/services*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   const baseline=process.argv.includes('--baseline');
   const checks=[];
   await setViewport(390,844);

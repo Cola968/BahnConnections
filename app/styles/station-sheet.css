@@ -7,7 +7,7 @@
 .app-shell .live-board { position:relative; background:transparent; }
 .board-filter-panel { position:absolute; z-index:12; top:44px; left:0; right:0; display:block; max-height:min(420px,60dvh); overflow:auto; border:1px solid var(--glass-stroke); border-radius:18px; background:var(--glass-scroll-edge); backdrop-filter:var(--glass-filter-strong); -webkit-backdrop-filter:var(--glass-filter-strong); box-shadow:var(--glass-shadow); }
 /* Keep one readable content plane while the filter surface is open. */
-.live-board:has(>.board-filter-panel)>:is(.board-table,.board-data-details) { visibility:hidden; }
+.live-board:has(>.board-filter-panel)>:is(.board-table,.board-data-details) { display:none; }
 .board-filter-heading { display:flex; align-items:center; justify-content:space-between; }
 .board-filter-heading button { display:grid; place-items:center; width:44px; height:44px; border:0; color:var(--ink); background:transparent; }
 .board-filter-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
@@ -26,6 +26,19 @@
 @media (max-width:1023px) {
 
   .app-shell .mobile-sheet-panel { scrollbar-gutter:auto; }
+  /* The entire sheet must NEVER scroll behind its own non-sticky header.
+     Only panel-body scrolls: two nested scrollers let header tabs overlap
+     close/minimize buttons after scrollIntoView or a breakpoint change. */
+  .app-shell .station-card.mobile-sheet-panel {
+    display:flex;
+    flex-direction:column;
+    overflow-y:hidden!important;
+  }
+  .app-shell .station-card.mobile-sheet-panel>.panel-body {
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+  }
   .app-shell .mobile-sheet-panel,
   .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel { background:linear-gradient(145deg,var(--glass-highlight-soft),transparent 44%),var(--glass-sheet-expanded)!important; -webkit-backdrop-filter:var(--glass-filter-strong)!important; backdrop-filter:var(--glass-filter-strong)!important; box-shadow:var(--glass-shadow)!important; }
   .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
@@ -212,4 +225,83 @@
 @media (min-width:1024px) {
   .app-shell .board-primary-bar { flex-wrap:nowrap; min-height:48px; }
   .app-shell .board-actions { margin-left:auto; }
+}
+
+
+/* V60 Glassy UI-inspired station-board clarity (independent original CSS).
+   Keep real-time information crisp and flat, reserve glass for the shell. */
+.app-shell .station-card {
+  --board-surface:var(--paper);
+}
+.app-shell .live-board .board-row {
+  background:var(--board-surface);
+}
+.app-shell .board-row-summary {
+  isolation:isolate;
+  transition:background-color var(--motion-fast) ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .app-shell .board-row-summary:hover {
+    background:color-mix(in srgb,var(--accent) 5%,var(--paper));
+  }
+}
+.app-shell .board-row-summary:focus-visible,
+.app-shell .board-row-summary:focus-within {
+  outline:2px solid var(--accent);
+  outline-offset:-2px;
+  border-radius:var(--radius-control);
+}
+.app-shell .board-row-summary .board-destination b {
+  overflow-wrap:anywhere;
+}
+.app-shell .board-row-summary .board-time {
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+@media (max-width:390px) {
+  .app-shell .board-row-summary {
+    column-gap:6px;
+  }
+  .app-shell .board-row-summary .board-destination {
+    min-width:0;
+    overflow:hidden;
+  }
+  .app-shell .board-row-summary .board-destination b {
+    line-height:1.28;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .board-row-summary {transition:none;}
+}
+
+
+/* V60.3: readable station-board focus states and robust text enlargement.
+   Glass stays on the surrounding sheet; operational times and destinations stay opaque. */
+.app-shell .station-lines :is(button,a):focus-visible,
+.app-shell .live-board :is(button,a):focus-visible,
+.app-shell .station-section-tabs button:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.app-shell .live-board .board-row,
+.app-shell .station-lines .station-line-row {
+  contain:layout style;
+}
+@media (max-width:430px) {
+  .app-shell .board-row-summary .board-destination,
+  .app-shell .station-lines .station-line-row :is(strong,b,small) {
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  .app-shell .board-row-summary .board-time {
+    flex-shrink:0;
+    font-variant-numeric:tabular-nums;
+  }
+}
+@media (forced-colors:active) {
+  .app-shell .station-lines :is(button,a):focus-visible,
+  .app-shell .live-board :is(button,a):focus-visible,
+  .app-shell .station-section-tabs button:focus-visible {
+    outline:2px solid Highlight;
+  }
 }

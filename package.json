@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "58.0.0",
+  "version": "60.2.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -34,7 +34,11 @@
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
     "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
-    "build:render": "pnpm add -D nitro @tailwindcss/vite && NITRO_PRESET=node vite build --config vite.render.config.ts"
+    "audit:v60": "node scripts/v60-audit.mjs",
+    "audit:v60-passenger": "node scripts/v60-passenger-audit.mjs",
+    "audit:v60-transfer": "node scripts/v60-transfer-audit.mjs",
+    "audit:v60-share": "node scripts/v60-share-audit.mjs",
+    "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",

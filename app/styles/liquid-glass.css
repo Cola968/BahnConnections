@@ -518,3 +518,34 @@ html[data-theme="dark"][data-contrast="high"] {
     box-shadow:0 16px 46px color-mix(in srgb,var(--glass-depth) 45%,transparent);
   }
 }
+
+
+/* V60.3 glass controls: interaction feedback must be visible on every input
+   method, including keyboard-only navigation and Windows high-contrast mode. */
+.app-shell :is(
+  .desktop-navigation button,
+  .mobile-navigation button,
+  .mobile-map-view-button,
+  .location-trigger,
+  .live-map-toolbar button,
+  .map-menu-popover button,
+  .view-menu-popover button,
+  .navigation-more summary,
+  .navigation-more button,
+  .mobile-sheet-actions button,
+  .station-card-actions button,
+  .round-button
+):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+@media (forced-colors:active) {
+  .app-shell :is(
+    .desktop-navigation button,.mobile-navigation button,.mobile-map-view-button,
+    .location-trigger,.live-map-toolbar button,.map-menu-popover button,
+    .view-menu-popover button,.navigation-more summary,.navigation-more button,
+    .mobile-sheet-actions button,.station-card-actions button,.round-button
+  ):focus-visible {
+    outline:2px solid Highlight;
+  }
+}

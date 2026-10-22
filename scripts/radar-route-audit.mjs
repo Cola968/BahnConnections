@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {registerHooks} from 'node:module';
+const hooks=registerHooks({resolve(specifier,context,next){try{return next(specifier,context);}catch(error){if(error.code==='ERR_MODULE_NOT_FOUND'&&specifier.startsWith('.')&&!/\.[a-z]+$/i.test(specifier))return next(specifier+'.ts',context);throw error;}}});
+const {GET}=await import('../app/api/radar/route.ts');
+const {revalidateJourney}=await import('../app/journey-revalidation.ts');
+hooks.deregister();
+const originalFetch=globalThis.fetch,originalWindow=globalThis.window;
+const start=new Date(Date.now()-30_000).toISOString(),end=new Date(Date.now()+30_000).toISOString();
+const segment=id=>({trips:[{tripId:id,displayName:'RE 1'}],mode:'REGIONAL_RAIL',from:{name:'A'},to:{name:'B'},departure:start,arrival:end,polyline:'??AA'});
+const rawLeg={mode:'REGIONAL_RAIL',displayName:'RE 1',from:{name:'A'},to:{name:'B'},startTime:start,endTime:end};
+try{
+  let tripRequests=0;
+  globalThis.fetch=async url=>{
+    const parsed=new URL(url);
+    if(parsed.pathname.endsWith('/map/trips'))return Response.json([segment('safe'),segment('blocked'),segment('offline')]);
+    tripRequests++;const id=parsed.searchParams.get('tripId');
+    if(id==='offline')return new Response(null,{status:503});
+    return Response.json({legs:[{...rawLeg,alerts:id==='blocked'?[{effect:4,header:'Umleitung'}]:[]}]});
+  };
+  const response=await GET(new Request('https://test.invalid/api/radar?lat=52.5&lon=13.4'));
+  assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
+  const payload=await response.json();assert.deepEqual(payload.segments.map(s=>s.trips[0].tripId),['safe']);assert.equal(tripRequests,3,'Every unique displayed trip requires fresh full-trip evidence');
+  globalThis.fetch=async url=>new URL(url).pathname.endsWith('/map/trips')?Response.json([segment('safe')]):Response.json({legs:[{...rawLeg,from:{name:'Changed stop'}}]});
+  assert.equal((await (await GET(new Request('https://test.invalid/api/radar?lat=52.5&lon=13.4'))).json()).segments.length,0,'Old map endpoints must match current full route');
+  globalThis.fetch=async url=>new URL(url).pathname.endsWith('/map/trips')?Response.json([segment('safe')]):Response.json({legs:[{...rawLeg,mode:'BUS'}]});
+  assert.equal((await (await GET(new Request('https://test.invalid/api/radar?lat=52.5&lon=13.4'))).json()).segments.length,0,'Full-trip mode must match map mode');
+  let calls=0;globalThis.fetch=async()=>{calls++;throw Error('must not fetch');};
+  assert.equal((await GET(new Request('https://test.invalid/api/radar?lat=NaN&lon=13'))).status,400);assert.equal(calls,0);
+  const stop=name=>({id:name,name,lat:52.5,lon:13.4});
+  const leg={category:'regional',name:'RE 1',startTime:start,endTime:end,scheduledStartTime:start,scheduledEndTime:end,from:stop('A'),to:stop('B'),stops:[stop('A'),stop('B')],alerts:[]};
+  const journey={id:'old',startTime:start,endTime:end,scheduledStartTime:start,scheduledEndTime:end,legs:[leg],transitLegs:[leg],warnings:[]};
+  globalThis.window={};
+  globalThis.fetch=async(_url,options)=>{calls++;assert.equal(JSON.parse(options.body).from.name,'A');return Response.json({journeys:[{...journey,id:'new'}]});};
+  assert.equal((await revalidateJourney(journey)).id,'new','Export uses a newly fetched journey');
+  globalThis.fetch=async()=>Response.json({journeys:[{...journey,transitLegs:[{...leg,stops:[stop('A'),stop('Replacement'),stop('B')]}]}]});
+  await assert.rejects(revalidateJourney(journey),/Haltefolge/,'Stored route may not export when fresh stop sequence differs');
+  globalThis.fetch=async()=>Response.json({journeys:[]});
+  await assert.rejects(revalidateJourney(journey),/Haltefolge/,'No current route means no export');
+}finally{globalThis.fetch=originalFetch;if(originalWindow===undefined)delete globalThis.window;else globalThis.window=originalWindow;}
+console.log('Radar + export: fresh full trip evidence, conflict/error hiding, changed endpoints, bounded input and fresh export comparison passed.');

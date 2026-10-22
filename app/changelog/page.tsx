@@ -1,7 +1,17 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- Vinext native links work before hydration. */
 import {APP_VERSION_LABEL} from "../app-version";
 const releases=[
- {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:true,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
+ {version:"V60.2",date:"15. Oktober 2026",current:true,lead:"Eine übersichtliche Bahnhofstafel statt zweier ähnlicher Fahrtenansichten.",tags:["Einfacher","Bahnhofstafel","Fahrtverlauf"],changes:[["Eine gemeinsame Tafel","Der doppelte Fahrten-Tab entfällt. Alle Fahrten bleiben über Abfahrt und Ankunft erreichbar."],["Mehr Ruhe in der Liste","Schnellfilter sind unter Filter gebündelt; nur eine Fahrt öffnet sich gleichzeitig."],["Details am richtigen Ort","Der Fahrtverlauf zeigt Ankunft und Abfahrt getrennt. Die Karte öffnet sich erst mit Auf Karte."]]},
+ {version:"V60.1",date:"15. Oktober 2026",current:false,lead:"Bahnhofstafeln erkennen mehr deutsche Bahnhofsnamen zuverlässig.",tags:["Live-Tafeln","Bahnhofssuche","Fehlerbehebung"],changes:[["Bessere Bahnhofserkennung","Abweichende Ortszusätze und Bahnhofskürzel korrekt zuordnen; Fern- und Regionalbahnhöfe getrennt halten."],["Geografische Ersatzsuche","Fehlende Suchtreffer mit Namens- und Koordinatenprüfung ergänzen. Keine Bushaltestellen als Bahn-Halte verwenden."],["Abgesicherte Fehlerbehandlung","Abgebrochene Anfragen nicht zwischenspeichern und Anfragelimits ohne weitere Wiederholungen respektieren."]]},
+ {version:"V60.0",date:"14. Oktober 2026 · Release-Kandidat",current:false,lead:"Praktischere Zugverfolgung, ehrliche Umstiege, teilbare Fahrten und weniger störende Bedienhürden.",tags:["Umstiege","Zugverfolgung","Teilen","Mobil"],changes:[
+  ["Besserer Zuglauf","Ankunft und Abfahrt an tatsächlich gemeldeten Halten, Datenstand, Aufenthalt und Filter für kommende Halte übersichtlich darstellen."],
+  ["Ehrliche Umstiege","Rechnerischen Puffer aus Fahrzeiten und gemeldeten Fußwegen zeigen; fehlende Gehzeiten und unbekannte Anschlüsse offen benennen."],
+  ["Nützliche Alternativen","Ausfälle ausblenden oder einblenden, Verbindungen nach Umstiegszeit und weiteren Fahrgastkriterien sortieren."],
+  ["Zugfahrt teilen","Soll- und gegebenenfalls aktuelle Prognosezeiten als begrenzte Momentaufnahme teilen oder kopieren, ohne GPS-Behauptung."],
+  ["Weniger Klicks","Lokaler Verlauf kürzlich genutzter Bahnhöfe, Tastaturhilfe und ruhige Animationen mit Barrierefreiheitsoptionen."],
+  ["Verlässliche Daten","Stale-Gleise und ungültige Zeitstrings aus aktuellen Angaben heraushalten, unbelegte Auslastung und Scores entfernen."]
+ ]},
+ {version:"V58.0",date:"14. Oktober 2026 · Entwicklung",current:false,lead:"BahnConnections wird schneller verständlich: Railglass, praktische Schnellansichten und ehrliche Radar-Daten.",tags:["Railglass","Schnellfilter","Radar","Android"],changes:[
   ["Bahnhofstafel sofort filtern","Mit einem Tipp nur die nächste Stunde, verspätete oder ausgefallene Züge ansehen; Filter vollständig zurücksetzen."],
   ["Reisealternativen","Alternative Verbindungen sofort nach Ankunft, Reisezeit, Umstiegen oder Fußweg sortieren; bei Ausfall direkt darauf hinweisen."],
   ["Radar-Datenstatus","Geschätzte Positionen und Echtzeitquelle klar trennen. Ein Klick führt zur Methodik."],

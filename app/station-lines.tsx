@@ -1,4 +1,6 @@
 "use client";
+import {readTripResponse,tripRevision,ROUTE_INVALIDATED_EVENT} from './trip-response';
+
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BoardMapTrip } from "./live-board";
@@ -151,9 +153,9 @@ export function normaliseRoutes(routes: ApiRoute[], stopTimes: StopTime[]) {
 
 async function loadFullTrip(line: StationLine, sample: LineSample, station: Station, signal: AbortSignal, processor:StationTripProcessor): Promise<BoardMapTrip> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(sample.tripId)}`, window.location.origin);
-  const response = await fetch(url, { signal:AbortSignal.any([signal, AbortSignal.timeout(20_000)]) });
-  if (!response.ok) throw new Error(`Fahrtverlauf ${response.status}`);
-  const envelope = await response.json() as { trip?: { legs?: StationTripInput['legs'] } };
+  const revision=tripRevision(sample.tripId);
+  const response = await fetch(url, { signal:AbortSignal.any([signal, AbortSignal.timeout(20_000)]),cache:'no-store' });
+  const envelope = await readTripResponse<{ trip?: { legs?: StationTripInput['legs'] } }>(response,sample.tripId,revision);
   signal.throwIfAborted();
   return processor.prepare({tripId:sample.tripId,name:line.shortName,category:line.category,realtime:sample.realtime,
     color:line.routeColor,textColor:line.routeTextColor,time:sample.time,station:{name:station.name,lat:station.lat,lon:station.lon},legs:envelope.trip?.legs??[]},signal);
@@ -173,6 +175,10 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   const [statusMessage, setStatusMessage] = useState("");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [routeDetails, setRouteDetails] = useState<Record<string, BoardMapTrip[]>>({});
+  useEffect(()=>{
+    const invalidate=(event:Event)=>{const id=(event as CustomEvent<{id:string}>).detail.id;for(const key of tripCacheRef.current.keys())if(key.endsWith(`|${id}`))tripCacheRef.current.delete(key);setRouteDetails(current=>Object.fromEntries(Object.entries(current).map(([key,trips])=>[key,trips.filter(trip=>trip.tripId!==id)])));};
+    window.addEventListener(ROUTE_INVALIDATED_EVENT,invalidate);return()=>window.removeEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
+  },[]);
   const [routeStates, setRouteStates] = useState<Record<string, "loading" | "ready" | "error">>({});
   const [bulk, setBulk] = useState<{ state:"idle" | "loading" | "ready"; completed:number; total:number; failed:number }>({ state:"idle", completed:0, total:0, failed:0 });
   const processorRef = useRef<StationTripProcessor | null>(null);
@@ -186,7 +192,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     const existing = tripCacheRef.current.get(key);
     if (existing) return existing;
     const cache = tripCacheRef.current;
-    const request = loadFullTrip(line, sample, station, signal, processorRef.current!).catch(error => { cache.delete(key); throw error; });
+    const request = loadFullTrip(line, sample, station, signal, processorRef.current!).catch(error => { if(cache.get(key)===request)cache.delete(key); throw error; });
     cache.set(key, request);
     return request;
   }
@@ -195,7 +201,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     const processor = new StationTripProcessor();
     processorRef.current = processor;
     detailControllerRef.current = controller;
-    tripCacheRef.current = new Map();
+    tripCacheRef.current.clear();
     return () => { controller.abort(); processor.dispose(); };
   }, [station]);
 
@@ -252,7 +258,8 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   async function toggleLine(line: StationLine) {
     if (expandedKey === line.key) { setExpandedKey(null); return; }
     setExpandedKey(line.key);
-    if (routeDetails[line.key] || routeStates[line.key] === "loading") return;
+    if (routeStates[line.key] === "loading") return;
+    setRouteDetails(current=>{const next={...current};delete next[line.key];return next;});
     if (!line.samples.length) { setRouteStates((current) => ({ ...current, [line.key]:"error" })); return; }
     setRouteStates((current) => ({ ...current, [line.key]:"loading" }));
     const controller = detailControllerRef.current ?? new AbortController();

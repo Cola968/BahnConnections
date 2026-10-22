@@ -11,14 +11,13 @@ export function useLiveRadar(station:Station|null,enabled:boolean,onRefresh:(tri
   const refresh=useEffectEvent(onRefresh);
   useEffect(()=>{
     if(!station||!enabled)return;
-    let loaded=false;
     const poller=new VisibilityPoller(async signal=>{
       try {
         const trips=await fetchLiveTrips(station,signal);if(signal.aborted)return;
-        loaded=true;setData({coverageKey:key,trips,state:'ready',updatedAt:new Date()});refresh(trips);
+        setData({coverageKey:key,trips,state:'ready',updatedAt:new Date()});refresh(trips);
       } catch {
         if(signal.aborted)return;
-        setData(current=>loaded?{...current,state:'stale'}:{coverageKey:key,trips:[],state:'error',updatedAt:null});
+        setData({coverageKey:key,trips:[],state:'error',updatedAt:null});refresh([]);
       }
     },45_000,document);
     return ()=>poller.dispose();

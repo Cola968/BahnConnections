@@ -1,7 +1,10 @@
+import {assessStationRows} from "../../../../station-route-validity";
 import { decodeRouteSegment } from "../../../decode-route-segment";
+import { loadStationBoardWithFallback, StationSourceThrottledError, type StoptimesMode } from "../../../../station-board-fallback";
+import { boardRequestWindow } from "../../../../board-request-window";
 import { chooseStationMatch } from "../../../../station-match";
 import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
-import { compareBoardRows, validTransitousBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
+import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
 type TransitousPlace = { name?:string; lat?:number; lon?:number };
 type DbLocation = { id?:string; name?:string; type?:string; location?:{ latitude?:number; longitude?:number } };
@@ -81,6 +84,13 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     url.searchParams.set("stopId", stopId);
     const requestedCount=Number(query.get("n")??1400);
     url.searchParams.set("n",String(Number.isFinite(requestedCount)?Math.min(5000,Math.max(50,Math.floor(requestedCount))):1400));
+    // MOTIS returns at least n events OR the whole requested time window.
+    // A bounded window prevents distant future services from dominating the
+    // selected station's timetable and allows realistic station-wide coverage.
+    const windowSeconds=boardRequestWindow(query.get("window"));
+    if(windowSeconds===undefined)
+      return Response.json({stopTimes:[],warnings:["Ungültiges Zeitfenster"]},{status:400});
+    if(windowSeconds!==null) url.searchParams.set("window",String(windowSeconds));
     const arrival = query.get("kind") === "arrival";
     url.searchParams.set("arriveBy", arrival ? "true" : "false");
     url.searchParams.set("direction", "LATER");
@@ -91,13 +101,23 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const requestedTime=query.get("time");
     if (requestedTime && (!Number.isFinite(Date.parse(requestedTime)) || requestedTime.length>80)) return Response.json({ stopTimes:[], warnings:["Ungültiger Abfragezeitpunkt"] }, { status:400 });
     if (requestedTime) url.searchParams.set("time", requestedTime);
-    const response = await fetch(url, { headers:transitousRequestHeaders(), signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)]) });
-    if (!response.ok) throw new Error(`Transitous ${response.status}`);
-    const responseData = await response.json() as { stopTimes?:unknown } | null;
-    const stopTimes = validTransitousBoardRows(responseData?.stopTimes);
-    const hasRealtime = stopTimes.some((item) => item.realTime === true);
+    // Per-station and per-direction: no map viewport is consulted.
+    // If realtime fails or lacks records, retry the same stop as timetable-only.
+    const requestRows=async(mode:StoptimesMode):Promise<unknown>=>{
+      const candidate=new URL(url);
+      candidate.searchParams.set("realtimeMode",mode);
+      const response=await fetch(candidate,{headers:transitousRequestHeaders(),signal:AbortSignal.any([request.signal,AbortSignal.timeout(15_000)])});
+      if(response.status===429)throw new StationSourceThrottledError("Transitous meldet eine Abfragesperre (429). Bitte später erneut versuchen.");
+      if(!response.ok)throw new Error(`Transitous ${response.status}`);
+      const responseData=await response.json() as {stopTimes?:unknown}|null;
+      return responseData?.stopTimes;
+    };
+    const {stopTimes:rawStopTimes,fallback,warning}=await loadStationBoardWithFallback(requestRows);
+    const guarded=assessStationRows(rawStopTimes);
+    const stopTimes=guarded.stopTimes;
+    const hasRealtime = !fallback && stopTimes.some((item) => item.realTime === true);
     const startTime = query.get("time") ? new Date(query.get("time")!) : new Date();
-    const primary = { stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."] };
+    const primary = { ...guarded,stopTimes, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
     // The disruption screen needs route-specific alerts, not a second DB check
     // for each direction. Streamed live boards retain full verification.
     if(query.get("verify")==="0" && query.get("stream")!=="1"){
@@ -121,8 +141,9 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
       });
       return new Response(body,{headers:{"Content-Type":"application/x-ndjson; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
     }
-    return Response.json({...primary,...await verify()});
+    return Response.json({...primary,...await verify()},{headers:{"Cache-Control":"no-store"}});
   } catch (error) {
-    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:502 });
+    const throttled=error instanceof StationSourceThrottledError;
+    return Response.json({ stopTimes:[], source:"Transitous / MOTIS", updatedAt, realtimeStatus:"partial", warnings:[error instanceof Error ? error.message : "Bahnhofstafel nicht erreichbar"] }, { status:throttled?429:502,headers:{"Cache-Control":"no-store",...(throttled?{"Retry-After":"60"}:{})} });
   }
 }
