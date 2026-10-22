@@ -273,3 +273,35 @@
 @media (prefers-reduced-motion:reduce) {
   .app-shell .board-row-summary {transition:none;}
 }
+
+
+/* V60.3: readable station-board focus states and robust text enlargement.
+   Glass stays on the surrounding sheet; operational times and destinations stay opaque. */
+.app-shell .station-lines :is(button,a):focus-visible,
+.app-shell .live-board :is(button,a):focus-visible,
+.app-shell .station-section-tabs button:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.app-shell .live-board .board-row,
+.app-shell .station-lines .station-line-row {
+  contain:layout style;
+}
+@media (max-width:430px) {
+  .app-shell .board-row-summary .board-destination,
+  .app-shell .station-lines .station-line-row :is(strong,b,small) {
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  .app-shell .board-row-summary .board-time {
+    flex-shrink:0;
+    font-variant-numeric:tabular-nums;
+  }
+}
+@media (forced-colors:active) {
+  .app-shell .station-lines :is(button,a):focus-visible,
+  .app-shell .live-board :is(button,a):focus-visible,
+  .app-shell .station-section-tabs button:focus-visible {
+    outline:2px solid Highlight;
+  }
+}
