@@ -25,6 +25,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:release
+      - run: node scripts/pwa-patch-version-audit.mjs
       - run: pnpm audit:play-hosting
       - run: pnpm audit:railglass
       - run: pnpm audit:v60
@@ -34,6 +35,8 @@ jobs:
       - run: pnpm audit:v60-stations
       - run: node scripts/board-fallback-audit.mjs
       - run: node scripts/board-api-audit.mjs
+      - run: node scripts/board-request-budget-audit.mjs
+      - run: node scripts/board-place-metadata-audit.mjs
       - run: pnpm audit:v61
       - run: node scripts/station-resolution-audit.mjs
       - run: node scripts/trip-detail-freshness-audit.mjs

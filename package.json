@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "61.2.0",
+  "version": "61.2.1",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -39,7 +39,8 @@
     "audit:v60-transfer": "node scripts/v60-transfer-audit.mjs",
     "audit:v60-share": "node scripts/v60-share-audit.mjs",
     "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs",
-    "audit:v61": "node scripts/v61-audit.mjs"
+    "audit:v61": "node scripts/v61-audit.mjs",
+    "audit:request-budget": "node scripts/board-request-budget-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",

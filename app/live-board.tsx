@@ -14,6 +14,7 @@ import { VisibilityPoller } from "./visibility-poller";
 import { RealtimeTime } from "./realtime-time";
 import { boardDisplayActual,boardDisplayPlatform,boardEventTime,boardPredictionFresh } from "./board-time";
 import { tripDetailFresh } from "./trip-detail-freshness";
+import { boardTripRequest } from "./board-request-budget";
 import { TripStopTimes } from "./trip-stop-times";
 import { RealtimePlatform } from "./realtime-platform";
 import { BoardToolbar, BoardQuickFilters } from "./board-toolbar";
@@ -247,9 +248,13 @@ function boardResult(payload:BoardPayload,kind:BoardKind) {
 async function loadTrip(tripId: string, station?: Station, referenceTime?: string, signal?: AbortSignal): Promise<TripDetail> {
   const url = new URL(`/api/trips/transitous/${encodeURIComponent(tripId)}`, window.location.origin);
   const tripSignal=signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000);
-  const revision=tripRevision(tripId);
-  const response = await fetch(url, { signal:tripSignal,cache:"no-store" });
-  const envelope = await readTripResponse<{ trip?: { legs?: TripLeg[] } }>(response,tripId,revision);
+  const envelope = await boardTripRequest(async()=>{
+    tripSignal.throwIfAborted();
+    const revision=tripRevision(tripId);
+    const response=await fetch(url,{signal:tripSignal,cache:"no-store"});
+    // Keep the slot until the response body and conflict checks are complete.
+    return readTripResponse<{ trip?: { legs?: TripLeg[] } }>(response,tripId,revision);
+  },tripSignal);
   const payload = envelope.trip ?? {};
   const stops: TripPlace[] = [];
   const segments: [number, number][][] = [];

@@ -1,3 +1,7 @@
+# V61.2.1 RC1 · unveröffentlicht
+
+Gemeinsames Detailabruflimit, korrigierte mobile Testvorbereitung und überarbeiteter nativer Android-Follow-Lifecycle. Native Ausführung und Betreiberabdeckung sind erst nach dokumentierter Abnahme freigegeben.
+
 # V61.2 · 22.10.2026
 
 - Neueste Routenkonfliktprüfung und Zugverfolgung aus PR #74 mit den veröffentlichten V61.1-Panelkorrekturen zusammengeführt.

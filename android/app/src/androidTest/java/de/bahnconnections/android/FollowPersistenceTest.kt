@@ -1,0 +1,34 @@
+package de.bahnconnections.android
+
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class FollowPersistenceTest {
+  @Test fun sessionSurvivesStoreRecreationAndExplicitStopRemovesNotification() {
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    val context = instrumentation.targetContext
+    instrumentation.uiAutomation.executeShellCommand("pm grant ${context.packageName} android.permission.POST_NOTIFICATIONS").close()
+    val session = FollowSession("fixture", "ICE 100", "Berlin", "Hamburg", "", "", null, false, 0)
+    assertTrue(FollowStore(context).save(session))
+    assertEquals(session, FollowStore(context).read())
+    // A null action follows the same persisted-state restoration branch as a sticky restart.
+    instrumentation.uiAutomation.executeShellCommand("am start-foreground-service -n ${context.packageName}/.TrainFollowService").close()
+    val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val deadline = System.currentTimeMillis() + 8_000
+    while (notifications.activeNotifications.isEmpty() && System.currentTimeMillis() < deadline) Thread.sleep(50)
+    assertTrue("Restored service must publish its notification", notifications.activeNotifications.isNotEmpty())
+    context.startService(Intent(context, TrainFollowService::class.java).apply { action = TrainFollowService.STOP })
+    val stopped = System.currentTimeMillis() + 8_000
+    while (FollowStore(context).read() != null && System.currentTimeMillis() < stopped) Thread.sleep(50)
+    assertNull(FollowStore(context).read())
+    while (notifications.activeNotifications.isNotEmpty() && System.currentTimeMillis() < stopped) Thread.sleep(50)
+    assertTrue("Explicit stop must remove the notification", notifications.activeNotifications.isEmpty())
+  }
+}

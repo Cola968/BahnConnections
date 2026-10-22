@@ -437,22 +437,18 @@ export default function Home() {
   // Android notifications run only while the user explicitly follows this train.
   // Do not stop/restart the native service on every radar refresh.
   const nativeFollowId=trackedTripId && selectedLiveTrip?.tripId===trackedTripId ? trackedTripId : null;
-  const previousNativeFollowId=useRef<string|null>(null);
   useEffect(()=>{
     // Do not stop an existing Android follow session just because the WebView
     // was reloaded or its React state was recreated.
     if (!nativeFollowId) {
-      if (previousNativeFollowId.current) syncAndroidFollow(null);
-      previousNativeFollowId.current=null;
       return;
     }
     const followed=selectedLiveTrip;
     if (followed?.tripId===nativeFollowId) {
-      syncAndroidFollow(followed);
-      previousNativeFollowId.current=nativeFollowId;
+      syncAndroidFollow(currentTrackedTrip??followed,liveUpdatedAt,liveState==='ready'&&Boolean(currentTrackedTrip));
     }
     // No cleanup on unmount: the native notification survives app closure.
-  },[nativeFollowId,selectedLiveTrip]);
+  },[nativeFollowId,selectedLiveTrip,currentTrackedTrip,liveUpdatedAt,liveState]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
     if (!liveCategories.includes(trip.category)) return false;
@@ -1521,9 +1517,9 @@ export default function Home() {
           </section>
         )}
 
-        {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>setTrackedTripId(null)}/>}
+        {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>{syncAndroidFollow(null);setTrackedTripId(null);}}/>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && stationLiveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
+          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(!next)syncAndroidFollow(null);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && stationLiveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
