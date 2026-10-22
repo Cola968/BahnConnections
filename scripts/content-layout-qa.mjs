@@ -271,7 +271,7 @@ try {
       const panel=document.querySelector('.floating-panel'),head=panel?.querySelector('.panel-tools'),body=panel?.querySelector('.panel-body');
       const hr=head?.getBoundingClientRect(),br=body?.getBoundingClientRect();
       const visible=el=>Boolean(el.getClientRects().length)&&getComputedStyle(el).visibility!=='hidden';
-      const overflow=[...document.querySelectorAll('.panel-body,.board-row-summary,.realtime-time,.station-line-row,.live-stop-list li,.journey-time-range')].filter(visible).filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className);
+      const overflow=[...document.querySelectorAll('.panel-body,.board-row-summary,.realtime-time,.station-line-row,.live-stop-list li,.journey-time-range,.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views,.board-filter-panel,.station-search,.line-route-detail')].filter(visible).filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className);
       const overlaps=[];
       for(const row of document.querySelectorAll('.board-row-summary,.station-line-row,.live-stop-list li')) {
         if(!visible(row))continue;
