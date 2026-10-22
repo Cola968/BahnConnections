@@ -10,9 +10,17 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.net.Uri
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 
 class MainActivity : Activity() {
   private lateinit var webView: WebView
+  private val followStoppedReceiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+      if (::webView.isInitialized) webView.evaluateJavascript("window.dispatchEvent(new Event('bahnconnections-native-follow-stopped'))", null)
+    }
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -42,9 +50,13 @@ class MainActivity : Activity() {
     webView.addJavascriptInterface(FollowBridge(), "BahnConnectionsAndroid")
     setContentView(webView)
     webView.loadUrl(origin)
+    val filter = IntentFilter("de.bahnconnections.android.FOLLOW_STOPPED")
+    if (Build.VERSION.SDK_INT >= 33) registerReceiver(followStoppedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+    else @Suppress("DEPRECATION") registerReceiver(followStoppedReceiver, filter)
   }
 
   override fun onDestroy() {
+    unregisterReceiver(followStoppedReceiver)
     webView.destroy()
     super.onDestroy()
   }
