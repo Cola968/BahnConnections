@@ -50,6 +50,8 @@ class MainActivity : Activity() {
     webView.addJavascriptInterface(FollowBridge(), "BahnConnectionsAndroid")
     setContentView(webView)
     webView.loadUrl(origin)
+    // Returning to the app must not overwrite an active notification with
+    // an empty web tracking state. The native service remains authoritative.
     val filter = IntentFilter("de.bahnconnections.android.FOLLOW_STOPPED")
     if (Build.VERSION.SDK_INT >= 33) registerReceiver(followStoppedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
     else registerReceiver(followStoppedReceiver, filter)
