@@ -86,6 +86,7 @@ try {
   await command('Input.dispatchKeyEvent',{type:'keyDown',key:'l',code:'KeyL',windowsVirtualKeyCode:76});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'l',code:'KeyL',windowsVirtualKeyCode:76});
   for(let i=0;i<200;i++){if(await evaluate(`document.querySelectorAll('.live-train-wrap').length===${count}`))break;await pause(100);}
   assert.equal(await evaluate("document.querySelectorAll('.live-train-wrap').length"),count,'All fixture trains must render');
+  if(!baseline)assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),0,'Closed radar calls must not build hidden rows');
   await command('Emulation.setCPUThrottlingRate',{rate:4});
   if(profile){await command('Profiler.enable');await command('Profiler.start');}
   await evaluate(`window.radarQa={original:[...document.querySelectorAll('.live-train-wrap')],tasks:[],gaps:[],mutations:0};new PerformanceObserver(list=>window.radarQa.tasks.push(...list.getEntries().map(e=>e.duration))).observe({type:'longtask',buffered:false});new MutationObserver(list=>window.radarQa.mutations+=list.reduce((n,e)=>n+[...e.addedNodes,...e.removedNodes].filter(v=>v.nodeType===1&&v.classList?.contains('live-train-wrap')).length,0)).observe(document.querySelector('.leaflet-marker-pane'),{childList:true});let prior=performance.now();function frame(now){window.radarQa.gaps.push(now-prior);prior=now;requestAnimationFrame(frame);}requestAnimationFrame(frame);`);
@@ -95,6 +96,16 @@ try {
   await command('Emulation.setCPUThrottlingRate',{rate:1});await screenshot('1440-radar');
   await writeFile(join(output,'report.json'),JSON.stringify({fixture:true,baseline,cpuSlowdown:4,count,pointsPerTrip,requests,...metrics},null,2));console.log(JSON.stringify(metrics));
   if(!baseline){
+    await click('.station-radar-calls summary');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),40,'Open radar calls in a bounded first page');
+    await click('.radar-calls-more');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),80,'More exposes the next page without dropping previous calls');
+    await click('.station-radar-call-search input');
+    await command('Input.insertText',{text:'RE 179'});await pause(250);
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),1,'Search must include calls beyond the rendered page');
+    assert.match(await evaluate("document.querySelector('.station-radar-call-list').textContent"),/RE 179/);
+    await click('.station-radar-calls summary');
+    assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),0,'Closing releases the rendered rows');
     await evaluate("window.radarQa.original[0].focus()");await pause(4100);
     assert.equal(await evaluate("document.activeElement===window.radarQa.original[0]"),true,'Animation ticks retain keyboard focus');
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
