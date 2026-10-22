@@ -426,7 +426,8 @@ export default function Home() {
     if (!nativeFollowId) { syncAndroidFollow(null); return; }
     const followed=selectedLiveTrip;
     if (followed?.tripId===nativeFollowId) syncAndroidFollow(followed);
-    return ()=>syncAndroidFollow(null);
+    // Deliberately no cleanup: closing/reloading the WebView must not stop
+    // Android foreground tracking. Only an explicit stop action may do that.
   },[nativeFollowId,selectedLiveTrip]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
