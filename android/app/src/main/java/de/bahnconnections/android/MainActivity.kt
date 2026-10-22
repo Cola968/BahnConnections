@@ -24,7 +24,7 @@ class MainActivity : Activity() {
     webView.settings.domStorageEnabled = true
     webView.settings.allowFileAccess = false
     webView.settings.allowContentAccess = false
-    val allowedHost = Uri.parse(origin).host
+    val allowedHost = Uri.parse(origin).host ?: error("Invalid HTTPS origin")
     webView.webViewClient = object : WebViewClient() {
       override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
