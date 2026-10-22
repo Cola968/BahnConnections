@@ -921,7 +921,7 @@ try {
   await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:updateScript.identifier});
   const sameVersionScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture(APP_VERSION)});
   await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
-  await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
+  await waitFor(`document.documentElement?.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
   if(await evaluate(`Boolean(document.querySelector('.app-update-status,.app-update-notice'))`))throw Error('Already running version must not be announced as a new version');
   await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:sameVersionScript.identifier});
 
