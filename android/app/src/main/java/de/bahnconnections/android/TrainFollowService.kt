@@ -55,7 +55,6 @@ class TrainFollowService : Service() {
       .addAction(Notification.Action.Builder(null, "Verfolgung beenden", stopIntent).build())
       .setOnlyAlertOnce(true)
     if (progress != null) builder.setProgress(100, progress, false)
-    tripId = id
     val notification = builder.build()
     if (Build.VERSION.SDK_INT >= 34) {
       startForeground(NOTIFICATION, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
