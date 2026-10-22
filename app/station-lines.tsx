@@ -201,7 +201,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
     const processor = new StationTripProcessor();
     processorRef.current = processor;
     detailControllerRef.current = controller;
-    tripCacheRef.current = new Map();
+    tripCacheRef.current.clear();
     return () => { controller.abort(); processor.dispose(); };
   }, [station]);
 
