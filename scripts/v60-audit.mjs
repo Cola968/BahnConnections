@@ -92,3 +92,9 @@ const stationSheetCss=read("app/styles/station-sheet.css");
 assert.match(stationSheetCss,/V60\.3: readable station-board focus states/,"Station-board keyboard focus must remain visible");
 assert.match(stationSheetCss,/@media \(forced-colors:active\)/,"High contrast station controls must receive visible focus outlines");
 assert.match(stationSheetCss,/font-variant-numeric:tabular-nums/,"Station times need aligned numeric glyphs");
+
+const shortcutHelp=read("app/v60-shortcut-help.tsx");
+const liquidGlass=read("app/styles/liquid-glass.css");
+assert.match(shortcutHelp,/dialogRef\.current\.contains\(document\.activeElement\)/,"Shortcut dialog must recapture focus when Tab starts outside it");
+assert.match(liquidGlass,/V60\.3 glass controls: interaction feedback/,"Glass controls must have visible keyboard focus");
+assert.match(liquidGlass,/@media \(forced-colors:active\)/,"Glass controls must support forced-colors");
