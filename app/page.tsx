@@ -422,7 +422,8 @@ export default function Home() {
   // Android service is opt-in: only an explicit active trackedTripId can show it.
   // A missing train never manufactures a GPS position or journey progress.
   useEffect(()=>{
-    syncAndroidFollow(trackedTripId ? currentTrackedTrip??selectedLiveTrip : null);
+    const followed=trackedTripId && selectedLiveTrip?.tripId===trackedTripId ? currentTrackedTrip??selectedLiveTrip : null;
+    syncAndroidFollow(followed);
     return ()=>syncAndroidFollow(null);
   },[trackedTripId,currentTrackedTrip,selectedLiveTrip]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
