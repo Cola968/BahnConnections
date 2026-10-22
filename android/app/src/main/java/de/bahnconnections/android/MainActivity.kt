@@ -59,6 +59,7 @@ class MainActivity : Activity() {
       runOnUiThread {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
           requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
+          return@runOnUiThread
         }
         val intent = Intent(this@MainActivity, TrainFollowService::class.java).apply {
           action = TrainFollowService.START
