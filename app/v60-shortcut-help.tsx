@@ -17,8 +17,11 @@ export function V60ShortcutHelp({ open, onClose }: { open: boolean; onClose: () 
       const interactive = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
         'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
       )).filter(element => element.getClientRects().length > 0);
-      if (!interactive.length) return;
+      if (!interactive.length) { event.preventDefault(); return; }
       const first = interactive[0], last = interactive.at(-1);
+      if (!dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault(); (event.shiftKey ? last : first)?.focus(); return;
+      }
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault(); last?.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
