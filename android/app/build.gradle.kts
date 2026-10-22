@@ -2,7 +2,9 @@ plugins { id("com.android.application") }
 android {
   namespace = "de.bahnconnections.android"
   compileSdk = 35
+  buildFeatures { buildConfig = true }
   defaultConfig {
+    buildConfigField("String", "WEB_ORIGIN", "\"https://bahnconnections.de/\"")
     applicationId = "de.bahnconnections.android"
     minSdk = 26
     targetSdk = 35
