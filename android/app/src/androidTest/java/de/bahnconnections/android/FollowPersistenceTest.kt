@@ -29,12 +29,18 @@ class FollowPersistenceTest {
     val deadline = System.currentTimeMillis() + 8_000
     while (notifications.activeNotifications.isEmpty() && System.currentTimeMillis() < deadline) Thread.sleep(50)
     assertTrue("Restored service must publish its notification", notifications.activeNotifications.isNotEmpty())
-    context.startService(Intent(context, TrainFollowService::class.java).apply { action = TrainFollowService.STOP })
+    instrumentation.runOnMainSync { activity.finish() }
+    instrumentation.waitForIdleSync()
+    assertEquals("Closing the Activity must preserve the stored session", session.id, FollowStore(context).read()?.id)
+    val posted = notifications.activeNotifications.single()
+    val stop = requireNotNull(posted.notification.actions?.firstOrNull()?.actionIntent)
+    // Exercise the actual notification action, including its PendingIntent and
+    // service dispatch; don't substitute an in-app direct service call.
+    stop.send()
     val stopped = System.currentTimeMillis() + 8_000
     while (FollowStore(context).read() != null && System.currentTimeMillis() < stopped) Thread.sleep(50)
     assertNull(FollowStore(context).read())
     while (notifications.activeNotifications.isNotEmpty() && System.currentTimeMillis() < stopped) Thread.sleep(50)
     assertTrue("Explicit stop must remove the notification", notifications.activeNotifications.isEmpty())
-    instrumentation.runOnMainSync { activity.finish() }
   }
 }
