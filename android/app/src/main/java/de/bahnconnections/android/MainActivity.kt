@@ -28,7 +28,7 @@ class MainActivity : Activity() {
     webView.webViewClient = object : WebViewClient() {
       override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-        if (url.startsWith(origin)) view.evaluateJavascript("window.dispatchEvent(new Event(\\"bahnconnections-native-ready\\"))", null)
+        if (Uri.parse(url).host == allowedHost) view.evaluateJavascript("window.dispatchEvent(new Event(\\"bahnconnections-native-ready\\"))", null)
       }
       override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
         val uri = request.url
