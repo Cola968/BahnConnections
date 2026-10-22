@@ -37,6 +37,7 @@ jobs:
       - run: node scripts/board-api-audit.mjs
       - run: node scripts/board-request-budget-audit.mjs
       - run: node scripts/board-place-metadata-audit.mjs
+      - run: node scripts/android-follow-bridge-audit.mjs
       - run: pnpm audit:v61
       - run: node scripts/station-resolution-audit.mjs
       - run: node scripts/trip-detail-freshness-audit.mjs

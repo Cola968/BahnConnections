@@ -69,7 +69,7 @@ class MainActivity : Activity() {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
       WebViewCompat.addWebMessageListener(webView, "BahnConnectionsNative", setOf(trustedOrigin)) { _, message, sourceOrigin, isMainFrame, _ ->
         if (!isMainFrame || sourceOrigin.toString().trimEnd('/') != trustedOrigin || !isTrustedPage()) return@addWebMessageListener
-        val raw = message.data ?: return@addWebMessageListener
+        val raw = runCatching { message.data }.getOrNull() ?: return@addWebMessageListener
         if (raw.length > 4096) return@addWebMessageListener
         val data = runCatching { JSONObject(raw) }.getOrNull() ?: return@addWebMessageListener
         when (data.optString("action")) {

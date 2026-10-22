@@ -29,7 +29,7 @@ class TrainFollowService : Service() {
   private val poller = Executors.newSingleThreadScheduledExecutor()
   private var generation = 0
   private var session: FollowSession? = null
-  private var connection: HttpURLConnection? = null
+  @Volatile private var connection: HttpURLConnection? = null
   override fun onBind(intent: Intent?): IBinder? = null
   override fun onCreate() {
     super.onCreate()
@@ -125,9 +125,21 @@ class TrainFollowService : Service() {
       // Match the exact followed segment; never substitute a different origin/route.
       for (index in 0 until legs.length()) {
         val leg = legs.getJSONObject(index)
-        val from = leg.optJSONObject("from") ?: continue
-        val to = leg.optJSONObject("to") ?: continue
-        if (from.optString("name") != s.from || to.optString("name") != s.to) continue
+        val stops = mutableListOf<JSONObject>()
+        leg.optJSONObject("from")?.let { stops.add(it) }
+        val intermediate = leg.optJSONArray("intermediateStops")
+        if (intermediate != null) for (stop in 0 until intermediate.length()) stops.add(intermediate.getJSONObject(stop))
+        leg.optJSONObject("to")?.let { stops.add(it) }
+        val matches = stops.indices.flatMap { fromIndex ->
+          if (stops[fromIndex].optString("name") != s.from) emptyList()
+          else (fromIndex + 1 until stops.size).filter { stops[it].optString("name") == s.to }.map { fromIndex to it }
+        }
+        // A ring service with repeated identical names is ambiguous without stop IDs.
+        // Keep the saved notification, but withhold progress instead of guessing.
+        if (matches.size != 1) continue
+        val (fromIndex, toIndex) = matches.single()
+        val from = stops[fromIndex]
+        val to = stops[toIndex]
         val departure = from.optString("departure")
         val arrival = to.optString("arrival")
         val actual = runCatching { Instant.parse(departure).toEpochMilli() }.getOrNull()

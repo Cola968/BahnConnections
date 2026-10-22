@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
   namespace = "de.bahnconnections.android"
@@ -5,7 +7,7 @@ android {
   buildFeatures { buildConfig = true }
   defaultConfig {
     val origin = providers.gradleProperty("bahnConnectionsOrigin").orElse("https://bahnconnections-de.a-stad.chatgpt.site").get().trimEnd('/')
-    val uri = java.net.URI(origin)
+    val uri = URI(origin)
     require(uri.scheme == "https" && uri.host != null && uri.rawUserInfo == null && uri.port == -1 && uri.rawQuery == null && uri.rawFragment == null && uri.rawPath.isNullOrEmpty()) { "bahnConnectionsOrigin must be an HTTPS origin without port, path or credentials" }
     buildConfigField("String", "WEB_ORIGIN", "\"$origin/\"")
     applicationId = "de.bahnconnections.android"
