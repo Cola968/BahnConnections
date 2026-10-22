@@ -176,7 +176,7 @@ export function StationLines({ station, onSummary, onMapTrip, onMapTrips }: { st
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [routeDetails, setRouteDetails] = useState<Record<string, BoardMapTrip[]>>({});
   useEffect(()=>{
-    const invalidate=(event:Event)=>{const id=(event as CustomEvent<{id:string}>).detail.id;setRouteDetails(current=>Object.fromEntries(Object.entries(current).map(([key,trips])=>[key,trips.filter(trip=>trip.tripId!==id)])));};
+    const invalidate=(event:Event)=>{const id=(event as CustomEvent<{id:string}>).detail.id;for(const key of tripCacheRef.current.keys())if(key.endsWith(`|${id}`))tripCacheRef.current.delete(key);setRouteDetails(current=>Object.fromEntries(Object.entries(current).map(([key,trips])=>[key,trips.filter(trip=>trip.tripId!==id)])));};
     window.addEventListener(ROUTE_INVALIDATED_EVENT,invalidate);return()=>window.removeEventListener(ROUTE_INVALIDATED_EVENT,invalidate);
   },[]);
   const [routeStates, setRouteStates] = useState<Record<string, "loading" | "ready" | "error">>({});
