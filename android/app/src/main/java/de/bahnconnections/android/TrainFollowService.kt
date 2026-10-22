@@ -2,6 +2,7 @@ package de.bahnconnections.android
 
 import android.app.*
 import android.content.Intent
+import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
@@ -26,12 +27,15 @@ class TrainFollowService : Service() {
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     if (intent?.action == STOP) {
+      getSharedPreferences("follow", Context.MODE_PRIVATE).edit().putBoolean("active", false).apply()
+      sendBroadcast(Intent("de.bahnconnections.android.FOLLOW_STOPPED").setPackage(packageName))
       stopForeground(STOP_FOREGROUND_REMOVE)
       stopSelf()
       return START_NOT_STICKY
     }
     if (intent?.action != START) return START_NOT_STICKY
     if (intent.getStringExtra("id").isNullOrBlank()) return START_NOT_STICKY
+    getSharedPreferences("follow", Context.MODE_PRIVATE).edit().putBoolean("active", true).apply()
     val name = intent.getStringExtra("name").orEmpty().take(100)
     val from = intent.getStringExtra("from").orEmpty().take(120)
     val to = intent.getStringExtra("to").orEmpty().take(120)
