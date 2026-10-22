@@ -427,12 +427,21 @@ export default function Home() {
   // Android notifications run only while the user explicitly follows this train.
   // Do not stop/restart the native service on every radar refresh.
   const nativeFollowId=trackedTripId && selectedLiveTrip?.tripId===trackedTripId ? trackedTripId : null;
+  const previousNativeFollowId=useRef<string|null>(null);
   useEffect(()=>{
-    if (!nativeFollowId) { syncAndroidFollow(null); return; }
+    // Do not stop an existing Android follow session just because the WebView
+    // was reloaded or its React state was recreated.
+    if (!nativeFollowId) {
+      if (previousNativeFollowId.current) syncAndroidFollow(null);
+      previousNativeFollowId.current=null;
+      return;
+    }
     const followed=selectedLiveTrip;
-    if (followed?.tripId===nativeFollowId) syncAndroidFollow(followed);
-    // Deliberately no cleanup: closing/reloading the WebView must not stop
-    // Android foreground tracking. Only an explicit stop action may do that.
+    if (followed?.tripId===nativeFollowId) {
+      syncAndroidFollow(followed);
+      previousNativeFollowId.current=nativeFollowId;
+    }
+    // No cleanup on unmount: the native notification survives app closure.
   },[nativeFollowId,selectedLiveTrip]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
