@@ -18,7 +18,7 @@ await rm(join(output,'report.json'),{force:true});
 const browser = spawn(process.env.EDGE_PATH ?? '/usr/bin/chromium',[
   '--headless=new', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   ...(process.env.BAHNCONNECTIONS_QA_NO_SANDBOX === '1' ? ['--no-sandbox'] : []),
-  '--no-first-run', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(),`bahn-station-${process.pid}`)}`, 'about:blank',
+    '--no-first-run', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(),`bahn-station-${process.pid}-${Date.now()}`)}`, 'about:blank',
 ],{stdio:['ignore','ignore','pipe']});
 let browserError = '';
 browser.stderr.on('data',chunk => {browserError=(browserError+chunk).slice(-4000);});
@@ -55,11 +55,11 @@ function trips(){const now=Date.now();return Array.from({length:count},(_,i)=>{c
 let requests=0;
 try {
   let targets;
-  for(let i=0;i<100;i++) {
+  for(let i=0;i<300;i++) {
     if(browser.exitCode!==null)throw Error(browserError);
     try{targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();break;}catch{await pause(100);}
   }
-  assert.ok(targets?.length,browserError);
+  assert.ok(targets?.length,'Chromium did not expose a page within 30 seconds. '+browserError);
   socket=new WebSocket(targets.find(t=>t.type==='page').webSocketDebuggerUrl);
   await new Promise((resolveOpen,rejectOpen)=>{socket.addEventListener('open',resolveOpen,{once:true});socket.addEventListener('error',rejectOpen,{once:true});});
 
@@ -98,6 +98,7 @@ try {
   if(!baseline){
     await click('.station-radar-calls summary');
     assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),40,'Open radar calls in a bounded first page');
+    assert.ok(await evaluate("document.querySelector('.radar-calls-more').getBoundingClientRect().height>=44"),'More calls must have a 44px touch target');
     await click('.radar-calls-more');
     assert.equal(await evaluate("document.querySelectorAll('.station-radar-call-list li').length"),80,'More exposes the next page without dropping previous calls');
     await click('.station-radar-call-search input');

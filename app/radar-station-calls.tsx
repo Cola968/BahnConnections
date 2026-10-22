@@ -22,7 +22,7 @@ export const RadarStationCalls=memo(function RadarStationCalls({calls,direction}
         const date=at!==undefined&&Number.isFinite(at)?new Date(at):null;
         return <li key={tripId}><span><b>{call.name??"Fahrt"}</b><small>{call.destination??"Ziel unbekannt"}{call.cancelled?" · Ausfall":""}</small></span><time dateTime={date?.toISOString()}>{date?timeFormatter.format(date):"–"}{call.realtime?" · Live":" · Plan"}</time></li>;
       })}</ul>
-      {rows.length>limit&&<button type="button" className="radar-calls-more" onClick={()=>setLimit(value=>value+40)}>Weitere Fahrten ({limit} von {rows.length})</button>}
+      {rows.length>limit&&<button type="button" className="radar-calls-more v61-call-more" onClick={()=>setLimit(value=>value+40)}>Weitere Fahrten ({limit} von {rows.length})</button>}
       {!rows.length&&<p className="station-radar-call-note">Keine passenden Fahrten im aktuellen Zeitfenster.</p>}
     </>}
   </details>;
