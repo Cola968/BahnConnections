@@ -9,6 +9,7 @@ import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "
 import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
+import { useAvailableAppUpdate } from "./pwa-update-state";
 import { DesktopNavigation, MobileNavigation, type DesktopView } from "./desktop-navigation";
 import { UiIcon } from "./ui-icon";
 import { resolveV60Shortcut, type V60Shortcut } from "./v60-shortcuts";
@@ -27,6 +28,7 @@ import {stationCondition} from "./board-health";
 import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
+import { StationCallsBrowser } from "./station-calls-browser";
 import { listStationCalls, matchesStationCall, type StationRadarDirection } from "./station-radar-data";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
@@ -176,6 +178,7 @@ function tripRealtimeLabel(trip: BoardMapTrip) {
 function PassengerLegend() { return <div className="passenger-legend"><span><i className="passenger-sample low"/>unter 100/Tag</span><span><i className="passenger-sample medium"/>100–1.000/Tag</span><span><i className="passenger-sample high"/>über 1.000/Tag</span><span><i className="passenger-sample known"/>Tageszahl veröffentlicht</span><span><i className="passenger-sample unknown"/>Keine Daten</span><small>Größere Fläche = höheres Tagesaufkommen. Klassen sind keine exakten Zahlen. Verfügbare Werte, Bezugsjahr und Quelle stehen beim Bahnhof.</small></div>; }
 
 export default function Home() {
+  const appUpdate=useAvailableAppUpdate();
   const [desktopWorkspace, setDesktopWorkspace] = useState(false);
   const [activeView, setActiveView] = useState<DesktopView>("map");
   const desktopView = activeView, mobileView = activeView;
@@ -228,6 +231,7 @@ export default function Home() {
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [radarDirection,setRadarDirection] = useState<StationRadarDirection>("all");
+  const [stationCallsOpen,setStationCallsOpen] = useState(false);
   const [radarTripQuery,setRadarTripQuery] = useState("");
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
@@ -262,6 +266,12 @@ export default function Home() {
   const stationLinkAppliedRef = useRef(false);
   const plannerLinkAppliedRef = useRef(false);
   const [mobileSheetHeight, setMobileSheetHeight] = useState<number | null>(null);
+  const revealStationContent=useCallback(()=>{
+    if(window.matchMedia("(max-width: 1023px)").matches){
+      setMobileSheetHeight(null);
+      setMobileSheetState("expanded");
+    }
+  },[]);
   const [geoPosition, setGeoPosition] = useState<GeoPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "active" | "error">("idle");
   const [geoMessage, setGeoMessage] = useState("");
@@ -318,7 +328,7 @@ export default function Home() {
     if (match.id.startsWith("motis:")) setLiveSearchStations((current) => current.some((station) => station.id === match.id) ? current : [...current, match]);
     setRecentStationIds(current=>nextRecentStations(current,match.id));
     setSelectedId(match.id); setSearch(match.name); setJourney(null); setRouteInfo(null); setStationPanel("live");
-    setRadarDirection("all");setTrackedRadarAnchor(null);setJourneyMessage("");
+    setRadarDirection("all");setStationCallsOpen(false);setTrackedRadarAnchor(null);setJourneyMessage("");
     setSelectedLiveTrip(null); setTrackedTripId(null); setExploreOpen(false); setStatsOpen(false); setBoardSummary(null); setStationTrip(null); setStationTrips([]); setStationLineSummary(null); setSidebarCollapsed(false);
     setMobileSheetState("half");
     setActiveView("departures");
@@ -415,7 +425,7 @@ export default function Home() {
     setMobileSheetState("half");
   }, []);
   // Station timetables must work even when the optional map train layer is off.
-  const stationRadar = useStationRadar(selected,liveVisible);
+  const stationRadar = useStationRadar(selected,liveVisible || stationCallsOpen);
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
   const stationRadarCallList = useMemo(() => listStationCalls(stationRadar.calls,radarDirection,radarTripQuery),[stationRadar.calls,radarDirection,radarTripQuery]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
@@ -1406,7 +1416,7 @@ export default function Home() {
             
             <div className="simple-more-list">
               <button type="button" onClick={() => {setSettingsInitialTab("profile");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="user"/><span><b>Profil & Einstellungen</b><small>Darstellung, Standort und persönliche Daten</small></span><UiIcon name="arrow"/></button>
-              <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>Version, Changelog und Installation in Einstellungen</small></span><UiIcon name="arrow"/></button>
+              <button type="button" onClick={() => {setSettingsInitialTab("about");setSettingsOpen(true);setMoreMenuOpen(false);}}><UiIcon name="layers"/><span><b>App & Updates</b><small>{appUpdate?`${appUpdate.label} verfügbar`:"Version, Changelog und Installation in Einstellungen"}</small></span><UiIcon name="arrow"/></button>
               <button type="button" onClick={() => {const station=selected??allStations.find(item=>item.id===startId)??allStations[0];if(station)selectStation(station);setStationPanel("disruptions");setActiveView("departures");setExploreOpen(false);setMoreMenuOpen(false);setMobileSheetState("expanded");}}><UiIcon name="alert"/><span><b>Störungen & Baustellen</b><small>Meldungen zum ausgewählten Bahnhof</small></span><UiIcon name="arrow"/></button>
 
               {recentStationIds.length>0 && <div className="v60-recent-stations" aria-label="Zuletzt geöffnete Bahnhöfe">
@@ -1448,7 +1458,8 @@ export default function Home() {
             <div className="panel-body">
             <div className="station-context-bar"><button onClick={() => { setSelectedId(null); setBoardSummary(null); setStationLineSummary(null); setStationTrip(null); setStationTrips([]); }}>← Übersicht</button><span /><button onClick={() => { if (window.matchMedia("(max-width: 1023px)").matches) setMobileSheetState("collapsed"); else setSidebarCollapsed(true); }}>Einklappen →</button></div>
             <div id="station-panel-live" role="tabpanel" aria-labelledby="station-tab-live" hidden={stationPanel !== "live"}>
-              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} />
+              <LiveBoard key={selected.id} station={selected} onSummary={handleBoardSummary} onMapTrip={showBoardTripOnMap} onRevealContent={revealStationContent} />
+              <StationCallsBrowser key={`calls-${selected.id}`} stationName={stationDisplayName(selected.name)} open={stationCallsOpen} onToggle={()=>{if(!stationCallsOpen)revealStationContent();setStationCallsOpen(value=>!value);}} snapshot={stationRadar} />
             </div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}

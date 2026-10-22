@@ -1,3 +1,28 @@
+# V61.2 · Zusammengeführtes Webupdate
+
+- Globale Routengültigkeitsprüfung und begrenzte Fahrtabfragen aus dem GitHub-Entwicklungsstand integriert.
+- V61.1-Bahnhofshalte, sichtbare Panelinhalte und ruhige PWA-Updates erhalten.
+- Kompaktere mobile Panels und überarbeitete Einstellungen.
+- Die native Android-Benachrichtigung erfordert eine separat gebaute und getestete Android-App.
+
+# V61.1 · Geöffnete Bahnhofsinhalte bleiben sichtbar
+
+- Bahnhofshalte, Fahrtverläufe und Filter vergrößern das mobile Panel beim Öffnen.
+- Die neuen Inhalte werden im vorhandenen Panel sichtbar gemacht; die Seite selbst scrollt nicht mit.
+- In kurzen Querformat-Ansichten haben die neuen Bedienelemente Vorrang.
+- Browser-Regressionen prüfen die halbhohe Ausgangsansicht und Fahrten am Listenende.
+- Update-Hinweise verdecken keine Bedienelemente mehr; Updates stehen unter Mehr und Einstellungen · App bereit. Der bereits laufende Versionsstand löst keinen neuen Hinweis aus.
+- Plus bleibt eine Vorschau ohne Zahlungen.
+
+# V61.0 · Weitere Bahnhofshalte sichtbar
+
+- Zusätzliche, durchsuchbare Bahnhofshalte-Liste direkt unter der Tafel: Ankünfte/Abfahrten, lokale Suche und schrittweises Nachladen der Anzeige.
+- Die Liste hängt nicht vom Kartenausschnitt ab; ein fehlender Kartenmarker wird nicht durch erfundene GPS-Daten ersetzt.
+- Datenstand, Teilantworten, Fehler und fehlende Echtzeitprognosen transparent dargestellt.
+- Plus-Vorschau aus V60.2 mit klaren Symbolen und dezenter Bewegung übernommen; keine Kaufmöglichkeit.
+- Regressionstests, PWA-Versionswechsel und getrennte V61-Release-Checkliste ergänzt.
+- **Wichtig:** Der Code ist ein unveröffentlichter Release-Kandidat. Die offenen Datenrechte, die Abdeckung der Bahnhofskomplexe und die physische Android-PWA-Abnahme bleiben ausdrücklich offen.
+
 # V60.2 · Eine gemeinsame Bahnhofstafel
 
 - Tafel und Fahrten zu einer Bahnhofstafel zusammengeführt; vier klare Bahnhofstabs.
