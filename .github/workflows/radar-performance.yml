@@ -1,0 +1,42 @@
+name: Radar performance
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: radar-performance-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Radar interaction and unchanged CPU budget
+        env:
+          EDGE_PATH: /usr/bin/google-chrome
+        run: |
+          mkdir -p work/live-map-qa
+          node node_modules/vinext/dist/cli.js dev > work/radar-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa --profile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-performance
+          path: |
+            work/live-map-qa/
+            work/radar-dev.log

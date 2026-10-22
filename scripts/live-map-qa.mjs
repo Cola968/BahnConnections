@@ -10,6 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/live-map-qa');
 const baseline = args.includes('--baseline');
+const profile = args.includes('--profile');
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -86,9 +87,11 @@ try {
   for(let i=0;i<200;i++){if(await evaluate(`document.querySelectorAll('.live-train-wrap').length===${count}`))break;await pause(100);}
   assert.equal(await evaluate("document.querySelectorAll('.live-train-wrap').length"),count,'All fixture trains must render');
   await command('Emulation.setCPUThrottlingRate',{rate:4});
+  if(profile){await command('Profiler.enable');await command('Profiler.start');}
   await evaluate(`window.radarQa={original:[...document.querySelectorAll('.live-train-wrap')],tasks:[],gaps:[],mutations:0};new PerformanceObserver(list=>window.radarQa.tasks.push(...list.getEntries().map(e=>e.duration))).observe({type:'longtask',buffered:false});new MutationObserver(list=>window.radarQa.mutations+=list.reduce((n,e)=>n+[...e.addedNodes,...e.removedNodes].filter(v=>v.nodeType===1&&v.classList?.contains('live-train-wrap')).length,0)).observe(document.querySelector('.leaflet-marker-pane'),{childList:true});let prior=performance.now();function frame(now){window.radarQa.gaps.push(now-prior);prior=now;requestAnimationFrame(frame);}requestAnimationFrame(frame);`);
   await pause(17000);
   const metrics=await evaluate(`(() => {const p=window.radarQa;return {retained:p.original.filter(e=>e.isConnected).length,mutations:p.mutations,maxTask:Math.max(0,...p.tasks),blockingTime:p.tasks.reduce((n,t)=>n+Math.max(0,t-50),0),longTasks:p.tasks.length,maxFrameGap:Math.max(0,...p.gaps),markers:document.querySelectorAll('.live-train-wrap').length};})()`);
+  if(profile){const result=await command('Profiler.stop');await writeFile(join(output,'radar.cpuprofile'),JSON.stringify(result.profile));await command('Profiler.disable');}
   await command('Emulation.setCPUThrottlingRate',{rate:1});await screenshot('1440-radar');
   await writeFile(join(output,'report.json'),JSON.stringify({fixture:true,baseline,cpuSlowdown:4,count,pointsPerTrip,requests,...metrics},null,2));console.log(JSON.stringify(metrics));
   if(!baseline){
