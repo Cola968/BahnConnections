@@ -6,9 +6,9 @@ const original=globalThis.fetch,seen=[];
 const place={name:'Berlin Hauptbahnhof',lat:52.525,lon:13.369,stopId:'provider:platform',parentId:'provider:parent'};
 const at='2026-10-22T12:00:00Z';
 try{
- globalThis.fetch=async(url,options)=>{
+ globalThis.fetch=async(url)=>{
   const u=new URL(url);seen.push(u.pathname);
-  assert.ok(!u.pathname.endsWith('/stop'),'MOTIS has no /api/v6/stop endpoint in its published API');
+  assert.ok(!u.pathname.endsWith('/stop'),'Do not depend on /api/v6/stop, which is absent from the pinned published schema');
   if(u.pathname.endsWith('/stoptimes'))return Response.json({place,stopTimes:[{tripId:'trip',displayName:'ICE 100',mode:'HIGHSPEED_RAIL',headsign:'Hamburg',place:{...place,scheduledDeparture:at,departure:at}}]});
   if(u.pathname==='/locations')return Response.json([{type:'stop',id:'db:stop',name:place.name,location:{latitude:place.lat,longitude:place.lon}}]);
   if(u.pathname.endsWith('/departures'))return Response.json([{line:{name:'ICE 100'},direction:'Hamburg',plannedWhen:at,when:at}]);

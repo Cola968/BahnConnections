@@ -244,6 +244,11 @@ try {
         await pause(260);
         assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),4,'Four clear station sections');
         assert.equal(await evaluate("Boolean(document.querySelector('#station-tab-trips'))"),false,'No duplicate trip browser');
+        // Restoring a minimized panel preserves its scroll position. Scroll to
+        // the row this scenario intends to open; click() still requires a real,
+        // unobscured hit target and dispatches actual mouse events.
+        await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+        await pause(300);
         await click('.board-row-summary');
         assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','A journey opens directly in the board');
         assert.ok(await evaluate("Boolean(document.querySelector('.board-row-detail .trip-stop-panel'))"),'Journey detail stays reachable from the board');

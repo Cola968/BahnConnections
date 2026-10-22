@@ -16,6 +16,7 @@ import android.content.Context
 import android.content.IntentFilter
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import androidx.core.content.ContextCompat
 import org.json.JSONObject
 
 class MainActivity : Activity() {
@@ -50,6 +51,7 @@ class MainActivity : Activity() {
           // The transport is origin- and main-frame-restricted, unlike JavascriptInterface.
           view.evaluateJavascript("""
             window.BahnConnectionsAndroid={
+              protocolVersion:2,
               start:(id,name,from,to,departure,arrival,delay=null,realtime=false,updatedAt=0)=>BahnConnectionsNative.postMessage(JSON.stringify({action:'start',id,name,from,to,departure,arrival,delay,realtime,updatedAt})),
               stop:()=>BahnConnectionsNative.postMessage(JSON.stringify({action:'stop'})),
               status:()=>BahnConnectionsNative.postMessage(JSON.stringify({action:'status'}))
@@ -91,8 +93,7 @@ class MainActivity : Activity() {
       }
     }
     val filter = IntentFilter(TrainFollowService.CHANGED)
-    if (Build.VERSION.SDK_INT >= 33) registerReceiver(changedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-    else registerReceiver(changedReceiver, filter)
+    ContextCompat.registerReceiver(this, changedReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     setContentView(webView)
     webView.loadUrl(BuildConfig.WEB_ORIGIN)
   }

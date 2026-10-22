@@ -39,7 +39,7 @@ async function crossCheck(place:TransitousPlace|undefined, stopTimes:TransitousB
   const checkedAt = new Date().toISOString();
   try {
     // MOTIS exposes the requested stop as Place on /stoptimes. There is no
-    // /api/v6/stop endpoint in its published schema; do not invent a lookup.
+    // /api/v6/stop endpoint in its published schema; avoid that undocumented dependency.
     const dbStop = await resolveDbStop(place ?? {}, signal);
     const boardUrl = new URL(`https://v6.db.transport.rest/stops/${encodeURIComponent(dbStop.id)}/${arrival ? "arrivals" : "departures"}`);
     boardUrl.searchParams.set("when", startTime.toISOString());
