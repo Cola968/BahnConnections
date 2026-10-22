@@ -83,3 +83,7 @@ assert.match(premium,/prefers-reduced-motion:reduce/);
 assert.match(premium,/forced-colors:active/);
 
 console.log("V60 readiness audit: shortcuts, 20 planned features, motion, Render cleanup passed.");
+
+const stationLines=read("app/station-lines.tsx");
+assert.match(stationLines,/\.catch\(error => \{ if\(cache\.get\(key\)===request\)cache\.delete\(key\); throw error; \}\)/,"Successful station trip fetches must remain cached for line detail expansion");
+assert.match(stationLines,/key\.endsWith\(`\|\$\{id\}`\)/,"Invalidated trips must be evicted from the geometry cache");
