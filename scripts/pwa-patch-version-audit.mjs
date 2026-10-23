@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {APP_VERSION,isNewerAppVersion} from '../app/app-version.ts';
 assert.equal(isNewerAppVersion(APP_VERSION,'61.2.1'),true,'New UI patch must be newer than live Sites V61.2.1');
+assert.equal(isNewerAppVersion(APP_VERSION,'61.2.2'),true,'V62 must be newer than unreleased V61.2.2 RC');
 assert.equal(isNewerAppVersion(APP_VERSION,'61.2'),true,'RC must be newer than 61.2');
 assert.equal(isNewerAppVersion('61.2.1','61.2'),true);
 assert.equal(isNewerAppVersion('61.2','61.2.1'),false);

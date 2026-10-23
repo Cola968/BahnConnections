@@ -18,8 +18,8 @@ android {
     applicationId = "de.bahnconnections.android"
     minSdk = 26
     targetSdk = 35
-    versionCode = 61202
-    versionName = "61.2.2-rc1"
+    versionCode = 62000
+    versionName = "62.0.0-rc1"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 }
