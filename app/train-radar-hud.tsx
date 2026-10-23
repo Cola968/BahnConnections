@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { activeEstimatedPosition, type LiveTrip } from "./live-trains";
+import { activeEstimatedPosition, realtimeModelSpeed, type LiveTrip } from "./live-trains";
 import { sourceFreshness } from "./train-inspector-data";
 import { trainFollowView } from "./train-follow-view";
 
@@ -26,6 +26,7 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
   const fresh=radarStatus==="ready" && sourceFreshness(radarUpdatedAt,now,inRadar)==="current" &&
     activeEstimatedPosition(trip,now)!==null;
   const view=trainFollowView(trip,now,fresh);
+  const speed=fresh?realtimeModelSpeed(trip,now):null;
   return <div className="train-tracking-map-hud train-radar-hud v62-follow-hud" data-expanded={expanded} role="region" aria-label={`Zugverfolgung ${trip.name}`}>
     <header className="v62-follow-heading">
       <span className={`train-tracking-map-pulse${view.progress===null?" is-stale":""}`} aria-hidden="true"/>
@@ -51,7 +52,7 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
         <div><small>Ankunft · {view.timeType}</small><time dateTime={view.timeType==="Prognose"?trip.arrival:trip.scheduledArrival??trip.arrival}>{view.arrivalTime}</time></div>
       </div>
       {view.progress!==null&&<progress aria-label="Modellierter Zeitfortschritt der Fahrt, kein GPS" max={100} value={view.progress}/>}
-      <p>{view.evidenceLabel}{radarUpdatedAt&&fresh?` · Daten ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(radarUpdatedAt)}`:""}</p>
+      <p>{speed===null?"Geschwindigkeitsschätzung nicht verfügbar":<span className="v62-follow-speed"><strong>{speed}</strong> km/h · Modell</span>} · {view.evidenceLabel}{radarUpdatedAt&&fresh?` · Daten ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(radarUpdatedAt)}`:""}</p>
     </div>}
   </div>;
 }
