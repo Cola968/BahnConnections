@@ -10,7 +10,7 @@ import {stationCalls,listStationCalls} from '../app/station-radar-data.ts';
 
 const output=resolve(process.argv[2]??'work/station-complex-provider');
 await mkdir(output,{recursive:true});
-const dbStations=JSON.parse(await readFile(new URL('../public/db-stations.json',import.meta.url),'utf8')).stations;
+const dbStations=JSON.parse(await readFile(new URL('../data/quarantined/db-stations.json',import.meta.url),'utf8')).stations;
 const rural=dbStations.find(station=>station.name==='Erdeborn'&&station.source==='db');
 if(!rural)throw Error('Official DB station fixture is missing');
 const stations=[...['berlin','hamburg','muenchen','leipzig'].map(id=>STATIONS.find(s=>s.id===id)),

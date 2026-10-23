@@ -72,7 +72,9 @@ jobs:
       - run: pnpm audit:radar
       - run: node scripts/train-route-audit.mjs
       - run: pnpm audit:map
+      - run: node scripts/data-release-audit.mjs
       - run: pnpm build
+      - run: node scripts/data-release-audit.mjs --build
       - name: Responsive interaction and realtime screenshots
         env:
           EDGE_PATH: /usr/bin/google-chrome

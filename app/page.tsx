@@ -1,4 +1,5 @@
 "use client";
+import {BUNDLED_INFRA_DATA_ENABLED} from "./data-release-policy";
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties, type UIEvent } from "react";
 import { stationMarkerHierarchy } from "./station-marker";
@@ -213,7 +214,7 @@ export default function Home() {
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
   const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
   const [helpOpen, setHelpOpen] = useState(false);
-  const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
+  const [railState, setRailState] = useState<"loading" | "ready" | "error">(BUNDLED_INFRA_DATA_ENABLED?"loading":"error");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
   const [liveSearchStations, setLiveSearchStations] = useState<Station[]>([]);
   const [curatedStates, setCuratedStates] = useState<Record<string, string>>({});
@@ -529,6 +530,7 @@ export default function Home() {
   }, [fontScale, highContrast, minimalMode, preferencesReady, theme,autoLocation,reducedMotion]);
 
   useEffect(() => {
+    if(!BUNDLED_INFRA_DATA_ENABLED)return;
     const controller = new AbortController();
     fetch("/db-stations.json", { signal: controller.signal })
       .then((response) => {
@@ -614,6 +616,7 @@ export default function Home() {
   },[]);
 
   useEffect(() => {
+    if(!BUNDLED_INFRA_DATA_ENABLED)return;
     const router = new WorkerTrackRouter(() => setRailState("ready"), () => setRailRevision(value => value + 1), () => setRailState("error"));
     trackRouterRef.current = router;
     return () => { router.dispose(); trackRouterRef.current = null; };
@@ -1541,7 +1544,7 @@ export default function Home() {
             <span className="eyebrow plain">DATEN & METHODIK</span>
             <h2 id="sources-title">So liest du die Karte</h2>
             <p>BahnConnections verbindet ein kuratiertes Fernverkehrsnetz für die Übersicht mit mehr als 5.000 Personenbahnhöfen, echter aktueller Verbindungssuche, Live-Bahnhofstafeln und einer gebündelten Live-Lage.</p>
-            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung:</b> Ohne gemeldete Belegungsdaten wird keine Zugauslastung behauptet. Tageszeit und Zugart reichen nicht für eine verlässliche Prognose.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
+            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> Die optionale Hintergrund-Streckengeometrie ist bis zur Datenfreigabe deaktiviert. Für geplante Fahrten kann die vom Fahrplananbieter gemeldete Geometrie angezeigt werden; sie ist keine unabhängige Bestätigung des Gleisverlaufs.</li><li><b>Bahnhofssuche</b> Die zusätzliche Betriebsstellenkartei ist deaktiviert. Die Suche fragt weiterhin Bahnhöfe beim Fahrplananbieter ab; dessen gemeldeter Halteumfang ist keine Vollständigkeitsgarantie.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung:</b> Ohne gemeldete Belegungsdaten wird keine Zugauslastung behauptet. Tageszeit und Zugart reichen nicht für eine verlässliche Prognose.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
             <div className="source-links">
               <a href="https://www.bahn.de/service/fahrplaene/streckennetz" target="_blank" rel="noreferrer"><b>DB Fernverkehr</b><span>ICE/IC-Liniennetz 2026 ↗</span></a>
               <a href="https://developers.deutschebahn.com/db-api-marketplace/apis/product/stada/api/173477" target="_blank" rel="noreferrer"><b>DB InfraGO StaDa</b><span>Bahnhofs-Stammdaten ↗</span></a>
