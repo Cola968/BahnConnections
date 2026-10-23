@@ -1,0 +1,18 @@
+/* V62: one-tap operational station filters with honest source/status hierarchy. */
+.app-shell .v62-call-quick-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:14px 0 8px;}
+.app-shell .v62-call-quick-filters button{min-width:0;min-height:44px;padding:9px 7px;border:1px solid var(--line-subtle);border-radius:12px;background:var(--glass-clear);color:var(--ink);font-size:.79rem;font-weight:650;cursor:pointer;}
+.app-shell .v62-call-quick-filters button[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:color-mix(in srgb,var(--accent) 12%,var(--paper));box-shadow:inset 0 1px 0 var(--glass-highlight);}
+.app-shell .v62-call-quick-filters button:disabled{opacity:.48;cursor:not-allowed;}
+.app-shell .v62-call-freshness{font-size:.75rem;line-height:1.45;color:var(--muted);margin:8px 0 10px;}
+.app-shell .v62-call-row{grid-template-columns:63px minmax(0,1fr) 77px;gap:8px;min-height:75px;padding-block:10px;}
+.app-shell .v62-call-clock{display:grid;gap:5px;align-self:center;font-variant-numeric:tabular-nums;}
+.app-shell .v62-call-clock time{font-size:.96rem;font-weight:770;color:var(--ink);}
+.app-shell .v62-call-clock del{font-size:.76rem;color:var(--muted);text-decoration-thickness:1px;}
+.app-shell .v62-call-row .v61-call-identity{gap:4px;}
+.app-shell .v62-call-row .v61-call-evidence{gap:5px;}
+.app-shell .v62-platform,.app-shell .v62-platform-change{font-size:.75rem;font-weight:650;}
+.app-shell .v62-platform-change{color:var(--warning)!important;}
+.app-shell .v62-call-row .v62-delay-late{color:var(--danger);font-size:.74rem;font-variant-numeric:tabular-nums;}
+.app-shell .v62-call-row .v62-delay-early{color:var(--success);font-size:.74rem;font-variant-numeric:tabular-nums;}
+@media(max-width:359px){.app-shell .v62-call-row{grid-template-columns:53px minmax(0,1fr) 69px;gap:5px}.app-shell .v62-call-quick-filters{gap:5px}.app-shell .v62-call-quick-filters button{font-size:.72rem;padding-inline:3px}}
+@media(forced-colors:active){.app-shell .v62-call-quick-filters button[aria-pressed="true"]{outline:2px solid Highlight}}

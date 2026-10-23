@@ -25,7 +25,7 @@ assert.equal(stationCallPresentation(onlyPrediction,"inbound",false).platform,un
 assert.equal(stationCallPresentation({arrival:at(2),arrivalRealtime:false,arrivalTrack:"9"},"inbound",false).eventTime,at(2),"Non-realtime reported schedule remains valid");
 assert.equal(stationCallPresentation(fixture,"outbound",true).eventTime,at(16),"Direction-specific departures must stay distinct");
 const calls=new Map([
- ["later", {...fixture,arrival:at(85),scheduledArrival:at(80),arrivalTrack:"3",arrivalScheduledTrack:"3"}],
+ ["later", {...fixture,arrival:at(85),scheduledArrival:at(80),departure:at(89),scheduledDeparture:at(84),arrivalTrack:"3",arrivalScheduledTrack:"3",departureTrack:"3",departureScheduledTrack:"3"}],
  ["late", fixture],
  ["plain", {name:"RE 1",destination:"Berlin",arrival:at(25),scheduledArrival:at(25),arrivalRealtime:false}],
  ["unknown", {name:"ICE 201",arrival:at(18),arrivalRealtime:true}],

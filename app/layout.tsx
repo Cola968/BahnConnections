@@ -35,6 +35,7 @@ import "./styles/v60-motion.css";
 import "./styles/v60-premium.css";
 import "./styles/v61-station-calls.css";
 import "./styles/v61-2-glass-clarity.css";
+import "./styles/v62-station-operations.css";
 import { PwaRegister } from "./pwa-register";
 import { BrowserChrome } from "./browser-chrome";
 
