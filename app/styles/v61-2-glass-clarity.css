@@ -5,8 +5,8 @@
   background:
     linear-gradient(132deg,var(--glass-highlight) 0%,transparent 27%,transparent 74%,var(--glass-highlight-soft) 100%),
     var(--glass-navigation)!important;
-  -webkit-backdrop-filter:blur(34px) saturate(170%)!important;
-  backdrop-filter:blur(34px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(40px) saturate(170%)!important;
+  backdrop-filter:blur(40px) saturate(170%)!important;
   box-shadow:var(--glass-shadow)!important;
 }
 .app-shell :is(.station-card,.train-inspector,.planner-panel) {
