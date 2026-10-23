@@ -1,6 +1,9 @@
 package de.bahnconnections.android
 
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.roundToInt
 
 /** Provider metadata, never device GPS or an assumed train position. */
@@ -20,6 +23,29 @@ data class FollowSession(
     val end = runCatching { Instant.parse(arrival).toEpochMilli() }.getOrNull() ?: return null
     if (end <= start) return null
     return (((now - start).toDouble() / (end - start)) * 100).roundToInt().coerceIn(0, 100)
+  }
+
+  /** Keep the provider's stop-local UTC offset, including at DST boundaries. */
+  private fun stopClock(value: String): String = runCatching {
+    OffsetDateTime.parse(value).format(DateTimeFormatter.ofPattern("HH:mm", Locale.GERMAN))
+  }.getOrDefault("--:--")
+
+  fun departureClock(): String = stopClock(departure)
+  fun arrivalClock(): String = stopClock(arrival)
+
+  /** Only a fresh time-based model may show a countdown, never a GPS claim. */
+  fun remainingLabel(now: Long): String? {
+    if (progress(now) == null) return null
+    val arrivalAt = runCatching { Instant.parse(arrival).toEpochMilli() }.getOrNull() ?: return null
+    if (arrivalAt <= now) return null
+    val minutes = ((arrivalAt - now) + 59_999) / 60_000
+    return if (minutes > 24 * 60) null else "Ankunft in ${minutes} min"
+  }
+
+  fun progressDescription(now: Long): String {
+    val pct = progress(now)
+    return if (pct == null) "Keine aktuelle Fortschrittsprognose"
+    else "Zeitmodell ${pct} % · kein GPS"
   }
 
   fun delayLabel(now: Long): String = when {

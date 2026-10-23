@@ -41,4 +41,23 @@ class FollowSessionTest {
     assertTrue(s.delayLabel(s.updatedAt).contains("Halt entfällt"))
     assertFalse(s.delayLabel(s.updatedAt).contains("Fahrt fällt aus"))
   }
+  @Test fun notificationShowsStopLocalTimesEvenAcrossDst() {
+    val s = trip().copy(departure = "2026-10-25T02:30:00+02:00", arrival = "2026-10-25T02:30:00+01:00")
+    assertEquals("02:30", s.departureClock())
+    assertEquals("02:30", s.arrivalClock())
+    assertEquals("--:--", s.copy(arrival = "malformed").arrivalClock())
+  }
+  @Test fun nativeFollowTimeModelDisappearsOnStaleOrBlockedEvidence() {
+    val now = start + 3_600_000
+    val s = trip()
+    assertEquals("Ankunft in 60 min", s.remainingLabel(now))
+    assertTrue(s.progressDescription(now).contains("kein GPS"))
+    assertTrue(s.progressDescription(now).contains("50 %"))
+    assertNull(s.remainingLabel(now + 150_001))
+    assertEquals("Keine aktuelle Fortschrittsprognose", s.progressDescription(now + 150_001))
+    assertNull(s.copy(status = "blocked").remainingLabel(now))
+    assertNull(s.copy(realtime = false).remainingLabel(now))
+    assertNull(s.copy(status = "cancelled").remainingLabel(now))
+  }
+
 }

@@ -3,6 +3,9 @@ package de.bahnconnections.android
 import android.app.*
 import android.content.Intent
 import android.content.Context
+import android.graphics.Color
+import android.view.View
+import android.widget.RemoteViews
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Handler
@@ -72,15 +75,38 @@ class TrainFollowService : Service() {
     val open = PendingIntent.getActivity(this, 2, Intent(this, MainActivity::class.java),
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     val now = System.currentTimeMillis()
-    val text = s.delayLabel(now)
     val progress = s.progress(now)
-    val builder = Notification.Builder(this, CHANNEL).setSmallIcon(android.R.drawable.ic_menu_directions)
-      .setContentTitle("${s.name} · ${s.from} → ${s.to}").setContentText(text)
-      .setStyle(Notification.BigTextStyle().bigText("$text\n${if (progress == null) "Kein aktueller Fortschritt" else "Zeitfortschritt $progress % · Prognosemodell, kein GPS"}"))
-      .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)
-      .addAction(Notification.Action.Builder(null, "Stop Following", stop).build())
+    // Android notifications are native RemoteViews, not the WebView/CSS glass UI.
+    // Keep the system notification header/actions but give the route real visual hierarchy.
+    val collapsed = RemoteViews(packageName, R.layout.follow_notification_compact).apply {
+      setTextViewText(R.id.follow_compact_train, s.name)
+      setTextViewText(R.id.follow_compact_status, s.delayLabel(now))
+      setTextViewText(R.id.follow_compact_route, "${s.from}  →  ${s.to}")
+    }
+    val expanded = RemoteViews(packageName, R.layout.follow_notification_expanded).apply {
+      setTextViewText(R.id.follow_train, s.name)
+      setTextViewText(R.id.follow_status, s.delayLabel(now))
+      setTextViewText(R.id.follow_origin, s.from)
+      setTextViewText(R.id.follow_destination, s.to)
+      setTextViewText(R.id.follow_departure, "Abfahrt  ${s.departureClock()}")
+      setTextViewText(R.id.follow_arrival, "Ankunft  ${s.arrivalClock()}")
+      setTextViewText(R.id.follow_eta, s.remainingLabel(now) ?: "Fahrtdetails öffnen")
+      setTextViewText(R.id.follow_progress_description, s.progressDescription(now))
+      setViewVisibility(R.id.follow_progress, if (progress == null) View.GONE else View.VISIBLE)
+      if (progress != null) setProgressBar(R.id.follow_progress, 100, progress, false)
+    }
+    val builder = Notification.Builder(this, CHANNEL)
+      .setSmallIcon(R.drawable.ic_follow_train)
+      .setContentTitle("${s.name} · ${s.from} → ${s.to}")
+      .setContentText(s.delayLabel(now))
+      .setCustomContentView(collapsed)
+      .setCustomBigContentView(expanded)
+      .setStyle(Notification.DecoratedCustomViewStyle())
+      .setColor(Color.rgb(38, 156, 221))
+      .setContentIntent(open)
+      .setOngoing(true).setOnlyAlertOnce(true)
+      .addAction(Notification.Action.Builder(null, "Verfolgung beenden", stop).build())
     if (Build.VERSION.SDK_INT >= 31) builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-    if (progress != null) builder.setProgress(100, progress, false)
     if (Build.VERSION.SDK_INT >= 34) startForeground(NOTIFICATION, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
     else startForeground(NOTIFICATION, builder.build())
   }
