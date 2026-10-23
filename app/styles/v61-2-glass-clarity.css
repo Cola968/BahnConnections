@@ -114,3 +114,12 @@
 .v62-native-follow-footer button{border:1px solid var(--line-subtle);border-radius:12px;color:var(--ink);background:var(--paper);min-height:44px;padding:8px 11px;font-weight:700;}
 @media(prefers-reduced-transparency:reduce){.v62-native-follow{background:var(--paper)!important}}
 @media(forced-colors:active){.v62-native-follow{background:Canvas!important;border-color:CanvasText!important}}
+
+/* The existing radar lifecycle requires a small, still visible fresh model speed.
+   Keep it subordinate to journey ETA, not hidden in the optional details. */
+.app-shell .v62-follow-status .v62-follow-mini-speed{
+  min-width:0;display:inline-flex;align-items:baseline;gap:4px;padding-left:7px;
+  border-left:1px solid var(--line-subtle);margin-left:auto;
+}
+.app-shell .v62-follow-mini-speed strong{font-size:.84rem;line-height:1.2;font-variant-numeric:tabular-nums;}
+.app-shell .v62-follow-mini-speed small{font-size:.59rem;white-space:nowrap;}

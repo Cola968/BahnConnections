@@ -34,8 +34,8 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
         <strong>{trip.name}</strong>
         <small>{view.progress===null?"Fahrplan · keine aktuelle Position":"Aktive Zeitprognose · kein GPS"}</small>
       </div>
-      <button type="button" className="v62-follow-details-toggle" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?"Weniger":"Details"}</button>
       <button type="button" className="v62-follow-stop" onClick={onEnd} aria-label="Zugverfolgung beenden">Beenden</button>
+      <button type="button" className="v62-follow-details-toggle" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?"Weniger":"Details"}</button>
     </header>
     <div className="v62-follow-route" aria-label={`Von ${trip.from.name} nach ${trip.to.name}`}>
       <span title={trip.from.name}>{trip.from.name}</span>
@@ -45,6 +45,7 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
     <div className="v62-follow-status" aria-live="polite">
       <span>{view.etaLabel}</span>
       <span className={`v62-follow-delay v62-follow-${view.delayTone}`}>{view.delayLabel}</span>
+      <span className="train-hud-speed v62-follow-mini-speed" aria-label={speed===null?"Geschwindigkeitsschätzung nicht verfügbar":`Geschätzt ${speed} Kilometer pro Stunde`}><strong>{speed===null?"—":speed}</strong><small>km/h · Modell</small></span>
     </div>
     {expanded&&<div className="v62-follow-expanded">
       <div className="v62-follow-times">
@@ -52,7 +53,7 @@ export function TrainRadarHud({trip,radarStatus,radarUpdatedAt,inRadar,onEnd}:Pr
         <div><small>Ankunft · {view.timeType}</small><time dateTime={view.timeType==="Prognose"?trip.arrival:trip.scheduledArrival??trip.arrival}>{view.arrivalTime}</time></div>
       </div>
       {view.progress!==null&&<progress aria-label="Modellierter Zeitfortschritt der Fahrt, kein GPS" max={100} value={view.progress}/>}
-      <p>{speed===null?"Geschwindigkeitsschätzung nicht verfügbar":<span className="v62-follow-speed"><strong>{speed}</strong> km/h · Modell</span>} · {view.evidenceLabel}{radarUpdatedAt&&fresh?` · Daten ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(radarUpdatedAt)}`:""}</p>
+      <p>{view.evidenceLabel}{radarUpdatedAt&&fresh?` · Daten ${new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(radarUpdatedAt)}`:""}</p>
     </div>}
   </div>;
 }
