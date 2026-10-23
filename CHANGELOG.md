@@ -1,5 +1,7 @@
 # V61.2.1 RC2 · unveröffentlicht
 
+- Systemweite Bahnhofstafel-Korrektur: Aufenthalte werden als einzelner Halt geprüft. Gültige Ankunft/Abfahrt wird nicht mehr als rückwärts laufende Fahrt zum selben Halt verworfen; echte Soll-/Ist-Zeitfehler und aktive Umleitungen bleiben gesperrt.
+
 - Erdeborn: präzise Zuordnung eines bekannten DB-Bahnhofs auch bei ausschließlich als BUS gemeldeten Fahrten; keine benachbarten oder mehrdeutigen Busstopps übernehmen.
 - Busfahrten bleiben in der Tafel als Bus sichtbar, erhalten einen eigenen Filter und werden nicht als Bahnfahrten auf die Karte gesetzt. Keine automatische SEV-Behauptung aus S7.
 - MIT für den eigenen Anwendungscode nach ausdrücklicher Auswahl des Rechteinhabers; Fremddaten bleiben separat lizenziert. Sichtbare Lizenz- und Datenhinweise ergänzt.
