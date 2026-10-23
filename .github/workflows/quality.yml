@@ -28,6 +28,7 @@ jobs:
       - run: node scripts/pwa-patch-version-audit.mjs
       - run: pnpm audit:play-hosting
       - run: pnpm audit:railglass
+      - run: node scripts/v62-optical-glass-audit.mjs
       - run: pnpm audit:v60
       - run: pnpm audit:v60-passenger
       - run: pnpm audit:v60-transfer
