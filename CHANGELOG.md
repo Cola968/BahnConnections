@@ -1,4 +1,13 @@
-# V61.2.1 RC2 · unveröffentlicht
+# V61.2.2 · Release Candidate · noch nicht veröffentlicht
+
+- Zugverfolgung auf der Karte überarbeitet: Start/Ziel, ETA, Verspätung und optional aufklappbare Zeiten. Die bewährte modellierte Geschwindigkeit bleibt klein sichtbar.
+- Native Android-Benachrichtigung mit kompakten/aufgeklappten Ansichten, Zeiten, Status und Stopp-Aktion.
+- Persistierte Android-Fahrt als eigene Statuskarte in den Einstellungen, ohne behauptete GPS-Daten.
+- Stärker sichtbare Glass-Flächen für Navigation, Panels und Pop-ups, ohne Tabellenkontrast zu opfern.
+- APP_VERSION, Versionsdatei, Android-Version und Service-Worker-Cache über den Live-Stand V61.2.1 angehoben; alte PWA-Installationen können eine neue Version erkennen.
+- V61.2.2 ist noch nicht auf Sites bereitgestellt. CI, Datenrechte und echte Android-Geräteabnahme bleiben eigenständige Gates.
+
+# V61.2.1 · auf Sites veröffentlicht am 23.10.2026
 
 - Systemweite Bahnhofstafel-Korrektur: Aufenthalte werden als einzelner Halt geprüft. Gültige Ankunft/Abfahrt wird nicht mehr als rückwärts laufende Fahrt zum selben Halt verworfen; echte Soll-/Ist-Zeitfehler und aktive Umleitungen bleiben gesperrt.
 
