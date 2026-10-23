@@ -1,3 +1,13 @@
+# V62.0.0 · Web-Release vorbereitet
+
+- Bahnhofshalte mit schnellen Filtern „Nächste 60 Min“, „Verspätet“ und „Gleiswechsel“, datenstandabhängig für alle unterstützten Stationen.
+- Wiederherstellung des gültigen Fahrplans, wenn eine frühere Prognose veraltet ist; keine veralteten Gleisänderungen als aktuell ausgeben.
+- Soll-/Ist-Zeiten, Verspätung und Gleiswechsel in der Bahnhofsliste klar getrennt. Abgesicherte stationweite Richtungserkennung, keine erfundenen Zugpositionen.
+- Gespeicherte Pendelstrecken: „Jetzt prüfen“ löst eine wirkliche neue Verbindungssuche mit gespeicherten Start-/Zielpunkten aus. Berlin-lokale Zeit und UTC werden auch über DST-Grenzen korrekt behandelt.
+- Verbesserte Railglass-Filter und operationelle Tabellenhierarchie, mit barrierearmen Touchflächen.
+- Neue eigenständige PWA-Versions- und Cache-Kennung V62.0.0 sowie Android-Versionscode 62000.
+- Ungeklärte optionale GeoViewer-Exporte aus den Web-Assets entfernt und Verbraucher deaktiviert. Routen bleiben ohne unabhängigen Nachweis unbestätigt; aktive Konflikte gesperrt. Keine Android-Gerätefreigabe.
+
 # V61.2.2 · Release Candidate · noch nicht veröffentlicht
 
 - Zugverfolgung auf der Karte überarbeitet: Start/Ziel, ETA, Verspätung und optional aufklappbare Zeiten. Die bewährte modellierte Geschwindigkeit bleibt klein sichtbar.

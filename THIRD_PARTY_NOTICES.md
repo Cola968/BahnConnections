@@ -22,10 +22,12 @@ Diese Entscheidung erteilt keine Rechte an fremden Daten, Assets oder Marken.
   https://www.bkg.bund.de. VG250 wurde zur Zuordnung der Bundesländer verarbeitet.
   Quellen: https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf.
 - DB InfraGO GeoViewer WFS: ISR Betriebsstellen Punkt und KOMBau DB-Streckennetz.
-  Abrufdaten und Bearbeitung sind in public/db-stations.json beziehungsweise
-  public/db-rail-network.json dokumentiert. Eine belastbare Freigabe zur
+  Abrufdaten und Bearbeitung sind in data/quarantined/db-stations.json beziehungsweise
+  data/quarantined/db-rail-network.json dokumentiert. Eine belastbare Freigabe zur
   Weiterveröffentlichung genau dieser Exporte ist noch nicht dokumentiert.
-  MIT gilt ausdrücklich nicht für diese Dateien. Release-Blocker #67 bleibt offen.
+  MIT gilt ausdrücklich nicht für diese Dateien. Sie liegen außerhalb von public,
+  ihre Verbraucher sind deaktiviert und sie werden nicht im Webbuild ausgeliefert.
+  #67 bleibt für eine spätere Wiederaktivierung offen.
 
 ## Direkte Laufzeitbibliotheken
 

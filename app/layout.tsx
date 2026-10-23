@@ -35,8 +35,11 @@ import "./styles/v60-motion.css";
 import "./styles/v60-premium.css";
 import "./styles/v61-station-calls.css";
 import "./styles/v61-2-glass-clarity.css";
+import "./styles/v62-station-operations.css";
+import "./styles/v62-optical-glass.css";
 import { PwaRegister } from "./pwa-register";
 import { BrowserChrome } from "./browser-chrome";
+import { OpticalGlassLight } from "./optical-glass-light";
 
 // Keep preview, installed PWA and future Play Store origins aligned with the real host.
 // Without an explicit HTTPS origin, framework metadata should use the request host.
@@ -79,5 +82,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body>{children}<PwaRegister /><BrowserChrome /></body></html>;
+  return <html lang="de"><body>{children}<PwaRegister /><BrowserChrome /><OpticalGlassLight /></body></html>;
 }
