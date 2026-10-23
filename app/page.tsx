@@ -6,6 +6,7 @@ import { stationPassengerInfo } from "./station-passengers";
 import { PlannerPanel } from "./planner-panel";
 import { usePanelHistory } from "./use-panel-history";
 import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
+import {commuterDepartureTime} from "./commuter-departure";
 import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
@@ -1111,20 +1112,20 @@ export default function Home() {
     setJourneyMessage("");
   }
 
-  async function runPlanner() {
-    const start = stationById.get(startId);
-    const target = stationById.get(targetId);
-    if (!startId || !targetId) {
+  async function runPlanner(override?:{start:Station;target:Station;departureIso:string}) {
+    const start = override?.start ?? stationById.get(startId);
+    const target = override?.target ?? stationById.get(targetId);
+    if ((!startId || !targetId) && !override) {
       setJourney(null);
       setJourneyMessage("Bitte Start und Ziel aus der Trefferliste auswählen.");
       return;
     }
-    if (startId === targetId) {
+    if (start && target && start.id === target.id) {
       setJourney(null);
       setJourneyMessage("Start und Ziel sind identisch. Bitte ein anderes Ziel auswählen.");
       return;
     }
-    if (!start || !target || !journeyDeparture) {
+    if (!start || !target || (!journeyDeparture && !override?.departureIso)) {
       setJourney(null);
       setJourneyMessage("Bahnhof oder Abfahrtszeit fehlen. Bitte die Auswahl noch einmal prüfen.");
       return;
@@ -1144,8 +1145,8 @@ export default function Home() {
       const results = await fetchLiveJourneys({
         from:start,
         to:target,
-        departure:berlinLocalToIso(journeyDeparture),
-        arriveBy,
+        departure:override?.departureIso??berlinLocalToIso(journeyDeparture),
+        arriveBy:override?.departureIso?false:arriveBy,
         maxTransfers:maxChanges,
         minTransferMinutes:transferMinutes,
         categories:plannerCategories,
@@ -1184,7 +1185,7 @@ export default function Home() {
     if(!next){setRouteSaveMessage("Du hast bereits 20 Pendelstrecken gespeichert. Entferne zuerst eine Strecke.");return;}
     storeRoutes(next);
   }
-  function openSavedRoute(route:SavedRoute,reverse:boolean) {
+  function openSavedRoute(route:SavedRoute,reverse:boolean,searchNow=false) {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
     const from=reverse?route.to:route.from,to=reverse?route.from:route.to;
     setLiveSearchStations(current=>[...current.filter(s=>s.id!==from.id&&s.id!==to.id),from,to]);
@@ -1192,6 +1193,14 @@ export default function Home() {
     setJourney(null);setJourneyOptions([]);setJourneyEndpoints(null);setStationTrip(null);
     setJourneyMessage("");setPlannerState("idle");setExploreOpen(true);
     setActiveView("connections");setMobileSheetState("expanded");
+    if(searchNow){
+      const next=commuterDepartureTime(Date.now());
+      setJourneyDeparture(next.local);
+      setArriveBy(false);
+      // Pass explicit saved endpoints: state updates are asynchronous and may
+      // otherwise accidentally search the previously selected pair.
+      void runPlanner({start:from,target:to,departureIso:next.iso});
+    }
   }
 
   function chooseJourney(option: LiveJourney) {
