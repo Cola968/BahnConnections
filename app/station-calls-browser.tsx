@@ -61,7 +61,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
       <UiIcon name="chevron" className={open?"v61-call-chevron is-open":"v61-call-chevron"}/>
     </button>
     {open&&<div className="v61-call-content" id={regionId}>
-      <p className="v61-call-context">Gemeldete Halte für {stationName}, unabhängig vom Kartenausschnitt. Prognosen und Gleisänderungen werden nur bei aktuellen Quelldaten hervorgehoben. Keine berechneten Zugpositionen.</p>
+      <p className="v61-call-context">Gemeldete Halte für {stationName}, unabhängig vom Kartenausschnitt. Prognosen und Gleisänderungen werden nur bei aktuellen Quelldaten hervorgehoben. Es werden keine Zugpositionen berechnet.</p>
       {snapshot.status==="loading"&&<p role="status" className="v61-call-message">Bahnhofshalte werden geladen …</p>}
       {snapshot.status==="error"&&<div className="v61-call-message" role="status"><span>Bahnhofshalte gerade nicht erreichbar.</span><button type="button" onClick={snapshot.refresh}>Erneut versuchen</button></div>}
       {(snapshot.status==="ready"||snapshot.status==="stale")&&<>
