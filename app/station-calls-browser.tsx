@@ -3,7 +3,7 @@
 import {useEffect,useId,useLayoutEffect,useMemo,useRef,useState} from "react";
 import {revealPanelContent} from "./panel-content-visibility";
 import {UiIcon} from "./ui-icon";
-import {type StationCall,type StationRadarDirection} from "./station-radar-data";
+import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
 import {browseStationCalls,type CallQuickFilter} from "./station-call-presentation";
 
 export type StationCallsView = {
@@ -50,7 +50,9 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
     return()=>{window.clearTimeout(start);window.clearInterval(timer);};
   },[open]);
   const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock>=snapshot.updatedAt-10_000&&clock-snapshot.updatedAt<120_000;
-  const rows=useMemo(()=>browseStationCalls(snapshot.calls,direction,query,quick,clock??0,valid),[snapshot.calls,direction,query,quick,clock,valid]);
+  // Keep V61’s shared stop-membership and search rules; V62 adds honest time/filter presentation.
+  const providerRows=useMemo(()=>listStationCalls(snapshot.calls,direction,query),[snapshot.calls,direction,query]);
+  const rows=useMemo(()=>browseStationCalls(new Map(providerRows.map(({tripId,call})=>[tripId,call])),direction,"",quick,clock??0,valid),[providerRows,direction,quick,clock,valid]);
   const visible=rows.slice(0,limit);
   const partial=snapshot.coverage!=="complete";
   return <section ref={sectionRef} className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
@@ -81,7 +83,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
         {!valid&&<p className="v62-call-freshness">Echtzeitfilter sind nur mit aktueller, vollständiger Quellenantwort verfügbar. Fahrplanzeiten werden weiterhin angezeigt, sofern bestätigt vorhanden.</p>}
         <p className="v61-call-count">{rows.length} {rows.length===1?"Fahrt":"Fahrten"} im abgefragten Zeitfenster{query?" für diese Suche":""}.</p>
         {rows.length===0?<p className="v61-call-message">Keine passenden Fahrten in den verfügbaren Daten.</p>:<ol className="v61-call-list">
-          {visible.map(({tripId,call,view})=><li key={tripId} className="v61-call-row v62-call-row">
+          {visible.map(({tripId,call,view})=>{const realtime=view.status==="forecast";return <li key={tripId} className="v61-call-row v62-call-row">
               <span className="v62-call-clock">
                 <time dateTime={view.eventTime!==null?new Date(view.eventTime).toISOString():undefined}>{timeLabel(view.eventTime??undefined)}</time>
                 {view.status==="forecast"&&view.plannedTime!==null&&view.plannedTime!==view.eventTime&&<del aria-label="Planmäßige Zeit">{timeLabel(view.plannedTime)}</del>}
@@ -91,11 +93,11 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
                 {view.platform&&<small className={view.platformChanged?"v62-platform-change":"v62-platform"}>Gleis {view.platform}{view.platformChanged&&view.plannedPlatform?` · statt ${view.plannedPlatform}`:""}</small>}
               </span>
               <span className="v61-call-evidence">
-                {view.status==="forecast"?"Prognose":"Fahrplan"}
+                {realtime?"Prognose":"Fahrplan"}
                 {view.delayMinutes!==null&&view.delayMinutes!==0&&<b className={view.delayMinutes>0?"v62-delay-late":"v62-delay-early"}>{view.delayMinutes>0?"+":""}{view.delayMinutes} Min.</b>}
                 <small>{view.kind==="arrival"?"Ankunft":"Abfahrt"}</small>
               </span>
-            </li>)}
+            </li>;})}
         </ol>}
         {rows.length>visible.length&&<button className="v61-call-more" type="button" onClick={()=>setLimit(value=>value+40)}>Weitere {Math.min(40,rows.length-visible.length)} anzeigen</button>}
         <p className="v61-call-disclaimer">Quelle: Transitous / MOTIS. Bei veralteten Daten werden vorherige Prognosezeiten und Gleiswechsel nicht als gültiger Fahrplan ausgegeben. Ausfälle und nicht verifizierte Halte werden nicht als bestätigte Fahrten ergänzt.</p>
