@@ -1,4 +1,11 @@
-# V61.2.1 RC1 · unveröffentlicht
+# V61.2.1 RC2 · unveröffentlicht
+
+- Erdeborn: präzise Zuordnung eines bekannten DB-Bahnhofs auch bei ausschließlich als BUS gemeldeten Fahrten; keine benachbarten oder mehrdeutigen Busstopps übernehmen.
+- Busfahrten bleiben in der Tafel als Bus sichtbar, erhalten einen eigenen Filter und werden nicht als Bahnfahrten auf die Karte gesetzt. Keine automatische SEV-Behauptung aus S7.
+- MIT für den eigenen Anwendungscode nach ausdrücklicher Auswahl des Rechteinhabers; Fremddaten bleiben separat lizenziert. Sichtbare Lizenz- und Datenhinweise ergänzt.
+- DB-Abgleich als Stichprobe bezeichnet; keine unabhängige Betreiberbestätigung behauptet.
+- Vollständige Veröffentlichung bleibt bis zu Datenfreigaben und physischer Android-Abnahme gesperrt.
+
 
 Gemeinsames Detailabruflimit, korrigierte mobile Testvorbereitung und überarbeiteter nativer Android-Follow-Lifecycle. Native Ausführung und Betreiberabdeckung sind erst nach dokumentierter Abnahme freigegeben.
 

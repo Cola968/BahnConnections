@@ -1,19 +1,22 @@
 // Live evidence only: no mock replies, geographic stop merging or completeness
 // claim. Run explicitly; a failed provider must produce a failing audit.
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {STATIONS} from '../app/network-data.ts';
-import {requireTransitousStopId,RAIL_MODES,transitousRequestHeaders} from '../app/transitous.ts';
+import {requireTransitousStopId,BOARD_MODES,transitousRequestHeaders} from '../app/transitous.ts';
 import {validTransitousBoardRows} from '../app/board-verification.ts';
 import {boardDedupeKey} from '../app/board-dedup.ts';
 import {stationCalls,listStationCalls} from '../app/station-radar-data.ts';
 
 const output=resolve(process.argv[2]??'work/station-complex-provider');
 await mkdir(output,{recursive:true});
+const dbStations=JSON.parse(await readFile(new URL('../public/db-stations.json',import.meta.url),'utf8')).stations;
+const rural=dbStations.find(station=>station.name==='Erdeborn'&&station.source==='db');
+if(!rural)throw Error('Official DB station fixture is missing');
 const stations=[...['berlin','hamburg','muenchen','leipzig'].map(id=>STATIONS.find(s=>s.id===id)),
   {id:'audit-hermann',name:'Berlin Hermannstraße',lat:52.468,lon:13.43},
   {id:'audit-gesund',name:'Berlin Gesundbrunnen',lat:52.5486,lon:13.3884},
-  {id:'audit-er',name:'Erdeborn',lat:51.46878295,lon:11.63691551}];
+  rural];
 const report={startedAt:new Date().toISOString(),referenceTime:new Date().toISOString(),
   scope:'60-minute provider window; n=50 is a minimum and may extend beyond it',
   method:'Default MOTIS parent/child/equivalence expansion; no radius; original stop IDs retained',
@@ -30,7 +33,7 @@ for(const station of stations){
     for(const kind of ['arrival','departure']){
       const url=new URL('https://api.transitous.org/api/v6/stoptimes');
       url.search=new URLSearchParams({stopId:result.providerStopId,time:report.referenceTime,
-        n:'50',window:'3600',direction:'LATER',arriveBy:String(kind==='arrival'),mode:RAIL_MODES,realtimeMode:'REALTIME'});
+        n:'50',window:'3600',direction:'LATER',arriveBy:String(kind==='arrival'),mode:BOARD_MODES,realtimeMode:'REALTIME'});
       const response=await fetch(url,{signal,headers:transitousRequestHeaders()});
       if(response.status===429)throttled=true;
       if(!response.ok)throw Error('Provider HTTP '+response.status);

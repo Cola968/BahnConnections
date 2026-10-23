@@ -130,6 +130,7 @@ export function SettingsDialog(p:Props) {
           <NativeFollowControl />
           {appUpdate&&<button type="button" className="v53-settings-link pwa-update-action" onClick={appUpdate.activate}><UiIcon name="arrow"/><span>{appUpdate.label} jetzt aktualisieren</span></button>}
           <a href="/changelog" className="v53-settings-link"><UiIcon name="arrow"/><span>Was ist neu? · Changelog</span></a>
+          <a href="/licenses" className="v53-settings-link"><UiIcon name="arrow"/><span>Lizenzen, Datenquellen & Grenzen</span></a>
           <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>App installieren & Updates</span></a>
         </section>
         <section className="settings-group">

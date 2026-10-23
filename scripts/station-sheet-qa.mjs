@@ -99,7 +99,7 @@ function fixtureTrip(){
   return {trip:{legs:[{realTime:true,from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694,arrival:time(4),scheduledArrival:time(4),departure:time(6+tripRevision),scheduledDeparture:time(5),track:'15'},to:{name:'Berlin Friedrichstraße',lat:52.5202,lon:13.3869,arrival:time(10),scheduledArrival:time(10),track:'6'}}]}};
 }
 function timetable() {
-  const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
+  const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8'],['S7','BUS','Lutherstadt Eisleben','Bussteig']];
   return {source:'Station-sheet UI fixture',updatedAt:new Date().toISOString(),warnings:[],verification:{status:'matched'},stopTimes:Array.from({length:30},(_,i)=>{
     const [displayName,mode,headsign,track]=names[i%names.length];
     const scheduled=new Date(fixtureNow+(i+5)*60000).toISOString();
@@ -172,6 +172,9 @@ try {
     await command('Page.bringToFront');
     for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(150);}
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
+    // A BUS whose line is S7 must remain a bus in the actual React-rendered UI.
+    // The original six rail/urban fixtures and all layout assertions stay intact.
+    assert.ok(await evaluate("[...document.querySelectorAll('.board-service')].some(node=>node.querySelector('.service-logo.bus')&&node.textContent.includes('S7')&&node.textContent.includes('Bus'))"),'Provider BUS S7 must render as Bus, never as S-Bahn');
     if(args.includes('--stream')){
       assert.equal(await evaluate("Boolean(document.querySelector('.verification-pending'))"),true,'Rows must display while DB verification is pending');
       await click('.board-row-summary');

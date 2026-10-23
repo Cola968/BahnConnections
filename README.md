@@ -24,7 +24,7 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 - Fahrtverläufe mit allen Halten, Soll-/Ist-Zeiten, Gleisen und Meldungen
 - quellgelieferte Streckengeometrien ohne erfundene Luftlinien
 - Reiseplaner mit Alternativen, bis zu fünf Umstiegen und Sortierung nach erwarteter Ankunft
-- Transitous/MOTIS als Hauptquelle und DB transport.rest als unabhängige Gegenprüfung im Reiseplaner
+- Transitous/MOTIS als Hauptquelle und DB transport.rest als zusätzlichen Fahrplanabgleich im Reiseplaner (keine unabhängige Betreiberbestätigung)
 - installierbare Progressive Web App mit responsivem Bottom-Sheet auf Mobilgeräten
 - sichtbare Kennzeichnung von Echtzeit-, Teil- und reinen Fahrplandaten
 
@@ -67,3 +67,7 @@ BAHNCONNECTIONS_BASE_URL=http://localhost:3000 pnpm audit:api
 
 Die jeweiligen Quelldaten und Marken bleiben Eigentum ihrer Anbieter. BahnConnections ist ein unabhängiges Projekt und kein offizielles Angebot der Deutschen Bahn AG.
 
+
+## Lizenz und Datenrechte
+
+Eigener Anwendungscode: MIT, siehe [LICENSE](LICENSE). Fremddaten und Bibliotheken behalten ihre Bedingungen; siehe [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Die dort dokumentierten offenen Datenfreigaben bleiben Release-Blocker.

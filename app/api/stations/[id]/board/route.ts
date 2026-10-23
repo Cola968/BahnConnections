@@ -3,7 +3,7 @@ import { decodeRouteSegment } from "../../../decode-route-segment";
 import { loadStationBoardWithFallback, StationSourceThrottledError, type StoptimesMode } from "../../../../station-board-fallback";
 import { boardRequestWindow } from "../../../../board-request-window";
 import { chooseStationMatch } from "../../../../station-match";
-import { RAIL_MODES, transitousRequestHeaders } from "../../../../transitous";
+import { BOARD_MODES, transitousRequestHeaders } from "../../../../transitous";
 import { compareBoardRows, type BoardCrossCheck, type DbBoardRow, type TransitousBoardRow } from "../../../../board-verification";
 
 type TransitousPlace = { name?:string; lat?:number; lon?:number; stopId?:string; parentId?:string };
@@ -55,7 +55,7 @@ async function crossCheck(place:TransitousPlace|undefined, stopTimes:TransitousB
     boardUrl.searchParams.set("regional", "true");
     boardUrl.searchParams.set("suburban", "true");
     boardUrl.searchParams.set("subway", "true");
-    boardUrl.searchParams.set("bus", "false");
+    boardUrl.searchParams.set("bus", stopTimes.some(row=>row.mode==='BUS')?"true":"false");
     boardUrl.searchParams.set("tram", "true");
     boardUrl.searchParams.set("ferry", "false");
     boardUrl.searchParams.set("taxi", "false");
@@ -93,7 +93,7 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     url.searchParams.set("arriveBy", arrival ? "true" : "false");
     url.searchParams.set("direction", "LATER");
     url.searchParams.set("realtimeMode", "REALTIME");
-    url.searchParams.set("mode", RAIL_MODES);
+    url.searchParams.set("mode", BOARD_MODES);
     url.searchParams.set("withAlerts", "true");
     url.searchParams.set("language", "de");
     const requestedTime=query.get("time");
@@ -122,7 +122,8 @@ export async function GET(request: Request, context: { params:Promise<{ id:strin
     const safeId=(value:unknown)=>typeof value==='string'&&value.length<=500?value:undefined;
     const stationScope={requestedStopId:stopId,providerStopId:safeId(providerPlace?.stopId),parentId:safeId(providerPlace?.parentId),
       grouping:'MOTIS default parent/same-name grouping',operatorCoverage:'unverified'};
-    const primary = { ...guarded,stopTimes,stationScope, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
+    const busWarning=stopTimes.some(row=>row.mode==='BUS')?["Busfahrten sind als Bus gekennzeichnet. Eine Liniennummer allein bestätigt keinen Schienenersatzverkehr."]:[];
+    const primary = { ...guarded,stopTimes,stationScope, source:"Transitous / MOTIS", updatedAt, realtimeStatus:hasRealtime ? "live" : "schedule", warnings:[...guarded.warnings,...busWarning,...(warning ? [warning] : hasRealtime ? [] : ["Für diese Zeilen liegen derzeit nur Fahrplandaten vor."])] };
     // The disruption screen needs route-specific alerts, not a second DB check
     // for each direction. Streamed live boards retain full verification.
     if(query.get("verify")==="0" && query.get("stream")!=="1"){
