@@ -1,6 +1,6 @@
 {
   "name": "sites-project",
-  "version": "61.2.0",
+  "version": "62.0.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -39,7 +39,8 @@
     "audit:v60-transfer": "node scripts/v60-transfer-audit.mjs",
     "audit:v60-share": "node scripts/v60-share-audit.mjs",
     "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs",
-    "audit:v61": "node scripts/v61-audit.mjs"
+    "audit:v61": "node scripts/v61-audit.mjs",
+    "audit:request-budget": "node scripts/board-request-budget-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",
@@ -70,5 +71,6 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "packageManager": "pnpm@10.34.7"
+  "packageManager": "pnpm@10.34.7",
+  "license": "MIT"
 }

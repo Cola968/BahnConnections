@@ -11,6 +11,31 @@ const at='2026-10-18T12:00:00Z';
 const row={tripId:'broken',displayName:'RE 1',mode:'REGIONAL_RAIL',place:{name:'Teststadt Hbf',scheduledDeparture:at,departure:at},alerts:[{header:'Umleitung',effect:4}]};
 const context={params:Promise.resolve({id:'test:station'})};
 try{
+  // A station dwell is one stop, not a round trip from departure back to arrival.
+  // Regression from the real Gesundbrunnen S42 payload (one minute dwell).
+  const dwell={tripId:'valid-dwell',displayName:'S42',mode:'SUBURBAN',realTime:false,
+    place:{name:'Gesundbrunnen',scheduledArrival:at,arrival:at,scheduledDeparture:'2026-10-18T12:01:00Z',departure:'2026-10-18T12:01:00Z'}};
+  for(const sample of [dwell,{...dwell,realTime:true,place:{...dwell.place,arrival:'2026-10-18T11:58:00Z',departure:'2026-10-18T11:59:00Z'}},
+    {...dwell,place:{...dwell.place,arrival:'2026-10-24T23:59:00+02:00',scheduledArrival:'2026-10-24T23:59:00+02:00',departure:'2026-10-25T00:01:00+02:00',scheduledDeparture:'2026-10-25T00:01:00+02:00'}}]){
+    globalThis.fetch=async()=>Response.json({routes:[{routeShortName:'S42'}],stopTimes:[sample]});
+    for(const query of ['verify=0','stream=1','verify=0&kind=arrival']){
+      const response=await board(new Request('https://test.invalid/api/stations/test/board?'+query),context);
+      const payload=query.includes('stream')?JSON.parse((await response.text()).split('\n')[0]):await response.json();
+      assert.equal(payload.stopTimes.length,1,'Valid dwell must survive actual board '+query);
+      assert.equal(payload.stopTimes[0].routeValidity.status,'unverified','Dwell is not independent operator verification');
+    }
+    assert.equal((await(await services(new Request('https://test.invalid/api/stations/test/services'),context)).json()).stopTimes.length,1,'Services must preserve valid dwell');
+  }
+  for(const invalid of [
+    {...dwell,place:{...dwell.place,scheduledDeparture:'2026-10-18T11:59:00Z'}},
+    {...dwell,place:{...dwell.place,departure:'2026-10-18T11:59:00Z'}},
+    {...dwell,place:{...dwell.place,alerts:[{header:'Haltestelle verlegt',effect:9}]}},
+  ]){
+    globalThis.fetch=async()=>Response.json({routes:[],stopTimes:[invalid]});
+    const payload=await(await board(new Request('https://test.invalid/api/stations/test/board?verify=0'),context)).json();
+    assert.equal(payload.stopTimes.length,0,'Real chronology errors and active stop alerts still fail closed');
+    assert.equal(payload.routeValidity.blockedCount,1);
+  }
   for(const query of ['verify=0','stream=1','verify=0&kind=arrival']){
     globalThis.fetch=async url=>new URL(url).hostname==='api.transitous.org'?Response.json({stopTimes:[row]}):new Response(null,{status:503});
     const response=await board(new Request('https://test.invalid/api/stations/test/board?'+query),context);

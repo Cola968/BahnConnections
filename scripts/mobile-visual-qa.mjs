@@ -42,6 +42,7 @@ const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alt
 
 let activeJourneys = [fixtureJourney,alternativeJourney];
 let radarFixtureEnabled=false;
+const commuterRequests=[];
 
 /** Fully deterministic map/train API fixture with an active, bounded rail segment. */
 function encodedRailLine(points) {
@@ -143,6 +144,7 @@ try {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
       const requestUrl = new URL(message.params.request.url);
+      if(requestUrl.pathname==='/api/journeys'&&message.params.request.method==='POST')commuterRequests.push({body:JSON.parse(message.params.request.postData),at:Date.now()});
       if (requestUrl.pathname.endsWith('/board')) console.log('Intercepted board fixture: '+requestUrl.pathname);
       const tripIndex=Number(requestUrl.pathname.match(/qa-board-(\d+)/)?.[1] ?? 0);
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
@@ -793,7 +795,7 @@ try {
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
     await pause(200);
     await screenshot(width+'-saved-routes');
-    await tap('.settings-dialog .saved-routes li>div button:first-child');
+    await tap('.settings-dialog .saved-routes li>div button[aria-label^="Rückweg von "]');
     await waitFor(`!document.querySelector('.settings-dialog') && Boolean(document.querySelector('.explore-card'))`,'Return route did not open planner');
     const names=await evaluate(`Array.from(document.querySelectorAll('.route-station-search input')).map(x=>x.value)`);
     if(names[0]!=='München Hbf'||names[1]!=='Berlin Hbf')throw new Error('Return route endpoints incorrect: '+JSON.stringify(names));
@@ -807,7 +809,20 @@ try {
     await pause(200);
     await tap('.planner-saved-routes .saved-routes li:first-child>div button:last-child');
     await waitFor(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes')).length===1`,'Route deletion failed');
-    profileChecks.push({width,routeRestored:true,reverse:true,save:true,remove:true});
+    // Exercise the new action independently; keep all return-route assertions above.
+    const saved=await evaluate(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes'))[0]`);
+    await evaluate(`document.querySelector('.planner-saved-routes .saved-route-now').scrollIntoView({block:'center'})`);
+    await pause(200);
+    const beforeNow=commuterRequests.length;
+    await tap('.planner-saved-routes .saved-route-now');
+    for(let attempt=0;attempt<100&&commuterRequests.length===beforeNow;attempt++)await pause(100);
+    if(commuterRequests.length!==beforeNow+1)throw new Error('Jetzt prüfen must issue exactly one new planner request');
+    const quick=commuterRequests.at(-1);
+    if(quick.body.from.id!==saved.from.id||quick.body.to.id!==saved.to.id)throw new Error('Quick commute searched stale endpoints');
+    const departure=Date.parse(quick.body.departure);
+    if(!Number.isFinite(departure)||departure<=quick.at||departure>quick.at+11*60_000||quick.body.arriveBy!==false)throw new Error('Quick commute needs a fresh UTC departure search');
+    await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Quick commute response was not rendered');
+    profileChecks.push({width,routeRestored:true,reverse:true,save:true,remove:true,quickSearch:true,queryFresh:true});
   }
   await setViewport(1440,900);
   const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
@@ -921,7 +936,7 @@ try {
   await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:updateScript.identifier});
   const sameVersionScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture(APP_VERSION)});
   await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
-  await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
+  await waitFor(`document.documentElement?.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
   if(await evaluate(`Boolean(document.querySelector('.app-update-status,.app-update-notice'))`))throw Error('Already running version must not be announced as a new version');
   await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:sameVersionScript.identifier});
 

@@ -1,3 +1,35 @@
+# V62.0.0 · Web-Release vorbereitet
+
+- Bahnhofshalte mit schnellen Filtern „Nächste 60 Min“, „Verspätet“ und „Gleiswechsel“, datenstandabhängig für alle unterstützten Stationen.
+- Wiederherstellung des gültigen Fahrplans, wenn eine frühere Prognose veraltet ist; keine veralteten Gleisänderungen als aktuell ausgeben.
+- Soll-/Ist-Zeiten, Verspätung und Gleiswechsel in der Bahnhofsliste klar getrennt. Abgesicherte stationweite Richtungserkennung, keine erfundenen Zugpositionen.
+- Gespeicherte Pendelstrecken: „Jetzt prüfen“ löst eine wirkliche neue Verbindungssuche mit gespeicherten Start-/Zielpunkten aus. Berlin-lokale Zeit und UTC werden auch über DST-Grenzen korrekt behandelt.
+- Verbesserte Railglass-Filter und operationelle Tabellenhierarchie, mit barrierearmen Touchflächen.
+- Neue eigenständige PWA-Versions- und Cache-Kennung V62.0.0 sowie Android-Versionscode 62000.
+- Ungeklärte optionale GeoViewer-Exporte aus den Web-Assets entfernt und Verbraucher deaktiviert. Routen bleiben ohne unabhängigen Nachweis unbestätigt; aktive Konflikte gesperrt. Keine Android-Gerätefreigabe.
+
+# V61.2.2 · Release Candidate · noch nicht veröffentlicht
+
+- Zugverfolgung auf der Karte überarbeitet: Start/Ziel, ETA, Verspätung und optional aufklappbare Zeiten. Die bewährte modellierte Geschwindigkeit bleibt klein sichtbar.
+- Native Android-Benachrichtigung mit kompakten/aufgeklappten Ansichten, Zeiten, Status und Stopp-Aktion.
+- Persistierte Android-Fahrt als eigene Statuskarte in den Einstellungen, ohne behauptete GPS-Daten.
+- Stärker sichtbare Glass-Flächen für Navigation, Panels und Pop-ups, ohne Tabellenkontrast zu opfern.
+- APP_VERSION, Versionsdatei, Android-Version und Service-Worker-Cache über den Live-Stand V61.2.1 angehoben; alte PWA-Installationen können eine neue Version erkennen.
+- V61.2.2 ist noch nicht auf Sites bereitgestellt. CI, Datenrechte und echte Android-Geräteabnahme bleiben eigenständige Gates.
+
+# V61.2.1 · auf Sites veröffentlicht am 23.10.2026
+
+- Systemweite Bahnhofstafel-Korrektur: Aufenthalte werden als einzelner Halt geprüft. Gültige Ankunft/Abfahrt wird nicht mehr als rückwärts laufende Fahrt zum selben Halt verworfen; echte Soll-/Ist-Zeitfehler und aktive Umleitungen bleiben gesperrt.
+
+- Erdeborn: präzise Zuordnung eines bekannten DB-Bahnhofs auch bei ausschließlich als BUS gemeldeten Fahrten; keine benachbarten oder mehrdeutigen Busstopps übernehmen.
+- Busfahrten bleiben in der Tafel als Bus sichtbar, erhalten einen eigenen Filter und werden nicht als Bahnfahrten auf die Karte gesetzt. Keine automatische SEV-Behauptung aus S7.
+- MIT für den eigenen Anwendungscode nach ausdrücklicher Auswahl des Rechteinhabers; Fremddaten bleiben separat lizenziert. Sichtbare Lizenz- und Datenhinweise ergänzt.
+- DB-Abgleich als Stichprobe bezeichnet; keine unabhängige Betreiberbestätigung behauptet.
+- Vollständige Veröffentlichung bleibt bis zu Datenfreigaben und physischer Android-Abnahme gesperrt.
+
+
+Gemeinsames Detailabruflimit, korrigierte mobile Testvorbereitung und überarbeiteter nativer Android-Follow-Lifecycle. Native Ausführung und Betreiberabdeckung sind erst nach dokumentierter Abnahme freigegeben.
+
 # V61.2 · 22.10.2026
 
 - Neueste Routenkonfliktprüfung und Zugverfolgung aus PR #74 mit den veröffentlichten V61.1-Panelkorrekturen zusammengeführt.

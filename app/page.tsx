@@ -1,4 +1,5 @@
 "use client";
+import {BUNDLED_INFRA_DATA_ENABLED} from "./data-release-policy";
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties, type UIEvent } from "react";
 import { stationMarkerHierarchy } from "./station-marker";
@@ -6,6 +7,7 @@ import { stationPassengerInfo } from "./station-passengers";
 import { PlannerPanel } from "./planner-panel";
 import { usePanelHistory } from "./use-panel-history";
 import { parseSavedRoutes, saveRoute, SAVED_ROUTES_KEY, type SavedRoute } from "./saved-routes";
+import {commuterDepartureTime} from "./commuter-departure";
 import { buildPlannerLink, parsePlannerLink } from "./planner-deep-link";
 import { SettingsDialog, parseLocalProfile, type LocalProfile } from "./settings-dialog";
 import { APP_VERSION_LABEL } from "./app-version";
@@ -29,7 +31,8 @@ import { useLeafletMap } from "./use-leaflet-map";
 import { useLiveRadar } from "./use-live-radar";
 import { useStationRadar } from "./use-station-radar";
 import { StationCallsBrowser } from "./station-calls-browser";
-import { listStationCalls, matchesStationCall, type StationRadarDirection } from "./station-radar-data";
+import { matchesStationCall, type StationRadarDirection } from "./station-radar-data";
+import { RadarStationCalls } from "./radar-station-calls";
 import { useLiveMap } from "./use-live-map";
 import { LiveTripInspector } from "./live-trip-inspector";
 import { TrainRadarHud } from "./train-radar-hud";
@@ -211,7 +214,7 @@ export default function Home() {
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
   const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
   const [helpOpen, setHelpOpen] = useState(false);
-  const [railState, setRailState] = useState<"loading" | "ready" | "error">("loading");
+  const [railState, setRailState] = useState<"loading" | "ready" | "error">(BUNDLED_INFRA_DATA_ENABLED?"loading":"error");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
   const [liveSearchStations, setLiveSearchStations] = useState<Station[]>([]);
   const [curatedStates, setCuratedStates] = useState<Record<string, string>>({});
@@ -231,7 +234,6 @@ export default function Home() {
   const [liveCategories, setLiveCategories] = useState<LiveTrainCategory[]>(["fern","regional","sbahn","ubahn","tram"]);
   const [liveStatusFilter, setLiveStatusFilter] = useState<LiveStatusFilter>("all");
   const [radarDirection,setRadarDirection] = useState<StationRadarDirection>("all");
-  const [radarTripQuery,setRadarTripQuery] = useState("");
   const [stationCallsOpen,setStationCallsOpen] = useState(false);
   const [liveView, setLiveView] = useState<LiveView>("trains");
   const [showTrails, setShowTrails] = useState(false);
@@ -427,7 +429,6 @@ export default function Home() {
   // Station timetables must work even when the optional map train layer is off.
   const stationRadar = useStationRadar(selected,liveVisible || stationCallsOpen);
   const stationLiveTrips = useMemo(() => liveTrips.filter(trip=>stationRadar.status==="ready"&&matchesStationCall(stationRadar.calls.get(trip.tripId),"all")),[liveTrips,stationRadar.calls,stationRadar.status]);
-  const stationRadarCallList = useMemo(() => listStationCalls(stationRadar.calls,radarDirection,radarTripQuery),[stationRadar.calls,radarDirection,radarTripQuery]);
   const currentTrackedTrip = trackedTripId ? stationLiveTrips.find(trip=>trip.tripId===trackedTripId) : undefined;
   useEffect(()=>{
     const stopped=()=>setTrackedTripId(null);
@@ -437,22 +438,18 @@ export default function Home() {
   // Android notifications run only while the user explicitly follows this train.
   // Do not stop/restart the native service on every radar refresh.
   const nativeFollowId=trackedTripId && selectedLiveTrip?.tripId===trackedTripId ? trackedTripId : null;
-  const previousNativeFollowId=useRef<string|null>(null);
   useEffect(()=>{
     // Do not stop an existing Android follow session just because the WebView
     // was reloaded or its React state was recreated.
     if (!nativeFollowId) {
-      if (previousNativeFollowId.current) syncAndroidFollow(null);
-      previousNativeFollowId.current=null;
       return;
     }
     const followed=selectedLiveTrip;
     if (followed?.tripId===nativeFollowId) {
-      syncAndroidFollow(followed);
-      previousNativeFollowId.current=nativeFollowId;
+      syncAndroidFollow(currentTrackedTrip??followed,liveUpdatedAt,liveState==='ready'&&Boolean(currentTrackedTrip));
     }
     // No cleanup on unmount: the native notification survives app closure.
-  },[nativeFollowId,selectedLiveTrip]);
+  },[nativeFollowId,selectedLiveTrip,currentTrackedTrip,liveUpdatedAt,liveState]);
   const visibleLiveTrips = useMemo(() => stationLiveTrips.filter((trip) => {
     if(!matchesStationCall(stationRadar.calls.get(trip.tripId),radarDirection))return false;
     if (!liveCategories.includes(trip.category)) return false;
@@ -533,6 +530,7 @@ export default function Home() {
   }, [fontScale, highContrast, minimalMode, preferencesReady, theme,autoLocation,reducedMotion]);
 
   useEffect(() => {
+    if(!BUNDLED_INFRA_DATA_ENABLED)return;
     const controller = new AbortController();
     fetch("/db-stations.json", { signal: controller.signal })
       .then((response) => {
@@ -618,6 +616,7 @@ export default function Home() {
   },[]);
 
   useEffect(() => {
+    if(!BUNDLED_INFRA_DATA_ENABLED)return;
     const router = new WorkerTrackRouter(() => setRailState("ready"), () => setRailRevision(value => value + 1), () => setRailState("error"));
     trackRouterRef.current = router;
     return () => { router.dispose(); trackRouterRef.current = null; };
@@ -1116,20 +1115,20 @@ export default function Home() {
     setJourneyMessage("");
   }
 
-  async function runPlanner() {
-    const start = stationById.get(startId);
-    const target = stationById.get(targetId);
-    if (!startId || !targetId) {
+  async function runPlanner(override?:{start:Station;target:Station;departureIso:string}) {
+    const start = override?.start ?? stationById.get(startId);
+    const target = override?.target ?? stationById.get(targetId);
+    if ((!startId || !targetId) && !override) {
       setJourney(null);
       setJourneyMessage("Bitte Start und Ziel aus der Trefferliste auswählen.");
       return;
     }
-    if (startId === targetId) {
+    if (start && target && start.id === target.id) {
       setJourney(null);
       setJourneyMessage("Start und Ziel sind identisch. Bitte ein anderes Ziel auswählen.");
       return;
     }
-    if (!start || !target || !journeyDeparture) {
+    if (!start || !target || (!journeyDeparture && !override?.departureIso)) {
       setJourney(null);
       setJourneyMessage("Bahnhof oder Abfahrtszeit fehlen. Bitte die Auswahl noch einmal prüfen.");
       return;
@@ -1149,8 +1148,8 @@ export default function Home() {
       const results = await fetchLiveJourneys({
         from:start,
         to:target,
-        departure:berlinLocalToIso(journeyDeparture),
-        arriveBy,
+        departure:override?.departureIso??berlinLocalToIso(journeyDeparture),
+        arriveBy:override?.departureIso?false:arriveBy,
         maxTransfers:maxChanges,
         minTransferMinutes:transferMinutes,
         categories:plannerCategories,
@@ -1189,7 +1188,7 @@ export default function Home() {
     if(!next){setRouteSaveMessage("Du hast bereits 20 Pendelstrecken gespeichert. Entferne zuerst eine Strecke.");return;}
     storeRoutes(next);
   }
-  function openSavedRoute(route:SavedRoute,reverse:boolean) {
+  function openSavedRoute(route:SavedRoute,reverse:boolean,searchNow=false) {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
     const from=reverse?route.to:route.from,to=reverse?route.from:route.to;
     setLiveSearchStations(current=>[...current.filter(s=>s.id!==from.id&&s.id!==to.id),from,to]);
@@ -1197,6 +1196,14 @@ export default function Home() {
     setJourney(null);setJourneyOptions([]);setJourneyEndpoints(null);setStationTrip(null);
     setJourneyMessage("");setPlannerState("idle");setExploreOpen(true);
     setActiveView("connections");setMobileSheetState("expanded");
+    if(searchNow){
+      const next=commuterDepartureTime(Date.now());
+      setJourneyDeparture(next.local);
+      setArriveBy(false);
+      // Pass explicit saved endpoints: state updates are asynchronous and may
+      // otherwise accidentally search the previously selected pair.
+      void runPlanner({start:from,target:to,departureIso:next.iso});
+    }
   }
 
   function chooseJourney(option: LiveJourney) {
@@ -1390,12 +1397,7 @@ export default function Home() {
           {liveVisible && selected && !selectedLiveTrip && !plannerVisible && !journey && !settingsOpen && !liveFiltersOpen && !moreMenuOpen && mobileSheetState!=="expanded" && <div className="station-radar-scope" aria-label="Bahnhofsradar">
             <div><b>{stationDisplayName(selected.name)}</b><small role="status">{stationRadar.status==="loading"?"Halte werden geprüft …":stationRadar.status==="error"?"Bahnhofshalte nicht erreichbar":stationRadar.status==="stale"?"Aktualisierung fehlgeschlagen · keine aktuellen Kartenmarker":`${visibleLiveTrips.length} Züge auf der Karte · ${stationRadar.calls.size} Fahrten mit Halt im Zeitfenster${stationRadar.coverage==="partial"?" · Daten teilweise verfügbar":""}`}</small></div>
             <div className="radar-direction-control" role="group" aria-label="Fahrtrichtung am Bahnhof">{([["all",language==="en"?"Show all":"Alle"],["inbound",language==="en"?"Inbound":"Ankommend"],["outbound",language==="en"?"Outbound":"Abgehend"]] as const).map(([id,label])=><button type="button" key={id} aria-pressed={radarDirection===id} onClick={()=>setRadarDirection(id)}>{label}</button>)}</div>
-            <details className="station-radar-calls"><summary>Bahnhofsfahrten ({stationRadarCallList.length})</summary>
-              <label className="station-radar-call-search"><span className="sr-only">Bahnhofsfahrten suchen</span><input aria-label="Bahnhofsfahrten suchen" type="search" value={radarTripQuery} onChange={event=>setRadarTripQuery(event.target.value)} placeholder="Zug oder Ziel suchen" /></label>
-              <p className="station-radar-call-note">Bestätigte Halte aus der Bahnhofstafel. Nur Züge mit verfügbarer Geometrie erscheinen auf der Karte.</p>
-              <ul className="station-radar-call-list">{stationRadarCallList.map(({tripId,call})=><li key={tripId}><span><b>{call.name??"Fahrt"}</b><small>{call.destination??"Ziel unbekannt"}{call.cancelled?" · Ausfall":""}</small></span><time dateTime={new Date(call.departure??call.arrival??0).toISOString()}>{new Date(call.departure??call.arrival??0).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}{call.realtime?" · Live":" · Plan"}</time></li>)}</ul>
-              {!stationRadarCallList.length && <p className="station-radar-call-note">Keine passenden Fahrten im aktuellen Zeitfenster.</p>}
-            </details>
+            <RadarStationCalls key={selected.id} calls={stationRadar.calls} direction={radarDirection}/>
           </div>}
           {liveFiltersOpen && <button type="button" className="map-menu-backdrop" aria-label="Ansicht-Menü schließen" onClick={() => setLiveFiltersOpen(false)} />}
           {liveFiltersOpen && <div ref={mapMenuRef} className="live-filter-popover map-menu-popover detached map-filters-v57" id="map-view-menu" role="dialog" aria-label="Kartenfilter">
@@ -1521,9 +1523,9 @@ export default function Home() {
           </section>
         )}
 
-        {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>setTrackedTripId(null)}/>}
+        {trackedTripId && selectedLiveTrip && <TrainRadarHud trip={currentTrackedTrip??selectedLiveTrip} radarStatus={liveState} radarUpdatedAt={liveUpdatedAt} inRadar={Boolean(currentTrackedTrip)} onEnd={()=>{syncAndroidFollow(null);setTrackedTripId(null);}}/>}
         {selectedLiveTrip && !statsOpen && !exploreOpen && (
-          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && stationLiveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
+          <LiveTripInspector trip={selectedLiveTrip} stationName={selected?.name} onRoute={handleRadarRoute} onShowRoute={()=>{if(stationTrip?.points.length){setTrackedTripId(null);setTrackedRadarAnchor(null);mapRef.current?.fitBounds(stationTrip.points,{paddingTopLeft:[30,30],paddingBottomRight:[30,desktopWorkspace?30:Math.min(window.innerHeight*.55,500)],maxZoom:12,animate:!prefersReducedMotion()});setMobileSheetState("half");}}} controls={tripControls} mobileState={mobileSheetState} onMobileState={setMobileSheetState} onClose={resetMap} tracked={trackedTripId===selectedLiveTrip.tripId} onTrack={() => {const next=trackedTripId===selectedLiveTrip.tripId?null:selectedLiveTrip.tripId;setTrackedTripId(next);if(!next)syncAndroidFollow(null);if(next){setTrackedRadarAnchor(null);setMobileSheetState("half");}}} radarUpdatedAt={liveUpdatedAt} radarStatus={liveState} inRadar={liveVisible && stationLiveTrips.some(candidate=>candidate.tripId===selectedLiveTrip.tripId)}/>
         )}
 
         {!boardOnly && <details className="map-legend"><summary>Fahrgastaufkommen</summary><PassengerLegend /></details>}
@@ -1542,7 +1544,7 @@ export default function Home() {
             <span className="eyebrow plain">DATEN & METHODIK</span>
             <h2 id="sources-title">So liest du die Karte</h2>
             <p>BahnConnections verbindet ein kuratiertes Fernverkehrsnetz für die Übersicht mit mehr als 5.000 Personenbahnhöfen, echter aktueller Verbindungssuche, Live-Bahnhofstafeln und einer gebündelten Live-Lage.</p>
-            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> zeigt weiterhin das kuratierte Fernliniennetz 2026. Sichtbar sind nur Abschnitte mit vorhandenen DB-Streckenpunkten. Fehlt zwischen zwei Abschnitten desselben Linienverlaufs die genaue Geometrie, erscheint bei plausiblen Abständen eine gestrichelte, ausdrücklich geschätzte Verbindung. Sie ist kein bestätigter Gleisverlauf. Bei größeren oder nicht zuordenbaren Lücken bleibt die Strecke offen, auch im Ausland. Ein Klick auf eine Linienbezeichnung öffnet die modellierte Linienübersicht. Eine konkret geplante Fahrt ersetzt diese Darstellung durch die gelieferte Fahrtgeometrie.</li><li><b>Bahnhofs-Bündelung</b> fasst nahe Betriebsstellen mit Zusätzen wie Ringbahn, Vorortbahn, S-Bahn, tief oder oben zu einem Bahnhof zusammen. In der Routen-Suche erscheinen nur als Personenbahnhof gekennzeichnete DB-Stationen; die allgemeine Kartensuche darf weiterhin betriebliche Punkte finden.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung:</b> Ohne gemeldete Belegungsdaten wird keine Zugauslastung behauptet. Tageszeit und Zugart reichen nicht für eine verlässliche Prognose.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
+            <ul><li><b>Entdecken</b> nutzt keinen Modellfahrplan mehr. Fernverkehr, Regionalzug und S-Bahn werden gemeinsam im aktuellen Transitous/MOTIS-Fahrplan gesucht. Halte, Gleise, Soll-/Ist-Zeiten, Ausfälle und die auf der Karte gezeigte Fahrtgeometrie stammen aus derselben Verbindung.</li><li><b>Streckenübersicht</b> Die optionale Hintergrund-Streckengeometrie ist bis zur Datenfreigabe deaktiviert. Für geplante Fahrten kann die vom Fahrplananbieter gemeldete Geometrie angezeigt werden; sie ist keine unabhängige Bestätigung des Gleisverlaufs.</li><li><b>Bahnhofssuche</b> Die zusätzliche Betriebsstellenkartei ist deaktiviert. Die Suche fragt weiterhin Bahnhöfe beim Fahrplananbieter ab; dessen gemeldeter Halteumfang ist keine Vollständigkeitsgarantie.</li><li><b>Punktgrößen</b> zeigen veröffentlichte Tageszahlen oder DB-Größenklassen des Fahrgastaufkommens. Zughalte und Direktziele beeinflussen die Größe nicht. Konkrete Tageszahlen stammen aus der DB-Erhebung 2024, veröffentlicht in Bundestagsdrucksache 21/2573. Zeitraum und Quelle stehen beim Bahnhof. Fehlende Daten werden als hohler Punkt dargestellt.</li><li><b>Netzreport</b> trennt DB-Jahreswerte 2025, live ausgewertete Zugsegmente und Kennzahlen aus dem Fahrplanmodell 2026. Umsteigeanteile beschreiben Bahnhofspaare, nicht tatsächliche Fahrgastströme.</li><li><b>Live-Lage</b> zeigt kleine Zug-Cluster statt großflächiger Abweichungskreise. Einzelne Zugnummern erscheinen erst ab Zoom 10 und dann nur im Tooltip; die Position ist interpoliert und kein Fahrzeug-GPS.</li><li><b>Live-Tafel</b> startet ruhig mit Fernverkehr und 240 Minuten. Sie zeigt bis zu 500 Minuten Soll-/Ist-Zeit, Verspätung, Ausfall und Gleis. Beim Aufklappen lädt sie den vollständigen Fahrtverlauf direkt in der App.</li><li><b>Echtzeit</b> wird pro Fahrt und Zugabschnitt sichtbar gekennzeichnet. Wo ein Verkehrsverbund keine Echtzeit liefert, zeigt die App ausdrücklich „Fahrplan“ statt eine vermeintlich genaue Live-Angabe.</li><li><b>Auslastung:</b> Ohne gemeldete Belegungsdaten wird keine Zugauslastung behauptet. Tageszeit und Zugart reichen nicht für eine verlässliche Prognose.</li><li><b>Tastatur</b>: S oder / Suche, L Live-Züge, F Kartenfilter, M Karte, P Planer, D Abfahrten, ? Tastaturhilfe, Esc Schließen. Browser-Shortcuts und Texteingaben haben Vorrang.</li></ul>
             <div className="source-links">
               <a href="https://www.bahn.de/service/fahrplaene/streckennetz" target="_blank" rel="noreferrer"><b>DB Fernverkehr</b><span>ICE/IC-Liniennetz 2026 ↗</span></a>
               <a href="https://developers.deutschebahn.com/db-api-marketplace/apis/product/stada/api/173477" target="_blank" rel="noreferrer"><b>DB InfraGO StaDa</b><span>Bahnhofs-Stammdaten ↗</span></a>

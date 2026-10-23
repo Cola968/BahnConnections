@@ -1,5 +1,6 @@
 import {transitAlerts,transitAlertContent} from './transit-alerts.ts';
 export type TransitousBoardRow = {
+  mode?:string;
   displayName?:string;
   routeShortName?:string;
   place?:{ arrival?:string; departure?:string; scheduledArrival?:string; scheduledDeparture?:string; track?:string; scheduledTrack?:string };

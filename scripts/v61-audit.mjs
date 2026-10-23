@@ -46,7 +46,7 @@ assert.match(layout,/v61-station-calls.css/);
 assert.match(css,/prefers-reduced-motion:reduce/);
 assert.match(css,/data-motion="reduced"/);
 assert.match(css,/focus-visible/);
-assert.match(APP_VERSION,/^61\.\d+$/);
+assert.match(APP_VERSION,/^(?:61|62)\.\d+(?:\.\d+)?$/); // V61 contract remains mandatory during V62.
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#67/);
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#66/);
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#77/);

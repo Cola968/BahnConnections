@@ -603,7 +603,7 @@ function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
         if (index >= 0) merged[index] = verified;
         continue;
       }
-      merged.push({ ...item, warnings:secondaryUnavailable && item.source !== "db-transport" ? [...item.warnings, "Die unabhängige Gegenprüfung war für diese Suche nicht erreichbar."] : item.warnings });
+      merged.push({ ...item, warnings:secondaryUnavailable && item.source !== "db-transport" ? [...item.warnings, "Der zusätzliche Fahrplanabgleich war für diese Suche nicht erreichbar."] : item.warnings });
       continue;
     }
     if (duplicate.source !== item.source && [duplicate.source, item.source].includes("db-transport")) {

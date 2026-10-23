@@ -4,6 +4,7 @@ import {useEffect,useId,useLayoutEffect,useMemo,useRef,useState} from "react";
 import {revealPanelContent} from "./panel-content-visibility";
 import {UiIcon} from "./ui-icon";
 import {listStationCalls,type StationCall,type StationRadarDirection} from "./station-radar-data";
+import {browseStationCalls,type CallQuickFilter} from "./station-call-presentation";
 
 export type StationCallsView = {
   calls:Map<string,StationCall>;
@@ -27,6 +28,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
   const [query,setQuery]=useState("");
   const [direction,setDirection]=useState<StationRadarDirection>("all");
   const [limit,setLimit]=useState(40);
+  const [quick,setQuick]=useState<CallQuickFilter>("all");
   const [clock,setClock]=useState<number|null>(null);
   const sectionRef=useRef<HTMLElement>(null);
   const filtersRef=useRef<HTMLDivElement>(null);
@@ -47,9 +49,11 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
     const timer=window.setInterval(update,30_000);
     return()=>{window.clearTimeout(start);window.clearInterval(timer);};
   },[open]);
-  const rows=useMemo(()=>listStationCalls(snapshot.calls,direction,query),[snapshot.calls,direction,query]);
+  const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock>=snapshot.updatedAt-10_000&&clock-snapshot.updatedAt<120_000;
+  // Keep V61’s shared stop-membership and search rules; V62 adds honest time/filter presentation.
+  const providerRows=useMemo(()=>listStationCalls(snapshot.calls,direction,query),[snapshot.calls,direction,query]);
+  const rows=useMemo(()=>browseStationCalls(new Map(providerRows.map(({tripId,call})=>[tripId,call])),direction,"",quick,clock??0,valid),[providerRows,direction,quick,clock,valid]);
   const visible=rows.slice(0,limit);
-  const valid=snapshot.status==="ready"&&snapshot.updatedAt>0&&clock!==null&&clock-snapshot.updatedAt<120_000;
   const partial=snapshot.coverage!=="complete";
   return <section ref={sectionRef} className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
     <button type="button" className="v61-call-toggle" aria-expanded={open} aria-controls={regionId} onClick={onToggle}>
@@ -57,7 +61,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
       <UiIcon name="chevron" className={open?"v61-call-chevron is-open":"v61-call-chevron"}/>
     </button>
     {open&&<div className="v61-call-content" id={regionId}>
-      <p className="v61-call-context">Gemeldete Halte für {stationName}. Die Liste ist unabhängig vom sichtbaren Kartenausschnitt. Sie kann unvollständig sein; es werden keine Zugpositionen berechnet.</p>
+      <p className="v61-call-context">Gemeldete Halte für {stationName}, unabhängig vom Kartenausschnitt. Prognosen und Gleisänderungen werden nur bei aktuellen Quelldaten hervorgehoben. Es werden keine Zugpositionen berechnet.</p>
       {snapshot.status==="loading"&&<p role="status" className="v61-call-message">Bahnhofshalte werden geladen …</p>}
       {snapshot.status==="error"&&<div className="v61-call-message" role="status"><span>Bahnhofshalte gerade nicht erreichbar.</span><button type="button" onClick={snapshot.refresh}>Erneut versuchen</button></div>}
       {(snapshot.status==="ready"||snapshot.status==="stale")&&<>
@@ -72,21 +76,31 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
             {([["all","Alle"],["inbound","Ankünfte"],["outbound","Abfahrten"]] as const).map(([value,label])=><button key={value} type="button" aria-pressed={direction===value} onClick={()=>{setDirection(value);setLimit(40);}}>{label}</button>)}
           </div>
         </div>
+        <div className="v62-call-quick-filters" role="group" aria-label="Schnellfilter für Bahnhofshalte">
+          {([["all","Alle"],["next-hour","Nächste 60 Min"],["late","Verspätet"],["platform-change","Gleiswechsel"]] as const).map(([value,label])=>
+            <button type="button" key={value} aria-pressed={quick===value} disabled={!valid&&(value==="late"||value==="platform-change")} onClick={()=>{setQuick(value);setLimit(40);}}>{label}</button>)}
+        </div>
+        {!valid&&<p className="v62-call-freshness">Echtzeitfilter sind nur mit aktueller, vollständiger Quellenantwort verfügbar. Fahrplanzeiten werden weiterhin angezeigt, sofern bestätigt vorhanden.</p>}
         <p className="v61-call-count">{rows.length} {rows.length===1?"Fahrt":"Fahrten"} im abgefragten Zeitfenster{query?" für diese Suche":""}.</p>
         {rows.length===0?<p className="v61-call-message">Keine passenden Fahrten in den verfügbaren Daten.</p>:<ol className="v61-call-list">
-          {visible.map(({tripId,call})=>{
-            const isArrival=direction==="inbound" || (direction==="all"&&(call.arrival??Infinity)<=(call.departure??Infinity));
-            const value=isArrival?(call.arrival??call.departure):(call.departure??call.arrival);
-            const realtime=valid&&(isArrival?call.arrivalRealtime:call.departureRealtime);
-            return <li key={tripId} className="v61-call-row">
-              <time dateTime={value!==undefined?new Date(value).toISOString():undefined}>{timeLabel(value)}</time>
-              <span className="v61-call-identity"><strong>{call.name||"Zugfahrt"}</strong><small>{call.destination||"Ziel nicht gemeldet"}</small></span>
-              <span className="v61-call-evidence">{call.cancelled?"Ausfall":realtime?"Prognose":"Fahrplan"}<small>{isArrival?"Ankunft":"Abfahrt"}</small></span>
-            </li>;
-          })}
+          {visible.map(({tripId,call,view})=>{const realtime=view.status==="forecast";return <li key={tripId} className="v61-call-row v62-call-row">
+              <span className="v62-call-clock">
+                <time dateTime={view.eventTime!==null?new Date(view.eventTime).toISOString():undefined}>{timeLabel(view.eventTime??undefined)}</time>
+                {view.status==="forecast"&&view.plannedTime!==null&&view.plannedTime!==view.eventTime&&<del aria-label="Planmäßige Zeit">{timeLabel(view.plannedTime)}</del>}
+              </span>
+              <span className="v61-call-identity">
+                <strong>{call.name||"Zugfahrt"}</strong><small>{call.destination||"Ziel nicht gemeldet"}</small>
+                {view.platform&&<small className={view.platformChanged?"v62-platform-change":"v62-platform"}>Gleis {view.platform}{view.platformChanged&&view.plannedPlatform?` · statt ${view.plannedPlatform}`:""}</small>}
+              </span>
+              <span className="v61-call-evidence">
+                {realtime?"Prognose":"Fahrplan"}
+                {view.delayMinutes!==null&&view.delayMinutes!==0&&<b className={view.delayMinutes>0?"v62-delay-late":"v62-delay-early"}>{view.delayMinutes>0?"+":""}{view.delayMinutes} Min.</b>}
+                <small>{view.kind==="arrival"?"Ankunft":"Abfahrt"}</small>
+              </span>
+            </li>;})}
         </ol>}
         {rows.length>visible.length&&<button className="v61-call-more" type="button" onClick={()=>setLimit(value=>value+40)}>Weitere {Math.min(40,rows.length-visible.length)} anzeigen</button>}
-        <p className="v61-call-disclaimer">Quelle: gemeldete Halte über Transitous / MOTIS. Prognosen nur bei aktuellem Datenstand. Fehlende Fahrten oder Teilhaltestellen werden nicht ergänzt.</p>
+        <p className="v61-call-disclaimer">Quelle: Transitous / MOTIS. Bei veralteten Daten werden vorherige Prognosezeiten und Gleiswechsel nicht als gültiger Fahrplan ausgegeben. Ausfälle und nicht verifizierte Halte werden nicht als bestätigte Fahrten ergänzt.</p>
       </>}
     </div>}
   </section>;

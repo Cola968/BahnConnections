@@ -1,0 +1,169 @@
+/* V62 optical material: moving specular light, visible lens rims and quiet data planes.
+   A CSS approximation of glass, not a physically accurate background refraction shader.
+   Must load after all legacy glass/hotfix styles. */
+
+:root {
+  --v62-glint:rgba(255,255,255,.40);
+  --v62-rim:rgba(255,255,255,.81);
+  --v62-rim-bottom:rgba(45,82,103,.15);
+  --v62-tint:rgba(171,220,235,.14);
+  --v62-depth:rgba(23,55,76,.21);
+}
+html[data-theme="dark"] {
+  --v62-glint:rgba(211,238,255,.13);
+  --v62-rim:rgba(239,249,255,.30);
+  --v62-rim-bottom:rgba(5,10,18,.48);
+  --v62-tint:rgba(105,184,213,.10);
+  --v62-depth:rgba(0,0,0,.48);
+}
+
+/* Avoid filter stacks on the thousands of individual timetable rows. Reflections
+   only track a small set of primary chrome and inspector surfaces. */
+.app-shell :is(
+  .topbar,.desktop-navigation,.mobile-navigation,
+  .mobile-search-dock .station-search,
+  .map-menu-popover.detached,.view-menu-popover,.search-suggestions,
+  .settings-dialog
+) {
+  --v62-glint-x:50%;
+  --v62-glint-y:0%;
+  border-color:var(--glass-stroke)!important;
+  background:
+    radial-gradient(290px 175px at var(--v62-glint-x) var(--v62-glint-y),var(--v62-glint),transparent 78%),
+    linear-gradient(154deg,var(--glass-highlight-soft) 0%,transparent 31%,transparent 70%,var(--v62-tint) 100%),
+    var(--glass-navigation)!important;
+  -webkit-backdrop-filter:blur(36px) saturate(165%) contrast(1.06)!important;
+  backdrop-filter:blur(36px) saturate(165%) contrast(1.06)!important;
+  box-shadow:
+    0 13px 34px var(--v62-depth),
+    inset 0 1.5px 0 var(--v62-rim),
+    inset 1px 0 0 var(--glass-highlight-soft),
+    inset 0 -1px 0 var(--v62-rim-bottom)!important;
+}
+
+/* Thicker sheets behave like denser glass; content remains readable even when
+   map colors or colored railway lines are visible behind them. */
+.app-shell :is(
+  .mobile-sheet-panel,.floating-panel,
+  .station-card,.train-inspector,.planner-panel,.v62-follow-hud
+) {
+  --v62-glint-x:50%;
+  --v62-glint-y:0%;
+  border-color:var(--glass-stroke)!important;
+  background:
+    radial-gradient(400px 205px at var(--v62-glint-x) var(--v62-glint-y),var(--v62-glint),transparent 84%),
+    linear-gradient(154deg,var(--glass-highlight-soft) 0%,transparent 31%,transparent 80%,var(--v62-tint) 100%),
+    var(--glass-sheet-expanded)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(148%) contrast(1.035)!important;
+  backdrop-filter:blur(30px) saturate(148%) contrast(1.035)!important;
+  box-shadow:
+    0 17px 44px var(--v62-depth),
+    inset 0 1.5px 0 var(--v62-rim),
+    inset 1px 0 0 var(--glass-highlight-soft),
+    inset 0 -1px 0 var(--v62-rim-bottom)!important;
+}
+
+/* Keep the half-height sheet see-through. Expanded sheet needs a stronger
+   backdrop for timetables; use the existing reliable panel position/sizes. */
+@media(max-width:1023px) {
+  .app-shell[data-mobile-sheet="half"] .mobile-sheet-panel,
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    background:
+      radial-gradient(370px 190px at var(--v62-glint-x,50%) var(--v62-glint-y,0%),var(--v62-glint),transparent 85%),
+      linear-gradient(150deg,var(--glass-highlight-soft),transparent 47%),
+      var(--glass-sheet-half)!important;
+  }
+  .app-shell[data-mobile-sheet="expanded"] .mobile-sheet-panel {
+    background:
+      radial-gradient(370px 190px at var(--v62-glint-x,50%) var(--v62-glint-y,0%),var(--v62-glint),transparent 85%),
+      linear-gradient(155deg,var(--glass-highlight-soft),transparent 42%),
+      var(--glass-sheet-expanded)!important;
+  }
+  .app-shell .mobile-navigation {
+    border-radius:24px!important;
+    box-shadow:
+      0 15px 40px var(--v62-depth),
+      inset 0 1.5px 0 var(--v62-rim),
+      inset 0 -1px 0 var(--v62-rim-bottom)!important;
+  }
+}
+
+/* Raised selection has a second, internal highlight. No transparent data badges. */
+.app-shell .mobile-navigation>button:is(.active,[aria-current="page"]),
+.app-shell .desktop-navigation>button.active {
+  color:var(--ink)!important;
+  border-radius:15px!important;
+  background:
+    linear-gradient(153deg,var(--glass-highlight) 0%,transparent 57%),
+    var(--glass-elevated)!important;
+  box-shadow:
+    inset 0 1px 0 var(--v62-rim),
+    inset 0 -1px 0 var(--v62-rim-bottom),
+    0 4px 12px color-mix(in srgb,var(--v62-depth) 65%,transparent)!important;
+}
+
+/* Subtle reflective rim on modal glass, not on list items. */
+.app-shell :is(.map-menu-popover.detached,.view-menu-popover,.search-suggestions,.settings-dialog) {
+  box-shadow:
+    0 22px 54px var(--v62-depth),
+    inset 0 1.5px 0 var(--v62-rim),
+    inset 0 -1px 0 var(--v62-rim-bottom)!important;
+}
+
+/* Operational data is a flat, robust optical foreground. */
+.app-shell :is(
+  .board-list .board-row,.v61-call-row,.v62-call-row,
+  .v62-call-clock,.v62-platform-change
+) {
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.app-shell :is(.v61-call-row,.v62-call-row) {
+  text-shadow:none!important;
+}
+.app-shell :is(.board-list .board-row,.v61-call-row,.v62-call-row) :is(time,del,strong) {
+  font-variant-numeric:tabular-nums;
+}
+
+/* Mouse glints are optional: reduced effects and high contrast are fully opaque.
+   Neither these preferences nor forced-colors may inherit old !important glass. */
+@media(prefers-reduced-transparency:reduce) {
+  .app-shell :is(
+    .topbar,.desktop-navigation,.mobile-navigation,.mobile-search-dock .station-search,
+    .map-menu-popover.detached,.view-menu-popover,.search-suggestions,.settings-dialog,
+    .mobile-sheet-panel,.floating-panel,.station-card,.train-inspector,.planner-panel,.v62-follow-hud
+  ) {
+    background:var(--paper)!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    box-shadow:var(--shadow-panel)!important;
+  }
+}
+html[data-contrast="high"] .app-shell :is(
+  .topbar,.desktop-navigation,.mobile-navigation,.mobile-search-dock .station-search,
+  .map-menu-popover.detached,.view-menu-popover,.search-suggestions,.settings-dialog,
+  .mobile-sheet-panel,.floating-panel,.station-card,.train-inspector,.planner-panel,.v62-follow-hud
+) {
+  background:var(--paper)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  border-color:var(--line)!important;
+  box-shadow:none!important;
+}
+@media(forced-colors:active) {
+  .app-shell :is(
+    .topbar,.desktop-navigation,.mobile-navigation,.mobile-search-dock .station-search,
+    .map-menu-popover.detached,.view-menu-popover,.search-suggestions,.settings-dialog,
+    .mobile-sheet-panel,.floating-panel,.station-card,.train-inspector,.planner-panel,.v62-follow-hud
+  ) {
+    background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    box-shadow:none!important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell :is(.mobile-navigation,.desktop-navigation,.mobile-sheet-panel) {
+    transition:none!important;
+  }
+}
+html[data-motion="reduced"] .app-shell :is(.mobile-navigation,.desktop-navigation,.mobile-sheet-panel) {
+  transition:none!important;
+}

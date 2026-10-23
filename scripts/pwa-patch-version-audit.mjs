@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {APP_VERSION,isNewerAppVersion} from '../app/app-version.ts';
+assert.equal(isNewerAppVersion(APP_VERSION,'61.2.1'),true,'New UI patch must be newer than live Sites V61.2.1');
+assert.equal(isNewerAppVersion(APP_VERSION,'61.2.2'),true,'V62 must be newer than unreleased V61.2.2 RC');
+assert.equal(isNewerAppVersion(APP_VERSION,'61.2'),true,'RC must be newer than 61.2');
+assert.equal(isNewerAppVersion('61.2.1','61.2'),true);
+assert.equal(isNewerAppVersion('61.2','61.2.1'),false);
+assert.equal(isNewerAppVersion('61.3','61.2.1'),true);
+assert.equal(isNewerAppVersion('61.2.10','61.2.9'),true);
+assert.equal(isNewerAppVersion(APP_VERSION,APP_VERSION),false);
+const version=JSON.parse(readFileSync(new URL('../public/version.json',import.meta.url),'utf8'));
+assert.equal(version.version,APP_VERSION);
+const sw=readFileSync(new URL('../public/sw.js',import.meta.url),'utf8');
+assert.ok(sw.includes(`bahnconnections-static-v${APP_VERSION.replaceAll('.','-')}`));
+assert.ok(!sw.includes('CACHE_NAME = "bahnconnections-static-v61-2"'),'A published cache must not be reused for different app code');
+console.log('PWA patch ordering, published version upgrade and unique cache passed.');

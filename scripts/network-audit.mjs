@@ -1,10 +1,10 @@
-const USER_AGENT = "BahnConnections/14 network-audit";
+import {transitousRequestHeaders} from "../app/transitous.ts";
 const MODES = "HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,REGIONAL_FAST_RAIL,REGIONAL_RAIL,SUBURBAN,SUBWAY";
 const stations = ["Berlin Hbf", "Berlin Gesundbrunnen", "Flughafen BER", "Hamburg Hbf", "München Hbf", "Frankfurt (Main) Hbf", "Köln Hbf", "Greifswald"];
 const report = { checkedAt:new Date().toISOString(), stations:[], checks:[], warnings:[] };
 
 async function json(url) {
-  const response = await fetch(url, { headers:{ "User-Agent":USER_AGENT, Accept:"application/json" } });
+  const response = await fetch(url, { headers:transitousRequestHeaders(),signal:AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error(`${response.status} ${url}`);
   return response.json();
 }

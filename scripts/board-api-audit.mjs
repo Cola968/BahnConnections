@@ -61,5 +61,13 @@ try{
   calls=0;
   await request('window=invalid&verify=0');
   assert.equal(calls,0,'Invalid input must not reach the provider');
+  globalThis.fetch=async url=>{
+    assert.ok(new URL(url).searchParams.get('mode').split(',').includes('BUS'),'A railway stop must not lose provider-reported bus calls');
+    return Response.json({place:{stopId:'test:stop'},stopTimes:[{...row,mode:'BUS',displayName:'S7'}]});
+  };
+  const buses=await (await request()).json();
+  assert.equal(buses.stopTimes[0].mode,'BUS','Never rewrite a bus to SUBURBAN based on its line name');
+  assert.equal(buses.stopTimes[0].routeValidity.status,'unverified','BUS is not operator-confirmed replacement service');
+  assert.match(buses.warnings.join(' '),/keinen Schienenersatzverkehr/);
 }finally{globalThis.fetch=originalFetch;}
 console.log('Actual board GET: JSON/NDJSON schedule provenance, 429 + Retry-After, cancellation and invalid-input budget passed');

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { serviceColors, compactStationLabel } from '../app/transit-style.ts';
 import { resolveTransitousStopId } from '../app/transitous.ts';
 
-const categories=['fern','regional','sbahn','ubahn','tram'];
+const categories=['fern','regional','sbahn','ubahn','tram','bus'];
 const colours=categories.map(category=>serviceColors(category).background);
 assert.equal(new Set(colours).size,categories.length);
 for(const category of categories)for(const grey of ['888888','#777','000000','ffffff']) {

@@ -7,6 +7,7 @@ import type { SavedRoute } from "./saved-routes";
 import { PLUS_PRICING } from "./subscription-plans";
 import { APP_VERSION_LABEL } from "./app-version";
 import { useAvailableAppUpdate } from "./pwa-update-state";
+import { NativeFollowControl } from "./native-follow-control";
 
 const formatEuro=(cents:number)=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(cents/100);
 
@@ -126,8 +127,10 @@ export function SettingsDialog(p:Props) {
         <section className="settings-group">
           <div className="settings-section-heading"><h3><UiIcon name="info"/> BahnConnections</h3><p>Version, Änderungen und Installation auf einem Blick.</p></div>
           <div className="v53-version-row"><span><b>Webversion</b><small>Öffentliche und vorbereitete Version können sich unterscheiden.</small></span><strong>{APP_VERSION_LABEL}</strong></div>
+          <NativeFollowControl />
           {appUpdate&&<button type="button" className="v53-settings-link pwa-update-action" onClick={appUpdate.activate}><UiIcon name="arrow"/><span>{appUpdate.label} jetzt aktualisieren</span></button>}
           <a href="/changelog" className="v53-settings-link"><UiIcon name="arrow"/><span>Was ist neu? · Changelog</span></a>
+          <a href="/licenses" className="v53-settings-link"><UiIcon name="arrow"/><span>Lizenzen, Datenquellen & Grenzen</span></a>
           <a href="/install" className="v53-settings-link"><UiIcon name="arrow"/><span>App installieren & Updates</span></a>
         </section>
         <section className="settings-group">
