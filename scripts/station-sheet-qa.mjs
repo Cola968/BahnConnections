@@ -202,6 +202,21 @@ try {
         const search=document.querySelector('.topbar>.station-search'),ss=getComputedStyle(search),topbar=document.querySelector('.topbar');return {search:{...rect(search),left:r(search).left,right:r(search).right,position:ss.position,computedTop:ss.top,transform:ss.transform,translate:ss.translate},topbar:{...rect(topbar),left:r(topbar).left,transform:getComputedStyle(topbar).transform,translate:getComputedStyle(topbar).translate},actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
       })()`);
 
+      if(!baseline) {
+        // V63 minimal surface contract: dense railway rows should not be
+        // floating nested cards with heavy shadows or large corner radii.
+        const rowSurface=await evaluate(`(() => {
+          const row=document.querySelector('.board-list .board-row');
+          if(!row)return null;
+          const style=getComputedStyle(row);
+          return {shadow:style.boxShadow,radius:parseFloat(style.borderTopLeftRadius),
+            filter:style.backdropFilter};
+        })()`);
+        assert.ok(rowSurface,`${width}-${theme}-${state} missing station timetable row`);
+        assert.equal(rowSurface.shadow,'none',`${width}-${theme}-${state} floating row cards are not part of V63 minimal UI`);
+        assert.ok(rowSurface.radius<=10,`${width}-${theme}-${state} timetable rows need restrained corners: ${JSON.stringify(rowSurface)}`);
+        assert.equal(rowSurface.filter,'none',`${width}-${theme}-${state} timetable rows must not blur content`);
+      }
       if(!baseline && width < 480) {
         const rows=await evaluate(`(() => [...document.querySelectorAll('.station-card .board-row-summary')].slice(0,6).map(row => {
           const service=row.querySelector('.board-service');
