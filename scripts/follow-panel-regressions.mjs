@@ -26,20 +26,25 @@ export async function followPanelRegressions({command,evaluate,click,screenshot,
     await pause(500);
     const layout=await evaluate(`(() => {
       const hud=document.querySelector('.v62-follow-hud'),panel=document.querySelector('.train-inspector');
-      const h=hud.getBoundingClientRect(),p=panel.getBoundingClientRect();
-      const overlap=panel.contains(hud)?0:Math.max(0,Math.min(h.right,p.right)-Math.max(h.left,p.left))*Math.max(0,Math.min(h.bottom,p.bottom)-Math.max(h.top,p.top));
+      const h=hud.getBoundingClientRect(),p=(panel.contains(hud)?panel.querySelector('.train-route-header'):panel).getBoundingClientRect();
+      const overlap=Math.max(0,Math.min(h.right,p.right)-Math.max(h.left,p.left))*Math.max(0,Math.min(h.bottom,p.bottom)-Math.max(h.top,p.top));
       return {overlap,copies:document.querySelectorAll('.v62-follow-hud').length,overflow:document.documentElement.scrollWidth>innerWidth+1||hud.scrollWidth>hud.clientWidth+1};
     })()`);
     checks.push({case:'follow-hud',width,height,...layout});
     if(layout.overlap>1||layout.copies!==1||layout.overflow)failures.push(`Follow HUD ${width}×${height}: ${JSON.stringify(layout)}`);
     try {
       await visibleClick('.v62-follow-details-toggle');
+      assert.equal(await evaluate("document.querySelector('.v62-follow-details-toggle').getAttribute('aria-expanded')"),'true','Follow details must actually expand');
+      assert.ok(await evaluate("Boolean(document.querySelector('.v62-follow-expanded time'))"),'Expanded follow details expose times');
       await visibleClick('.v62-follow-details-toggle');
+      assert.equal(await evaluate("Boolean(document.querySelector('.v62-follow-expanded'))"),false,'Follow details must actually collapse');
     } catch(error) {failures.push(`Follow controls ${width}×${height}: ${error.message}`);}
     await screenshot(`${width}-${height}-follow-regression`);
   }
   await command('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await pause(500);await visibleClick('.v62-follow-stop');
+  assert.equal(await evaluate("Boolean(document.querySelector('.v62-follow-hud'))"),false,'Beenden releases the follow HUD');
+  assert.equal(await evaluate("document.querySelector('.train-inspector .track-button').getAttribute('aria-pressed')"),'false','Beenden releases active tracking');
   // Follow -> stop -> saved commuter search reproduced the production bug.
   await click('.mobile-navigation button:nth-of-type(2)');
   await waitFor("Boolean(document.querySelector('.planner-panel'))");
