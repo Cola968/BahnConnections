@@ -1,6 +1,6 @@
 # BahnConnections auf Cloudflare Workers veröffentlichen – auch vom Handy
 
-**Wichtig:** Der **V63.0.0-Web-Releasekandidat** aus [PR #88](https://github.com/Cola968/BahnConnections/pull/88) ist **noch nicht veröffentlicht**. Die zuletzt belegte ChatGPT-Sites-Veröffentlichung ist **V63.0.0 / Sites-Version 71** vom 23. Oktober 2026 unter https://bahnconnections-de.a-stad.chatgpt.site/. Ein Sites-Deployment und Cloudflare Workers sind unabhängige Vorgänge. Freigabe ausschließlich über [V63.0.0-RELEASE-CHECKLIST.md](../releases/V63.0.0-RELEASE-CHECKLIST.md).
+**Wichtig:** Der **V63.0.0-Web-Releasekandidat** aus [PR #88](https://github.com/Cola968/BahnConnections/pull/88) ist **noch nicht veröffentlicht**. Die zuletzt belegte ChatGPT-Sites-Veröffentlichung ist **V62.0.0 / Sites-Version 71** vom 23. Oktober 2026 unter https://bahnconnections-de.a-stad.chatgpt.site/. Ein Sites-Deployment und Cloudflare Workers sind unabhängige Vorgänge. Freigabe ausschließlich über [V63.0.0-RELEASE-CHECKLIST.md](../releases/V63.0.0-RELEASE-CHECKLIST.md).
 
 ## Einfachster Weg: Workers Builds mit GitHub
 
