@@ -1,0 +1,346 @@
+/* V63 — Quiet Rail. One information hierarchy; no floating cards per train.
+   Function-first: map and app chrome may be glass, railway data stays solid. */
+:root {
+  --v63-divider:color-mix(in srgb,var(--ink) 12%,transparent);
+  --v63-row-hover:color-mix(in srgb,var(--accent) 6%,var(--paper));
+}
+html[data-theme="dark"] {
+  --v63-divider:color-mix(in srgb,var(--ink) 18%,transparent);
+  --v63-row-hover:color-mix(in srgb,var(--accent) 10%,var(--paper));
+}
+
+/* Quiet station header; the station name, not its decorative container, leads. */
+.app-shell .station-card-head { gap:10px; padding-bottom:14px; }
+.app-shell .station-card-head h2 {
+  margin-bottom:3px;
+  font-size:clamp(1.35rem,2.2vw,1.85rem);
+  font-weight:740;
+  line-height:1.18;
+  letter-spacing:-.035em;
+}
+.app-shell .station-card-head p { color:var(--muted);font-size:.8rem; }
+
+/* Native, compact tabs, not another row of pills/cards. */
+.app-shell .station-section-tabs {
+  border:0;
+  border-bottom:1px solid var(--v63-divider);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  gap:0;
+}
+.app-shell .station-section-tabs>button {
+  position:relative;
+  min-width:0;
+  min-height:44px;
+  padding:8px 5px;
+  border:0;
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--muted);
+  font-size:.81rem;
+  font-weight:580;
+}
+.app-shell .station-section-tabs>button[aria-selected="true"] {
+  color:var(--ink);
+  font-weight:750;
+  background:transparent!important;
+  box-shadow:inset 0 -2px 0 var(--accent)!important;
+}
+
+/* Reserve glass for the three pieces of navigation chrome; remove V62's
+   moving highlights so the content, not the refraction, has visual priority. */
+.app-shell :is(.topbar,.desktop-navigation,.mobile-navigation){
+  background:var(--glass-navigation)!important;
+  border-color:var(--glass-stroke)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(125%)!important;
+  backdrop-filter:blur(20px) saturate(125%)!important;
+  box-shadow:0 6px 20px rgba(18,39,52,.10),inset 0 1px 0 var(--glass-highlight-soft)!important;
+}
+.app-shell .mobile-nav-glass-material{display:none!important}
+.app-shell .mobile-navigation>button:is(.active,[aria-current="page"]),
+.app-shell .desktop-navigation>button.active{
+  background:var(--glass-elevated)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+  border-radius:11px!important;
+}
+@media(prefers-reduced-transparency:reduce){
+  .app-shell :is(.topbar,.desktop-navigation,.mobile-navigation){
+    background:var(--paper)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
+html[data-contrast="high"] .app-shell :is(.topbar,.desktop-navigation,.mobile-navigation){
+  background:var(--paper)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+@media(forced-colors:active){
+  .app-shell :is(.topbar,.desktop-navigation,.mobile-navigation){
+    background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+}
+
+/* One obvious departure/arrival switch with no heavy component frame. */
+.app-shell .board-primary-bar { align-items:center;gap:8px; }
+.app-shell .board-primary-bar .board-mode-tabs {
+  display:flex;
+  gap:3px;
+  padding:3px;
+  flex:0 1 auto;
+  background:var(--soft);
+  border:0;
+  border-radius:10px;
+}
+.app-shell .board-primary-bar .board-mode-tabs button {
+  min-height:42px;
+  min-width:74px;
+  border-radius:8px;
+  color:var(--muted);
+  font-size:.85rem;
+  font-weight:620;
+}
+.app-shell .board-primary-bar .board-mode-tabs button.active {
+  color:var(--ink);
+  background:var(--paper);
+  box-shadow:none;
+  font-weight:740;
+}
+.app-shell .board-filter-toggle {
+  min-height:44px;
+  border:0!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  color:var(--muted)!important;
+  font-size:.79rem!important;
+  font-weight:650!important;
+  padding-inline:9px!important;
+}
+.app-shell .board-filter-toggle.active {color:var(--accent)!important;}
+.app-shell .board-quick-views { gap:4px; }
+.app-shell .board-quick-views button {
+  min-height:40px;
+  padding:7px 10px;
+  border-radius:9px;
+  border:0;
+  background:transparent;
+  font-size:.76rem;
+  font-weight:630;
+}
+.app-shell .board-quick-views button.active {
+  color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper));
+  box-shadow:none;
+}
+
+/* The actual departures board: flat 72 px rows separated by a quiet hairline.
+   No shadow, gradient, inner card, blur, parallax, or ornamental rail status. */
+.app-shell .board-table { border-top:1px solid var(--v63-divider); }
+.app-shell .board-table-head {
+  position:sticky;
+  top:0;
+  z-index:3;
+  margin:0;
+  padding:9px 12px;
+  min-height:33px;
+  background:var(--paper);
+  color:var(--muted);
+  font-size:.72rem;
+  font-weight:570;
+  letter-spacing:0;
+  border:0;
+  border-bottom:1px solid var(--v63-divider);
+  border-radius:0;
+}
+.app-shell .board-list {
+  display:block;
+  max-height:none;
+  padding:0;
+  overflow:visible;
+}
+.app-shell .board-list .board-row {
+  min-width:0;
+  border:0!important;
+  border-bottom:1px solid var(--v63-divider)!important;
+  border-radius:0!important;
+  background:var(--paper)!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.app-shell .board-list .board-row .board-row-summary {
+  box-sizing:border-box;
+  min-height:72px;
+  padding:10px 12px;
+  gap:7px;
+  background:transparent;
+  border-radius:0;
+}
+.app-shell .board-list .board-row .board-row-summary:hover,
+.app-shell .board-list .board-row .board-row-summary:focus-visible {
+  background:var(--v63-row-hover);
+}
+.app-shell .board-list .board-row.open { background:var(--soft)!important; }
+.app-shell .board-list .board-row .board-destination b {
+  font-size:.91rem;
+  font-weight:680;
+  line-height:1.33;
+}
+.app-shell .board-list .board-row .board-service b,
+.app-shell .board-list .board-row .board-time {
+  font-variant-numeric:tabular-nums;
+}
+.app-shell .board-list .board-row .board-time { font-weight:750; }
+.app-shell .board-list .board-row .board-platform {
+  font-size:.8rem;
+  font-weight:650;
+}
+.app-shell .board-list .board-row .row-status {
+  width:3px;
+  border-radius:2px;
+}
+.app-shell .board-list .board-row .board-row-detail {
+  padding:13px 12px 17px;
+  border-top:1px solid var(--v63-divider);
+  background:var(--soft);
+  box-shadow:none;
+}
+.app-shell .board-live-summary { padding-block:7px; }
+.app-shell .board-more { min-height:48px; }
+
+/* Train monitor is a native section, not a second material sheet. */
+.app-shell .v61-call-browser {
+  margin:16px 0 20px;
+  padding:3px 0;
+  border:0;
+  border-top:1px solid var(--v63-divider);
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.app-shell .v61-call-toggle {
+  min-height:56px;
+  padding:10px 0;
+}
+.app-shell .v61-call-toggle>span>svg {
+  width:21px;height:21px;color:var(--accent);
+}
+.app-shell .v61-call-toggle strong { font-size:.92rem;font-weight:700; }
+.app-shell .v61-call-toggle small { font-size:.75rem;color:var(--muted); }
+.app-shell .v63-call-indicator {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  flex:none;
+  color:var(--muted);
+  background:transparent;
+  border:0;
+  padding:0;
+  font-size:.73rem;
+  font-weight:630;
+  font-variant-numeric:tabular-nums;
+}
+.app-shell .v63-call-indicator::before {
+  content:"";display:inline-block;flex:none;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);
+}
+.app-shell .v63-call-indicator[data-status="ready"]::before{background:var(--success)}
+.app-shell .v63-call-indicator[data-status="stale"]::before{background:var(--warning)}
+.app-shell .v63-call-indicator[data-status="error"]::before{background:var(--danger)}
+.app-shell .v61-call-filters input{border-radius:9px}
+.app-shell .v61-call-directions{gap:2px}
+.app-shell .v61-call-directions button[aria-pressed="true"],
+.app-shell .v62-call-quick-filters button[aria-pressed="true"]{
+  background:var(--soft);
+  color:var(--ink);
+  border-color:var(--v63-divider);
+  font-weight:700;
+}
+.app-shell .v62-call-quick-filters{gap:4px}
+.app-shell .v62-call-quick-filters button{
+  min-height:40px;
+  border-radius:9px;
+}
+.app-shell .v63-call-headline {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:7px 0;
+  color:var(--muted);
+  font-size:.74rem;
+}
+.app-shell .v63-call-reset {
+  min-height:44px;
+  padding:7px 0 7px 9px;
+  border:0;
+  color:var(--accent);
+  background:transparent;
+  font-size:.77rem;
+  font-weight:680;
+}
+.app-shell .v61-call-list {
+  display:block;
+  margin:8px 0 0;
+}
+.app-shell .v61-call-row.v62-call-row {
+  grid-template-columns:61px minmax(0,1fr) 74px;
+  gap:7px;
+  min-height:74px;
+  padding:9px 3px;
+  border:0;
+  border-bottom:1px solid var(--v63-divider);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.app-shell .v62-call-row .v62-call-clock time { font-size:1.02rem;font-weight:750; }
+.app-shell .v62-call-row .v61-call-identity strong{font-size:.84rem;font-weight:700}
+.app-shell .v61-call-disclaimer{margin-top:14px}
+
+/* A little mobile breathing room without stealing the first timetable row. */
+@media(max-width:359px){
+  .app-shell .board-list .board-row .board-row-summary{padding-inline:5px;gap:5px}
+  .app-shell .board-table-head{padding-inline:5px}
+  .app-shell .v61-call-row.v62-call-row{grid-template-columns:52px minmax(0,1fr) 65px;gap:5px}
+  .app-shell .v63-call-indicator{font-size:.67rem}
+}
+@media(min-width:1024px){
+  .app-shell .board-list .board-row .board-row-summary{padding-inline:16px}
+  .app-shell .board-table-head{padding-inline:16px}
+}
+
+/* Short landscape is a strict functional requirement, not an optional flourish. */
+@media(max-width:1023px) and (max-height:520px) and (orientation:landscape){
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card.mobile-sheet-panel{
+    top:64px!important;bottom:64px!important;
+    height:calc(100dvh - 128px)!important;
+    max-height:calc(100dvh - 128px)!important;
+  }
+  .app-shell .board-primary-bar{padding-top:2px!important;margin-bottom:0!important}
+  .app-shell .board-table-head{min-height:24px;padding-block:4px}
+  .app-shell .board-live-summary{padding-block:3px}
+  .app-shell .board-list .board-row .board-row-summary{min-height:62px;padding-block:5px}
+}
+@media(prefers-reduced-transparency:reduce){
+  .app-shell .board-list .board-row,
+  .app-shell .v61-call-browser{background:var(--paper);box-shadow:none}
+}
+html[data-contrast="high"] .app-shell .board-list .board-row{border-bottom-color:var(--line)!important}
+@media(forced-colors:active){
+  .app-shell .board-list .board-row,
+  .app-shell .v61-call-row.v62-call-row{background:Canvas!important;border-bottom:1px solid CanvasText!important}
+  .app-shell .station-section-tabs>button[aria-selected="true"]{outline:1px solid Highlight}
+  .app-shell .v63-call-indicator::before{background:CanvasText!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .station-section-tabs>button,
+  .app-shell .board-list .board-row{transition:none}
+}
