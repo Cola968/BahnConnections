@@ -58,6 +58,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
   return <section ref={sectionRef} className="v61-call-browser" aria-label="Bahnhofsfahrten aus Fahrplandaten">
     <button type="button" className="v61-call-toggle" aria-expanded={open} aria-controls={regionId} onClick={onToggle}>
       <span><UiIcon name="train"/><span><strong>Weitere Bahnhofshalte</strong><small>Auch Fahrten ohne Kartenmarker</small></span></span>
+      <span className="v63-call-indicator" data-status={snapshot.status} aria-label={`Datenstatus: ${snapshot.status==="ready"?"Abfrage erfolgreich":snapshot.status==="stale"?"älterer Datenstand":snapshot.status==="loading"?"wird geladen":"Fehler"}`}>{snapshot.status==="ready"?`${snapshot.calls.size} gemeldet`:snapshot.status==="loading"?"Lädt":snapshot.status==="stale"?"Älterer Stand":"Fehler"}</span>
       <UiIcon name="chevron" className={open?"v61-call-chevron is-open":"v61-call-chevron"}/>
     </button>
     {open&&<div className="v61-call-content" id={regionId}>
@@ -82,6 +83,7 @@ export function StationCallsBrowser({stationName,open,onToggle,snapshot}:Props){
         </div>
         {!valid&&<p className="v62-call-freshness">Echtzeitfilter sind nur mit aktueller, vollständiger Quellenantwort verfügbar. Fahrplanzeiten werden weiterhin angezeigt, sofern bestätigt vorhanden.</p>}
         <p className="v61-call-count">{rows.length} {rows.length===1?"Fahrt":"Fahrten"} im abgefragten Zeitfenster{query?" für diese Suche":""}.</p>
+        {(query.trim()!==""||direction!=="all"||quick!=="all")&&<div className="v63-call-headline"><span>Filter aktiv · Ergebnisse aus den verfügbaren Quelldaten</span><button className="v63-call-reset" type="button" onClick={()=>{setQuery("");setDirection("all");setQuick("all");setLimit(40);}}>Alle Filter zurücksetzen</button></div>}
         {rows.length===0?<p className="v61-call-message">Keine passenden Fahrten in den verfügbaren Daten.</p>:<ol className="v61-call-list">
           {visible.map(({tripId,call,view})=>{const realtime=view.status==="forecast";return <li key={tripId} className="v61-call-row v62-call-row">
               <span className="v62-call-clock">
