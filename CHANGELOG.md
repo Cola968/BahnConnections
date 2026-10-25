@@ -1,3 +1,12 @@
+# V63.0.0 · Vereinfachte Fahrgastoberfläche · Web-Releasekandidat (nicht veröffentlicht)
+
+- Bahnhofstafel mit einer klaren, flachen Zugliste statt einzelner schwebender Karten; Abfahrten, Gleise, Ziele und Statusinformationen besser lesbar.
+- Ruhigere Tabs und Navigation; weniger optischer Glas-/Schimmereffekt, keine Backdrop-Filter pro Zugzeile.
+- Bahnhofshalte-Monitor zeigt den Anbieterstatus und kann Suche, Richtungs- und Zeitfilter auf einmal zurücksetzen.
+- Browser-Regressionen prüfen die tatsächlichen Zeilenstile und mobile Querformatnutzung; keine abgesenkten Layoutkriterien.
+- Neuer, eigenständiger Web-Versions- und PWA-Cache-Stand V63.0.0.
+- Kein zusätzlicher Datenquellen- oder Standortanspruch. Offene Aufgaben #66, #67, #77, #78 und #80 bleiben offen. Kein Sites-Deployment und keine APK-Freigabe durch den GitHub-Commit.
+
 # V62.0.0 · Web-Release vorbereitet
 
 - Bahnhofshalte mit schnellen Filtern „Nächste 60 Min“, „Verspätet“ und „Gleiswechsel“, datenstandabhängig für alle unterstützten Stationen.
