@@ -54,6 +54,14 @@ function encode(points){let a=0,b=0,result='';const piece=v=>{let n=v<0?~(v<<1):
 const count=180,pointsPerTrip=6000;
 function trips(){const now=Date.now();return Array.from({length:count},(_,i)=>{const lat=52.5251+(i%15-7)*.004,lon=13.3694+(Math.floor(i/15)-6)*.005;return {trips:[{tripId:'radar-'+i,displayName:i===0?'<img src=x onerror=alert(1)>':'RE '+i}],mode:'REGIONAL_RAIL',distance:3000,from:{name:'Berlin Hbf',lat,lon},to:{name:'Berlin Südkreuz',lat:lat+.01,lon:lon+.01},departure:new Date(now-300000).toISOString(),arrival:new Date(now+300000).toISOString(),scheduledDeparture:new Date(now-300000-(i%4===0?5:0)*60000).toISOString(),scheduledArrival:new Date(now+300000-(i%4===0?5:0)*60000).toISOString(),realTime:i%5!==0,polyline:encode(Array.from({length:pointsPerTrip},(_,j)=>[lat+j/(pointsPerTrip-1)*.01,lon+Math.sin(j/(pointsPerTrip-1)*Math.PI)*.003+j/(pointsPerTrip-1)*.01]))};});}
 let requests=0;
+let radarScenario='full',radarDropId='',radarGeneration=0,radarConsumed=-1;
+function changeRadarResponse(scenario,tripId='') {
+  radarScenario=scenario;radarDropId=tripId;const generation=++radarGeneration;
+  return async()=>{
+    for(let i=0;i<200;i++){if(radarConsumed>=generation){await pause(500);return;}await pause(100);}
+    assert.fail('Radar fixture response was not consumed: '+scenario);
+  };
+}
 async function openFixtureRadar() {
   await command('Page.navigate',{url:new URL('/?station=berlin',base).href});
   for(let i=0;i<100;i++){if(await evaluate("Boolean(document.querySelector('path.station-point'))"))break;await pause(100);}
@@ -79,10 +87,17 @@ try {
     const m=JSON.parse(String(event.data));
     if(m.method==='Fetch.requestPaused'){
       const path=new URL(m.params.request.url).pathname;
+      if(path==='/api/radar'||path.endsWith('/map/trips')){
+        requests++;
+        const generation=radarGeneration;
+        const segments=radarScenario==='missing'?trips().filter(t=>t.trips[0].tripId!==radarDropId):trips();
+        const payload=radarScenario==='error'?{warnings:['QA radar unavailable']}:path==='/api/radar'?{segments}:segments;
+        void command('Fetch.fulfillRequest',{requestId:m.params.requestId,responseCode:radarScenario==='error'?503:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).then(()=>{radarConsumed=Math.max(radarConsumed,generation);}).catch(()=>{});return;
+      }
       if(path==='/api/journeys'){
         void command('Fetch.fulfillRequest',{requestId:m.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'}],body:Buffer.from(JSON.stringify(panelJourneyFixture())).toString('base64')}).catch(()=>{});return;
       }
-      const payload=path==='/api/radar'?{segments:(requests++,trips())}:path.endsWith('/map/trips')?(requests++,trips()):path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:trips().map(t=>({tripId:t.trips[0].tripId,displayName:t.trips[0].displayName,mode:t.mode,tripTo:t.to,realTime:t.realTime,place:{arrival:t.arrival,departure:t.departure}})),updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
+      const payload=path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:path.endsWith('/board')?{stopTimes:trips().map(t=>({tripId:t.trips[0].tripId,displayName:t.trips[0].displayName,mode:t.mode,tripTo:t.to,realTime:t.realTime,place:{arrival:t.arrival,departure:t.departure}})),updatedAt:new Date().toISOString(),verification:{status:'inconclusive'},warnings:[]}:path.endsWith('/services')?{routes:[],stopTimes:[],warnings:[]}:path.endsWith('/stations/search')?{stations:[]}:[];
       void command('Fetch.fulfillRequest',{requestId:m.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(()=>{});return;
     }
     const p=pending.get(m.id);if(!p)return;clearTimeout(p.timer);pending.delete(m.id);if(m.error)p.rejectCommand(Error(m.error.message));else p.resolveCommand(m.result);
@@ -123,7 +138,7 @@ try {
     assert.equal(await evaluate("(() => {const panel=document.querySelector('.live-trip-card'),body=panel.querySelector('.panel-body');return panel.scrollWidth>panel.clientWidth+1||body.scrollWidth>body.clientWidth+1;})()"),false,'Trip inspector must not overflow with long provider text');
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.live-trip-card>.panel-body')).overflowX"),'hidden','Inspector must use the component horizontal overflow policy');
     await screenshot('1440-trip-details');
-    const panelRegressions=await followPanelRegressions({command,evaluate,click,screenshot,pause,openFixtureRadar});
+    const panelRegressions=await followPanelRegressions({command,evaluate,click,screenshot,pause,openFixtureRadar,changeRadarResponse});
     await writeFile(join(output,'report.json'),JSON.stringify({fixture:true,baseline,cpuSlowdown:4,count,pointsPerTrip,requests,...metrics,panelRegressions},null,2));
     assert.equal(metrics.retained,count,'Ticks must preserve marker identity');assert.equal(metrics.mutations,0,'Ticks must not replace DOM markers');assert.equal(metrics.markers,count);assert.ok(metrics.maxTask<250,'Radar main-thread budget');}
 }finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}

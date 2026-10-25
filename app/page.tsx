@@ -408,7 +408,7 @@ export default function Home() {
   const { trips:liveTrips, state:liveState, updatedAt:liveUpdatedAt } = useLiveRadar(liveRadarCentre,liveVisible,trips => {
     // Keep a selected journey visible if it leaves this station-centred radar scan;
     // the inspector marks it as not currently verified rather than silently closing.
-    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? null : null);
+    setSelectedLiveTrip(current => current ? trips.find(trip => trip.tripId === current.tripId) ?? current : null);
   });
   useEffect(()=>{if(!preferencesReady)return;document.documentElement.lang=language;try{localStorage.setItem("bahnconnections-language",language);}catch{/* optional */}},[language,preferencesReady]);
   useEffect(()=>{

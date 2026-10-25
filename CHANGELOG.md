@@ -1,3 +1,11 @@
+# V62.0.2 – Zugpanel bei Radar-Unterbrechungen erhalten
+
+- Die ausgewählte Fahrt bleibt bei einer unvollständigen Radar-Antwort oder einem Abruffehler geöffnet.
+- Fehlende aktuelle Position: Verfolgung pausiert; frische Antwort: Verfolgung setzt sich fort.
+- Bewusstes Schließen und der Wechsel zu einer neuen Verbindung bleiben erhalten.
+- Browser-Regression für fehlenden Zug, API-Fehler, Wiederherstellung und neue Bahnhofsauswahl nach dem Schließen.
+- Eigenständiger PWA-Cache; alle UI-Korrekturen aus V62.0.1 enthalten.
+
 # V62.0.1 – Follow-HUD und Wechsel zur Reiseplanung
 
 - Follow-HUD im gemeinsamen Scrollbereich des Zugpanels: kein eigenständiger überlagernder Kartenblock.

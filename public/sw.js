@@ -1,5 +1,5 @@
-const CACHE_NAME = "bahnconnections-static-v62-0-1";
-// V62.0.1: independent PWA cache for operational station calls and one-tap commute planner.
+const CACHE_NAME = "bahnconnections-static-v62-0-2";
+// V62.0.2: independent PWA cache for operational station calls and one-tap commute planner.
 const STATIC_ASSETS = ["/", "/install", "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
 const AUTH_PATHS = ["/signin-with-chatgpt", "/auth", "/api/auth", "/oauth", "/cdn-cgi/"];
 

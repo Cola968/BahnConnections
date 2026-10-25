@@ -9,7 +9,7 @@ export function panelJourneyFixture() {
   return {journeys:[{id:'panel-journey',durationSeconds:14_400,transfers:0,startTime,endTime,scheduledStartTime:startTime,scheduledEndTime:endTime,legs:[leg],transitLegs:[leg],source:'transitous',sourceLabel:'UI-QA-Fixture',updatedAt:new Date().toISOString(),realtimeStatus:'schedule',warnings:[],realtime:false,cancelled:false}]};
 }
 
-export async function followPanelRegressions({command,evaluate,click,screenshot,pause,openFixtureRadar}) {
+export async function followPanelRegressions({command,evaluate,click,screenshot,pause,openFixtureRadar,changeRadarResponse}) {
   const checks=[],failures=[];
   async function visibleClick(selector) {
     await evaluate(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'center',behavior:'instant'})`);
@@ -80,6 +80,38 @@ export async function followPanelRegressions({command,evaluate,click,screenshot,
   checks.push({case:'regular-search-handoff',width:1440,...desktop});
   if(desktop.oldInspector||desktop.oldHud||!desktop.journeyVisible)failures.push('Desktop search handoff: '+JSON.stringify(desktop));
   await screenshot('1440-journey-handoff-regression');
+  // A station-centred scan may lose a selected train or fail entirely. Its
+  // inspector stays open with paused evidence; it must not silently close.
+  await openFixtureRadar();
+  const selectedTripId=await evaluate("document.querySelector('.live-train-wrap').getAttribute('data-trip-id')");
+  await evaluate("document.querySelector('.live-train-wrap').focus()");
+  await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
+  await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  await waitFor("Boolean(document.querySelector('.train-inspector'))");
+  await visibleClick('.train-inspector .track-button');
+  for(const scenario of ['missing','error','full']){
+    const consumed=changeRadarResponse(scenario,selectedTripId);
+    // Exercise the real resume/refresh listener, without replacing app state.
+    await evaluate("document.dispatchEvent(new Event('visibilitychange'))");
+    await consumed();
+    if(scenario!=='full')await waitFor(`!document.querySelector('.live-train-wrap[data-trip-id="${selectedTripId}"]')`);
+    const state=await evaluate(`(() => {
+      const panel=document.querySelector('.train-inspector');
+      return {inspector:!!panel,hud:!!document.querySelector('.v62-follow-hud'),paused:!!panel?.textContent.includes('Verfolgung pausiert'),following:!!panel?.textContent.includes('Kamera folgt')};
+    })()`);
+    checks.push({case:'radar-refresh-'+scenario,width:1440,...state});
+    if(!state.inspector||!state.hud||(scenario==='full'?!state.following:!state.paused))failures.push('Radar refresh '+scenario+': '+JSON.stringify(state));
+    await screenshot('1440-radar-refresh-'+scenario);
+    if(!state.inspector)break;
+  }
+  if(await evaluate("Boolean(document.querySelector('.train-inspector'))")){
+    await click('.train-inspector .desktop-panel-actions button:last-child');
+    assert.equal(await evaluate("Boolean(document.querySelector('.train-inspector,.v62-follow-hud'))"),false,'Closing releases the train and HUD');
+    const consumed=changeRadarResponse('full');
+    await click('.topbar>.station-search input');
+    await click('.topbar .search-suggestions button:has(b[title="Berlin Hbf"])');await consumed();
+    assert.equal(await evaluate("Boolean(document.querySelector('.train-inspector,.v62-follow-hud'))"),false,'A radar refresh must not resurrect an explicitly closed train');
+  }
   console.log(JSON.stringify({panelRegressions:checks,failures}));
   assert.deepEqual(failures,[],'Follow HUD and journey handoff regressions');
   return checks;
