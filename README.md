@@ -4,24 +4,23 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-**V58.0 Railglass in Entwicklung:** [Draft PR #72](https://github.com/Cola968/BahnConnections/pull/72). Die vorherigen ungemergten V57.3-Änderungen sind in diesem Branch enthalten; die öffentliche App ist **nicht automatisch V58**. Kein Cloudflare-Production-Deploy ohne GitHub-Secret, Abnahme und Freigabe.
+**Aktuelle öffentliche Webversion:** **V62.0.0**, am 23.10.2026 über ChatGPT Sites als Version 71 veröffentlicht ([Nachweis PR #85](https://github.com/Cola968/BahnConnections/pull/85)). Die Veröffentlichung erfolgte über den Release-Branch, nicht den Stand von `main`.
 
-## V58.0 · Railglass Relaunch
+**Abgleich für GitHub und ausstehende Funktionen:** [V62 Release-Reconciliation](docs/releases/V62.0.0-RELEASE-RECONCILIATION.md). Ein `main`-Merge ist kein neues Sites-Deployment. Der enthaltene native Android-Code ist **keine** veröffentlichte APK und nicht auf physischen Geräten abgenommen. Vollständigkeit der Bahnhofshalte, Betreibervalidierung, Datenrechte und umfassende Radarabdeckung sind nicht behauptet.
 
-- Neue hochwertige Hell-/Dunkelansichten mit einem durchgängigen Navigations- und Sheetsystem, reduzierter „Kartenstapel“-Ästhetik und Android-Systemleistenanpassung.
-- Vier Ein-Tipp-Ansichten für Bahnhofstafeln: Nächste Stunde, Verspätet, Ausfälle, Alle Fahrten. Bestehende Filter bleiben erhalten.
-- Direkter Vergleich von Reisealternativen nach Ankunft, Dauer, Umstiegen oder Fußweg.
-- Kartenstatus mit echten Datenqualitätszuständen: Positionen werden nicht als Fahrzeug-GPS ausgegeben.
-- Vorhandene Funktionen bleiben bestehen (Live-Tafel, Planer, Karte, Zugverfolgung, Merkliste, Störungen und Sharing). Tests auf dem aktuellen Branch in GitHub Actions, reale Android-Hardware weiter erforderlich.
+## V62-Webfunktionen
 
-**Designkonzept und Go/No-Go:** [Railglass V58](docs/design/V58-RAILGLASS-DIRECTION.md), [Cloudflare und Android](docs/deploy/PLAY-STORE-NO-RENDER-SPLASH.md). Quellen-/Nutzungsrechte vor Veröffentlichung klären (Issue #67).
+- Schnellfilter für kommende Abfahrten, Verspätungen und Gleisänderungen sowie gespeicherte Pendlerstrecken.
+- Überarbeitete Glass-/Railglass-Flächen, mobile Stationsdarstellung und PWA-Versionswechsel.
+- Zugverfolgung und Radaransichten mit gekennzeichneter Modellierung; keine pauschal zugesagte GPS-Echtzeitposition.
+- Die geplante native, über die App-Laufzeit hinausgehende Android-Benachrichtigung benötigt eine separat gebaute, getestete und veröffentlichte Android-App.
 
 ## Funktionen
 
 - bundesweite Bahnhofssuche mit eindeutigen Haltestellen-IDs
 - Live-Abfahrten und -Ankünfte für Fern-, Regional-, S- und U-Bahn
-- vollständige Linienliste eines Bahnhofs mit Richtungen und Endzielen
-- Fahrtverläufe mit allen Halten, Soll-/Ist-Zeiten, Gleisen und Meldungen
+- anbietergemeldete Linien eines Bahnhofs mit Richtungen und Endzielen (Abdeckung je Quelle unterschiedlich)
+- Fahrtverläufe mit vom Anbieter bestätigten Halten, Soll-/Ist-Zeiten, Gleisen und Meldungen; fehlende Halte werden nicht erfunden
 - quellgelieferte Streckengeometrien ohne erfundene Luftlinien
 - Reiseplaner mit Alternativen, bis zu fünf Umstiegen und Sortierung nach erwarteter Ankunft
 - Transitous/MOTIS als Hauptquelle und DB transport.rest als zusätzlichen Fahrplanabgleich im Reiseplaner (keine unabhängige Betreiberbestätigung)
