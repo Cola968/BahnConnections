@@ -1,3 +1,10 @@
+# V62.0.1 – Follow-HUD und Wechsel zur Reiseplanung
+
+- Follow-HUD im gemeinsamen Scrollbereich des Zugpanels: kein eigenständiger überlagernder Kartenblock.
+- Neue Suchen räumen Radar-Auswahl und Kamera-Verfolgung auf; ein primäres Detailpanel zur Zeit.
+- Verpflichtende Browser-Regressionen: 320, 390, 430, 844 und 1440 Pixel, Follow-Details/Beenden, mobile Pendelstrecke und reguläre Desktop-Suche.
+- Separater PWA-Cache für den korrigierten Anwendungscode. Keine Änderung an Datenfreigaben, Zahlungen oder Android-Veröffentlichungen.
+
 # V62.0.0 · Web-Release vorbereitet
 
 - Bahnhofshalte mit schnellen Filtern „Nächste 60 Min“, „Verspätet“ und „Gleiswechsel“, datenstandabhängig für alle unterstützten Stationen.

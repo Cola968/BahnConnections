@@ -2,7 +2,7 @@
 
 import {readTripResponse,tripRevision} from './trip-response';
 import {RouteValidityError} from './journey-validity';
-import {useEffect,useEffectEvent,useRef,useState} from 'react';
+import {useEffect,useEffectEvent,useRef,useState,type ReactNode} from 'react';
 import {PanelTools,type MobileSheetState,type PanelControls} from './panel-tools';
 import {RealtimeTime} from './realtime-time';
 import {trainArrivalView} from './train-arrival';
@@ -16,17 +16,20 @@ import {UiIcon} from './ui-icon';
 import {RAIL_MODES} from './transitous';
 import {formatTrainShare} from './v60-train-share';
 
-type Props={trip:LiveTrip;controls:PanelControls;mobileState:MobileSheetState;onMobileState:(state:MobileSheetState)=>void;onClose:()=>void;tracked:boolean;onTrack:()=>void;radarUpdatedAt:Date|null;radarStatus:'loading'|'ready'|'stale'|'error';inRadar:boolean;stationName?:string;onRoute?:(route:BoardMapTrip)=>void;onShowRoute?:()=>void};
+type Props={followHud?:ReactNode;trip:LiveTrip;controls:PanelControls;mobileState:MobileSheetState;onMobileState:(state:MobileSheetState)=>void;onClose:()=>void;tracked:boolean;onTrack:()=>void;radarUpdatedAt:Date|null;radarStatus:'loading'|'ready'|'stale'|'error';inRadar:boolean;stationName?:string;onRoute?:(route:BoardMapTrip)=>void;onShowRoute?:()=>void};
 const at=(time?:string)=>{const n=Date.parse(time??'');return Number.isFinite(n)?n:null;};
 const label=(name?:string)=>compactStationLabel(name)??name??'Unbekannt';
 
-export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClose,tracked,onTrack,radarUpdatedAt,radarStatus,inRadar,stationName,onRoute,onShowRoute}:Props){
+export function LiveTripInspector({followHud,trip,controls,mobileState,onMobileState,onClose,tracked,onTrack,radarUpdatedAt,radarStatus,inRadar,stationName,onRoute,onShowRoute}:Props){
   const [now,setNow]=useState(()=>Date.now());
   const [details,setDetails]=useState<{tripId:string;stops:TrainStop[];state:'loading'|'ready'|'error';updatedAt:Date|null}>({tripId:'',stops:[],state:'loading',updatedAt:null});
   const [retry,setRetry]=useState(0);
   const [shareResult,setShareResult]=useState<{tripId:string;message:string}>({tripId:'',message:''});
   const [stopView,setStopView]=useState<{tripId:string;onlyRemaining:boolean}>({tripId:'',onlyRemaining:false});
   const nextStopRef=useRef<HTMLLIElement|null>(null);
+  const bodyRef=useRef<HTMLDivElement|null>(null);
+  // Starting follow exposes its controls even after scrolling the stop list.
+  useEffect(()=>{if(tracked)bodyRef.current?.scrollTo({top:0,behavior:'instant'});},[tracked]);
   const [route,setRoute]=useState<BoardMapTrip|null>(null);
   const publishRoute=useEffectEvent((route:BoardMapTrip)=>onRoute?.(route));
   useEffect(()=>{const refresh=()=>{if(!document.hidden)setNow(Date.now());};const timer=window.setInterval(refresh,4000);document.addEventListener('visibilitychange',refresh);return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',refresh);};},[]);
@@ -125,7 +128,8 @@ export function LiveTripInspector({trip,controls,mobileState,onMobileState,onClo
   }
   return <section className="live-trip-card floating-panel mobile-sheet-panel train-inspector train-inspector-v57" data-tracking={tracked?'true':'false'} style={controls.style} aria-label={`Zug ${trip.name} – Fahrtinformationen`}>
     <PanelTools controls={controls} label="Fahrtverlauf" mobileTitle={trip.name} mobileSummary={status} fullTitle={routeSummary} onClose={onClose} mobileState={mobileState} onMobileStateChange={onMobileState}/>
-    <div className="panel-body">
+    <div className="panel-body" ref={bodyRef}>
+      {followHud}
       <header className="train-route-header">
         <div className="train-route-identity"><span className="service-pill" style={serviceBadgeStyle(trip.category,undefined,undefined,trip.name,from)}>{trip.name}</span><span className="train-route-status">{status}</span></div>
         <div className="train-full-route" aria-label={complete?'Gesamter Fahrtverlauf':'Aktueller Abschnitt'}><div><small>{complete?'Startbahnhof':'Abschnitt von'}</small><b>{from}</b></div><UiIcon name="arrow"/><div><small>{complete?'Zielbahnhof':'Abschnitt nach'}</small><b>{to}</b></div></div>
