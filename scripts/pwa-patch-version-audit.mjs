@@ -12,6 +12,8 @@ assert.equal(isNewerAppVersion(APP_VERSION,'62.0.0'),true,'UI fix must upgrade t
 assert.equal(isNewerAppVersion('62.0.0',APP_VERSION),false);
 assert.equal(isNewerAppVersion(APP_VERSION,'62.0.1'),true,'Radar-refresh patch must upgrade the deployed V62.0.1 cache');
 assert.equal(isNewerAppVersion('62.0.1',APP_VERSION),false);
+assert.equal(isNewerAppVersion(APP_VERSION,'62.0.2'),true,'Navigation patch must upgrade the deployed V62.0.2 cache');
+assert.equal(isNewerAppVersion('62.0.2',APP_VERSION),false);
 assert.equal(isNewerAppVersion(APP_VERSION,APP_VERSION),false);
 const version=JSON.parse(readFileSync(new URL('../public/version.json',import.meta.url),'utf8'));
 assert.equal(version.version,APP_VERSION);

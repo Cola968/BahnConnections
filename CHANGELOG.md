@@ -1,3 +1,12 @@
+# V62.0.3 – Radarzüge aus Planer und Verbindung öffnen
+
+- Stabile Tooltip-Bindungen verhindern den Leaflet-Fehler beim erneuten Fokussieren ausgewählter Marker. Unbehandelte Browser-Ausnahmen sind ein verpflichtender Testfehler.
+
+- Die Auswahl eines Radarzuges wechselt ausdrücklich in die Kartenansicht mit Zugdetails.
+- Der PC-Planer verdeckt eine neue Zugauswahl nicht mehr.
+- Zusätzliche Browser-Regressionen prüfen Verbindung → Zug und Planer → Zug ohne Neuladen; alle vorherigen Korrekturen bleiben enthalten.
+- Eigenständiger PWA-Cache für den korrigierten Navigationszustand.
+
 # V62.0.2 – Zugpanel bei Radar-Unterbrechungen erhalten
 
 - Die ausgewählte Fahrt bleibt bei einer unvollständigen Radar-Antwort oder einem Abruffehler geöffnet.

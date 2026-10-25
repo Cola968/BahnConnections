@@ -62,10 +62,31 @@ export async function followPanelRegressions({command,evaluate,click,screenshot,
   await screenshot('390-journey-handoff-regression');
   // Desktop regular search must also release an actively followed radar train.
   await command('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
-  await openFixtureRadar();
+  // Keep the existing connection view: a reload would hide navigation bugs.
+  if(await evaluate("!document.querySelector('.live-train-wrap')")){
+    await evaluate("document.querySelector('.live-cluster-wrap').focus()");
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
+    await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+    await waitFor("Boolean(document.querySelector('.live-train-wrap'))");
+  }
+  const desktopTripId=await evaluate("document.querySelector('.live-train-wrap').getAttribute('data-trip-id')");
   await evaluate("document.querySelector('.live-train-wrap').focus()");
   await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
   await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  await pause(400);
+  const fromJourney=await evaluate("({inspector:!!document.querySelector('.train-inspector'),planner:!!document.querySelector('.planner-panel'),journey:!!document.querySelector('.journey-card')})");
+  checks.push({case:'desktop-journey-to-train',...fromJourney});
+  await screenshot('1440-journey-to-train-regression');
+  assert.equal(fromJourney.inspector&&!fromJourney.planner&&!fromJourney.journey,true,'Selecting a radar train from a PC connection must show its inspector, not the planner');
+  await click('.desktop-navigation button:first-child');
+  await waitFor("Boolean(document.querySelector('.planner-panel'))");
+  await evaluate(`document.querySelector('.live-train-wrap[data-trip-id="${desktopTripId}"]').focus()`);
+  await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
+  await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  await pause(400);
+  const fromPlanner=await evaluate("({inspector:!!document.querySelector('.train-inspector'),planner:!!document.querySelector('.planner-panel')})");
+  checks.push({case:'desktop-planner-to-train',...fromPlanner});
+  assert.equal(fromPlanner.inspector&&!fromPlanner.planner,true,'Selecting a radar train while the PC planner is open must show train details');
   await waitFor("Boolean(document.querySelector('.train-inspector'))");
   await visibleClick('.train-inspector .track-button');
   await click('.desktop-navigation button:first-child');

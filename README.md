@@ -4,7 +4,7 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-**Web-Release-Stand:** **V62.0.2**. Der tatsächliche Veröffentlichungs- und Abnahmestatus ist in [PR #86](https://github.com/Cola968/BahnConnections/pull/86) und [Issue #87](https://github.com/Cola968/BahnConnections/issues/87) dokumentiert. Ein GitHub-Push allein veröffentlicht keine Sites-Version. Die Basis V62.0.0 wurde am 23.10.2026 als Sites-Version 71 veröffentlicht ([PR #85](https://github.com/Cola968/BahnConnections/pull/85)); V62.0.1 folgte am 25.10.2026 als Sites-Version 72.
+**Web-Release-Stand:** **V62.0.3**. Der tatsächliche Veröffentlichungs- und Abnahmestatus ist in [PR #86](https://github.com/Cola968/BahnConnections/pull/86) und [Issue #87](https://github.com/Cola968/BahnConnections/issues/87) dokumentiert. Ein GitHub-Push allein veröffentlicht keine Sites-Version. Die Basis V62.0.0 wurde am 23.10.2026 als Sites-Version 71 veröffentlicht ([PR #85](https://github.com/Cola968/BahnConnections/pull/85)); V62.0.1 folgte am 25.10.2026 als Sites-Version 72.
 
 **Abgleich für GitHub und ausstehende Funktionen:** [V62 Release-Reconciliation](docs/releases/V62.0.0-RELEASE-RECONCILIATION.md). Ein `main`-Merge ist kein neues Sites-Deployment. Der enthaltene native Android-Code ist **keine** veröffentlichte APK und nicht auf physischen Geräten abgenommen. Vollständigkeit der Bahnhofshalte, Betreibervalidierung, Datenrechte und umfassende Radarabdeckung sind nicht behauptet.
 

@@ -133,10 +133,17 @@ export class LiveMapRenderer {
           }
           const signature=`${trip.category}:${state.kind}:${options.trackedId===trip.tripId}:${options.selectedId===trip.tripId}`;
           if(glyph&&entry.signature!==signature)glyph.className=`live-train-marker glyph ${trip.category} status-${state.tone} status-${state.kind}${options.trackedId===trip.tripId?' tracked':''}${options.selectedId===trip.tripId?' selected':''}`;
-          if(trip.tripId===options.selectedId||trip.tripId===options.trackedId)entry.marker.unbindTooltip();
-          else if(entry.trip!==trip||!entry.marker.getTooltip()){
-            entry.marker.bindTooltip(realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime}),{direction:'top',offset:[0,-11],className:'live-train-tooltip'});
+          // Leaflet retains DOM focus listeners after unbindTooltip(). Keep one
+          // binding alive so focusing a selected marker cannot dereference null.
+          if(entry.trip!==trip||!entry.marker.getTooltip()){
+            const content=realtimeTooltip(`${trip.name} · ${trip.from.name} → ${trip.to.name}`,{scheduled:trip.scheduledArrival,actual:trip.arrival,realtime:trip.realTime});
+            if(entry.marker.getTooltip())entry.marker.setTooltipContent(content);
+            else entry.marker.bindTooltip(content,{direction:'top',offset:[0,-11],className:'live-train-tooltip'});
           }
+          const quiet=trip.tripId===options.selectedId||trip.tripId===options.trackedId;
+          const tooltip=entry.marker.getTooltip(),opacity=quiet?0:.9;
+          if(tooltip&&tooltip.options.opacity!==opacity)tooltip.setOpacity(opacity);
+          if(quiet&&entry.marker.isTooltipOpen())entry.marker.closeTooltip();
           if(entry.trip!==trip){
             element?.setAttribute('aria-label',`${trip.name}. Position geschätzt, keine GPS-Ortung. ${realtimeAccessibleLabel(state)} Details öffnen.`);
           }
@@ -153,7 +160,7 @@ export class LiveMapRenderer {
           const tone=average===null?'unknown':average>=11?'severe':average>=5?'late':'calm';
           if(glyph){glyph.className=`live-cluster ${tone}`;const count=glyph.querySelector('b');if(count)count.textContent=String(item.members.length);}
           const label=`${item.members.length} geschätzte Zugpositionen · ${known.length} mit bestätigten Zeitprognosen${average===null?'':` · Ø ${average.toLocaleString('de-DE',{maximumFractionDigits:1})} Min.`} · zum Vergrößern öffnen`;
-          if(label!==entry.signature){const tooltip=document.createElement('span');tooltip.textContent=label;entry.marker.bindTooltip(tooltip);element?.setAttribute('aria-label',label);entry.signature=label;}
+          if(label!==entry.signature){const tooltip=document.createElement('span');tooltip.textContent=label;if(entry.marker.getTooltip())entry.marker.setTooltipContent(tooltip);else entry.marker.bindTooltip(tooltip);element?.setAttribute('aria-label',label);entry.signature=label;}
         }
       }while(cursor<desired.length&&performance.now()-start<4);
       if(cursor<desired.length)this.frame=requestAnimationFrame(draw);

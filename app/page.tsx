@@ -422,6 +422,7 @@ export default function Home() {
   },[pendingPlannerLocation,nearestStation,geoStatus]);
   const selectLiveTrip = useCallback((trip:LiveTrip) => {
     plannerRequestRef.current?.abort(); setPlannerState("idle");
+    setActiveView("map");
     setSelectedLiveTrip(trip); setStationTrip(null);setStationTrips([]);setTrackedTripId(null); setTrackedRadarAnchor(null); setExploreOpen(false); setStatsOpen(false); setJourney(null);
     // Like a radar tracker, opening a train keeps most of the map visible on phones.
     setMobileSheetState("half");

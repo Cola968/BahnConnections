@@ -24,6 +24,7 @@ const browser = spawn(process.env.EDGE_PATH ?? '/usr/bin/chromium',[
 let browserError = '';
 browser.stderr.on('data',chunk => {browserError=(browserError+chunk).slice(-4000);});
 const pending = new Map();
+const runtimeErrors=[];
 let socket;
 let nextId = 0;
 function command(method,params={}) {
@@ -40,7 +41,7 @@ async function evaluate(expression) {
   return response.result?.value;
 }
 async function click(selector) {
-  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)});return {x,y};})()`);
+  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)}+' '+JSON.stringify({x,y,rect:{top:r.top,bottom:r.bottom,height:r.height},hit:h?.className,text:h?.textContent?.slice(0,100)}));return {x,y};})()`);
   await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
   await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});
   await pause(350);
@@ -85,6 +86,7 @@ try {
 
   socket.addEventListener('message',event=>{
     const m=JSON.parse(String(event.data));
+    if(m.method==='Runtime.exceptionThrown')runtimeErrors.push(m.params.exceptionDetails.exception?.description??m.params.exceptionDetails.text);
     if(m.method==='Fetch.requestPaused'){
       const path=new URL(m.params.request.url).pathname;
       if(path==='/api/radar'||path.endsWith('/map/trips')){
@@ -139,6 +141,7 @@ try {
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.live-trip-card>.panel-body')).overflowX"),'hidden','Inspector must use the component horizontal overflow policy');
     await screenshot('1440-trip-details');
     const panelRegressions=await followPanelRegressions({command,evaluate,click,screenshot,pause,openFixtureRadar,changeRadarResponse});
+    assert.deepEqual(runtimeErrors,[],'Radar navigation must not throw uncaught browser exceptions');
     await writeFile(join(output,'report.json'),JSON.stringify({fixture:true,baseline,cpuSlowdown:4,count,pointsPerTrip,requests,...metrics,panelRegressions},null,2));
     assert.equal(metrics.retained,count,'Ticks must preserve marker identity');assert.equal(metrics.mutations,0,'Ticks must not replace DOM markers');assert.equal(metrics.markers,count);assert.ok(metrics.maxTask<250,'Radar main-thread budget');}
-}finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}
+}catch(error){try{await screenshot('failure');}catch{}throw error;}finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}
