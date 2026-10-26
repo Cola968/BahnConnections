@@ -11,7 +11,7 @@ export type CompareBoardResponse = {
 };
 export type StationCompareSnapshot = {
   total:number;realtimeCount:number;validDelaySamples:number;delayed6:number;cancelled:number;
-  byMode:Record<string,number>;sampleCoverage:"reported"|"partial";
+  departuresByBucket:number[];longestObservedGapMinutes:number|null;byMode:Record<string,number>;sampleCoverage:"reported"|"partial";
   freshness:"recent"|"stale"|"unknown";warnings:string[];source:string;updatedAt:string|null;
 };
 const validTime=(value:unknown):number|null=>{
@@ -36,10 +36,12 @@ export function compareStationBoard(payload:CompareBoardResponse,windowStart:num
   const trustedRealtime=freshness==="recent"&&payload.realtimeStatus==="live";
   const result:StationCompareSnapshot={
     total:0,realtimeCount:0,validDelaySamples:0,delayed6:0,cancelled:0,byMode:{},
+    departuresByBucket:[0,0,0,0,0,0],longestObservedGapMinutes:null,
     sampleCoverage:partial?"partial":"reported",freshness,warnings,
     source:payload.source??"Transitous / MOTIS",updatedAt:updated===null?null:new Date(updated).toISOString()
   };
   const seen=new Set<string>();
+  const reportedTimes:number[]=[];
   for(const stop of Array.isArray(payload.stopTimes)?payload.stopTimes:[]){
     if(!stop||typeof stop!=="object"||!stop.place)continue;
     const planned=validTime(stop.place.scheduledDeparture);
@@ -48,6 +50,9 @@ export function compareStationBoard(payload:CompareBoardResponse,windowStart:num
     const id=rowKey(stop,eventTime);
     if(seen.has(id))continue;
     seen.add(id);result.total++;
+    reportedTimes.push(eventTime);
+    const bucket=Math.min(5,Math.floor((eventTime-windowStart)/(windowMinutes*60_000/6)));
+    result.departuresByBucket[bucket]++;
     const mode=typeof stop.mode==="string"&&stop.mode?stop.mode:"Unbekannt";
     result.byMode[mode]=(result.byMode[mode]??0)+1;
     if(stop.cancelled===true||stop.tripCancelled===true||stop.place.cancelled===true){result.cancelled++;continue;}
@@ -59,6 +64,12 @@ export function compareStationBoard(payload:CompareBoardResponse,windowStart:num
         if(Math.round((actual-planned)/60_000)>=6)result.delayed6++;
       }
     }
+  }
+  reportedTimes.sort((a,b)=>a-b);
+  if(reportedTimes.length>1){
+    let longest=0;
+    for(let i=1;i<reportedTimes.length;i++)longest=Math.max(longest,reportedTimes[i]-reportedTimes[i-1]);
+    result.longestObservedGapMinutes=Math.round(longest/60_000);
   }
   return result;
 }
