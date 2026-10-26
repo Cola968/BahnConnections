@@ -2142,18 +2142,28 @@
       "priority": "P1",
       "name": "Zwei Bahnhöfe direkt vergleichen",
       "acceptance": "Gleiche Zeitspanne, Quellenstatus und Kategorien",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and shared-window metrics implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-14-02",
@@ -2161,18 +2171,28 @@
       "priority": "P1",
       "name": "Abfahrten pro Stunde",
       "acceptance": "Zähler und Nenner nachvollziehbar",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and shared-window metrics implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-14-03",
@@ -2180,18 +2200,28 @@
       "priority": "P1",
       "name": "Verkehrsmittel-Verteilung",
       "acceptance": "Nur beobachtete Züge im Stichprobenfenster",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and shared-window metrics implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-14-04",
@@ -2199,18 +2229,28 @@
       "priority": "P1",
       "name": "Pünktlichkeit im geladenen Fenster",
       "acceptance": "Sample size, Quelle, Zeitfenster statt Netzbehauptung",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and shared-window metrics implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-14-05",
@@ -2218,18 +2258,28 @@
       "priority": "P1",
       "name": "Gleiswechsel- und Ausfallübersicht",
       "acceptance": "Unbekannt nicht als 0 zählen",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and cancellation subset implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-14-06",
@@ -2294,18 +2344,28 @@
       "priority": "P1",
       "name": "Abfahrtslücken-Finder",
       "acceptance": "Rein deskriptiv mit korrektem Zeitfenster",
-      "classification": "unreviewed",
-      "status": "todo",
-      "release_scope": "undecided",
-      "changed_paths": [],
-      "unit_test_ids": [],
+      "classification": "new",
+      "status": "in_progress",
+      "release_scope": "web-63",
+      "changed_paths": [
+        "app/station-comparison.tsx",
+        "app/station-compare-core.ts",
+        "app/page.tsx",
+        "app/station-sub-navigation.tsx",
+        "app/styles/v63-visual-reset.css"
+      ],
+      "unit_test_ids": [
+        "scripts/station-compare-core.test.mjs"
+      ],
       "integration_test_ids": [],
-      "browser_test_ids": [],
+      "browser_test_ids": [
+        "scripts/station-sheet-qa.mjs::station-compare"
+      ],
       "visual_evidence": [],
       "live_evidence": [],
-      "commit_sha": null,
+      "commit_sha": "a210f90bd4db03362b8bde2259e4c1cbfced00e7",
       "blockers": [],
-      "notes": ""
+      "notes": "Two-station comparison and observed gap implemented in V63 branch. Pure logic: 12 tests passed locally with node --experimental-strip-types, but full GitHub CI has not run on the current head; Chromium UI test is committed and still unverified. Partial source and licensing limits remain."
     },
     {
       "id": "BC63-15-01",
