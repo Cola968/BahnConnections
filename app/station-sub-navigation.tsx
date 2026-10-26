@@ -1,11 +1,12 @@
 "use client";
 
-export type StationPanel = "live" | "destinations" | "stats" | "disruptions";
+export type StationPanel = "live" | "destinations" | "stats" | "disruptions" | "compare";
 const sections: { value: StationPanel; label: string }[] = [
   { value:"live", label:"Tafel" },
   { value:"destinations", label:"Linien" },
   { value:"disruptions", label:"Störungen" },
   { value:"stats", label:"Info" },
+  { value:"compare", label:"Vergleich" },
 ];
 
 /** One native subnavigation, owned by the sheet header rather than its scroller. */
