@@ -410,6 +410,8 @@ try {
       }
       assert.equal(await evaluate("document.querySelector('#station-tab-compare')?.getAttribute('aria-selected')"),'true','Comparison tab becomes active');
       assert.equal(await evaluate("document.querySelectorAll('.v63-compare-table tbody tr').length"),12,'Eleven real traffic metrics plus source status are rendered');
+      for(let attempt=0;attempt<40;attempt++){if(await evaluate("document.querySelectorAll('.v63-compare-bucket').length===6"))break;await pause(100);}
+      assert.equal(await evaluate("document.querySelectorAll('.v63-compare-bucket').length"),6,'Real six-bucket comparative activity histogram');
       assert.ok(await evaluate("document.querySelector('.v63-compare-table tbody')?.textContent.includes('Gemeldete Abfahrten')"),'Comparison must expose actual calculated departure counts');
       const comparisonCounts=await evaluate("(() => {const cells=[...document.querySelectorAll('.v63-compare-table tbody tr')].find(row=>row.querySelector('th')?.textContent==='Gemeldete Abfahrten')?.querySelectorAll('td');return cells?[...cells].map(cell=>Number(cell.textContent)):[];})()");
       assert.equal(comparisonCounts.length,2,'Both stations must have independent data columns');
