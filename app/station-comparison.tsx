@@ -70,6 +70,7 @@ export function StationComparison({station,stations}:{station:Station;stations:S
 
   if(!other)return <p role="status">Für einen Vergleich wird ein zweiter Bahnhof benötigt.</p>;
   const verdict=stationComparisonVerdict(loaded.left,loaded.right);
+  const maxBucket=Math.max(1,...(loaded.left?.departuresByBucket??[]),...(loaded.right?.departuresByBucket??[]));
   const rows:{label:string;format:(s:StationCompareSnapshot)=>string}[]=[
     {label:"Gemeldete Abfahrten",format:s=>number(s.total)},
     {label:"Fernverkehr",format:s=>byModes(s,["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"])},
@@ -104,6 +105,23 @@ export function StationComparison({station,stations}:{station:Station;stations:S
         {rows.map(row=><tr key={row.label}><th scope="row">{row.label}</th><td>{loaded.loading?"–":metric(loaded.left,row.format)}</td><td>{loaded.loading?"–":metric(loaded.right,row.format)}</td></tr>)}
       </tbody>
     </table>
+    {!loaded.loading&&(loaded.left||loaded.right)&&<section className="v63-compare-activity" aria-labelledby="v63-activity-title">
+      <h3 id="v63-activity-title">Abfahrten im Zeitverlauf</h3>
+      <p>Sechs gleiche Abschnitte. Balkenhöhen zeigen die Anzahl tatsächlich gemeldeter Abfahrten im abgefragten Fenster, keine Hochrechnung.</p>
+      <div className="v63-compare-legend"><span><i className="first"/> {station.name}</span><span><i className="second"/> {other.name}</span></div>
+      <div className="v63-compare-activity-grid" role="img" aria-label={`Abfahrten in sechs Zeitabschnitten: ${station.name} ${loaded.left?.departuresByBucket.join(", ")??"ohne Daten"}; ${other.name} ${loaded.right?.departuresByBucket.join(", ")??"ohne Daten"}`}>
+        {Array.from({length:6},(_,index)=>{
+          const first=loaded.left?.departuresByBucket[index]??0;
+          const second=loaded.right?.departuresByBucket[index]??0;
+          const chunk=windowMinutes/6;
+          return <div className="v63-compare-bucket" key={index}>
+            <div className="v63-compare-bar-frame"><i className="first" style={{height:`${100*first/maxBucket}%`}}/><i className="second" style={{height:`${100*second/maxBucket}%`}}/></div>
+            <small>{Math.round(index*chunk)}–{Math.round((index+1)*chunk)}′</small>
+          </div>;
+        })}
+      </div>
+      <p className="v63-compare-gap">Größter beobachteter Abstand zwischen gemeldeten Abfahrten: <b>{metric(loaded.left,s=>s.longestObservedGapMinutes===null?"–":`${s.longestObservedGapMinutes} Min.`)}</b> gegenüber <b>{metric(loaded.right,s=>s.longestObservedGapMinutes===null?"–":`${s.longestObservedGapMinutes} Min.`)}</b>. Keine Aussage über ausgefallene oder nicht erfasste Fahrten.</p>
+    </section>}
     {!loaded.loading&&<div className="v63-compare-evidence">
       <strong>{verdict.comparable?"Beide Datenstichproben liegen zeitnah vor":"Eingeschränkte Vergleichbarkeit"}</strong>
       {verdict.reasons.map(reason=><p key={reason}>{reason}</p>)}
