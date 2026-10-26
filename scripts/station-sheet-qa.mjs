@@ -411,7 +411,11 @@ try {
       assert.equal(await evaluate("document.querySelector('#station-tab-compare')?.getAttribute('aria-selected')"),'true','Comparison tab becomes active');
       assert.equal(await evaluate("document.querySelectorAll('.v63-compare-table tbody tr').length"),12,'Eleven real traffic metrics plus source status are rendered');
       assert.ok(await evaluate("document.querySelector('.v63-compare-table tbody')?.textContent.includes('Gemeldete Abfahrten')"),'Comparison must expose actual calculated departure counts');
-      assert.ok(await evaluate("document.querySelector('.v63-compare-table tbody')?.textContent.includes('30')"),'Fixture departures from the same time horizon must load for both stations');
+      const comparisonCounts=await evaluate("(() => {const cells=[...document.querySelectorAll('.v63-compare-table tbody tr')].find(row=>row.querySelector('th')?.textContent==='Gemeldete Abfahrten')?.querySelectorAll('td');return cells?[...cells].map(cell=>Number(cell.textContent)):[];})()");
+      assert.equal(comparisonCounts.length,2,'Both stations must have independent data columns');
+      assert.ok(comparisonCounts.every(count=>Number.isFinite(count)&&count>0),'Both station board API samples must have actual trips');
+      await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+      await pause(200);
       await screenshot(`390-${theme}-station-compare`);
       await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});
