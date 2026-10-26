@@ -272,7 +272,7 @@ try {
         await screenshot('390-light-station-collapsed-compact');
         await click('.mobile-sheet-actions button:first-child');
         await pause(260);
-        assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),4,'Four clear station sections');
+        assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),5,'Five clear station sections, including an actual station comparison');
         assert.equal(await evaluate("Boolean(document.querySelector('#station-tab-trips'))"),false,'No duplicate trip browser');
         // Restoring a minimized panel preserves its scroll position. Scroll to
         // the row this scenario intends to open; click() still requires a real,
@@ -398,8 +398,19 @@ try {
       await click('.board-filter-close');
       await click('.board-mode-tabs button:last-child');
       await pause(500);assert.equal(await evaluate("document.querySelector('.board-mode-tabs button:last-child').getAttribute('aria-selected')"),'true');
-      await click('.station-section-tabs button:last-child');
+      await click('#station-tab-stats');
       assert.equal(await evaluate("Boolean(document.querySelector('#station-panel-stats'))"),true);
+      // V63 TITAN: this is a real second-station API panel, not a static layout.
+      await click('#station-tab-compare');
+      for(let attempt=0;attempt<100;attempt++){
+        if(await evaluate("Boolean(document.querySelector('.v63-compare-status')?.textContent.includes('Abfragen abgeschlossen'))"))break;
+        await pause(100);
+      }
+      assert.equal(await evaluate("document.querySelector('#station-tab-compare')?.getAttribute('aria-selected')"),'true','Comparison tab becomes active');
+      assert.equal(await evaluate("document.querySelectorAll('.v63-compare-table tbody tr').length"),12,'Eleven real traffic metrics plus source status are rendered');
+      assert.ok(await evaluate("document.querySelector('.v63-compare-table tbody')?.textContent.includes('Gemeldete Abfahrten')"),'Comparison must expose actual calculated departure counts');
+      assert.ok(await evaluate("document.querySelector('.v63-compare-table tbody')?.textContent.includes('30')"),'Fixture departures from the same time horizon must load for both stations');
+      await screenshot(`390-${theme}-station-compare`);
       await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       assert.equal(await evaluate("document.querySelector('.station-section-tabs button:first-child').getAttribute('aria-selected')"),'true','Keyboard subnavigation');
