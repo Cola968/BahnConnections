@@ -55,3 +55,10 @@ test("largest observed gap is between reported services, never a claimed missing
 test("one train has no meaningful inter-departure gap",()=>{
   assert.equal(frame({...base,stopTimes:[row("a","2026-10-27T10:05:00Z")]}).longestObservedGapMinutes,null);
 });
+
+test("realtime flag alone without departure forecast is never counted as a usable prediction",()=>{
+  const result=frame({...base,stopTimes:[{tripId:"no-forecast",realTime:true,mode:"SUBURBAN",place:{scheduledDeparture:"2026-10-27T10:15:00Z"}}]});
+  assert.equal(result.total,1);
+  assert.equal(result.realtimeCount,0);
+  assert.equal(result.validDelaySamples,0);
+});
