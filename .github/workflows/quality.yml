@@ -29,6 +29,8 @@ jobs:
         run: node --test scripts/v63-titan-status-audit.test.mjs
       - name: TITAN registry integrity
         run: node scripts/v63-titan-status-audit.mjs
+      - name: V63 station comparison correctness
+        run: node --experimental-strip-types --test scripts/station-compare-core.test.mjs
       - run: pnpm audit:release
       - run: node scripts/pwa-patch-version-audit.mjs
       - run: pnpm audit:play-hosting
