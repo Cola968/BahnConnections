@@ -43,3 +43,15 @@ test("fresh comparable sample is not confused with nationwide coverage",()=>{
   const second=frame({...base,stopTimes:[row("b","2026-10-27T10:05:00Z")]});
   assert.deepEqual(stationComparisonVerdict(first,second),{comparable:true,reasons:[]});
 });
+
+test("six equal time buckets include each unique service exactly once",()=>{
+  const result=frame({...base,stopTimes:[row("a","2026-10-27T10:05:00Z"),row("b","2026-10-27T10:15:00Z"),row("c","2026-10-27T10:55:00Z")]});
+  assert.deepEqual(result.departuresByBucket,[1,1,0,0,0,1]);
+});
+test("largest observed gap is between reported services, never a claimed missing departure",()=>{
+  const result=frame({...base,stopTimes:[row("a","2026-10-27T10:05:00Z"),row("b","2026-10-27T10:15:00Z"),row("c","2026-10-27T10:55:00Z")]});
+  assert.equal(result.longestObservedGapMinutes,40);
+});
+test("one train has no meaningful inter-departure gap",()=>{
+  assert.equal(frame({...base,stopTimes:[row("a","2026-10-27T10:05:00Z")]}).longestObservedGapMinutes,null);
+});
