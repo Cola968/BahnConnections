@@ -49,6 +49,7 @@ import { DesktopPanelResizer } from "./desktop-panel-resizer";
 import { assessJourneyTransfers } from "./v60-transfer-assessment.ts";
 import { StationSubNavigation } from "./station-sub-navigation";
 import { StationStats } from "./station-stats";
+import { StationComparison } from "./station-comparison";
 import { StationMapRenderer } from "./station-map-renderer";
 import { StationLines, type StationLineSummary } from "./station-lines";
 import { StationDisruptions } from "./station-disruptions";
@@ -212,7 +213,7 @@ export default function Home() {
   const [bikeRequired, setBikeRequired] = useState(false);
   const [journeyMessage, setJourneyMessage] = useState("");
   const [routeInfo, setRouteInfo] = useState<string | null>(null);
-  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions">("live");
+  const [stationPanel, setStationPanel] = useState<"live" | "destinations" | "stats" | "disruptions" | "compare">("live");
   const [helpOpen, setHelpOpen] = useState(false);
   const [railState, setRailState] = useState<"loading" | "ready" | "error">(BUNDLED_INFRA_DATA_ENABLED?"loading":"error");
   const [extraStations, setExtraStations] = useState<Station[]>([]);
@@ -1465,6 +1466,7 @@ export default function Home() {
             </div>
             <div id="station-panel-destinations" role="tabpanel" aria-labelledby="station-tab-destinations" hidden={stationPanel !== "destinations"}><StationLines key={selected.id} station={selected} onSummary={handleStationLineSummary} onMapTrip={showBoardTripOnMap} onMapTrips={handleStationTrips} /></div>
             {stationPanel === "disruptions" && <div id="station-panel-disruptions" role="tabpanel" aria-labelledby="station-tab-disruptions"><StationDisruptions key={selected.id} station={selected}/></div>}
+            {stationPanel === "compare" && <StationComparison key={selected.id} station={selected} stations={allStations} />}
             {stationPanel === "stats" && <div className="station-info" id="station-panel-stats" role="tabpanel" aria-labelledby="station-tab-stats">            <div className="station-card-head"><div><span className="eyebrow plain">Bahnhof</span><h2>{stationDisplayName(selected.name)}</h2><p>{selected.country === "DE" ? selected.state ?? "Deutschland" : selected.country}{selected.mergedCount ? ` · ${selected.mergedCount} Betriebsstellen gebündelt` : ""}</p></div><div className="station-card-actions"><span className={`station-health ${stationCondition(boardSummary,selected.id).tone}`}><i />{stationCondition(boardSummary,selected.id).label}</span><button className={favoriteIds.includes(selected.id) ? "favorite active" : "favorite"} onClick={() => toggleFavorite(selected)} aria-label={favoriteIds.includes(selected.id) ? "Bahnhof aus Favoriten entfernen" : "Bahnhof als Favorit speichern"}>★</button><button type="button" className="station-share" onClick={()=>void shareStation(selected)} aria-label={"Bahnhof "+selected.name+" teilen"} disabled={selected.id.startsWith("motis:")} title={selected.id.startsWith("motis:")?"Link für diesen Bahnhof nicht verfügbar":"Bahnhof-Link teilen"}><UiIcon name="copy"/> Teilen</button></div></div>{stationShareStatus?.id===selected.id&&<p className="station-share-message" role="status">{stationShareStatus.message}</p>}
             <div className="station-walk-action"><button type="button" onClick={() => void requestWalk(selected)} disabled={walkStatus==="loading"}><UiIcon name="location"/> {walkStatus==="loading"?"Fußweg wird berechnet …":"Fußweg ab meinem Standort"}</button>{walkTargetId===selected.id&&walkStatus==="ready"&&walkRoute&&<div className="station-walk-result" role="status"><b>{Math.ceil(walkRoute.durationSeconds/60)} Min. zu Fuß · {(walkRoute.distanceMeters/1000).toLocaleString("de-DE",{maximumFractionDigits:1})} km</b><small>Route auf der Karte markiert</small><details><summary>Wegbeschreibung</summary><ol>{walkRoute.steps.map((step,i)=><li key={i}>{step.instruction} · {step.distanceMeters} m</li>)}</ol></details><button type="button" onClick={()=>{setWalkRoute(null);setWalkTargetId(null);setWalkStatus("idle");}}>Route schließen</button></div>}{walkStatus==="error"&&walkMessage&&<small role="status">{walkMessage}</small>}</div>
             <div className="station-passengers"><strong>{stationPassengerInfo(selected).label}</strong><small>{stationPassengerInfo(selected).detail}</small>{stationPassengerInfo(selected).source && <a href={stationPassengerInfo(selected).source} target="_blank" rel="noreferrer">Quelle zum Fahrgastaufkommen</a>}</div><details className="station-technical"><summary>Bahnhofsdetails</summary><p>{selected.code ? `DS100 ${selected.code}` : "Kein DS100-Code"}{selected.eva ? ` · EVA ${selected.eva}` : ""}{selected.kind ? ` · ${selected.kind}` : ""}{selected.passengerBand ? ` · Reisende/Tag ${selected.passengerBand}` : ""}</p></details>
