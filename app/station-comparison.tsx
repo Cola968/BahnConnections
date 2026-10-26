@@ -16,7 +16,10 @@ const quality=(snapshot:StationCompareSnapshot|null)=>{
 };
 
 export function StationComparison({station,stations}:{station:Station;stations:Station[]}){
-  const [selectedId,setSelectedId]=useState(()=>stations.find(item=>item.id!=="berlin"&&item.id!==station.id)?.id??"");
+  const [selectedId,setSelectedId]=useState(()=>{
+    const next=stations.filter(item=>item.id!==station.id);
+    return next.sort((a,b)=>((a.lat-station.lat)**2+(a.lon-station.lon)**2)-((b.lat-station.lat)**2+(b.lon-station.lon)**2))[0]?.id??"";
+  });
   const [lookup,setLookup]=useState("");
   const [windowMinutes,setWindowMinutes]=useState<60|120|180>(120);
   const [reload,setReload]=useState(0);
