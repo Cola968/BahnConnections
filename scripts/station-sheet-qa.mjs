@@ -133,7 +133,9 @@ try {
       const tripRequest=path.includes('/api/trips/');
       if(tripRequest)tripRequests++;
       const payload=path.endsWith('/board')?(incidentFixtureMode?incidentTimetable(message.params.request.url):timetable()):path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
-        path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
+        path.includes('geocode')?(new URL(message.params.request.url).searchParams.get('text')??'').includes('Ostbahnhof')
+          ?[{type:'STOP',id:'de-berlin-ost',name:'Berlin Ostbahnhof',lat:52.5100,lon:13.4347,country:'DE'}]
+          :[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
         path.endsWith('/services')?{routes:[],stopTimes:[],source:'UI fixture',updatedAt:new Date().toISOString(),warnings:[]}:
         path.includes('/api/trips/')?fixtureTrip():[];
       void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:tripRequest&&tripUnavailable?503:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
