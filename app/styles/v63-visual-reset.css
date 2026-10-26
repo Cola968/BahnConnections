@@ -344,3 +344,31 @@ html[data-contrast="high"] .app-shell .board-list .board-row{border-bottom-color
   .app-shell .station-section-tabs>button,
   .app-shell .board-list .board-row{transition:none}
 }
+
+/* V63 first functional product expansion: side-by-side station comparison. */
+.app-shell .v63-station-compare{min-width:0;padding:12px 10px 28px;color:var(--ink)}
+.app-shell .v63-compare-header{margin:0 0 18px}
+.app-shell .v63-compare-header h2{font-size:clamp(1.2rem,2.5vw,1.5rem);letter-spacing:-.035em;line-height:1.2;margin:5px 0}
+.app-shell .v63-compare-header p,.app-shell .v63-compare-footer{font-size:.81rem;line-height:1.5;color:var(--muted)}
+.app-shell .v63-compare-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px;margin-bottom:14px}
+.app-shell .v63-compare-controls>div{min-width:0}
+.app-shell .v63-compare-controls label{display:block;font-size:.74rem;font-weight:650;color:var(--muted);margin-bottom:5px}
+.app-shell .v63-compare-controls input,.app-shell .v63-compare-controls select{width:100%;min-width:0;min-height:44px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);padding:7px 9px}
+.app-shell .v63-compare-controls>button{align-self:end;min-height:44px;border:1px solid var(--line);border-radius:9px;background:var(--soft);color:var(--ink);font-weight:650;padding:8px 12px}
+.app-shell .v63-compare-status{min-height:38px;font-size:.8rem;color:var(--muted);padding:7px 0}
+.app-shell .v63-compare-table{table-layout:fixed;width:100%;border-collapse:collapse;background:var(--paper);font-variant-numeric:tabular-nums}
+.app-shell .v63-compare-table caption{text-align:left;font-weight:700;padding:8px 0;color:var(--ink)}
+.app-shell .v63-compare-table th,.app-shell .v63-compare-table td{width:30%;padding:10px 6px;border-bottom:1px solid var(--v63-divider);overflow-wrap:anywhere;vertical-align:top;text-align:left;font-size:.79rem}
+.app-shell .v63-compare-table th:first-child{width:40%}
+.app-shell .v63-compare-table thead th{background:var(--soft);font-weight:720}
+.app-shell .v63-compare-table tbody th{color:var(--muted);font-weight:590}
+.app-shell .v63-compare-table tbody td{font-weight:700}
+.app-shell .v63-compare-evidence{margin-top:17px;padding:14px;border:1px solid var(--v63-divider);border-radius:10px;background:var(--soft);font-size:.81rem}
+.app-shell .v63-compare-evidence p{margin:7px 0;color:var(--muted)}
+.app-shell .v63-compare-evidence details{padding-top:8px;overflow-wrap:anywhere}
+.app-shell .v63-compare-footer{margin-top:18px}
+@media(max-width:380px){
+  .app-shell .v63-station-compare{padding-inline:3px}
+  .app-shell .v63-compare-table th,.app-shell .v63-compare-table td{font-size:.72rem;padding-inline:4px}
+  .app-shell .station-section-tabs>button{font-size:.73rem;padding-inline:3px}
+}
