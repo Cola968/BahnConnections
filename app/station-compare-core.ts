@@ -57,8 +57,8 @@ export function compareStationBoard(payload:CompareBoardResponse,windowStart:num
     result.byMode[mode]=(result.byMode[mode]??0)+1;
     if(stop.cancelled===true||stop.tripCancelled===true||stop.place.cancelled===true){result.cancelled++;continue;}
     if(trustedRealtime&&stop.realTime===true){
-      result.realtimeCount++;
       const actual=validTime(stop.place.departure);
+      if(actual!==null)result.realtimeCount++;
       if(actual!==null&&planned!==null){
         result.validDelaySamples++;
         if(Math.round((actual-planned)/60_000)>=6)result.delayed6++;
