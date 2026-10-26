@@ -1,0 +1,62 @@
+name: V63 TITAN manual validation
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Existing branch or commit to validate (not a deployment)"
+        required: true
+        type: string
+        default: "feat/v63-railglass-operations-20261025"
+
+permissions:
+  contents: read
+
+jobs:
+  v63-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout explicit V63 target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: V63 feature and registry tests
+        run: |
+          node --test scripts/v63-titan-status-audit.test.mjs
+          node scripts/v63-titan-status-audit.mjs
+          node --experimental-strip-types --test scripts/station-compare-core.test.mjs
+      - name: TypeScript
+        run: pnpm exec tsc --noEmit
+      - name: ESLint
+        run: pnpm lint
+      - name: Build deployable app
+        run: pnpm build
+      - name: Chromium: new station comparison plus existing board regression
+        env:
+          EDGE_PATH: /usr/bin/google-chrome
+        run: |
+          mkdir -p work/v63-compare-browser
+          node node_modules/vinext/dist/cli.js dev > work/v63-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/v63-compare-browser --probe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v63-comparison-qa
+          path: |
+            work/v63-compare-browser/
+            work/v63-dev.log
+          if-no-files-found: ignore
