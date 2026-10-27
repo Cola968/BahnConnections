@@ -435,6 +435,26 @@ try {
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
       assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
       assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-watch-lines .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      // Browser-verified: native selects need the entire panel width at narrow sizes.
+      if(width<=390){
+        const filterLayout=await evaluate(`(() => {
+          const grid=document.querySelector('.incidents-tools');
+          const [first,second]=Array.from(grid?.querySelectorAll('label') ?? []);
+          const select=first?.querySelector('select');
+          if(!grid||!first||!second||!select)return null;
+          const a=first.getBoundingClientRect(),b=second.getBoundingClientRect();
+          const s=select.getBoundingClientRect(),g=grid.getBoundingClientRect();
+          return {stacked:b.top>=a.bottom-1,withinPanel:s.left>=g.left-1&&s.right<=g.right+1,
+            horizontalOverflow:grid.scrollWidth>grid.clientWidth+1,selectedText:select.selectedOptions[0]?.textContent};
+        })()`);
+        assert.ok(filterLayout?.stacked&&filterLayout.withinPanel&&!filterLayout.horizontalOverflow,
+          'Station disruption selects overlap: '+JSON.stringify(filterLayout));
+        assert.equal(filterLayout.selectedText,'Alle betroffenen Linien');
+        if(theme==='light'){
+          await evaluate("document.querySelector('.incidents-tools select').scrollIntoView({block:'center'})");
+          await screenshot(`${width}-light-incidents-filter-legibility`);
+        }
+      }
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await screenshot(`${width}-${theme}-incidents`);
       if(width===390&&theme==='light'){
