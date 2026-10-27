@@ -5,6 +5,9 @@ const css=read("app/styles/v63-visual-reset.css");
 const layout=read("app/layout.tsx");
 const calls=read("app/station-calls-browser.tsx");
 const comparison=read("app/station-comparison.tsx");
+const legacyMobile=read("app/styles/v58-mobile-sheet-repair.css");
+assert.doesNotMatch(legacyMobile,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
+assert.match(legacyMobile,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
 // The V63 fifth section must not inherit V58's hardcoded four-column mobile grid.
 assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
 
