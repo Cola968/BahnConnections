@@ -46,7 +46,7 @@ assert.match(layout,/v61-station-calls.css/);
 assert.match(css,/prefers-reduced-motion:reduce/);
 assert.match(css,/data-motion="reduced"/);
 assert.match(css,/focus-visible/);
-assert.match(APP_VERSION,/^(?:61|62)\.\d+(?:\.\d+)?$/); // V61 contract remains mandatory during V62.
+assert.match(APP_VERSION,/^(?:61|62|63)\.\d+(?:\.\d+)?$/); // Keep V61 regression mandatory through V63; use the matching versioned release checklist.
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#67/);
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#66/);
 assert.match(read(`docs/releases/V${APP_VERSION}-RELEASE-CHECKLIST.md`),/#77/);

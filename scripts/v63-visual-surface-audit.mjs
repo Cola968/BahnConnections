@@ -4,6 +4,18 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const css=read("app/styles/v63-visual-reset.css");
 const layout=read("app/layout.tsx");
 const calls=read("app/station-calls-browser.tsx");
+const comparison=read("app/station-comparison.tsx");
+const legacyMobile=read("app/styles/v58-mobile-sheet-repair.css");
+assert.doesNotMatch(legacyMobile,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
+assert.match(legacyMobile,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+// The V63 fifth section must not inherit V58's hardcoded four-column mobile grid.
+assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+
+// Switching station/window must display loading for the new request without an effect-time synchronous state update.
+assert.match(comparison,/const requestKey=/);
+assert.match(comparison,/resolved\?\.key===requestKey/);
+assert.doesNotMatch(comparison,/setLoaded\(empty\)/);
+
 assert.match(layout,/import "\.\/styles\/v63-visual-reset\.css"/);
 assert.ok(layout.lastIndexOf("v63-visual-reset.css")>layout.lastIndexOf("v62-optical-glass.css"));
 for(const selector of [".station-card-head",".station-section-tabs",".board-mode-tabs",

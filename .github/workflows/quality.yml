@@ -51,6 +51,7 @@ jobs:
       - run: pnpm audit:v61
       - run: node scripts/v62-station-call-audit.mjs
       - run: node scripts/v63-visual-surface-audit.mjs
+      - run: node scripts/v63-mobile-legibility-audit.mjs
       - run: node scripts/v62-commuter-shortcut-audit.mjs
       - run: node scripts/station-resolution-audit.mjs
       - run: node scripts/trip-detail-freshness-audit.mjs

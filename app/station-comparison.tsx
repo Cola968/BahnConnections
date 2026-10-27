@@ -24,10 +24,13 @@ export function StationComparison({station,stations}:{station:Station;stations:S
   const [lookup,setLookup]=useState("");
   const [windowMinutes,setWindowMinutes]=useState<60|120|180>(120);
   const [reload,setReload]=useState(0);
-  const [loaded,setLoaded]=useState<Loaded>(empty);
+  const [resolved,setResolved]=useState<{key:string;loaded:Loaded}|null>(null);
   const other=stations.find(item=>item.id===selectedId&&item.id!==station.id)
     ??stations.find(item=>item.id==="berlin"&&item.id!==station.id)
     ??stations.find(item=>item.id!==station.id);
+  // Derive loading from the active request identity; stale data can never masquerade as new station data.
+  const requestKey=JSON.stringify([station.id,station.lat,station.lon,other?.id,other?.lat,other?.lon,windowMinutes,reload]);
+  const loaded=resolved?.key===requestKey?resolved.loaded:empty;
   const options=useMemo(()=>{
     const matches=stations.filter(item=>item.id!==station.id&&item.name.toLocaleLowerCase("de").includes(lookup.trim().toLocaleLowerCase("de"))).slice(0,60);
     if(other&&!matches.some(item=>item.id===other.id))matches.unshift(other);
@@ -37,7 +40,6 @@ export function StationComparison({station,stations}:{station:Station;stations:S
   useEffect(()=>{
     if(!other)return;
     const controller=new AbortController();
-    setLoaded(empty);
     const from=Date.now()-60_000;
     // Both stations use exactly the same window start; avoid accidental day-shift bias.
     const fetchSnapshot=async(item:Station):Promise<StationCompareSnapshot>=>{
@@ -57,16 +59,16 @@ export function StationComparison({station,stations}:{station:Station;stations:S
     };
     void Promise.allSettled([fetchSnapshot(station),fetchSnapshot(other)]).then(results=>{
       if(controller.signal.aborted)return;
-      setLoaded({
+      setResolved({key:requestKey,loaded:{
         left:results[0].status==="fulfilled"?results[0].value:null,
         right:results[1].status==="fulfilled"?results[1].value:null,
         leftError:results[0].status==="rejected"?(results[0].reason instanceof Error?results[0].reason.message:"Abfrage fehlgeschlagen"):null,
         rightError:results[1].status==="rejected"?(results[1].reason instanceof Error?results[1].reason.message:"Abfrage fehlgeschlagen"):null,
         loading:false
-      });
+      }});
     });
     return ()=>controller.abort();
-  },[station,other,windowMinutes,reload]);
+  },[station,other,windowMinutes,reload,requestKey]);
 
   if(!other)return <p role="status">Für einen Vergleich wird ein zweiter Bahnhof benötigt.</p>;
   const verdict=stationComparisonVerdict(loaded.left,loaded.right);

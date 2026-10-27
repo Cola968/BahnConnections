@@ -563,6 +563,28 @@ try {
     if(!follow.train||follow.active!=='true'||!follow.stop||follow.overflow||!follow.speed?.includes('Modell')||!(parseFloat(follow.speed)>0))
       throw new Error('Follow camera/HUD regression: '+JSON.stringify(follow));
     await screenshot('390-live-train-follow');
+    // The position source is safety-relevant context; ellipsis must never hide 'kein GPS'.
+    for(const [w,h] of [[390,844],[320,700]]){
+      await setViewport(w,h);
+      await pause(200);
+      const disclosure=await evaluate(`(() => {
+        const label=document.querySelector('.v62-follow-heading-copy small');
+        const hud=document.querySelector('.v62-follow-hud');
+        if(!label||!hud)return null;
+        const style=getComputedStyle(label),r=label.getBoundingClientRect(),h=hud.getBoundingClientRect();
+        return {text:label.textContent,whiteSpace:style.whiteSpace,
+          visible:style.visibility!=='hidden'&&style.display!=='none',
+          clipped:label.scrollHeight>label.clientHeight+1||label.scrollWidth>label.clientWidth+1,
+          overflow:document.documentElement.scrollWidth>innerWidth+1,
+          insideHud:r.left>=h.left-1&&r.right<=h.right+1};
+      })()`);
+      if(!disclosure||!disclosure.visible||disclosure.whiteSpace==='nowrap'||disclosure.clipped||
+         disclosure.overflow||!disclosure.insideHud||!(/kein GPS|keine aktuelle Position/.test(disclosure.text)))
+        throw new Error('Follow source status clipped at '+w+'px: '+JSON.stringify(disclosure));
+      await screenshot(`${w}-live-train-follow-legible`);
+    }
+    await setViewport(390,844);
+    await pause(200);
     await tap('.train-radar-hud button');
     if(await evaluate("Boolean(document.querySelector('.train-radar-hud'))"))throw new Error('Follow stop did not dismiss tracking HUD');
     await tap('.train-inspector .mobile-sheet-actions button:last-child');

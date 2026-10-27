@@ -58,7 +58,13 @@
 .app-shell .v62-follow-heading{display:flex;align-items:center;gap:8px;min-width:0;}
 .app-shell .v62-follow-heading-copy{display:grid;gap:2px;min-width:0;flex:1;}
 .app-shell .v62-follow-heading-copy strong{font-size:.91rem;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.app-shell .v62-follow-heading-copy small{font-size:.67rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.app-shell .v62-follow-heading-copy small{font-size:.73rem;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;}
+/* Data provenance must stay visible even at 320px; actions flow beneath it. */
+@media(max-width:480px){
+  .app-shell .v62-follow-heading{flex-wrap:wrap;row-gap:6px;}
+  .app-shell .v62-follow-heading-copy{flex:1 1 calc(100% - 24px);}
+  .app-shell .v62-follow-heading button{flex:0 0 auto;}
+}
 .app-shell .v62-follow-heading button{min-width:44px;min-height:44px;padding:6px 8px;font-size:.73rem;border-radius:11px;}
 .app-shell .v62-follow-heading .v62-follow-stop{background:var(--soft);border:1px solid var(--line-subtle);color:var(--ink);}
 .app-shell .v62-follow-heading .v62-follow-details-toggle{background:color-mix(in srgb,var(--accent) 11%,var(--paper));border:1px solid var(--glass-stroke);color:var(--ink);}

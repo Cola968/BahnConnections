@@ -387,3 +387,19 @@ html[data-contrast="high"] .app-shell .board-list .board-row{border-bottom-color
 .app-shell .v63-compare-bar-frame i{display:block;flex:0 1 15px;max-width:50%;min-width:2px;border-radius:3px 3px 0 0;transition:height .15s ease}
 .app-shell .v63-compare-bucket small{color:var(--muted);font-size:.65rem;font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){.app-shell .v63-compare-bar-frame i{transition:none}}
+
+
+/* V63 adds a fifth section. The legacy V58 mobile sheet still forces a
+   four-column grid, pushing "Vergleich" outside the visible/hittable header. */
+@media(max-width:1023px){
+  .app-shell .station-sheet-header>.station-section-tabs{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  }
+  .app-shell .station-sheet-header .station-section-tabs>button{
+    min-width:0!important;
+    padding-inline:2px!important;
+    font-size:.73rem!important;
+    white-space:normal!important;
+    line-height:1.15;
+  }
+}

@@ -6,7 +6,9 @@
 .app-shell .incident-copy {display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;margin-top:12px;padding:9px 13px;border:1px solid var(--line-subtle);border-radius:11px;background:var(--soft);color:var(--ink);font-size:.875rem;font-weight:650;cursor:pointer}
 .app-shell .incident-copy svg {width:17px;height:17px;flex:none}
 .app-shell .incidents-copy-feedback {margin:9px 0;padding:8px 10px;border-radius:9px;background:var(--soft);color:var(--ink);font-size:.78rem;line-height:1.5}
-@media(max-width:360px) {.app-shell .incidents-tools {grid-template-columns:minmax(0,1fr)} }
+/* A native select does not reliably wrap its chosen option. Give the long
+   'Alle betroffenen Linien' value the full panel width on mobile. */
+@media(max-width:480px) {.app-shell .incidents-tools {grid-template-columns:minmax(0,1fr)} }
 @media(prefers-reduced-motion:reduce) {.app-shell .incidents-tools *,.app-shell .incident-copy {transition:none!important;animation:none!important}}
 @media(forced-colors:active) {.app-shell .incidents-tools select,.app-shell .incident-copy {border:1px solid CanvasText} }
 
