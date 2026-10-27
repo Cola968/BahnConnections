@@ -43,8 +43,10 @@ type NoticeFeed={stopTimes:NoticeStopTime[];warnings:string[]};
 export function combineStationNoticeFeeds(results:readonly PromiseSettledResult<NoticeFeed>[]) {
  const fulfilled=results.filter((result):result is PromiseFulfilledResult<NoticeFeed>=>result.status==="fulfilled");
  const entries=fulfilled.flatMap(result=>result.value.stopTimes);
- const warnings=fulfilled.flatMap(result=>result.value.warnings)
-   .filter((warning):warning is string=>typeof warning==="string").slice(0,3);
+ // Arrival and departure feeds may return the same message. Present it once.
+ const warnings=[...new Set(fulfilled.flatMap(result=>result.value.warnings)
+   .filter((warning):warning is string=>typeof warning==="string")
+   .map(warning=>warning.trim()).filter(Boolean))].slice(0,3);
  return {entries,warnings,successful:fulfilled.length,partial:fulfilled.length<results.length};
 }
 function clean(v:unknown,max=360){return typeof v==="string"?v.trim().replace(/\s+/g," ").slice(0,max):"";}
