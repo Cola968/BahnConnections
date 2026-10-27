@@ -5,6 +5,9 @@ const css=read("app/styles/v63-visual-reset.css");
 const layout=read("app/layout.tsx");
 const calls=read("app/station-calls-browser.tsx");
 const comparison=read("app/station-comparison.tsx");
+// The V63 fifth section must not inherit V58's hardcoded four-column mobile grid.
+assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+
 // Switching station/window must display loading for the new request without an effect-time synchronous state update.
 assert.match(comparison,/const requestKey=/);
 assert.match(comparison,/resolved\?\.key===requestKey/);
