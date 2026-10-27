@@ -249,7 +249,8 @@ try {
               hit:hit===button||button.contains(hit),overflow:button.classList.contains('active')||button.getAttribute('role')==='tab'?button.scrollWidth-button.clientWidth:0};
           });
         })()`);
-        assert.equal(targets.length,6,name+' must expose four tabs plus minimize and close');
+        assert.equal(targets.length,7,name+' must expose five station tabs plus minimize and close');
+        assert.ok(targets.some(target=>target.label==='Vergleich'),name+' must expose the V63 comparison tab');
         for(const target of targets){
           assert.ok(target.width>=43.9&&target.height>=43.9&&target.inside&&target.hit,
             name+' reachable 44px header target: '+JSON.stringify(target));
