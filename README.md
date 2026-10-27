@@ -4,25 +4,26 @@ BahnConnections ist eine interaktive Bahnkarte und Fahrplanauskunft für Deutsch
 
 **Live-App:** [bahnconnections-de.a-stad.chatgpt.site](https://bahnconnections-de.a-stad.chatgpt.site/)
 
-**Cloudflare-V56.2-Releasekandidat:** Die neue Version wird in [PR #64](https://github.com/Cola968/BahnConnections/pull/64) vorbereitet. Eine **eigenständige Cloudflare-Workers-Veröffentlichung wurde noch nicht durchgeführt**. Die Anleitung für die Ersteinrichtung per Smartphone: [Cloudflare Workers](docs/deploy/CLOUDFLARE-WORKERS.md). Vor Veröffentlichung ist die [V56.2-Release-Checkliste](docs/releases/V56.2-RELEASE-CHECKLIST.md) abzuarbeiten.
+**Web-Release-Stand:** **V62.0.3**. Der tatsächliche Veröffentlichungs- und Abnahmestatus ist in [PR #86](https://github.com/Cola968/BahnConnections/pull/86) und [Issue #87](https://github.com/Cola968/BahnConnections/issues/87) dokumentiert. Ein GitHub-Push allein veröffentlicht keine Sites-Version. Die Basis V62.0.0 wurde am 23.10.2026 als Sites-Version 71 veröffentlicht ([PR #85](https://github.com/Cola968/BahnConnections/pull/85)); V62.0.1 folgte am 25.10.2026 als Sites-Version 72.
 
-## V56.2 · Störungszentrale und zuverlässige Echtzeitdaten
+**Abgleich für GitHub und ausstehende Funktionen:** [V62 Release-Reconciliation](docs/releases/V62.0.0-RELEASE-RECONCILIATION.md). Ein `main`-Merge ist kein neues Sites-Deployment. Der enthaltene native Android-Code ist **keine** veröffentlichte APK und nicht auf physischen Geräten abgenommen. Vollständigkeit der Bahnhofshalte, Betreibervalidierung, Datenrechte und umfassende Radarabdeckung sind nicht behauptet.
 
-- Suche und Kategorie-Filter für Meldungen, Bauarbeiten und Ausfälle; Hinweise aus Ankünften und Abfahrten werden zusammengeführt.
-- Regelmäßige Aktualisierung bei sichtbarer Ansicht, letztes erfolgreiches Ergebnis bei kurzfristigen Quellenproblemen.
-- Korrekte Filterung bestätigter +1-bis-+4-Minuten-Verspätungen, defensiver Umgang mit ungültigen Providerdaten, begrenzte Detailabfragen und Zeitlimits.
-- Bessere mobile Tastaturbedienung, sichtbare Fahrthaltelisten und englische Navigationsbeschriftung.
-- **Wichtige Einschränkungen:** Reale Gerätetests fehlen; Live-Ankunfts- und Geschwindigkeitsangaben sind quellenabhängige Prognosen beziehungsweise Modellwerte, kein Fahrzeug-GPS. Die Transitous-Nutzung für kommerzielle Zwecke oder ohne Open-Source-Lizenz ist noch nicht freigegeben.
+## V62-Webfunktionen
+
+- Schnellfilter für kommende Abfahrten, Verspätungen und Gleisänderungen sowie gespeicherte Pendlerstrecken.
+- Überarbeitete Glass-/Railglass-Flächen, mobile Stationsdarstellung und PWA-Versionswechsel.
+- Zugverfolgung und Radaransichten mit gekennzeichneter Modellierung; keine pauschal zugesagte GPS-Echtzeitposition.
+- Die geplante native, über die App-Laufzeit hinausgehende Android-Benachrichtigung benötigt eine separat gebaute, getestete und veröffentlichte Android-App.
 
 ## Funktionen
 
 - bundesweite Bahnhofssuche mit eindeutigen Haltestellen-IDs
 - Live-Abfahrten und -Ankünfte für Fern-, Regional-, S- und U-Bahn
-- vollständige Linienliste eines Bahnhofs mit Richtungen und Endzielen
-- Fahrtverläufe mit allen Halten, Soll-/Ist-Zeiten, Gleisen und Meldungen
+- anbietergemeldete Linien eines Bahnhofs mit Richtungen und Endzielen (Abdeckung je Quelle unterschiedlich)
+- Fahrtverläufe mit vom Anbieter bestätigten Halten, Soll-/Ist-Zeiten, Gleisen und Meldungen; fehlende Halte werden nicht erfunden
 - quellgelieferte Streckengeometrien ohne erfundene Luftlinien
 - Reiseplaner mit Alternativen, bis zu fünf Umstiegen und Sortierung nach erwarteter Ankunft
-- Transitous/MOTIS als Hauptquelle und DB transport.rest als unabhängige Gegenprüfung im Reiseplaner
+- Transitous/MOTIS als Hauptquelle und DB transport.rest als zusätzlichen Fahrplanabgleich im Reiseplaner (keine unabhängige Betreiberbestätigung)
 - installierbare Progressive Web App mit responsivem Bottom-Sheet auf Mobilgeräten
 - sichtbare Kennzeichnung von Echtzeit-, Teil- und reinen Fahrplandaten
 
@@ -65,3 +66,7 @@ BAHNCONNECTIONS_BASE_URL=http://localhost:3000 pnpm audit:api
 
 Die jeweiligen Quelldaten und Marken bleiben Eigentum ihrer Anbieter. BahnConnections ist ein unabhängiges Projekt und kein offizielles Angebot der Deutschen Bahn AG.
 
+
+## Lizenz und Datenrechte
+
+Eigener Anwendungscode: MIT, siehe [LICENSE](LICENSE). Fremddaten und Bibliotheken behalten ihre Bedingungen; siehe [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Die dort dokumentierten offenen Datenfreigaben bleiben Release-Blocker.

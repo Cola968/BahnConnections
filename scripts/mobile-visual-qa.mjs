@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { realtimeScenarios, journeyFixture, boardFixture } from "./realtime-fixtures.mjs";
+import { APP_VERSION } from "../app/app-version.ts";
 
 const argumentsWithoutSeparator = process.argv.slice(2).filter((value) => value !== "--");
 const url = argumentsWithoutSeparator[0] ?? "http://127.0.0.1:3102/?qa=mobile-visual";
@@ -41,6 +42,7 @@ const alternativeJourney = { ...fixtureJourney,id:'qa-alternative',startTime:alt
 
 let activeJourneys = [fixtureJourney,alternativeJourney];
 let radarFixtureEnabled=false;
+const commuterRequests=[];
 
 /** Fully deterministic map/train API fixture with an active, bounded rail segment. */
 function encodedRailLine(points) {
@@ -142,11 +144,13 @@ try {
     const message = JSON.parse(String(event.data));
     if (message.method === "Fetch.requestPaused" && useJourneyFixture) {
       const requestUrl = new URL(message.params.request.url);
+      if(requestUrl.pathname==='/api/journeys'&&message.params.request.method==='POST')commuterRequests.push({body:JSON.parse(message.params.request.postData),at:Date.now()});
       if (requestUrl.pathname.endsWith('/board')) console.log('Intercepted board fixture: '+requestUrl.pathname);
       const tripIndex=Number(requestUrl.pathname.match(/qa-board-(\d+)/)?.[1] ?? 0);
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/board') ? {...boardFixture(),stopTimes:[...boardFixture().stopTimes,...(radarFixtureEnabled?[{tripId:'qa-ice-241',mode:'HIGHSPEED_RAIL',displayName:'ICE 241',realTime:true,place:{arrival:radarFixture()[0].arrival,departure:radarFixture()[0].departure}}]:[])]}
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
+        : requestUrl.pathname==='/api/radar' ? {segments:radarFixtureEnabled?radarFixture():[]}
         : requestUrl.pathname.endsWith('/map/trips') ? (radarFixtureEnabled ? radarFixture() : [])
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
         : requestUrl.pathname.includes('/api/trips/') && requestUrl.pathname.includes('qa-ice-241') ? {trip:{legs:[{...radarFixture()[0],from:{...radarFixture()[0].from,departure:radarFixture()[0].departure,scheduledDeparture:radarFixture()[0].scheduledDeparture},to:{...radarFixture()[0].to,arrival:radarFixture()[0].arrival,scheduledArrival:radarFixture()[0].scheduledArrival},legGeometry:{points:radarPolyline,precision:4}}]},updatedAt:new Date().toISOString()} : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{mode:trip.mode,from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled}]}}
@@ -271,7 +275,7 @@ try {
     await command("Page.addScriptToEvaluateOnNewDocument", { source:`if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('Worker disabled for deterministic UI fixtures'));` });
   }
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   await setViewport(390, 844);
   await command("Emulation.setLocaleOverride", { locale:"de-DE" });
   await command("Emulation.setTimezoneOverride", { timezoneId:"Europe/Berlin" });
@@ -329,10 +333,10 @@ try {
   }
   if (useJourneyFixture) {
     await tap('.journey-alternatives summary');
-    await tap('.journey-alternatives>div>button:first-child');
+    await tap('.journey-alternatives>div:last-child>button:first-child');
     if (!await evaluate(`[document.querySelector('.mobile-sheet-summary'),document.querySelector('.live-journey-leg header')].some(el=>el?.textContent.includes('ICE 1207'))`)) throw new Error('Alternative wird nicht gemeinsam ausgewählt');
     await tap('.journey-alternatives summary');
-    await tap('.journey-alternatives>div>button:first-child');
+    await tap('.journey-alternatives>div:last-child>button:first-child');
     if (await evaluate(`Array.from(document.querySelectorAll('.live-journey-leg')).some(el=>el.scrollWidth>el.clientWidth+1)`)) throw new Error('Fahrtdetails werden horizontal abgeschnitten');
   }
 
@@ -482,16 +486,26 @@ try {
     const controls=[...menu.querySelectorAll('.simple-more-list>a,.simple-more-list>button')];
     return {count:controls.length,text:menu.textContent.replace(/\\s+/g,' ').trim()};
   })()`);
-  if (!simpleMore || simpleMore.count !== 4) throw new Error('Mehr-Menü ist nicht auf vier Kernaktionen begrenzt: '+JSON.stringify(simpleMore));
+  if (!simpleMore || simpleMore.count !== 5) throw new Error('V60 Mehr-Menü muss genau fünf Kernaktionen zeigen: '+JSON.stringify(simpleMore));
   for (const forbidden of ['Netzreport','Netzlabor','Kontrast','Schrift','Zugarten','Minimalmodus','Fokusmodus']) {
     if (simpleMore.text.includes(forbidden)) throw new Error('Unnötiger Punkt im Mehr-Menü: '+forbidden);
   }
-  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Hilfe & Daten']) {
+  for (const required of ['Profil & Einstellungen','App & Updates','Störungen & Baustellen','Tastenkürzel','Hilfe & Daten']) {
     if (!simpleMore.text.includes(required)) throw new Error('Kernpunkt fehlt im Mehr-Menü: '+required);
   }
   await screenshot('390-more-simple');
   await tap('.mobile-navigation button:last-of-type');
   if (await evaluate(`Boolean(document.querySelector('.simple-more-popover'))`)) throw new Error('Mehr-Schalter lässt sich nicht schließen');
+  await tap('.mobile-navigation button:last-of-type');
+  await tap('.simple-more-list>button:nth-of-type(4)');
+  if (!await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog[role=dialog]'))"))
+    throw new Error('V60 Tastaturhilfe lässt sich im mobilen Mehr-Menü nicht öffnen');
+  if (await evaluate("Boolean(document.querySelector('.simple-more-popover'))"))
+    throw new Error('Mehr-Menü bleibt unter Tastaturhilfe sichtbar');
+  await tap('.v60-shortcut-dialog header button');
+  if (await evaluate("Boolean(document.querySelector('.v60-shortcut-dialog'))"))
+    throw new Error('Tastaturhilfe lässt sich nicht schließen');
+
 
   const radarChecks=[];
   if (useJourneyFixture) {
@@ -662,7 +676,7 @@ try {
         await waitFor(`document.querySelectorAll('.board-time .realtime-time').length>0`,'Matrix board missing');
         if(mobile && await evaluate(`document.querySelector('.app-shell').dataset.mobileSheet`) === 'half') await tap('.mobile-sheet-summary');
         await matrixCapture('board');
-        await tap('.station-section-tabs button:nth-child(4)');
+        await tap('#station-tab-stats');
         await matrixCapture('station-info');
         await tap(nav(2));
         await matrixCapture('planner');
@@ -705,8 +719,32 @@ try {
     await evaluate(`(() => { const toggle=[...document.querySelectorAll('.settings-toggle')].find(node=>node.textContent.includes('Animationen reduzieren'));toggle.querySelector('input')?.click(); })()`);
     await screenshot(width+'-settings-display');
     await tap('.settings-tabs button[data-settings-tab="plans"]');
-    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plan-card.plus')) && document.querySelector('.plan-card.plus').textContent.toLowerCase().includes('noch nicht buchbar')`) !== true) throw new Error('Plus readiness is not honestly described');
+    if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`)) throw new Error('Plus details must start collapsed');
     await screenshot(width+'-settings-plans');
+    await tap('.plus-simple-more summary');
+    await waitFor(`Boolean(document.querySelector('.plus-simple-more[open]'))`,'Tapping Plus must expand subscription information');
+    const plusDetails=await evaluate(`(() => {
+      const card=document.querySelector('.plan-card.plus'),details=card?.querySelector('.plus-simple-more');
+      const content=details?.querySelector('.plus-simple-more-content');
+      const prices=[...card.querySelectorAll('.billing-price-options strong')].map(node=>node.textContent.trim());
+      return {
+        visible:!!details?.open&&!!content&&content.getClientRects().length>0,
+        pricing:prices.length===2&&prices.every(price=>price.includes('€')),
+        planned:content?.textContent.includes('Wann Plus startet, steht noch nicht fest')&&content?.textContent.includes('vorläufig'),
+        icons:content?.querySelectorAll('.plus-detail-row > svg').length===3,
+        unavailable:card.textContent.includes('Noch nicht buchbar')&&!card.querySelector('button[type="submit"],a[href*="checkout"]'),
+        overflow:card.scrollWidth>card.clientWidth+2
+      };
+    })()`);
+    if(!plusDetails.visible||!plusDetails.pricing||!plusDetails.planned||!plusDetails.icons||!plusDetails.unavailable||plusDetails.overflow)
+      throw new Error('Plus details not usable at '+width+': '+JSON.stringify(plusDetails));
+    await screenshot(width+'-settings-plus-expanded');
+    if(width!==320) {
+      await tap('.plus-simple-more summary');
+      if(await evaluate(`Boolean(document.querySelector('.plus-simple-more[open]'))`))
+        throw new Error('Tapping Plus must also collapse the details');
+    }
     if(width===320) {
       await setViewport(320,568);
       await evaluate(`document.querySelector('.settings-content').scrollTop=document.querySelector('.settings-content').scrollHeight`);
@@ -742,7 +780,7 @@ try {
     }
     await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
     await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
-    if(await evaluate(`Boolean(document.querySelector('.settings-dialog[open]'))`)) throw new Error('Escape failed to close native settings dialog');
+    await waitFor(`!document.querySelector('.settings-dialog[open]')`,'Escape failed to close native settings dialog');
     profileChecks.push({width,saved:true,settings:true,plannedBilling:true,noOverflow:true});
   }
   for(const width of [320,390,1440]) {
@@ -757,7 +795,7 @@ try {
     await evaluate(`document.querySelector('.settings-dialog').scrollTo({top:document.querySelector('.settings-dialog').scrollHeight,behavior:'instant'})`);
     await pause(200);
     await screenshot(width+'-saved-routes');
-    await tap('.settings-dialog .saved-routes li>div button:first-child');
+    await tap('.settings-dialog .saved-routes li>div button[aria-label^="Rückweg von "]');
     await waitFor(`!document.querySelector('.settings-dialog') && Boolean(document.querySelector('.explore-card'))`,'Return route did not open planner');
     const names=await evaluate(`Array.from(document.querySelectorAll('.route-station-search input')).map(x=>x.value)`);
     if(names[0]!=='München Hbf'||names[1]!=='Berlin Hbf')throw new Error('Return route endpoints incorrect: '+JSON.stringify(names));
@@ -771,7 +809,20 @@ try {
     await pause(200);
     await tap('.planner-saved-routes .saved-routes li:first-child>div button:last-child');
     await waitFor(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes')).length===1`,'Route deletion failed');
-    profileChecks.push({width,routeRestored:true,reverse:true,save:true,remove:true});
+    // Exercise the new action independently; keep all return-route assertions above.
+    const saved=await evaluate(`JSON.parse(localStorage.getItem('bahnconnections-saved-routes'))[0]`);
+    await evaluate(`document.querySelector('.planner-saved-routes .saved-route-now').scrollIntoView({block:'center'})`);
+    await pause(200);
+    const beforeNow=commuterRequests.length;
+    await tap('.planner-saved-routes .saved-route-now');
+    for(let attempt=0;attempt<100&&commuterRequests.length===beforeNow;attempt++)await pause(100);
+    if(commuterRequests.length!==beforeNow+1)throw new Error('Jetzt prüfen must issue exactly one new planner request');
+    const quick=commuterRequests.at(-1);
+    if(quick.body.from.id!==saved.from.id||quick.body.to.id!==saved.to.id)throw new Error('Quick commute searched stale endpoints');
+    const departure=Date.parse(quick.body.departure);
+    if(!Number.isFinite(departure)||departure<=quick.at||departure>quick.at+11*60_000||quick.body.arriveBy!==false)throw new Error('Quick commute needs a fresh UTC departure search');
+    await waitFor(`Boolean(document.querySelector('.journey-card'))`,'Quick commute response was not rendered');
+    profileChecks.push({width,routeRestored:true,reverse:true,save:true,remove:true,quickSearch:true,queryFresh:true});
   }
   await setViewport(1440,900);
   const closedBilling=await evaluate(`Promise.all(['/api/subscription/checkout','/api/subscription/portal','/api/stripe/webhook'].map(path=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:'month'})}).then(r=>r.status)))`);
@@ -804,6 +855,90 @@ try {
   if(subscription.entitlements.plan!=='free'||subscription.entitlements.checkoutEnabled!==false||subscription.entitlements.accountSync!==false) throw new Error('Subscription endpoint granted unconfigured paid features');
   profileChecks.push({autoLocation:true,optOutPersists:true,subscriptionFailsClosed:true,accuracy});
   if (snapshots.some((item) => item.horizontalOverflow)) throw new Error("Horizontaler Überlauf");
+
+  // V61 provider-call browser: fixture proves search and direction filtering,
+  // never full live-provider coverage. Test compact phones and desktop separately.
+  const stationCallChecks=[];
+  for(const [width,height] of [[320,844],[390,844],[1440,900]]) {
+    await setViewport(width,height);
+    await command("Page.navigate",{url:new URL("/?station=berlin",url).toString()});
+    await waitFor(`Boolean(document.querySelector(".v61-call-toggle"))`,"V61 station calls control missing");
+    await tap(".v61-call-toggle");
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length>=1`,"No fixture calls loaded in station browser");
+    await waitFor(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),controls=document.querySelector('.v61-call-filters').getBoundingClientRect();return controls.top>=pane.top-1&&controls.bottom<=pane.bottom+1;})()`,"New station-call controls remain outside the visible pane");
+    const initial=await evaluate(`(() => {
+      const root=document.querySelector(".v61-call-browser"),r=root.getBoundingClientRect();
+      const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect();
+      const controls=root.querySelector('.v61-call-filters').getBoundingClientRect();
+      return {expanded:root.querySelector(".v61-call-toggle").getAttribute("aria-expanded")==="true",
+        controlsVisible:controls.top>=pane.top-1&&controls.bottom<=pane.bottom+1,
+        rows:root.querySelectorAll(".v61-call-row").length,
+        source:root.textContent.includes("Transitous / MOTIS"),
+        honesty:root.textContent.includes("keine Zugpositionen"),
+        overflow:root.scrollWidth>root.clientWidth+2 || document.documentElement.scrollWidth>innerWidth+2,
+        left:r.left,right:r.right};
+    })()`);
+    if(!initial.expanded||!initial.rows||!initial.source||!initial.honesty||initial.overflow||!initial.controlsVisible)
+      throw new Error("V61 station calls fail at "+width+": "+JSON.stringify(initial));
+    await tap('.v61-call-directions button:last-child');
+    await waitFor(`document.querySelector(".v61-call-directions button:last-child").getAttribute("aria-pressed")==="true"`,"Departure filter did not activate");
+    await evaluate(`(() => {
+      const input=document.querySelector(".v61-call-filters input");
+      const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set;
+      setter.call(input,"ICE 1200");input.dispatchEvent(new Event("input",{bubbles:true}));
+    })()`);
+    await waitFor(`document.querySelectorAll(".v61-call-list li").length===1`,"Train search did not filter fixture rows");
+    await screenshot(width+"-v61-station-calls");
+    stationCallChecks.push({width,initial,search:true});
+  }
+
+  // Mock only the service-worker boundary. A future update must leave station
+  // navigation reachable and activate through the normal App settings action.
+  const updateFixture=version=>`{
+    const waiting={state:'installed',postMessage(message){if(message.type==='SKIP_WAITING')document.documentElement.dataset.qaUpdateActivated='true';}};
+    navigator.serviceWorker.register=async()=>({waiting,installing:null,update:async()=>{},addEventListener(){},removeEventListener(){}});
+    const request=window.fetch;
+    window.fetch=(...args)=>{
+      const url=new URL(args[0] instanceof Request?args[0].url:String(args[0]),location.href);
+      return url.pathname==='/version.json'?Promise.resolve(new Response(JSON.stringify({version:${JSON.stringify(version)},label:${JSON.stringify('V'+version)}}),{headers:{'Content-Type':'application/json'}})):request(...args);
+    };
+  }`;
+  const updateScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture('99.0')});
+  const updateChecks=[];
+  for(const [width,height] of [[320,568],[390,844],[1440,900]]){
+    await setViewport(width,height);
+    await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+    await waitFor(`Boolean(document.querySelector('.app-update-status'))&&Boolean(document.querySelector('.station-sheet-header'))`,'Update availability missing');
+    // Desktop text-size controls stay mounted but have no mobile hit surface.
+    const headerHitTest=`Array.from(document.querySelectorAll('.station-sheet-header button')).filter(button=>{const r=button.getBoundingClientRect();return r.width>0&&r.height>0;}).every(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===button||button.contains(hit);})`;
+    await waitFor(headerHitTest,'Visible station controls remain blocked during update notification at '+width);
+    const headerReachable=await evaluate(headerHitTest);
+    if(!headerReachable||await evaluate(`Boolean(document.querySelector('.app-update-notice'))`))throw Error('Update notification covers station controls at '+width);
+    await tap('#station-tab-stats');
+    await waitFor(`Boolean(document.querySelector('.station-info .station-share'))`,'Station info missing');
+    const infoActions=await evaluate(`(() => {const button=document.querySelector('.station-info .station-share'),title=document.querySelector('.station-info h2'),pane=document.querySelector('.station-card .panel-body');const b=button.getBoundingClientRect(),t=title.getBoundingClientRect(),p=pane.getBoundingClientRect();return {textFits:button.scrollWidth<=button.clientWidth+2,inside:b.right<=p.right&&b.left>=p.left,noOverlap:t.right<=b.left||t.bottom<=b.top||b.bottom<=t.top};})()`);
+    if(!infoActions.textFits||!infoActions.inside||!infoActions.noOverlap)throw Error('Station share action clips or overlaps at '+width+': '+JSON.stringify(infoActions));
+    await tap('#station-tab-live');
+    if(width<1024){
+      await tap('.mobile-navigation button:last-of-type');
+      if(!await evaluate(`document.querySelector('.simple-more-list>button:nth-child(2)').textContent.includes('V99.0')`))throw Error('More menu must expose the available update');
+      await tap('.simple-more-list>button:nth-child(2)');
+    }else{
+      await tap('.settings-trigger');
+      await tap('.settings-tabs button[data-settings-tab="about"]');
+    }
+    await waitFor(`Boolean(document.querySelector('.settings-dialog .pwa-update-action'))`,'Update action missing in App settings');
+    await screenshot(width+'-pwa-update-in-settings');
+    await tap('.settings-dialog .pwa-update-action');
+    await waitFor(`document.documentElement.dataset.qaUpdateActivated==='true'`,'Update action did not activate the waiting worker');
+    updateChecks.push({width,height,headerReachable,activation:true});
+  }
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:updateScript.identifier});
+  const sameVersionScript=await command('Page.addScriptToEvaluateOnNewDocument',{source:updateFixture(APP_VERSION)});
+  await command('Page.navigate',{url:new URL('/?station=berlin',url).toString()});
+  await waitFor(`document.documentElement?.dataset.qaUpdateActivated==='true'`,'A cache update for the running version should activate quietly');
+  if(await evaluate(`Boolean(document.querySelector('.app-update-status,.app-update-notice'))`))throw Error('Already running version must not be announced as a new version');
+  await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:sameVersionScript.identifier});
 
   // Standalone marketing website: separate route, separate visual ownership.
   const websiteChecks = [];
@@ -854,7 +989,7 @@ try {
 
 
 
-  const report = { checkedAt:new Date().toISOString(), url, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
+  const report = { checkedAt:new Date().toISOString(), url, stationCallChecks, updateChecks, journeyLoaded, plannerReady, inputMode:"mouse-clicks + touch-drag", realDeviceTest:false, journeyFixture:useJourneyFixture, radarChecks, realtimeChecks, profileChecks, snapshots, responsiveMatrix,websiteChecks };
   await writeFile(join(outputDirectory, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } catch(error) {

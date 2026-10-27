@@ -1,0 +1,149 @@
+/* V58 Railglass — one navigational glass layer, quiet data surfaces.
+ * Design basis: user-supplied App Designer guide, DB Navigator task hierarchy
+ * and FR24 source-aware, map-first inspector. No fake gradients on data cards.
+ */
+:root {
+  --ink:#182a34;--muted:#526675;--paper:#f9fbfd;--soft:#eaf1f5;--elevated:#ffffff;
+  --elevated-soft:#f2f6f8;--line:#cad7df;--line-subtle:rgba(44,75,94,.15);
+  --accent:#14657a;--teal:#226c7d;--action:#c32b40;--action-fill:#bd2940;
+  --radius-control:13px;--radius-panel:22px;--radius-sheet:27px;
+  --glass-navigation:rgba(246,251,254,.67);--glass-stroke:rgba(255,255,255,.76);
+  --glass-sheet-expanded:rgba(250,253,255,.86);
+  --glass-sheet-half:rgba(248,252,255,.75);
+  --glass-shadow-soft:0 8px 28px rgba(20,46,63,.10),inset 0 1px 0 rgba(255,255,255,.8);
+  --glass-shadow:0 16px 42px rgba(20,46,63,.15),inset 0 1px 0 rgba(255,255,255,.7);
+}
+html[data-theme="dark"]{
+  --ink:#f2f6f9;--muted:#b1c2cb;--paper:#15222c;--soft:#101b24;--elevated:#20313d;
+  --elevated-soft:#253845;--line:#405665;--line-subtle:rgba(210,230,241,.15);
+  --accent:#a2d5e4;--teal:#9ecdd8;--action:#ff8998;--action-fill:#bd4255;
+  --glass-navigation:rgba(31,47,59,.76);--glass-stroke:rgba(229,243,248,.17);
+  --glass-sheet-expanded:rgba(25,39,50,.91);--glass-sheet-half:rgba(27,43,54,.83);
+  --glass-shadow-soft:0 11px 25px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.1);
+  --glass-shadow:0 16px 44px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);
+}
+html,body{background:var(--soft);color:var(--ink);}
+.app-shell {font-variant-numeric:lining-nums;letter-spacing:-.008em;}
+.app-shell :is(.panel-body,.station-stats,.planner,.live-board,.train-stops-section){color:var(--ink);}
+.app-shell :is(.topbar,.mobile-navigation,.mobile-search-dock,.map-menu-popover.detached){
+  -webkit-font-smoothing:antialiased;
+}
+.app-shell .topbar {border-bottom:1px solid var(--glass-stroke)!important;box-shadow:0 3px 16px rgba(13,42,62,.06)!important;}
+.app-shell .brand {gap:10px;font-weight:750;letter-spacing:-.045em;}
+.app-shell .brand-mark {border-radius:11px;background:var(--action-fill);box-shadow:none;}
+.app-shell .brand-name {letter-spacing:-.04em;}
+.app-shell :is(button,a,input,select,textarea):focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
+.app-shell :is(button,a,input,select,textarea){-webkit-tap-highlight-color:transparent;}
+
+/* Only the top chrome and bottom navigation act as translucent instruments. */
+@media(max-width:1023px) {
+  .app-shell .topbar {padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));}
+  .app-shell .mobile-navigation{
+    left:max(10px,env(safe-area-inset-left))!important;
+    right:max(10px,env(safe-area-inset-right))!important;
+    width:auto!important;max-width:none!important;
+    height:65px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+    padding:5px!important;
+    border:1px solid var(--glass-stroke)!important;border-radius:24px!important;
+    background:var(--glass-navigation)!important;
+    box-shadow:var(--glass-shadow-soft)!important;
+    -webkit-backdrop-filter:blur(24px) saturate(130%)!important;
+    backdrop-filter:blur(24px) saturate(130%)!important;
+    transform:none!important;
+  }
+  .app-shell .mobile-navigation>button{min-height:52px!important;border-radius:18px!important;font-size:.75rem!important;letter-spacing:-.01em;}
+  .app-shell .mobile-navigation>button.active{color:var(--ink)!important;font-weight:740!important;background:color-mix(in srgb,var(--paper) 70%,transparent)!important;}
+  .app-shell .mobile-navigation>button .mobile-nav-label{line-height:1.25;}
+  .app-shell .mobile-navigation>button svg{width:21px;height:21px;stroke-width:1.9;}
+  .app-shell .mobile-nav-glass-material{opacity:.13;pointer-events:none;}
+  .app-shell .mobile-search-dock {max-width:calc(100vw - 20px);}
+  .app-shell .mobile-search-dock .station-search{min-height:52px;border-radius:17px!important;background:var(--glass-navigation)!important;border:1px solid var(--glass-stroke)!important;box-shadow:var(--glass-shadow-soft)!important;}
+  .app-shell .mobile-sheet-panel{
+    left:max(6px,env(safe-area-inset-left))!important;
+    right:max(6px,env(safe-area-inset-right))!important;
+    width:auto!important;max-width:none!important;
+    border:1px solid var(--glass-stroke)!important;
+    border-bottom:0!important;
+    border-radius:27px 27px 0 0!important;
+    box-shadow:var(--glass-shadow)!important;
+  }
+  .app-shell .mobile-sheet-panel>.panel-body {scrollbar-gutter:auto!important;}
+  .app-shell :is(.mobile-sheet-panel,.station-card,.train-inspector) .panel-body{overscroll-behavior-y:contain;}
+  .app-shell .mobile-sheet-restore{border-radius:17px;min-height:56px;padding-inline:16px;}
+}
+@media(max-width:360px) {.app-shell .brand-name{font-size:.93rem;} .app-shell .mobile-navigation>button {font-size:.7rem!important;}}
+@media(min-width:1024px){
+  .app-shell .desktop-navigation{border-radius:16px;}
+  .app-shell .desktop-navigation>button{border-radius:12px;min-height:42px;padding-inline:14px;}
+  .app-shell :is(.station-card,.planner-panel,.train-inspector){border-radius:22px;}
+}
+/* The data plane reads like a printed timetable, not a pile of glass cards. */
+.app-shell .station-section-tabs {gap:4px!important;padding:5px 0!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.app-shell .station-section-tabs::-webkit-scrollbar{display:none;}
+.app-shell .station-section-tabs button {min-height:43px!important;padding:10px 12px!important;white-space:nowrap;flex:1 0 auto;border-radius:11px 11px 0 0!important;font-size:.84rem!important;font-weight:600;}
+.app-shell .station-section-tabs button[aria-selected="true"] {color:var(--ink)!important;font-weight:760!important;background:color-mix(in srgb,var(--accent) 10%,transparent)!important;border-bottom:2px solid var(--accent)!important;}
+.app-shell .board-table-head{color:var(--muted);font-size:.7rem;letter-spacing:.02em;}
+.app-shell .board-list .board-row {background:transparent!important;box-shadow:none!important;border-radius:0!important;border-bottom:1px solid var(--line-subtle)!important;}
+.app-shell .board-row-summary {min-height:68px;transition:background 120ms ease;}
+.app-shell .board-row-summary:active {background:color-mix(in srgb,var(--accent) 8%,transparent);}
+.app-shell .board-row.open {background:color-mix(in srgb,var(--accent) 4%,var(--paper))!important;}
+.app-shell .board-row-detail {background:transparent!important;border:0!important;}
+.app-shell .trip-stop-list .stop-description b{white-space:normal;overflow-wrap:anywhere;line-height:1.4;}
+.app-shell .trip-stop-list .trip-stop-times{display:grid;gap:8px;min-width:0;max-width:150px;}
+.app-shell .trip-stop-event{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:baseline;gap:6px;}
+.app-shell .trip-stop-event>small{font-size:11px;color:var(--muted);}
+.app-shell .trip-stop-event .realtime-time{min-width:0;align-items:flex-end;}
+.app-shell .trip-stop-heading{position:static;flex-wrap:wrap;gap:6px;}
+.app-shell .trip-stop-heading button{min-height:44px;background:transparent;color:var(--ink);border-radius:10px;}
+.app-shell .trip-stop-heading button:hover{background:var(--soft);color:var(--ink);}
+.app-shell .board-time{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+.app-shell .board-platform {font-variant-numeric:tabular-nums;}
+.app-shell .board-quality-notice {margin-block:7px;padding:9px 12px;border-inline-start:3px solid var(--warning);border-radius:5px;background:color-mix(in srgb,var(--warning) 7%,transparent);line-height:1.45;}
+.app-shell .board-primary-bar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px 6px;margin-bottom:8px;}
+.app-shell .board-quick-views{grid-column:1/-1;display:flex;gap:5px;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:2px 0 7px;}
+.app-shell .board-quick-views::-webkit-scrollbar{display:none;}
+.app-shell .board-quick-views button{flex:0 0 auto;min-height:40px;border-radius:999px;border:1px solid var(--line-subtle);background:transparent;color:var(--muted);font-size:.78rem;font-weight:640;padding:8px 13px;white-space:nowrap;}
+.app-shell .board-quick-views button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.app-shell .board-quick-views button:focus-visible{outline-offset:2px;}
+.app-shell .board-mode-tabs{min-width:0;}
+.app-shell .board-filter-panel {max-width:min(480px,calc(100vw - 30px));border-radius:19px;background:var(--glass-sheet-expanded)!important;box-shadow:var(--glass-shadow)!important;}
+/* One calm material for the inspector; preserve evidence labels and the route progress bar. */
+.app-shell .train-inspector-v57{box-shadow:var(--glass-shadow-soft)!important;border-color:var(--line-subtle)!important;}
+.app-shell .train-inspector-v57 .train-route-header{gap:15px;}
+.app-shell .train-inspector-v57 .train-full-route b{font-size:clamp(1.05rem,3.6vw,1.35rem);letter-spacing:-.035em;font-weight:760;}
+.app-shell .train-inspector-v57 .train-route-progress{height:5px;border-radius:5px;}
+.app-shell .train-inspector-v57 .train-route-progress i{background:var(--accent);}
+.app-shell .train-cockpit{border-radius:18px;background:#18303e!important;box-shadow:none!important;border:1px solid rgba(209,231,244,.16)!important;color:#f5fafc;}
+.app-shell .train-cockpit::before{content:none!important;}
+html[data-theme="dark"] .app-shell .train-cockpit{background:#263c49!important;border-color:rgba(219,236,246,.17)!important;}
+.app-shell .train-inspector-v57 .train-stop-list li{border-radius:0!important;border-bottom:1px solid var(--line-subtle)!important;min-height:64px;}
+.app-shell .train-inspector-v57 .train-stop-list li:last-child{border-bottom:0!important;}
+.app-shell .train-inspector-v57 .train-jump-next{border-radius:12px;min-height:46px;}
+/* Honest FR24-inspired map status, with a tappable explanation instead of fake GPS. */
+.app-shell .v58-map-source{position:absolute;z-index:400;right:max(12px,env(safe-area-inset-right));bottom:calc(20px + var(--bottom-navigation,0px));display:flex;align-items:center;gap:10px;max-width:min(345px,calc(100% - 24px));min-height:50px;text-align:left;padding:9px 12px;background:var(--glass-navigation);color:var(--ink);border:1px solid var(--glass-stroke);border-radius:15px;box-shadow:var(--glass-shadow-soft);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);cursor:pointer;}
+.app-shell .v58-map-source>span:nth-child(2){display:grid;gap:2px;min-width:0;flex:1;}
+.app-shell .v58-map-source strong{font-size:.82rem;font-weight:760;line-height:1.2;}
+.app-shell .v58-map-source small{font-size:.69rem;color:var(--muted);line-height:1.35;}
+.app-shell .v58-map-source>svg{width:16px;height:16px;flex:none;color:var(--muted);}
+.app-shell .v58-map-source-pulse{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--muted);}
+.app-shell .v58-map-source[data-quality="good"] .v58-map-source-pulse{background:var(--success);}
+.app-shell .v58-map-source[data-quality="warning"] .v58-map-source-pulse{background:var(--warning);}
+@media(max-width:1023px){.app-shell .v58-map-source{left:max(12px,env(safe-area-inset-left));right:auto;bottom:calc(90px + env(safe-area-inset-bottom,0px));}}
+@media(max-width:360px){.app-shell .v58-map-source{max-width:calc(100% - 24px);padding:8px 10px;}}
+/* Dense but breathable mobile type. Numbers keep their columns aligned. */
+.app-shell :is(.realtime-time,.board-time,.train-arrival-overview,.train-cockpit-speed,.station-health-coverage){font-variant-numeric:tabular-nums;}
+.app-shell :is(.planner-message,.journey-source-warnings,.station-health-warning){line-height:1.5;}
+@media(prefers-reduced-transparency:reduce){.app-shell :is(.mobile-navigation,.mobile-sheet-panel,.mobile-search-dock .station-search,.v58-map-source){background:var(--paper)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}}
+@media(prefers-reduced-motion:reduce){.app-shell :is(.board-row-summary,.mobile-navigation>button,.station-section-tabs button){transition:none!important;animation:none!important;}}
+html[data-motion="reduced"] .app-shell :is(.board-row-summary,.mobile-navigation>button,.station-section-tabs button){transition:none!important;animation:none!important;}
+@media(forced-colors:active){.app-shell :is(.mobile-navigation,.mobile-sheet-panel,.board-quick-views button,.v58-map-source){border:1px solid CanvasText!important}.app-shell .board-quick-views button[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-3px}}
+
+/* DB-inspired direct journey comparison: one intentional row, no modal hop. */
+.app-shell .journey-alternatives>summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:760;font-size:.9rem;line-height:1.4;}
+.app-shell .journey-alternatives>summary>span{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);}
+.app-shell .v58-alternative-sort{display:flex;align-items:center;gap:6px;overflow-x:auto;max-width:100%;scrollbar-width:none;padding:4px 0 12px;}
+.app-shell .v58-alternative-sort::-webkit-scrollbar{display:none;}
+.app-shell .v58-alternative-sort button{flex:0 0 auto;min-height:43px;border:1px solid var(--line-subtle);border-radius:999px;padding:8px 13px;color:var(--muted);background:transparent;white-space:nowrap;font-size:.8rem;font-weight:620;}
+.app-shell .v58-alternative-sort button[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--paper));color:var(--ink);font-weight:730;}
+.app-shell .journey-alternatives>div:last-child>button{min-height:62px;border-bottom:1px solid var(--line-subtle);border-radius:0;}

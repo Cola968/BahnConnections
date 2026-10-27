@@ -1,3 +1,149 @@
+# V62.0.3 – Radarzüge aus Planer und Verbindung öffnen
+
+- Stabile Tooltip-Bindungen verhindern den Leaflet-Fehler beim erneuten Fokussieren ausgewählter Marker. Unbehandelte Browser-Ausnahmen sind ein verpflichtender Testfehler.
+
+- Die Auswahl eines Radarzuges wechselt ausdrücklich in die Kartenansicht mit Zugdetails.
+- Der PC-Planer verdeckt eine neue Zugauswahl nicht mehr.
+- Zusätzliche Browser-Regressionen prüfen Verbindung → Zug und Planer → Zug ohne Neuladen; alle vorherigen Korrekturen bleiben enthalten.
+- Eigenständiger PWA-Cache für den korrigierten Navigationszustand.
+
+# V62.0.2 – Zugpanel bei Radar-Unterbrechungen erhalten
+
+- Die ausgewählte Fahrt bleibt bei einer unvollständigen Radar-Antwort oder einem Abruffehler geöffnet.
+- Fehlende aktuelle Position: Verfolgung pausiert; frische Antwort: Verfolgung setzt sich fort.
+- Bewusstes Schließen und der Wechsel zu einer neuen Verbindung bleiben erhalten.
+- Browser-Regression für fehlenden Zug, API-Fehler, Wiederherstellung und neue Bahnhofsauswahl nach dem Schließen.
+- Eigenständiger PWA-Cache; alle UI-Korrekturen aus V62.0.1 enthalten.
+
+# V62.0.1 – Follow-HUD und Wechsel zur Reiseplanung
+
+- Follow-HUD im gemeinsamen Scrollbereich des Zugpanels: kein eigenständiger überlagernder Kartenblock.
+- Neue Suchen räumen Radar-Auswahl und Kamera-Verfolgung auf; ein primäres Detailpanel zur Zeit.
+- Verpflichtende Browser-Regressionen: 320, 390, 430, 844 und 1440 Pixel, Follow-Details/Beenden, mobile Pendelstrecke und reguläre Desktop-Suche.
+- Separater PWA-Cache für den korrigierten Anwendungscode. Keine Änderung an Datenfreigaben, Zahlungen oder Android-Veröffentlichungen.
+
+# V62.0.0 · Web-Release vorbereitet
+
+- Bahnhofshalte mit schnellen Filtern „Nächste 60 Min“, „Verspätet“ und „Gleiswechsel“, datenstandabhängig für alle unterstützten Stationen.
+- Wiederherstellung des gültigen Fahrplans, wenn eine frühere Prognose veraltet ist; keine veralteten Gleisänderungen als aktuell ausgeben.
+- Soll-/Ist-Zeiten, Verspätung und Gleiswechsel in der Bahnhofsliste klar getrennt. Abgesicherte stationweite Richtungserkennung, keine erfundenen Zugpositionen.
+- Gespeicherte Pendelstrecken: „Jetzt prüfen“ löst eine wirkliche neue Verbindungssuche mit gespeicherten Start-/Zielpunkten aus. Berlin-lokale Zeit und UTC werden auch über DST-Grenzen korrekt behandelt.
+- Verbesserte Railglass-Filter und operationelle Tabellenhierarchie, mit barrierearmen Touchflächen.
+- Neue eigenständige PWA-Versions- und Cache-Kennung V62.0.0 sowie Android-Versionscode 62000.
+- Ungeklärte optionale GeoViewer-Exporte aus den Web-Assets entfernt und Verbraucher deaktiviert. Routen bleiben ohne unabhängigen Nachweis unbestätigt; aktive Konflikte gesperrt. Keine Android-Gerätefreigabe.
+
+# V61.2.2 · Release Candidate · noch nicht veröffentlicht
+
+- Zugverfolgung auf der Karte überarbeitet: Start/Ziel, ETA, Verspätung und optional aufklappbare Zeiten. Die bewährte modellierte Geschwindigkeit bleibt klein sichtbar.
+- Native Android-Benachrichtigung mit kompakten/aufgeklappten Ansichten, Zeiten, Status und Stopp-Aktion.
+- Persistierte Android-Fahrt als eigene Statuskarte in den Einstellungen, ohne behauptete GPS-Daten.
+- Stärker sichtbare Glass-Flächen für Navigation, Panels und Pop-ups, ohne Tabellenkontrast zu opfern.
+- APP_VERSION, Versionsdatei, Android-Version und Service-Worker-Cache über den Live-Stand V61.2.1 angehoben; alte PWA-Installationen können eine neue Version erkennen.
+- V61.2.2 ist noch nicht auf Sites bereitgestellt. CI, Datenrechte und echte Android-Geräteabnahme bleiben eigenständige Gates.
+
+# V61.2.1 · auf Sites veröffentlicht am 23.10.2026
+
+- Systemweite Bahnhofstafel-Korrektur: Aufenthalte werden als einzelner Halt geprüft. Gültige Ankunft/Abfahrt wird nicht mehr als rückwärts laufende Fahrt zum selben Halt verworfen; echte Soll-/Ist-Zeitfehler und aktive Umleitungen bleiben gesperrt.
+
+- Erdeborn: präzise Zuordnung eines bekannten DB-Bahnhofs auch bei ausschließlich als BUS gemeldeten Fahrten; keine benachbarten oder mehrdeutigen Busstopps übernehmen.
+- Busfahrten bleiben in der Tafel als Bus sichtbar, erhalten einen eigenen Filter und werden nicht als Bahnfahrten auf die Karte gesetzt. Keine automatische SEV-Behauptung aus S7.
+- MIT für den eigenen Anwendungscode nach ausdrücklicher Auswahl des Rechteinhabers; Fremddaten bleiben separat lizenziert. Sichtbare Lizenz- und Datenhinweise ergänzt.
+- DB-Abgleich als Stichprobe bezeichnet; keine unabhängige Betreiberbestätigung behauptet.
+- Vollständige Veröffentlichung bleibt bis zu Datenfreigaben und physischer Android-Abnahme gesperrt.
+
+
+Gemeinsames Detailabruflimit, korrigierte mobile Testvorbereitung und überarbeiteter nativer Android-Follow-Lifecycle. Native Ausführung und Betreiberabdeckung sind erst nach dokumentierter Abnahme freigegeben.
+
+# V61.2 · 22.10.2026
+
+- Neueste Routenkonfliktprüfung und Zugverfolgung aus PR #74 mit den veröffentlichten V61.1-Panelkorrekturen zusammengeführt.
+- Versionsdatei und PWA-Cache auf V61.2 angehoben.
+- Betreiberabdeckung und reale Android-Abnahme bleiben unvollständig.
+
+# V61.1 · Geöffnete Bahnhofsinhalte bleiben sichtbar
+
+- Bahnhofshalte, Fahrtverläufe und Filter vergrößern das mobile Panel beim Öffnen.
+- Die neuen Inhalte werden im vorhandenen Panel sichtbar gemacht; die Seite selbst scrollt nicht mit.
+- In kurzen Querformat-Ansichten haben die neuen Bedienelemente Vorrang.
+- Browser-Regressionen prüfen die halbhohe Ausgangsansicht und Fahrten am Listenende.
+- Update-Hinweise verdecken keine Bedienelemente mehr; Updates stehen unter Mehr und Einstellungen · App bereit. Der bereits laufende Versionsstand löst keinen neuen Hinweis aus.
+- Plus bleibt eine Vorschau ohne Zahlungen.
+
+# V61.0 · Weitere Bahnhofshalte sichtbar
+
+- Zusätzliche, durchsuchbare Bahnhofshalte-Liste direkt unter der Tafel: Ankünfte/Abfahrten, lokale Suche und schrittweises Nachladen der Anzeige.
+- Die Liste hängt nicht vom Kartenausschnitt ab; ein fehlender Kartenmarker wird nicht durch erfundene GPS-Daten ersetzt.
+- Datenstand, Teilantworten, Fehler und fehlende Echtzeitprognosen transparent dargestellt.
+- Plus-Vorschau aus V60.2 mit klaren Symbolen und dezenter Bewegung übernommen; keine Kaufmöglichkeit.
+- Regressionstests, PWA-Versionswechsel und getrennte V61-Release-Checkliste ergänzt.
+- **Wichtig:** Der Code ist ein unveröffentlichter Release-Kandidat. Die offenen Datenrechte, die Abdeckung der Bahnhofskomplexe und die physische Android-PWA-Abnahme bleiben ausdrücklich offen.
+
+# V60.2 · Eine gemeinsame Bahnhofstafel
+
+- Tafel und Fahrten zu einer Bahnhofstafel zusammengeführt; vier klare Bahnhofstabs.
+- Schnellfilter hinter Filter gebündelt, kürzere Ergebnisanzeige, eine geöffnete Fahrt gleichzeitig.
+- Vollständiger Fahrtverlauf mit getrennten Ankunfts- und Abfahrtszeiten im Tafel-Eintrag; Karte nur auf ausdrücklichen Klick.
+- Unbenutzte separate Fahrtenlisten-Komponente entfernt; bestehende Radar-Haltefilter bleiben aktiv.
+
+# V60.1 · Zuverlässigere Bahnhofstafeln
+
+- Abweichende Bahnhofsnamen, Ortszusätze und Kürzel werden bei passenden Koordinaten erkannt.
+- Begrenzte Ersatzsuche über vereinfachte Namen und geografische Haltestellentreffer.
+- Fern-/Regionalbahnhöfe bleiben getrennt; keine Bushaltestellen oder entfernten Nachbarstationen als Ersatz.
+- Regressionstests mit realen Anbieterantworten, Abbruchbehandlung und Schutz vor zusätzlichen Anfragen bei HTTP 429.
+- Die Fahrplandaten-Abdeckung des Anbieters bleibt begrenzt; keine Vollständigkeitsgarantie.
+
+# V60.0 · Next Generation – Fahrgastklarheit und zuverlässige Zugverfolgung
+
+- **Besserer Zug-Inspector:** Vollständige tatsächlich gemeldete Halte, nachvollziehbare Soll-/Prognosezeiten, Aufenthalte bis zur Abfahrt, optional nur kommende Halte und Datenstand der Quelle.
+- **Umstiege nachvollziehen:** Ankunft/Abfahrt und gemeldeter Fußweg ergeben einen rechnerischen Puffer. Fehlen Wege oder Quellenzeiten, wird das offen ausgewiesen; keine garantierten Anschlüsse oder erfundenen Gehzeiten.
+- **Alternativen gezielt finden:** Ausgefallene Vorschläge optional ausblenden sowie nach Ankunft, Dauer, Umstiegen, Gehweg oder Umstiegszeit sortieren.
+- **Zugfahrt teilen:** Kompakte, lokal erstellte Momentaufnahme über Geräte-Teilen oder Kopieren, mit separater Prüfung von Echtzeitprognosen für Abfahrt und Ankunft. Keine dauerhafte Verfolgung durch das Teilen.
+- **Tastatur und Alltag:** Bedienbare Schnellaktionen samt Hilfedialog und ein lokaler, löschbarer Verlauf der zuletzt geöffneten Bahnhöfe.
+- **Klare Datenqualität statt falscher Sicherheit:** Ungültige Prognosezeiten werden verworfen, veraltete Gleisangaben nicht als live markiert. Fantasie-Auslastung und eine unbelegte „Verlässlichkeitsquote“ entfernt. Modellierte Zugpositionen bleiben als Schätzungen gekennzeichnet.
+- **Design und Bedienbarkeit:** Railglass-Basis mit Mobil- und Darkmode-Verbesserungen, dezenter Bewegung, Unterstützung für reduzierte Animationen und bestehender Bahnhofstafel-/Radar-Funktionalität.
+- **Qualität:** Umfangreiche Regressionstests, Responsive-Chromium-Szenarien, TypeScript, Lint, Produktions-Build und Cloudflare-Worker-Dry-Run gehören zur Releaseprüfung.
+- **Hinweis:** Diese Änderungen sind im V60-Release-Branch vorbereitet; ein GitHub-PR oder bestandener Dry-Run allein ist **keine öffentliche Veröffentlichung**. API-Rechte und reale Geräteabnahme bleiben Freigabebedingungen.
+
+# V58.0 · Railglass-Neustart – cleane Fahrgastoberfläche
+
+- **One-tap Bahnhofstafeln:** Schnellansichten „Nächste Stunde“, „Verspätet“, „Ausfälle“ und „Alle Fahrten“ direkt über der Tafel. Alle vier setzen möglicherweise widersprüchliche erweiterte Filter zurück; ein aktiver benutzerdefinierter Filter wird nicht fälschlich als Schnellansicht ausgewiesen.
+- **Alternativen vergleichen:** Direkte Filterchips für empfohlene, früheste, schnellste, umstiegsarme oder gehwegoptimierte Verbindungen. Bei ausfallender gewählter Fahrt wird die Alternativsuche klarer hervorgehoben.
+- **Radar-Transparenz:** Dezentes, aufklappbares Datenstatus-Element über der Karte mit Quelle/Methodik. Für geschätzte Positionen wird nie Fahrzeug-GPS behauptet; Netzfehler, veraltete Daten und reine Fahrplanlagen erhalten unterscheidbare Zustände.
+- **Railglass-Design:** Einheitliches, zurückhaltendes Materialsystem für hell und dunkel: hochwertige Navigation, kompaktere Tafel, flüssigere mobile Sheets, ruhiger Zug-Inspector, weniger dekorative Gradienten und deutlichere Informationshierarchie.
+- **Android-Leisten:** Browser-/PWA-Farben folgen dem gewählten Hell-/Dunkelmodus statt hart codierten Flächen; auch Safe Areas und kleine Displays werden berücksichtigt.
+- **A11y und Performance:** 44–52px-Touchziele, fokussierbare Bedienelemente, scrollbar-reduzierte Filterchips, reduzierte Bewegung/Transparenz sowie Kontrastmodus.
+- **Prüfungen:** Neue deterministische Tests für Schnellfilter, Radar-Aussagen, Gestaltungsintegration und Betriebssystemleisten. Zusätzliche Chromium-Interaktionen und Render/Worker-Builds im PR.
+- **Wichtig:** Der Launch ist im PR; Cloudflare/Render/Google Play werden durch diese Änderungen nicht automatisch aktualisiert. Die Quellen- und Lizenzrechte bleiben ein Release-Gate.
+
+# V57.3 · Großes Fahrgast-Update: Meine Linien, Datenklarheit und Teilen
+
+- **Meine Linien:** Betroffene Züge im jeweiligen Bahnhof lokal als beobachtete Linien markieren und Meldungen auf die eigenen Linien eingrenzen. Speicherung nur auf dem Gerät (maximal 20 Bahnhöfe und 12 Linien je Bahnhof), mit transparenter Fehlermeldung bei gesperrtem Speicher. Keine Push- oder Hintergrundüberwachung.
+- **Störungszentrale:** Linienfokus, Textsuche, Kategorien und Uhrzeitsortierung kombinieren; baustellenbedingte Ersatzverkehre nicht automatisch als Zugausfall einstufen. Allgemeine Bahnhofshinweise bleiben in der persönlichen Ansicht sichtbar.
+- **Meldungen teilen:** Gefilterte Betriebslage per nativer Android-Teilen-Funktion oder Zwischenablage versenden – mit Abrufzeit und Hinweis auf das begrenzte Fahrplanfenster. Einzelne Meldungen bleiben ebenfalls kopierbar.
+- **Bahnhöfe teilen:** Bei unterstützten Bahnhöfen führt der Link wieder direkt zur Bahnhofstafel. Für nur dynamisch aufgelöste Stationen werden keine möglicherweise kaputten Links versprochen.
+- **Verlässliche Datenqualität:** Neuer Überblick über tatsächliche Echtzeitabdeckung, Zeitstempel und Quellenwarnungen unter Bahnhof → Info. Ein grüner Bahnhofszustand benötigt genügend aktuelle Prognosen; bei dünnen oder veralteten Daten bleibt er unbestimmt.
+- **Mobile Bedienung:** Lesbare, größere Filter- und Teilen-Aktionen; kleinere Bildschirme, Darkmode, Tastaturfokus, hohe Kontraste und reduzierte Bewegung berücksichtigt.
+- **Sicherheits- und Regressionstests:** Neue Tests für Favoritenspeicherung, Datenqualität, Störungs-Export und die Anbieter-Kategorisierung. Browser-Interaktionen auf mobilen Auflösungen werden erneut geprüft.
+
+# V57.2 · Kehrtwende: Linienfokus und zuverlässige Störungsinformationen
+
+- **Daten zuerst:** V57.1-Anbieterfix für MOTIS-v6-Störungsdaten und ergänzende VBB-/DB-Bahnhofshinweise mit echten Quell- und Teilfehleranzeigen übernommen.
+- **Betroffene Linie gezielt auswählen:** Linienfilter aus tatsächlich gemeldeten Linien, ohne allgemeine Bahnhofshinweise fälschlich einer Bahnlinie zuzuordnen.
+- **Sortieren statt suchen müssen:** Meldungen nach Standardgewichtung, planmäßiger Zeit oder Zuglinie ordnen; Kategorien, Suchtext und Linienfilter kombinieren.
+- **Meldung kopieren:** Den vollständigen verfügbaren Störungstext mit Linien- und Fahrtrichtungsangaben aus dem geöffneten Hinweis übernehmen. Gerät ohne Clipboard-Zugriff zeigt transparente Fehlermeldung.
+- **Eindeutigere Ausfälle:** Hinweise wie „Fahrt fällt aus wegen Bauarbeiten“ werden als Ausfall und nicht als reine Baustelle eingeordnet.
+- **UI-Korrekturen:** Mobile Filterfelder, 44-Pixel-Touchziele, Tastaturfokus, Kontrastmodus und reduzierte Animationen.
+- **Sicherheit:** Die Funktion erfindet keine Echtzeitdaten und behauptet bei leerer Quellantwort keine Netz-Störungsfreiheit. Reale Android-/PWA-Tests bleiben erforderlich.
+
+# V57.1 · Störungsmeldungen wieder sichtbar
+
+- Aktuelles Transitous-Datenformat und Hinweise an Bahnhofshalten korrekt eingelesen.
+- Deutsche Bahnhofsmeldungen durch VBB-/DB-Daten ergänzt; Quellenfehler bleiben sichtbar.
+- Tafel und Reiseplanung zeigen bislang verworfene Hinweise.
+- Teilausfälle korrekt unter Ausfälle; Bahnhofshinweise markieren nicht pauschal alle Linien.
+- PWA-Update und Service-Worker-Cache auf V57.1 abgestimmt.
+
 # V57.0 · Bahnhofsradar, vollständige Zugverläufe und mobile Störungsansicht
 
 - Radar auf bestätigte Halte am ausgewählten Bahnhof begrenzt, mit Alle/Ankommend/Abgehend.

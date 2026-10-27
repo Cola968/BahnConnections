@@ -1,7 +1,12 @@
 import type { Station } from "./network-data";
+import {transitAlerts,transitAlertContent,type TransitAlert} from './transit-alerts.ts';
 import { compactStationLabel } from "./transit-style";
 import { decodePolyline } from "./live-trains";
 import { RAIL_MODES, resolveTransitousStopId, transitousPlace, transitousRequestHeaders } from "./transitous";
+import { boundedJourneySignal } from "./journey-request-budget";
+import { chooseDbJourneyStation } from "./db-journey-station";
+
+import {assessRouteCandidates,assessJourneyValidity,routeDetourWarnings,type RouteValidity} from "./journey-validity";
 
 export type PlannerCategory = "fern" | "regional" | "sbahn" | "ubahn" | "tram";
 export type JourneyLegCategory = PlannerCategory | "walk";
@@ -19,11 +24,13 @@ export type LiveJourneyStop = {
   track?: string;
   scheduledTrack?: string;
   cancelled: boolean;
+  alerts?:TransitAlert[];
 };
 
-export type LiveJourneyAlert = {
+export type LiveJourneyAlert = TransitAlert & {
   header: string;
   description?: string;
+  effect?: string | number;
 };
 
 export type LiveJourneyLeg = {
@@ -52,6 +59,7 @@ export type LiveJourneyLeg = {
 };
 
 export type LiveJourney = {
+  routeValidity?:RouteValidity;
   id: string;
   durationSeconds: number;
   transfers: number;
@@ -84,6 +92,7 @@ export type LiveJourneyRequest = {
 };
 
 type ApiPlace = {
+  alerts?: TransitAlert[];
   name?: string;
   stopId?: string;
   lat?: number;
@@ -97,9 +106,10 @@ type ApiPlace = {
   cancelled?: boolean;
 };
 
-type ApiAlert = {
-  headerText?: { translation?: { text?: string }[] };
-  descriptionText?: { translation?: { text?: string }[] };
+type ApiAlert = TransitAlert & {
+  effect?: string | number;
+  headerText?: unknown;
+  descriptionText?: unknown;
   header?: string;
   description?: string;
 };
@@ -161,17 +171,14 @@ function stop(place: ApiPlace | undefined, fallback: string): LiveJourneyStop {
     track: place?.track,
     scheduledTrack: place?.scheduledTrack,
     cancelled: Boolean(place?.cancelled),
+    alerts:place?.alerts,
   };
 }
 
-function alertText(value?: { translation?: { text?: string }[] }) {
-  return value?.translation?.find((item) => item.text)?.text;
-}
-
 function parseAlert(alert: ApiAlert): LiveJourneyAlert | null {
-  const header = alert.header ?? alertText(alert.headerText);
-  if (!header) return null;
-  return { header, description: alert.description ?? alertText(alert.descriptionText) };
+  const {header,detail}=transitAlertContent(alert);
+  if (!header&&!alert.effect) return null;
+  return { ...alert,header:header||'Betriebshinweis', description: detail || undefined };
 }
 
 function uniqueStops(stops: LiveJourneyStop[]) {
@@ -189,7 +196,7 @@ function parseLeg(leg: ApiLeg): LiveJourneyLeg | null {
   const category = categoryForMode(leg.mode);
   const encoded = leg.legGeometry?.points;
   const points = encoded ? decodePolyline(encoded, leg.legGeometry?.precision ?? 6) : [] as [number, number][];
-  const alerts = (leg.alerts ?? []).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
+  const alerts = transitAlerts(leg.alerts).map(parseAlert).filter((item): item is LiveJourneyAlert => Boolean(item));
   return {
     mode: leg.mode ?? "WALK",
     category,
@@ -255,13 +262,18 @@ export function transferWaitMinutes(journey: LiveJourney, transitIndex: number) 
   const leg = journey.transitLegs[transitIndex];
   const next = journey.transitLegs[transitIndex + 1];
   if (!leg || !next) return null;
-  return Math.max(0, Math.round((new Date(next.startTime).getTime() - new Date(leg.endTime).getTime()) / 60_000));
+  const arrival=Date.parse(leg.realtime?leg.endTime:leg.scheduledEndTime);
+  const departure=Date.parse(next.realtime?next.startTime:next.scheduledStartTime);
+  if(!Number.isFinite(arrival)||!Number.isFinite(departure))return null;
+  // Negative transfers must remain negative: clamping hid impossible connections.
+  return Math.floor((departure-arrival)/60_000);
 }
 
 type DbLocation = { id?: string; name?: string; type?: string; location?: { latitude?: number; longitude?: number } };
 type DbLine = { name?: string; product?: string; operator?: { name?: string } };
 type DbStopover = {
   stop?: DbLocation;
+  remarks?:{summary?:string;text?:string}[];
   arrival?: string;
   plannedArrival?: string;
   departure?: string;
@@ -295,7 +307,7 @@ type DbLeg = {
 type DbJourney = { legs?: DbLeg[] };
 
 const dbLocationCache = new Map<string, Promise<DbLocation | null>>();
-const tripLegCache = new Map<string, Promise<LiveJourneyLeg[]>>();
+
 
 function normaliseStopName(value = "") {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("de")
@@ -338,11 +350,7 @@ async function dbLocation(station: Station, signal?: AbortSignal) {
     url.searchParams.set("addresses", "false");
     url.searchParams.set("poi", "false");
     const items = await fetchJsonWithTimeout<DbLocation[]>(url, signal, 4_500);
-    return items.filter((item) => item.type === "stop" && item.id).sort((left, right) => {
-      const leftPoint = left.location?.latitude != null && left.location?.longitude != null ? { lat:left.location.latitude, lon:left.location.longitude } : null;
-      const rightPoint = right.location?.latitude != null && right.location?.longitude != null ? { lat:right.location.latitude, lon:right.location.longitude } : null;
-      return (leftPoint ? coordinateDistance(station, leftPoint) : Number.MAX_SAFE_INTEGER) - (rightPoint ? coordinateDistance(station, rightPoint) : Number.MAX_SAFE_INTEGER);
-    })[0] ?? null;
+    return chooseDbJourneyStation(station,items);
   })().catch(() => null);
   dbLocationCache.set(key, request);
   return request;
@@ -370,6 +378,7 @@ function dbStop(place: DbLocation | undefined, values: Partial<DbStopover>, fall
     track:values.departurePlatform ?? values.arrivalPlatform,
     scheduledTrack:values.plannedDeparturePlatform ?? values.plannedArrivalPlatform,
     cancelled:Boolean(values.cancelled),
+    alerts:values.remarks?.map(remark=>({header:remark.summary??remark.text,description:remark.text})),
   };
 }
 
@@ -476,8 +485,6 @@ function sliceTripLeg(leg: LiveJourneyLeg, originId: string, originName: string,
 }
 
 async function fetchTransitousTripLegs(tripId: string, signal?: AbortSignal) {
-  const cached = tripLegCache.get(tripId);
-  if (cached) return cached;
   const request = (async () => {
     const url = new URL("https://api.transitous.org/api/v6/trip");
     url.searchParams.set("tripId", tripId);
@@ -490,8 +497,6 @@ async function fetchTransitousTripLegs(tripId: string, signal?: AbortSignal) {
     const payload = await response.json() as { legs?: ApiLeg[] };
     return (payload.legs ?? []).map(parseLeg).filter((item): item is LiveJourneyLeg => Boolean(item));
   })();
-  tripLegCache.set(tripId, request);
-  request.catch(() => tripLegCache.delete(tripId));
   return request;
 }
 
@@ -558,12 +563,24 @@ async function completeMissingDirectTrips(request: LiveJourneyRequest, base: Liv
 }
 
 function journeySignature(item: LiveJourney) {
-  return `${item.startTime.slice(0,16)}|${item.endTime.slice(0,16)}|${item.transitLegs.map((leg) => normaliseStopName(leg.name)).join("+")}`;
+  return `${item.startTime.slice(0,16)}|${item.endTime.slice(0,16)}|${item.transitLegs.map((leg) => normaliseStopName(leg.name)+":"+leg.stops.map(stop=>normaliseStopName(stop.name)).join(">")).join("+")}`;
 }
 
 function serviceSignature(item: LiveJourney) {
   return item.transitLegs.map((leg) => normaliseStopName(leg.name)).join("|");
 }
+/** A similar train number and departure time do not prove that two feeds agree on stops. */
+function matchingStopSequences(left:LiveJourney,right:LiveJourney):boolean{
+  if(left.transitLegs.length!==right.transitLegs.length)return false;
+  return left.transitLegs.every((leg,index)=>{
+    const opposite=right.transitLegs[index];
+    const stops=leg.stops.map(stop=>normaliseStopName(stop.name));
+    const others=opposite.stops.map(stop=>normaliseStopName(stop.name));
+    // Without intermediate stops, diversion geometry cannot be independently verified.
+    return stops.length>=3&&stops.length===others.length&&stops.every((name,position)=>name===others[position]);
+  });
+}
+
 
 function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
   const sorted = [...items].sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers);
@@ -576,18 +593,26 @@ function mergeJourneys(items: LiveJourney[], secondaryUnavailable: boolean) {
         const primary = item.source === "db-transport" ? crossSource : item;
         const other = primary === item ? crossSource : item;
         const arrivalDifference = Math.round(Math.abs(new Date(primary.endTime).getTime() - new Date(other.endTime).getTime()) / 60_000);
-        const warning = `Die DB-Gegenprüfung weicht bei der erwarteten Ankunft um ${arrivalDifference} Min. ab. Gezeigt wird die vollständig belegte Transitous-Fahrt ohne Datenmischung.`;
-        const verified = { ...primary, sourceLabel:"Transitous · DB-Abweichung", realtimeStatus:"partial" as const, warnings:[...new Set([...primary.warnings, warning])] };
+        const sameSequence=matchingStopSequences(primary,other);
+        const warning = sameSequence
+          ? `Abweichende Ankunftsprognosen der Anbieter (${arrivalDifference} Min.). Fahrwegdaten stimmen überein, Zeiten nicht.`
+          : "Die zweite Fahrplanquelle bestätigt den tatsächlichen Verlauf nicht. Haltefolge der Fahrt muss beim Betreiber geprüft werden.";
+        const verified = { ...primary, sourceLabel:sameSequence?"Transitous · Prognoseabweichung":"Transitous · Verlauf nicht gegengeprüft",
+          realtimeStatus:"partial" as const,warnings:[...new Set([...primary.warnings, warning])] };
         const index = merged.indexOf(crossSource);
         if (index >= 0) merged[index] = verified;
         continue;
       }
-      merged.push({ ...item, warnings:secondaryUnavailable && item.source !== "db-transport" ? [...item.warnings, "Die unabhängige Gegenprüfung war für diese Suche nicht erreichbar."] : item.warnings });
+      merged.push({ ...item, warnings:secondaryUnavailable && item.source !== "db-transport" ? [...item.warnings, "Der zusätzliche Fahrplanabgleich war für diese Suche nicht erreichbar."] : item.warnings });
       continue;
     }
     if (duplicate.source !== item.source && [duplicate.source, item.source].includes("db-transport")) {
       const primary = item.source === "db-transport" ? duplicate : item;
-      const verified = { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Gegenprüfung" };
+      const matching=matchingStopSequences(duplicate,item);
+      const verified = matching
+        ? { ...primary, source:"cross-checked" as const, sourceLabel:"Transitous + DB-Fahrplanabgleich" }
+        : { ...primary, realtimeStatus:"partial" as const, sourceLabel:"Transitous · Haltefolge nicht gegengeprüft",
+            warnings:[...new Set([...primary.warnings,"Zweite Quelle liefert keine identisch überprüfbare Haltefolge. Fahrweg nicht unabhängig bestätigt."])] };
       const index = merged.indexOf(duplicate);
       if (index >= 0) merged[index] = verified;
     }
@@ -632,10 +657,12 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
     return url;
   };
 
+  // Prevent a stalled primary provider from hiding completed DB results.
+  const transitousSignal=boundedJourneySignal(request.signal,14_000);
   const transitousTask = (async () => {
-    const [fromPlace, toPlace] = await Promise.all([transitousPlace(request.from, request.signal), transitousPlace(request.to, request.signal)]);
+    const [fromPlace, toPlace] = await Promise.all([transitousPlace(request.from, transitousSignal), transitousPlace(request.to, transitousSignal)]);
     const results = await Promise.allSettled([makeUrl(fromPlace, toPlace, false), makeUrl(fromPlace, toPlace, true)].map(async (url) => {
-      const response = await fetch(url, { signal:request.signal, headers:transitousRequestHeaders() });
+      const response = await fetch(url, { signal:transitousSignal, headers:transitousRequestHeaders() });
       if (!response.ok) throw new Error(`Verbindungssuche ${response.status}`);
       return await response.json() as { itineraries?: ApiItinerary[] };
     }));
@@ -660,8 +687,23 @@ export async function fetchLiveJourneysDirect(request: LiveJourneyRequest): Prom
     throw new Error(`Beide Fahrplanquellen sind derzeit nicht erreichbar (${transitousReason}; ${dbReason}). Bitte erneut versuchen.`);
   }
 
-  const completed = transitousJourneys.length ? await completeMissingDirectTrips(request, transitousJourneys) : [];
-  const journeys = mergeJourneys([...transitousJourneys, ...completed, ...dbJourneys], dbResult.status === "rejected");
+  // Optional enrichment must not consume the entire 23-second API deadline.
+  const completionSignal=boundedJourneySignal(request.signal,3_500);
+  const completed = transitousJourneys.length ? await completeMissingDirectTrips({...request,signal:completionSignal}, transitousJourneys) : [];
+  // Providers may both serve obsolete schedules: do not let source agreement override
+  // an independently confirmed operator diversion or silently invent a replacement.
+  const allJourneys=[...transitousJourneys,...completed,...dbJourneys];
+  const {admissible,rejected}=assessRouteCandidates(allJourneys);
+  if(!admissible.length&&rejected.length)throw new Error(
+    "Gelieferte Verbindungen widersprechen nachweisbaren Baustellen- oder Zeitangaben. Es werden keine unsicheren Fahrtverläufe erfunden. Bitte Betreiberinformationen prüfen."
+  );
+  const journeys = mergeJourneys(admissible, dbResult.status === "rejected").map(item=>{
+    const detourWarnings=routeDetourWarnings(item);
+    const integrityWarnings=rejected.length?["Einige Routen mit nachweislich fehlerhafter Streckenführung oder Zeitreihenfolge wurden ausgeblendet."]:[];
+    return {...item,routeValidity:assessJourneyValidity(item),
+      realtimeStatus:detourWarnings.length||rejected.length?"partial" as const:item.realtimeStatus,
+      warnings:[...new Set([...item.warnings,...detourWarnings,...integrityWarnings])]};
+  });
   return journeys.sort((a, b) => request.arriveBy
     ? new Date(b.startTime).getTime() - new Date(a.startTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers
     : new Date(a.endTime).getTime() - new Date(b.endTime).getTime() || a.durationSeconds - b.durationSeconds || a.transfers - b.transfers

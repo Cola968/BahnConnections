@@ -135,6 +135,8 @@ export function PanelTools({ controls, label, onClose, mobileState, onMobileStat
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId || !onMobileStateChange || !mobileState) return;
     if (dragFrame.current !== null) { cancelAnimationFrame(dragFrame.current); dragFrame.current = null; }
+    // Persist the final pointer position even if the animation frame was cancelled.
+    drag.panel.style.setProperty("--mobile-sheet-height", `${drag.lastHeight}px`);
     const nextState: MobileSheetState = drag.lastHeight <= 100 ? "collapsed" : drag.lastHeight >= drag.maxHeight - 10 ? "expanded" : "half";
     if (drag.dragged) event.preventDefault();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);

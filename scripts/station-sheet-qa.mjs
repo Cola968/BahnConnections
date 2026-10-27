@@ -10,7 +10,7 @@ const args = process.argv.slice(2).filter(value => value !== '--');
 const base = args[0] ?? 'http://localhost:3000';
 const output = resolve(args[1] ?? 'work/station-sheet-qa');
 const baseline = args.includes('--baseline');
-const sizes = args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
+const sizes = args.includes('--landscape') ? [[667,375],[844,390]] : args.includes('--mobile') ? [[320,568],[360,640],[390,844],[430,932],[667,375],[844,390],[768,1024]] : args.includes('--probe-desktop') ? [[1440,900]] : args.includes('--probe') ? [[390,844]] : [[320,700],[360,800],[390,844],[430,932],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]];
 const port = 9600 + Math.floor(Math.random()*300);
 const pause = ms => new Promise(resolvePause => setTimeout(resolvePause,ms));
 await mkdir(output,{recursive:true});
@@ -39,55 +39,104 @@ async function evaluate(expression) {
   return response.result?.value;
 }
 async function click(selector) {
-  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);if(!h||!(e===h||e.contains(h)))throw Error('Occluded: '+${JSON.stringify(selector)});return {x,y};})()`);
-  await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
-  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});
+  const point=await evaluate(`(() => {
+    const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing: '+${JSON.stringify(selector)});
+    const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,h=document.elementFromPoint(x,y);
+    const pane=e.closest('.panel-body'),panel=e.closest('.mobile-sheet-panel');
+    const rect=node=>{const b=node?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,height:b.height}:null;};
+    return {x,y,hit:Boolean(h&&(e===h||e.contains(h))),target:rect(e),pane:rect(pane),panel:rect(panel),scroll:pane?.scrollTop,
+      state:document.querySelector('.app-shell')?.dataset.mobileSheet,occluder:h?{tag:h.tagName,classes:h.className,text:h.textContent?.slice(0,100)}:null};
+  })()`);
+  if(!point.hit){
+    await screenshot('failed-hit-target');
+    await writeFile(join(output,'failed-hit-target.json'),JSON.stringify({selector,...point},null,2));
+    throw Error('Occluded: '+selector+' '+JSON.stringify(point));
+  }
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',buttons:1,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',buttons:0,clickCount:1});
+  await command('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1,buttons:0});
   await pause(350);
+}
+// Real touch events, not synthetic React clicks: verify Android-style sheet gestures.
+async function touchSwipe(selector, distanceY, steps = 8) {
+  const point=await evaluate(`(() => {const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing touch target');const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  await command('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+  try {
+    await command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+    for(let i=1;i<=steps;i++){
+      await command('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x,y:point.y+distanceY*i/steps}]});
+      if(steps > 1) await pause(24);
+    }
+    await command('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    await pause(450);
+  }finally{
+    await command('Emulation.setTouchEmulationEnabled',{enabled:false});
+  }
 }
 async function screenshot(name) {
   const r=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(join(output,name+'.png'),Buffer.from(r.data,'base64'));
 }
 let incidentFixtureMode=false;
+let tripRevision=0;
+let tripUnavailable=false;
+let tripRequests=0;
+const fixtureNow=Date.now();
 function incidentTimetable(requestUrl){
   const kind=new URL(requestUrl).searchParams.get('kind');
   const when=new Date(Date.now()+35*60_000).toISOString();
   const scheduled=new Date(Date.now()+30*60_000).toISOString();
   const place=kind==='arrival'?{arrival:when,scheduledArrival:scheduled}:{departure:when,scheduledDeparture:scheduled};
   return {source:'Incident QA fixture',updatedAt:new Date().toISOString(),warnings:[],stopTimes:kind==='arrival'
-    ? [{tripId:'qa-inc-s7',displayName:'S7',place,alerts:[{header:'Signalstörung an der Stadtbahn'}]}]
-    : [{tripId:'qa-inc-re1',displayName:'RE1',place,alerts:[{header:'Bauarbeiten zwischen Berlin und Potsdam'}]},
+    ? [{tripId:'qa-inc-s7',displayName:'S7',place:{...place,alerts:[{headerText:'Signalstörung an der Stadtbahn',descriptionText:'Züge fahren mit Verspätung.',effect:'SIGNIFICANT_DELAYS'}]}}]
+    : [{tripId:'qa-inc-re1',displayName:'RE1',place:{...place,alerts:[{headerText:'Bauarbeiten zwischen Berlin und Potsdam',descriptionText:'Ersatzverkehr im betroffenen Abschnitt.',effect:'MODIFIED_SERVICE'}]}},
        {tripId:'qa-inc-ice',displayName:'ICE 1205',place,tripCancelled:true},
        {tripId:'qa-info-only',displayName:'S1',place,alerts:[{header:'Fahrradmitnahme möglich'}]},
        {tripId:'qa-unaffected',displayName:'S9',place,alerts:[{header:'Keine aktuellen Störungen'}]}]};
 }
+function fixtureTrip(){
+  const time=minute=>new Date(fixtureNow+minute*60000).toISOString();
+  return {trip:{legs:[{realTime:true,from:{name:'Berlin Hbf',lat:52.5251,lon:13.3694,arrival:time(4),scheduledArrival:time(4),departure:time(6+tripRevision),scheduledDeparture:time(5),track:'15'},to:{name:'Berlin Friedrichstraße',lat:52.5202,lon:13.3869,arrival:time(10),scheduledArrival:time(10),track:'6'}}]}};
+}
 function timetable() {
-  const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8']];
+  const names=[['S3','SUBURBAN','S Erkner Hbf','15'],['S7','SUBURBAN','S Potsdam Hauptbahnhof','16'],['M10','TRAM','S+U Warschauer Str.','Pos. 5'],['U5','SUBWAY','U Hönow (Berlin)','2'],['RE 1','REGIONAL_RAIL','Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz','7'],['ICE 1205','HIGHSPEED_RAIL','München Hauptbahnhof','8'],['S7','BUS','Lutherstadt Eisleben','Bussteig']];
   return {source:'Station-sheet UI fixture',updatedAt:new Date().toISOString(),warnings:[],verification:{status:'matched'},stopTimes:Array.from({length:30},(_,i)=>{
     const [displayName,mode,headsign,track]=names[i%names.length];
-    const scheduled=new Date(Date.now()+(i+5)*60000).toISOString();
+    const scheduled=new Date(fixtureNow+(i+5)*60000).toISOString();
     const actual=new Date(new Date(scheduled).getTime()+(i===4?10:0)*60000).toISOString();
     return {tripId:`station-qa-${i}`,displayName,mode,headsign,realTime:true,place:{departure:actual,arrival:actual,scheduledDeparture:scheduled,scheduledArrival:scheduled,track,scheduledTrack:i===4?'4':track}};
   })};
 }
 try {
   let targets;
-  for(let i=0;i<100;i++) {
-    if(browser.exitCode!==null)throw Error(browserError);
-    try{targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();break;}catch{await pause(100);}
+  // GitHub runners sometimes need more than 10 seconds to initialize Chromium.
+  // Poll the DevTools target without weakening any browser assertions.
+  for(let i=0;i<200;i++) {
+    if(browser.exitCode!==null)throw Error(`Chromium exited during startup: ${browserError}`);
+    try {
+      const response=await fetch(`http://127.0.0.1:${port}/json/list`);
+      if(response.ok) {
+        const candidates=await response.json();
+        if(candidates.some(target=>target.type==='page'&&target.webSocketDebuggerUrl)) {targets=candidates;break;}
+      }
+    } catch { /* Still starting; keep polling. */ }
+    await pause(150);
   }
-  assert.ok(targets?.length,browserError);
+  assert.ok(targets?.some(target=>target.type==='page'&&target.webSocketDebuggerUrl),
+    `Chromium DevTools target unavailable after 30 seconds. ${browserError}`);
   socket=new WebSocket(targets.find(t=>t.type==='page').webSocketDebuggerUrl);
   await new Promise((resolveOpen,rejectOpen)=>{socket.addEventListener('open',resolveOpen,{once:true});socket.addEventListener('error',rejectOpen,{once:true});});
   socket.addEventListener('message',event=>{
     const message=JSON.parse(String(event.data));
     if(message.method==='Fetch.requestPaused') {
       const path=new URL(message.params.request.url).pathname;
+      const tripRequest=path.includes('/api/trips/');
+      if(tripRequest)tripRequests++;
       const payload=path.endsWith('/board')?(incidentFixtureMode?incidentTimetable(message.params.request.url):timetable()):path.endsWith('/stations/search')?{stations:[{id:'motis:de-halle',transitousId:'de-halle',name:'Halle (Saale) Hauptbahnhof – Zugang über den Bahnhofsvorplatz',lat:51.4782,lon:11.9872,country:'DE'}]}:
         path.includes('geocode')?[{type:'STOP',id:'de-berlin-hbf',name:'Berlin Hauptbahnhof',lat:52.5251,lon:13.3694,country:'DE'}]:
         path.endsWith('/services')?{routes:[],stopTimes:[],source:'UI fixture',updatedAt:new Date().toISOString(),warnings:[]}:
-        path.includes('/api/trips/')?{trip:{legs:[]}}:[];
-      void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
+        path.includes('/api/trips/')?fixtureTrip():[];
+      void command('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:tripRequest&&tripUnavailable?503:200,responseHeaders:[{name:'Content-Type',value:'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(JSON.stringify(payload)).toString('base64')}).catch(error=>{if(!error.message.includes('Invalid InterceptionId'))console.error(error.message);});
       return;
     }
     const p=pending.get(message.id);if(!p)return;
@@ -95,14 +144,18 @@ try {
     if(message.error)p.rejectCommand(Error(message.error.message));else p.resolveCommand(message.result);
   });
   await command('Page.enable');await command('Runtime.enable');await command('Network.enable');
+  // This suite exercises an active tab. Windows can otherwise background the
+  // headless target, correctly pausing the product's visibility-aware pollers.
+  await command('Emulation.setFocusEmulationEnabled',{enabled:true});
   await command('Network.setBypassServiceWorker',{bypass:true});
   await command('Page.addScriptToEvaluateOnNewDocument',{source:"navigator.serviceWorker.register=()=>Promise.reject(new Error('UI fixture QA'));"});
-  await command('Fetch.enable',{patterns:[{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
+  await command('Fetch.enable',{patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{urlPattern:'*://*/api/stations/*',requestStage:'Request'},{urlPattern:'*://*/api/trips/*',requestStage:'Request'},{urlPattern:'https://api.transitous.org/*',requestStage:'Request'}]});
   if(args.includes('--stream'))await command('Page.addScriptToEvaluateOnNewDocument',{source:`
     const originalFetch=window.fetch;
     window.fetch=async (...args)=>{
       const response=await originalFetch(...args);
-      if(!String(args[0]).includes('/board?')||!response.ok)return response;
+      const url=new URL(args[0] instanceof Request?args[0].url:String(args[0]),window.location.href);
+      if(!url.pathname.endsWith('/board')||url.searchParams.get('stream')!=='1'||!response.ok)return response;
       const data=await response.json(),encoder=new TextEncoder();
       return new Response(new ReadableStream({start(controller){
         controller.enqueue(encoder.encode(JSON.stringify({type:'board',...data,verification:{status:'pending'}})+'\\n'));
@@ -119,9 +172,16 @@ try {
     await command('Page.bringToFront');
     for(let i=0;i<100;i++){if(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"))break;await pause(150);}
     assert.ok(await evaluate("document.querySelectorAll('.board-row-summary').length>=4"),'Timetable did not load');
+    // A BUS whose line is S7 must remain a bus in the actual React-rendered UI.
+    // The original six rail/urban fixtures and all layout assertions stay intact.
+    assert.ok(await evaluate("[...document.querySelectorAll('.board-service')].some(node=>node.querySelector('.service-logo.bus')&&node.textContent.includes('S7')&&node.textContent.includes('Bus'))"),'Provider BUS S7 must render as Bus, never as S-Bahn');
     if(args.includes('--stream')){
       assert.equal(await evaluate("Boolean(document.querySelector('.verification-pending'))"),true,'Rows must display while DB verification is pending');
-      await click('.board-row-summary');await pause(1900);
+      await click('.board-row-summary');
+      for(let attempt=0;attempt<100;attempt++){
+        if(await evaluate("Boolean(document.querySelector('.verification-inconclusive'))"))break;
+        await pause(100);
+      }
       assert.equal(await evaluate("Boolean(document.querySelector('.verification-inconclusive'))"),true,'Late verification must remain conservative');
       assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','Verification must preserve expanded row');
       await click('.board-row-summary');
@@ -130,7 +190,8 @@ try {
     await command('Page.removeScriptToEvaluateOnNewDocument',{identifier:themeScript.identifier});
     assert.equal(await evaluate('document.documentElement.dataset.theme'),theme,'Actual theme differs from screenshot label');
     for(const state of width<1024?['half','expanded']:['desktop']) {
-      if(state==='expanded')await click('.mobile-sheet-summary');
+      if(width<1024)for(let attempt=0;attempt<3&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!==state;attempt++)await click('.mobile-sheet-summary');
+      await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await pause(300);
       const measure=await evaluate(`(() => {
         const panel=document.querySelector('.station-card'),body=panel.querySelector('.panel-body'),header=panel.querySelector('.station-sheet-header')??panel.querySelector('.panel-tools'),tabs=panel.querySelector('.station-section-tabs'),bar=panel.querySelector('.board-primary-bar');
@@ -140,10 +201,120 @@ try {
         const visible=rows.filter(e=>r(e).top>=contentTop-1&&r(e).bottom<=Math.min(r(body).bottom,r(panel).bottom)+1);
         const search=document.querySelector('.topbar>.station-search'),ss=getComputedStyle(search),topbar=document.querySelector('.topbar');return {search:{...rect(search),left:r(search).left,right:r(search).right,position:ss.position,computedTop:ss.top,transform:ss.transform,translate:ss.translate},topbar:{...rect(topbar),left:r(topbar).left,transform:getComputedStyle(topbar).transform,translate:getComputedStyle(topbar).translate},actualTheme:document.documentElement.dataset.theme,panel:rect(panel),body:rect(body),header:rect(header),tabs:rect(tabs),toolbar:rect(bar),firstRow:rect(rows[0]),rowHeights:rows.slice(0,6).map(e=>r(e).height),visibleRows:visible.length,chrome:r(rows[0]).top-r(panel).top,navHeight:r(document.querySelector('.mobile-navigation')).height,overlap:r(rows[0]).top<r(tabs).bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1||body.scrollWidth>body.clientWidth+1||panel.scrollWidth>panel.clientWidth+1,glass:getComputedStyle(panel).backdropFilter};
       })()`);
+
+      if(!baseline && width < 480) {
+        const rows=await evaluate(`(() => [...document.querySelectorAll('.station-card .board-row-summary')].slice(0,6).map(row => {
+          const service=row.querySelector('.board-service');
+          const number=service?.querySelector('b');
+          const destination=row.querySelector('.board-destination');
+          const r=e=>e?.getBoundingClientRect();
+          return {train:number?.textContent,serviceRight:r(service)?.right,numberRight:r(number)?.right,destinationLeft:r(destination)?.left,
+            serviceOverflow:service?.scrollWidth-(service?.clientWidth??0),
+            destinationOverflow:destination?.scrollWidth-(destination?.clientWidth??0)};
+        }))()`);
+        for(const row of rows) {
+          assert.ok(row.serviceRight <= row.destinationLeft-3,
+            `${width}-${theme}-${state} number and destination must never overlap: ${JSON.stringify(row)}`);
+          assert.ok(row.serviceOverflow <= 1,
+            `${width}-${theme}-${state} train number must remain inside its grid column: ${JSON.stringify(row)}`);
+          assert.ok(row.destinationOverflow <= 1,
+            `${width}-${theme}-${state} destination must not overflow its column: ${JSON.stringify(row)}`);
+        }
+      }
       const name=`${width}-${theme}-${state}`;
+      if(!baseline&&width<1024){
+        const targets=await evaluate(`(() => {
+          const header=document.querySelector('.station-sheet-header'),bounds=header.getBoundingClientRect();
+          return [...header.querySelectorAll('.mobile-sheet-actions button,.station-section-tabs button')].map(button=>{
+            const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+            return {label:button.getAttribute('aria-label')||button.textContent,width:r.width,height:r.height,
+              inside:r.left>=bounds.left-1&&r.right<=bounds.right+1&&r.top>=bounds.top-1&&r.bottom<=bounds.bottom+1,
+              hit:hit===button||button.contains(hit),overflow:button.classList.contains('active')||button.getAttribute('role')==='tab'?button.scrollWidth-button.clientWidth:0};
+          });
+        })()`);
+        assert.equal(targets.length,6,name+' must expose four tabs plus minimize and close');
+        for(const target of targets){
+          assert.ok(target.width>=43.9&&target.height>=43.9&&target.inside&&target.hit,
+            name+' reachable 44px header target: '+JSON.stringify(target));
+          assert.ok(target.overflow<=1,name+' navigation label must fit: '+JSON.stringify(target));
+        }
+      }
+      if(!baseline&&height<521){
+        assert.ok(measure.visibleRows>=1,name+' must initially expose a complete timetable row');
+        const toolbarTargets=await evaluate(`Array.from(document.querySelectorAll('.board-primary-bar button')).map(button=>{const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {label:button.textContent,width:r.width,height:r.height,hit:hit===button||button.contains(hit)};})`);
+        for(const target of toolbarTargets)assert.ok(target.height>=43.9&&target.width>=43.9&&target.hit,name+' reachable timetable target: '+JSON.stringify(target));
+      }
       await screenshot(name);results.push({name,width,height,theme,state,...measure});
       console.log(name,JSON.stringify({chrome:measure.chrome,visibleRows:measure.visibleRows,rowHeights:measure.rowHeights,overlap:measure.overlap}));
-      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls');}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=130,name+' chrome');if(state==='half')assert.ok(measure.visibleRows>=4,name+' visible rows');}}
+      if(!baseline){if(width<1024){assert.ok(measure.search.bottom<=measure.topbar.bottom+1,name+' station search stays inside header');assert.ok(measure.search.left>=60&&measure.search.right<=width-60,name+' station switcher controls: '+JSON.stringify(measure.search));}if(width<1024)assert.match(measure.glass,/blur\((30|40)px\)/,name+' canonical glass');assert.equal(measure.overlap,false,name);assert.equal(measure.overflow,false,name);if(width===390){assert.ok(measure.chrome<=205,name+' header and quick-filter controls');if(state==='half')assert.ok(measure.visibleRows>=1,name+' compact station sheet must expose at least one complete departure');else assert.ok(measure.visibleRows>=3,name+' expanded station sheet must expose at least three complete departures');}}
+      if(!baseline && width===390 && state==='expanded' && theme==='light') {
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(280);
+        const collapsed=await evaluate(`(() => {const p=document.querySelector('.station-card').getBoundingClientRect();const h=document.querySelector('.station-sheet-header').getBoundingClientRect();return {height:p.height,header:h.height,content:getComputedStyle(document.querySelector('.station-card .panel-body')).display,state:document.querySelector('.app-shell').dataset.mobileSheet};})()`);
+        assert.equal(collapsed.state,'collapsed','Station drawer close/collapse action must update state');
+        assert.ok(collapsed.height<=68 && collapsed.header<=68,'Collapsed drawer must not display the blank 100px sheet: '+JSON.stringify(collapsed));
+        assert.equal(collapsed.content,'none','Collapsed drawer must keep timetable content hidden');
+        await screenshot('390-light-station-collapsed-compact');
+        await click('.mobile-sheet-actions button:first-child');
+        await pause(260);
+        assert.equal(await evaluate("document.querySelectorAll('.station-section-tabs [role=tab]').length"),4,'Four clear station sections');
+        assert.equal(await evaluate("Boolean(document.querySelector('#station-tab-trips'))"),false,'No duplicate trip browser');
+        // Restoring a minimized panel preserves its scroll position. Scroll to
+        // the row this scenario intends to open; click() still requires a real,
+        // unobscured hit target and dispatches actual mouse events.
+        await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+        await pause(300);
+        await click('.board-row-summary');
+        assert.equal(await evaluate("document.querySelector('.board-row-summary').getAttribute('aria-expanded')"),'true','A journey opens directly in the board');
+        assert.ok(await evaluate("Boolean(document.querySelector('.board-row-detail .trip-stop-panel'))"),'Journey detail stays reachable from the board');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-event').length>=3"))break;
+          await pause(100);
+        }
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .trip-stop-event').length"),2,'Arrival and departure at the station must both remain visible');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:last-child .trip-stop-event').length"),1,'Do not invent a departure at the destination');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li:first-child .realtime-time[data-tone=warning]').length"),1,'Departure delay must not be copied to the arrival');
+        const tripVisibility=await evaluate(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),heading=document.querySelector('.board-row.open .trip-stop-heading').getBoundingClientRect();return {top:heading.top,bottom:heading.bottom,paneTop:pane.top,paneBottom:pane.bottom};})()`);
+        assert.ok(tripVisibility.top>=tripVisibility.paneTop-1&&tripVisibility.bottom<=tripVisibility.paneBottom+1,'Opened trip heading must be visible: '+JSON.stringify(tripVisibility));
+        await screenshot('390-light-unified-station-board');
+        await click('.board-row-summary');
+        const beforeReopen=tripRequests;
+        tripRevision=10;
+        await click('.board-row-summary');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length>0"))break;
+          await pause(100);
+        }
+        assert.ok(tripRequests>beforeReopen,'Reopening must refresh cached trip data');
+        assert.ok(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length>0"),'Changed trip forecast must replace the cached forecast');
+        tripUnavailable=true;
+        await evaluate("document.dispatchEvent(new Event('visibilitychange'))");
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"))break;
+          await pause(100);
+        }
+        assert.ok(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"),'Trip refresh failure must be visible even when board data is fresh');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list li').length"),2,'Refresh failure must preserve the last known stop sequence');
+        assert.equal(await evaluate("document.querySelectorAll('.board-row.open .trip-stop-list .realtime-time[data-tone=danger]').length"),0,'Fresh board data must not renew stale trip forecasts');
+        tripUnavailable=false;
+        await evaluate("document.querySelector('.board-row.open .trip-stop-state.error button').scrollIntoView({block:'center'})");
+        await click('.board-row.open .trip-stop-state.error button');
+        for(let attempt=0;attempt<100;attempt++){
+          if(await evaluate("!document.querySelector('.board-row.open .trip-stop-state.error')"))break;
+          await pause(100);
+        }
+        assert.equal(await evaluate("Boolean(document.querySelector('.board-row.open .trip-stop-state.error'))"),false,'Retry must recover the trip independently');
+        tripRevision=0;
+        await evaluate("document.querySelector('.board-row.open .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row.open .board-row-summary');
+        await evaluate("document.querySelector('.board-row:last-of-type .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row:last-of-type .board-row-summary');
+        const lastTripVisibility=await evaluate(`(() => {const pane=document.querySelector('.station-card .panel-body').getBoundingClientRect(),heading=document.querySelector('.board-row.open .trip-stop-heading').getBoundingClientRect();return heading.top>=pane.top-1&&heading.bottom<=pane.bottom+1;})()`);
+        assert.equal(lastTripVisibility,true,'Opening a trip at the end of the list must reveal its details');
+        await evaluate("document.querySelector('.board-row.open .board-row-summary').scrollIntoView({block:'center'})");
+        await click('.board-row.open .board-row-summary');
+        await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
+      }
       if(width<1024) {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=180");await pause(250);
         const occlusion=await evaluate(`(() => {const tabs=document.querySelector('.station-section-tabs'),r=tabs.getBoundingClientRect();const h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {tabsHit:tabs.contains(h),position:getComputedStyle(tabs).position};})()`);
@@ -152,6 +323,20 @@ try {
         await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       }
       if(!baseline&&width===390&&state==='half') {
+        // V58: preset selection is an actual React action, not only a visual pill.
+        await click('.board-filter-toggle');
+        assert.equal(await evaluate("document.querySelectorAll('.board-quick-views button').length"),4,'All four quick views must be rendered');
+        await click('.board-quick-views button[data-quick-view="upcoming"]');
+        await click('.board-filter-toggle');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=upcoming]').getAttribute('aria-pressed')"),'true','Upcoming view must select the 60-minute window');
+        await click('.board-quick-views button[data-quick-view="canceled"]');
+        await click('.board-filter-toggle');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=canceled]').getAttribute('aria-pressed')"),'true','Cancellation view must activate');
+        await click('.board-quick-views button[data-quick-view="all"]');
+        await click('.board-filter-toggle');
+        assert.equal(await evaluate("document.querySelector('.board-quick-views button[data-quick-view=all]').getAttribute('aria-pressed')"),'true','All view must restore the default state');
+        await click('.board-filter-close');
+        await screenshot('390-railglass-quick-views');
         await click('.board-filter-toggle');await pause(350);
         await screenshot(`${width}-${theme}-half-filters`);
         const filterPosition=await evaluate(`(() => {
@@ -163,9 +348,33 @@ try {
         assert.ok(filterPosition.inBody&&filterPosition.startsBelowToolbar&&filterPosition.position!=='absolute'&&
           filterPosition.overflow==='visible'&&filterPosition.bodyScroll==='auto',
           'Filter must remain in the station pane single scroller: '+JSON.stringify(filterPosition));
-        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'hidden','Filter surface must have only one readable text plane');
+        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Filter surface must remove the hidden list from layout');
+        const filterExtent=await evaluate(`(() => {const body=document.querySelector('.station-card .panel-body'),filter=document.querySelector('.board-filter-panel');return {scroll:body.scrollHeight,filter:filter.getBoundingClientRect().height};})()`);
+        assert.ok(filterExtent.scroll<filterExtent.filter+350,'Filters must not retain an empty timetable scroll area: '+JSON.stringify(filterExtent));
+        assert.equal(await evaluate("document.querySelector('.board-filter-panel').textContent.includes('Mehr Zeilendetails')"),false,'Do not expose an option without additional information');
         await click('.board-filter-close');
-        assert.equal(await evaluate("getComputedStyle(document.querySelector('.board-table')).visibility"),'visible','Closing filters restores departures');
+        assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.board-table')).display"),'none','Closing filters restores departures');
+        if(theme==='light') {
+          // Prior filter and detail interactions can leave the sheet expanded.
+          // Restore its compact preset using the real UI before checking swipe gestures.
+          // The real cycle is expanded -> collapsed -> half -> expanded.
+          // A single click from expanded intentionally minimizes the sheet.
+          for(let attempt=0;attempt<2&&await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")!=='half';attempt++) {
+            await click('.station-sheet-header .mobile-sheet-summary');
+          }
+          assert.equal(await evaluate("document.querySelector('.app-shell').dataset.mobileSheet"),'half','Preset setup must reach half through real controls');
+          const initialHeight=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
+          assert.ok(initialHeight>=299&&initialHeight<=341,'Station must initially open compact: '+JSON.stringify({height:initialHeight,state:await evaluate("document.querySelector('.app-shell').dataset.mobileSheet")}));
+          await touchSwipe('.station-sheet-header .mobile-sheet-summary',90,1);
+          const shorter=await evaluate("document.querySelector('.station-card').getBoundingClientRect().height");
+          assert.ok(shorter<initialHeight-55,'Touch swipe down must actually resize the sheet: '+JSON.stringify({initialHeight,shorter}));
+          await touchSwipe('.station-sheet-header .mobile-sheet-summary',210);
+          const collapsed=await evaluate("({state:document.querySelector('.app-shell').dataset.mobileSheet,height:document.querySelector('.station-card').getBoundingClientRect().height})");
+          assert.equal(collapsed.state,'collapsed','Second downward swipe must minimize the station sheet');
+          assert.ok(collapsed.height<=68,'Minimized sheet must be compact: '+JSON.stringify(collapsed));
+          await click('.station-sheet-header .mobile-sheet-summary');
+          assert.equal(await evaluate("document.querySelector('.app-shell').dataset.mobileSheet"),'half','Tapping minimized sheet must restore the compact preset');
+        }
       }
     }
     if(!baseline&&width===390) {
@@ -191,9 +400,22 @@ try {
       }
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Arrival and departure notices must render');
       assert.equal(await evaluate("Array.from(document.querySelectorAll('.incident-card')).some(e=>/Fahrradmitnahme|Keine aktuellen Störungen/.test(e.textContent))"),false,'Unaffected lines must not enter the disruption tab');
-      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-affected .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
+      assert.deepEqual(await evaluate("Array.from(document.querySelectorAll('.incidents-watch-lines .incident-line-badge')).map(e=>e.textContent).sort()"),['ICE 1205','RE1','S7'],'Only affected lines are immediately visible');
       await evaluate("document.querySelector('.station-card .panel-body').scrollTop=0");
       await screenshot(`${width}-${theme}-incidents`);
+      if(width===390&&theme==='light'){
+        // Bookmarked rail lines are a real mobile interaction, not a decorative chip.
+        await evaluate("document.querySelector('.incidents-watch-lines button:last-child').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-lines button:last-child');
+        assert.equal(await evaluate("document.querySelector('.incidents-watch-lines button:last-child').getAttribute('aria-pressed')"),'true','Line watch must respond to touch');
+        await evaluate("document.querySelector('.incidents-watch-selected button').scrollIntoView({block:'center'})");
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Watched-line filter must narrow the results');
+        await click('.incidents-watch-selected button');
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),3,'Resetting watch-only view must recover all reports');
+        await screenshot('390-light-incidents-bookmarks');
+      }
+
       if(width===390&&theme==='light'){
         // A frozen, anonymous DOM capture for design comparison. Keep real rendered
         // markup/styles; remove scripts so the visual tool cannot start live polling.
@@ -225,6 +447,18 @@ try {
       assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Line search should find arrival notices');
       assert.match(await evaluate("document.querySelector('.incident-card h3').textContent"),/Signalstörung/);
       await screenshot(`${width}-${theme}-incidents-search`);
+      if(width===390&&theme==='light'){
+        // Check composability on a real controlled React select (category + search + line).
+        assert.deepEqual(await evaluate("Array.from(document.querySelector('.incidents-tools select').options).map(o=>o.value)"),['all','ICE 1205','RE1','S7']);
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='RE1';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),0,'Line focus must combine with S7 search without showing unrelated notices');
+        await evaluate("(() => {const e=document.querySelector('.incidents-tools select');e.value='all';e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+        await pause(150);
+        assert.equal(await evaluate("document.querySelectorAll('.incident-card').length"),1,'Clearing line focus must restore search results');
+        await screenshot('390-light-incidents-line-focus');
+      }
+
       incidentFixtureMode=false;
       await click('#station-tab-live');
     }
@@ -251,6 +485,20 @@ try {
     await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'},{name:'prefers-reduced-motion',value:'reduce'}]});
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.station-card')).backdropFilter"),'none','Reduced transparency removes glass blur');
     await screenshot('320-reduced-transparency');
+    await click('.station-sheet-header .mobile-sheet-actions button:last-child');
+    for(let attempt=0;attempt<100;attempt++){
+      if(await evaluate("!new URL(location.href).searchParams.has('station')"))break;
+      await pause(100);
+    }
+    assert.equal(await evaluate("Boolean(document.querySelector('.station-card'))"),false,'Closing must remove the station panel');
+    assert.equal(await evaluate("new URL(location.href).searchParams.has('station')"),false,'Closing a shared station must clear its deep link');
+    await command('Page.reload');
+    for(let attempt=0;attempt<100;attempt++){
+      if(await evaluate("Boolean(document.querySelector('.mobile-search-dock input'))"))break;
+      await pause(100);
+    }
+    await pause(500);
+    assert.equal(await evaluate("Boolean(document.querySelector('.station-card'))"),false,'Reload after close must keep the normal map state');
   }
   await writeFile(join(output,'report.json'),JSON.stringify({checkedAt:new Date().toISOString(),fixture:true,baseline,results},null,2));
 }finally{for(const p of pending.values()){clearTimeout(p.timer);p.rejectCommand(Error('Browser closing'));}pending.clear();socket?.close();browser.kill();}

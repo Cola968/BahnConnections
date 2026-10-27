@@ -84,8 +84,23 @@ export function liveTripProgress(trip: LiveTrip, at = Date.now()) {
 
 type GeometryIndex = { cumulative:Float64Array; total:number; valid:boolean };
 const geometryIndexes=new WeakMap<LiveTrip['points'],GeometryIndex>();
-function geometryIndex(points:LiveTrip['points']):GeometryIndex {
+// Keep a short, per-animation-frame budget so one 180-vehicle fixture cannot
+// synchronously index every 6,000-point polyline on a single frame.
+let geometryBuildsThisFrame=0;
+let geometryFramePending=false;
+function reserveGeometryBuild():boolean {
+  if(geometryBuildsThisFrame>=4)return false;
+  geometryBuildsThisFrame++;
+  if(!geometryFramePending){
+    geometryFramePending=true;
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{geometryBuildsThisFrame=0;geometryFramePending=false;});
+    else {geometryBuildsThisFrame=0;geometryFramePending=false;}
+  }
+  return true;
+}
+function geometryIndex(points:LiveTrip['points']):GeometryIndex|null {
   const cached=geometryIndexes.get(points);if(cached)return cached;
+  if(typeof window!=='undefined' && !reserveGeometryBuild())return null;
   const cumulative=new Float64Array(points.length);let valid=points.length>1;
   for(let i=0;i<points.length;i++) {
     const point=points[i];
@@ -103,7 +118,7 @@ function segmentAt(index:GeometryIndex,progress:number) {
 export function pointOnTrip(trip:LiveTrip,progress=liveTripProgress(trip)):[number,number]|null {
   const start=Date.parse(trip.departure),end=Date.parse(trip.arrival);
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||!Number.isFinite(progress))return null;
-  const index=geometryIndex(trip.points);if(!index.valid)return null;
+  const index=geometryIndex(trip.points);if(!index?.valid)return null;
   const selected=segmentAt(index,progress),a=trip.points[selected.end-1],b=trip.points[selected.end];
   const length=index.cumulative[selected.end]-index.cumulative[selected.end-1];
   if(length>2)return null; // Hide only this gap, retain continuous source sections.
@@ -121,7 +136,8 @@ export function activeEstimatedPosition(trip:LiveTrip,at=Date.now()):[number,num
 }
 export function trailForTrip(trip:LiveTrip,progress=liveTripProgress(trip)) {
   const position=pointOnTrip(trip,progress);if(!position)return [];
-  const index=geometryIndex(trip.points),{end}=segmentAt(index,progress);
+  const index=geometryIndex(trip.points);if(!index)return [];
+  const {end}=segmentAt(index,progress);
   let start=Math.max(0,end-Math.max(2,Math.round(trip.points.length*.16)));
   for(let i=end-1;i>start;i--)if(index.cumulative[i]-index.cumulative[i-1]>2){start=i;break;}
   // End before the interpolation segment: never overshoot the estimated position.
@@ -140,7 +156,7 @@ export function realtimeModelSpeed(trip:LiveTrip,at=Date.now()):number|null {
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return null;
   if(at<start-15_000||at>end+15_000)return null;
   const index=geometryIndex(trip.points);
-  if(!index.valid||!Number.isFinite(index.total)||index.total<.02)return null;
+  if(!index?.valid||!Number.isFinite(index.total)||index.total<.02)return null;
   for(let i=1;i<trip.points.length;i++)if(railDistanceKm(trip.points[i-1],trip.points[i])>2)return null;
   // Average-between-stops geometry cannot model braking/acceleration at stops.
   if(at<start+30_000||at>end-30_000)return null;
@@ -166,18 +182,11 @@ export function matchesLiveStatus(trip:LiveTrip,filter:'all'|'delayed'|'ontime')
 }
 
 export async function fetchLiveTrips(station: Station, signal?: AbortSignal): Promise<LiveTrip[]> {
-  const now = Date.now();
-  const url = new URL("https://api.transitous.org/api/v6/map/trips");
-  url.searchParams.set("zoom", "11");
-  url.searchParams.set("min", `${(station.lat - 0.04).toFixed(4)},${(station.lon - 0.06).toFixed(4)}`);
-  url.searchParams.set("max", `${(station.lat + 0.04).toFixed(4)},${(station.lon + 0.06).toFixed(4)}`);
-  url.searchParams.set("startTime", new Date(now - 45_000).toISOString());
-  url.searchParams.set("endTime", new Date(now + 45_000).toISOString());
-  url.searchParams.set("precision", "4");
-  url.searchParams.set("language", "de");
-  const response = await fetch(url, { signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000) });
-  if (!response.ok) throw new Error(`Live-Radar ${response.status}`);
-  const payload = await response.json() as ApiTripSegment[];
+  const query=new URLSearchParams({lat:String(station.lat),lon:String(station.lon)});
+  const response=await fetch(`/api/radar?${query}`,{signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15_000)]):AbortSignal.timeout(15_000),cache:'no-store'});
+  if(!response.ok)throw new Error(`Live-Radar ${response.status}`);
+  const envelope=await response.json() as {segments?:ApiTripSegment[]};
+  const payload=envelope.segments??[];
   const found = new Map<string, LiveTrip>();
   let prepared=0;
   for (const segment of payload) {

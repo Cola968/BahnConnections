@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds} from "../app/station-disruptions-data.ts";
+import {extractStationNotices,filterStationNotices,noticeCategoryCounts,combineStationNoticeFeeds,affectedNoticeLines} from "../app/station-disruptions-data.ts";
 const alerts=[
  {tripId:"r1",displayName:"RE1",place:{departure:"2026-10-12T17:00:00Z"},alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
  {tripId:"r2",displayName:"RE2",alerts:[{header:"Bauarbeiten zwischen Berlin und Potsdam",descriptionText:{translation:[{text:"Fahrtzeit verlängert"}]}}]},
@@ -57,11 +57,11 @@ const page=read("app/page.tsx"), filter=read("app/live-board.tsx"),settings=read
 assert.match(page,/StationDisruptions/);
 const incidentPage=read("app/station-disruptions.tsx");
 assert.match(incidentPage,/placeholder="Linie, Störung oder Ziel suchen"/,"Incident search needs an accessible text field");
-assert.match(incidentPage,/filterStationNotices\(items,filter,query\)/,"Filters must actually change the visible incidents");
+assert.match(incidentPage,/filterStationNotices\(items,filter,query,lineFocus,sortOrder\)/,"Category, query, line focus and sort must all affect visible incidents");
 assert.match(incidentPage,/noticeCategoryCounts\(items\)/,"Category counts must come from current source data");
 assert.match(incidentPage,/new VisibilityPoller\(/,"Visible disruption feed should refresh without needing a page reload");
 assert.match(incidentPage,/const kinds=\["departure","arrival"\] as const/,"Incident view must include arrivals, not departures only");
-assert.match(incidentPage,/Promise\.allSettled\(kinds\.map/,"One missing feed must not lose all incidents");
+assert.match(incidentPage,/Promise\.allSettled\(requests\)/,"One missing feed must not lose all incidents");
 assert.match(incidentPage,/combineStationNoticeFeeds\(results\)/,"Partial notices require an explicit, testable merge");
 
 assert.match(incidentPage,/Letzte erfolgreiche Abfrage/,"Stale last-known reports must disclose their source freshness");
@@ -93,3 +93,19 @@ assert.match(navigation,/mobile-nav-label">{displayLabel}/,"Displayed tab label 
 assert.match(css,/@keyframes bc-clock-turn/);
 assert.match(css,/prefers-reduced-motion/);
 console.log("V56 station notices, direct filters, Changelog and avatar integration OK.");
+
+// V57.2: line-specific incident focus and chronology are user-facing commitments.
+const scopedNotices=extractStationNotices([
+ {tripId:'scope-s1',displayName:'S1',alerts:[{header:'Signalstörung zwischen Gesundbrunnen und Pankow'}],place:{departure:'2026-10-14T11:40:00Z'}},
+ {tripId:'scope-re',displayName:'RE1',alerts:[{header:'Bauarbeiten am Gleis'}],place:{departure:'2026-10-14T10:20:00Z'}},
+ {tripId:'scope-cancel',displayName:'ICE 42',tripCancelled:true,place:{departure:'2026-10-14T12:10:00Z'}},
+ {displayName:'Bahnhof',stationNotice:true,place:{alerts:[{header:'Aufzug außer Betrieb',effect:'ACCESSIBILITY_ISSUE'}]}}
+]);
+assert.deepEqual(affectedNoticeLines(scopedNotices),['ICE 42','RE1','S1'],'Focus choices must contain only genuinely attributed rail lines.');
+assert.equal(filterStationNotices(scopedNotices,'all','','S1').length,1,'Line focus must match exactly, not S10 or shared notices without train attribution.');
+assert.equal(filterStationNotices(scopedNotices,'all','','S1')[0].lines[0],'S1');
+assert.equal(filterStationNotices(scopedNotices,'all','','S3').length,0,'Unlisted selected lines must not return all messages.');
+assert.equal(filterStationNotices(scopedNotices,'cancellation','','ICE 42').length,1,'Line and category filters must compose.');
+assert.equal(filterStationNotices(scopedNotices,'all','baUARBEITEN','RE1').length,1,'Normalized search, category and line focus must compose.');
+assert.deepEqual(filterStationNotices(scopedNotices,'all','','all','time').filter(item=>item.plannedTime).map(item=>item.lines[0]),['RE1','S1','ICE 42'],'Chronological sorting must use actual planned event time.');
+assert.equal(extractStationNotices([{displayName:'S2',alerts:[{header:'Fahrt fällt aus wegen Bauarbeiten'}]}])[0].kind,'cancellation','Train cancellations must not hide in construction category.');

@@ -25,6 +25,27 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:release
+      - run: node scripts/pwa-patch-version-audit.mjs
+      - run: pnpm audit:play-hosting
+      - run: pnpm audit:railglass
+      - run: node scripts/v62-optical-glass-audit.mjs
+      - run: pnpm audit:v60
+      - run: pnpm audit:v60-passenger
+      - run: pnpm audit:v60-transfer
+      - run: pnpm audit:v60-share
+      - run: pnpm audit:v60-stations
+      - run: node scripts/board-fallback-audit.mjs
+      - run: node scripts/board-api-audit.mjs
+      - run: node scripts/board-request-budget-audit.mjs
+      - run: node scripts/board-place-metadata-audit.mjs
+      - run: node scripts/android-follow-bridge-audit.mjs
+      - run: node scripts/train-follow-view-audit.mjs
+      - run: node scripts/panel-reveal-resize-audit.mjs
+      - run: pnpm audit:v61
+      - run: node scripts/v62-station-call-audit.mjs
+      - run: node scripts/v62-commuter-shortcut-audit.mjs
+      - run: node scripts/station-resolution-audit.mjs
+      - run: node scripts/trip-detail-freshness-audit.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm lint
       - run: pnpm audit:realtime
@@ -33,16 +54,28 @@ jobs:
       - run: pnpm audit:links
       - run: pnpm audit:input
       - run: pnpm audit:surfaces
+      - run: node scripts/disruption-provider-audit.mjs
+      - run: node scripts/incident-watch-audit.mjs
+      - run: node scripts/board-health-audit.mjs
+      - run: node scripts/incident-digest-audit.mjs
       - run: pnpm audit:ui
       - run: pnpm audit:billing
       - run: pnpm audit:board
       - run: pnpm audit:transport
       - run: pnpm audit:planner
+      - run: node scripts/journey-integrity-audit.mjs
+      - run: node scripts/nationwide-journey-validity-audit.mjs
+      - run: node scripts/global-route-validity-audit.mjs
+      - run: node scripts/global-route-api-audit.mjs
+      - run: node scripts/route-response-audit.mjs
+      - run: node scripts/radar-route-audit.mjs
       - run: node scripts/journey-tools-audit.mjs
       - run: pnpm audit:radar
       - run: node scripts/train-route-audit.mjs
       - run: pnpm audit:map
+      - run: node scripts/data-release-audit.mjs
       - run: pnpm build
+      - run: node scripts/data-release-audit.mjs --build
       - name: Responsive interaction and realtime screenshots
         env:
           EDGE_PATH: /usr/bin/google-chrome
@@ -56,11 +89,14 @@ jobs:
             sleep 2
           done
           curl --fail --silent http://localhost:3000/ > /dev/null
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-hit-probe --probe
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-landscape-qa --landscape
+          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           pnpm audit:layout -- http://localhost:3000/?station=berlin work/layout-qa
           pnpm audit:mobile -- http://localhost:3000 work/mobile-qa
           pnpm audit:layout -- 'http://localhost:3000/?station=berlin' work/station-loading-qa --station-loading-only
-          node scripts/station-sheet-qa.mjs http://localhost:3000 work/station-sheet-qa
           node scripts/station-sheet-qa.mjs http://localhost:3000 work/board-stream-qa --probe --stream
+          # Includes mandatory follow-HUD and radar-to-journey UI regressions.
           node scripts/live-map-qa.mjs http://localhost:3000 work/live-map-qa
           node scripts/planner-qa.mjs http://localhost:3000 work/planner-qa
           node scripts/station-radar-qa.mjs http://localhost:3000 work/station-radar-qa
@@ -86,8 +122,10 @@ jobs:
             work/mobile-qa/
             work/layout-qa/
             work/station-sheet-qa/
+            work/station-hit-probe/
             work/live-map-qa/
             work/board-stream-qa/
+            work/station-landscape-qa/
             work/station-loading-qa/
             work/planner-qa/
             work/station-radar-qa/

@@ -119,6 +119,7 @@ try {
       const trip=journeyFixture(fixtureJourney,realtimeScenarios[tripIndex] ?? realtimeScenarios[0]).legs[0];
       const payload = requestUrl.pathname.endsWith('/services') ? serviceFixture : requestUrl.pathname.endsWith('/board') ? boardFixture()
         : requestUrl.pathname.includes('/geocode') ? fixtureStops.map(stop => ({type:'STOP',id:stop.id,name:stop.name,lat:stop.lat,lon:stop.lon,country:'DE'}))
+        : requestUrl.pathname==='/api/radar' ? {segments:[]}
         : requestUrl.pathname.endsWith('/map/trips') ? []
         : requestUrl.pathname.endsWith('/stations/search') ? {stations:[]}
         : requestUrl.pathname.includes('/api/trips/') ? {trip:{legs:[{from:trip.from,to:trip.to,intermediateStops:trip.stops.slice(1,-1),realTime:trip.realtime,cancelled:trip.cancelled,legGeometry:{points:denseGeometry,precision:6}}]}}
@@ -208,7 +209,7 @@ try {
     await command("Page.addScriptToEvaluateOnNewDocument", { source:`if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('Worker disabled for deterministic UI fixtures'));` });
   }
   await command("Page.bringToFront");
-  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/stations/*/services*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
+  if (useJourneyFixture) await command("Fetch.enable", { patterns:[{urlPattern:"*://*/api/radar*",requestStage:"Request"},{urlPattern:"*://*/api/stations/*/services*",requestStage:"Request"},{ urlPattern:"*://*/api/journeys*", requestStage:"Request" },{ urlPattern:"*://*/api/stations/*/board*", requestStage:"Request" },{urlPattern:"*://*/api/trips/*",requestStage:"Request"},{urlPattern:"*://*/api/stations/search*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v1/geocode*",requestStage:"Request"},{urlPattern:"https://api.transitous.org/api/v6/map/trips*",requestStage:"Request"}] });
   const checks=[];
   await setViewport(390,844);
   await command('Page.navigate',{url:stationLoadingOnly?new URL('/',url).href:url});
@@ -231,7 +232,7 @@ try {
   if(stationLoadingOnly) {
     await pause(400);
     const metrics=await evaluate(`(() => {const p=window.stationPerf,c=document.querySelector('.leaflet-rail-routes-pane canvas');return {sheetFrame:p.sheetFrame,maxTask:Math.max(0,...p.tasks.map(t=>t.duration)),blockingTime:p.tasks.reduce((n,t)=>n+Math.max(0,t.duration-50),0),longTasks:p.tasks.length,maxFrameGap:Math.max(0,...p.gaps),routes:Number(c?.dataset.routeCount),added:Number(c?.dataset.routeAdded??0),requests:${JSON.stringify([...tripRequests.values()].reduce((a,b)=>a+b,0))}};})()`);
-    await tap('.station-section-tabs button:nth-child(2)');await screenshot('390-lines-loaded');
+    await tap('#station-tab-destinations');await screenshot('390-lines-loaded');
     await writeFile(join(outputDirectory,'station-loading-report.json'),JSON.stringify({fixture:true,cpuSlowdown:4,geometryPoints,lines:18,...metrics},null,2));
     console.log(JSON.stringify(metrics));
     await command('Emulation.setCPUThrottlingRate',{rate:1});
@@ -257,7 +258,7 @@ try {
   if(beforePan.transform===afterPan.transform || beforePan.revision!==afterPan.revision || afterPan.routes!==18 || afterPan.markers>120)throw new Error('Map pan regression: '+JSON.stringify({beforePan,afterPan}));
   await command('Emulation.setCPUThrottlingRate',{rate:1});
   checks.push({label:'4x CPU: pointer pan preserves all 18 dense routes',...afterPan});
-  await tap('.station-section-tabs button:nth-child(2)');
+  await tap('#station-tab-destinations');
   const requestCount=[...tripRequests.values()].reduce((a,b)=>a+b,0);
   await tap('.station-line-row');
   await waitFor(`Boolean(document.querySelector('.line-route-detail'))`,'Line detail missing');
@@ -270,7 +271,7 @@ try {
       const panel=document.querySelector('.floating-panel'),head=panel?.querySelector('.panel-tools'),body=panel?.querySelector('.panel-body');
       const hr=head?.getBoundingClientRect(),br=body?.getBoundingClientRect();
       const visible=el=>Boolean(el.getClientRects().length)&&getComputedStyle(el).visibility!=='hidden';
-      const overflow=[...document.querySelectorAll('.panel-body,.board-row-summary,.realtime-time,.station-line-row,.live-stop-list li,.journey-time-range')].filter(visible).filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className);
+      const overflow=[...document.querySelectorAll('.panel-body,.board-row-summary,.realtime-time,.station-line-row,.live-stop-list li,.journey-time-range,.mobile-navigation,.desktop-navigation,.station-section-tabs,.board-quick-views,.board-filter-panel,.station-search,.line-route-detail')].filter(visible).filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className);
       const overlaps=[];
       for(const row of document.querySelectorAll('.board-row-summary,.station-line-row,.live-stop-list li')) {
         if(!visible(row))continue;
@@ -297,7 +298,7 @@ try {
       await evaluate(`document.querySelector('.panel-body').scrollTop=160`);
       await inspect(label+' scrolled');
       await evaluate(`document.querySelector('.panel-body').scrollTop=0`);
-      await tap('.station-section-tabs button:nth-child(2)');
+      await tap('#station-tab-destinations');
       await inspect(label+' lines');
       if(font==='normal')await screenshot(width+'-'+theme+'-lines');
       

@@ -1,0 +1,270 @@
+/* Screenshot regression 14 Oct 2026: short station sheets, no train-name collisions.
+ * Final stylesheet intentionally overrides older V53/V54/V56 grid contracts.
+ * Applies only to mobile; desktop workspace remains untouched.
+ */
+@media (max-width:1023px) {
+  /* Minimized means a compact handle, not a large blank white card. */
+  .app-shell[data-mobile-sheet="collapsed"] .mobile-sheet-panel {
+    height:64px!important;
+    min-height:64px!important;
+    max-height:64px!important;
+    padding-bottom:0!important;
+    overflow:hidden!important;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .station-card>.station-sheet-header {
+    min-height:60px!important;
+    height:60px!important;
+    grid-template-rows:60px!important;
+    padding-block:6px!important;
+  }
+  .app-shell[data-mobile-sheet="collapsed"] .station-card>.panel-body,
+  .app-shell[data-mobile-sheet="collapsed"] .station-card .station-section-tabs {
+    display:none!important;
+  }
+
+  /* Two fixed, independent rows for title and station tabs. */
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header {
+    min-height:82px!important;
+    grid-template-rows:40px 42px!important;
+    padding:0 8px!important;
+  }
+  /* The five navigation tabs must never steal the 44px close/minimize
+     targets in the first header row, even after a viewport/font change. */
+  .app-shell .station-sheet-header .mobile-sheet-summary {
+    grid-column:1;grid-row:1;position:relative;z-index:3;
+  }
+  .app-shell .station-sheet-header .mobile-sheet-actions {
+    grid-column:2;grid-row:1;position:relative;z-index:4;
+    justify-self:end;align-self:center;
+  }
+  .app-shell .station-sheet-header .station-section-tabs {
+    grid-column:1/-1;grid-row:2;position:relative;z-index:1;
+  }
+  .app-shell .station-sheet-header .station-section-tabs button {
+    min-height:42px!important;
+    height:42px!important;
+    padding:4px 7px!important;
+  }
+  .app-shell .board-primary-bar {
+    row-gap:0!important;
+    margin-bottom:2px!important;
+  }
+  .app-shell .board-quick-views {
+    padding:0!important;
+  }
+  .app-shell .board-mode-tabs button {
+    min-width:44px!important;
+  }
+
+  /* Each row allocates *real* space for the ICE icon and the train number.
+   * An older flex-direction:row!important made ICE + "1" spill into "Kiel Hbf".
+   */
+  .app-shell .board-row-summary {
+    box-sizing:border-box;
+    grid-template-columns:3px 54px minmax(0,1fr) minmax(68px,80px)!important;
+    grid-template-rows:auto auto;
+    column-gap:7px!important;
+    min-width:0;
+  }
+  .app-shell .board-row-summary .board-service {
+    grid-column:2!important;
+    grid-row:1/3!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:center;
+    gap:5px!important;
+    min-width:0!important;
+    width:100%;
+    max-width:100%!important;
+    overflow:hidden;
+    padding-top:0!important;
+  }
+  .app-shell .board-row-summary .board-service>.service-logo {
+    box-sizing:border-box;
+    display:inline-flex;
+    flex:0 0 auto;
+    min-width:0!important;
+    max-width:100%!important;
+    width:max-content;
+    height:26px;
+    padding:0 6px!important;
+    font-size:.75rem!important;
+    white-space:nowrap;
+  }
+  .app-shell .board-row-summary .board-service>b {
+    box-sizing:border-box;
+    max-width:100%;
+    min-width:0;
+    line-height:1.2;
+    white-space:nowrap;
+    font-size:.75rem;
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+  .app-shell .board-row-summary .board-destination {
+    grid-column:3!important;
+    grid-row:1/3!important;
+    min-width:0!important;
+    max-width:100%;
+    overflow:hidden;
+    align-self:center;
+  }
+  .app-shell .board-row-summary .board-destination b {
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+    overflow-wrap:anywhere!important;
+    word-break:normal;
+  }
+  .app-shell .board-row-summary .board-time {
+    grid-column:4!important;
+    grid-row:1!important;
+    min-width:0;
+    overflow-wrap:normal;
+    text-align:right!important;
+  }
+  .app-shell .board-row-summary .board-platform {
+    grid-column:4!important;
+    grid-row:2!important;
+    min-width:0;
+    text-align:right!important;
+  }
+  /* Keep station and map controls from crowding the native map attribution. */
+  .app-shell .leaflet-bottom .leaflet-control-attribution {
+    margin-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+    max-width:calc(100vw - 16px);
+  }
+  /* With an open sheet, the map attribution has to stay ABOVE the sheet,
+     not be obscured underneath either the sheet or the bottom tab bar. */
+  .app-shell.has-primary-panel:is([data-mobile-sheet="half"],[data-mobile-sheet="expanded"])
+    .leaflet-bottom .leaflet-control-attribution {
+    margin-bottom:calc(var(--bottom-navigation,60px) + var(--mobile-sheet-visible-height,0px) + 14px)!important;
+  }
+  .app-shell.has-primary-panel[data-mobile-sheet="collapsed"]
+    .leaflet-bottom .leaflet-control-attribution {
+    margin-bottom:calc(var(--bottom-navigation,60px) + 78px)!important;
+  }
+}
+@media (max-width:359px) {
+  .app-shell .station-sheet-header .station-section-tabs button {
+    font-size:.75rem!important;
+  }
+  .app-shell .board-row-summary {
+    grid-template-columns:3px 46px minmax(0,1fr) 65px!important;
+    column-gap:5px!important;
+  }
+  .app-shell .board-row-summary .board-service>b {font-size:.6875rem;}
+  .app-shell .board-row-summary .board-service>.service-logo {
+    padding-inline:4px!important;
+    font-size:.7rem!important;
+  }
+}
+@media (forced-colors:active) {
+  .app-shell .board-row-summary .service-logo { forced-color-adjust:auto; }
+}
+
+/* Short phone landscapes keep the station switcher and timetable usable.
+   Put quick filters beside the mode switch rather than consuming another row. */
+@media (max-width:1023px) and (max-height:520px) and (orientation:landscape) {
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card.mobile-sheet-panel {
+    top:68px!important;bottom:76px!important;left:8px!important;right:8px!important;
+    width:auto!important;max-width:none!important;transform:none!important;
+    height:calc(100dvh - 144px)!important;min-height:0!important;
+    max-height:calc(100dvh - 144px)!important;padding-bottom:0!important;
+  }
+  .app-shell[data-primary-panel="station"] .map-stage { padding-right:0!important; }
+  .app-shell.has-primary-panel[data-primary-panel="station"] .topbar>.station-search {
+    display:flex!important;
+  }
+  .app-shell[data-primary-panel="station"] .brand-name { display:none!important; }
+  .app-shell .board-primary-bar {
+    grid-template-columns:auto minmax(0,1fr) auto!important;
+    column-gap:10px!important;
+  }
+  .app-shell .board-mode-tabs { grid-column:1;grid-row:1; }
+  .app-shell .board-actions { grid-column:3;grid-row:1; }
+  .app-shell .board-quick-views {
+    grid-column:2!important;grid-row:1;min-width:0;
+  }
+}
+
+/* V60 release gate: independent hit planes for title/actions and five tabs.
+   Native-grid auto-placement interacted with the sheet's inherited 44px
+   button minimum and could paint the second row across the first-row buttons.
+   Fixed absolute rows make their touch rectangles non-overlapping. */
+@media (max-width:1023px) {
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header {
+    position:relative!important;display:block!important;
+    box-sizing:border-box;height:88px!important;min-height:88px!important;
+    max-height:88px!important;flex:0 0 88px!important;
+    padding:0!important;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.mobile-sheet-summary {
+    position:absolute!important;top:0!important;left:8px!important;right:104px!important;
+    width:auto!important;height:44px!important;min-height:44px!important;z-index:2;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.mobile-sheet-actions {
+    position:absolute!important;top:0!important;right:8px!important;left:auto!important;
+    width:88px!important;height:44px!important;gap:0!important;z-index:3;
+  }
+  .app-shell .station-sheet-header .mobile-sheet-actions button {
+    flex:0 0 44px!important;width:44px!important;min-width:44px!important;
+    min-height:44px!important;height:44px!important;
+  }
+  .app-shell:not([data-mobile-sheet="collapsed"]) .station-card>.station-sheet-header>.station-section-tabs {
+    position:absolute!important;top:44px!important;left:8px!important;right:8px!important;
+    width:auto!important;height:44px!important;min-height:44px!important;
+    grid-row:auto!important;grid-column:auto!important;z-index:1;
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:0!important;padding:0!important;
+  }
+  .app-shell .station-sheet-header .station-section-tabs button {
+    width:100%;min-width:0;min-height:44px!important;height:44px!important;
+    padding:4px 0!important;
+    white-space:normal!important;overflow-wrap:anywhere;line-height:1.1;
+  }
+}
+
+/* V60.3: Station sheets start compact. A live drag height must override
+   the half-state preset; otherwise Android drags snap back to 51dvh. */
+@media (max-width:699px) and (min-height:521px) {
+  .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] {
+    --sheet-preset:clamp(300px,38dvh,340px);
+  }
+  .app-shell[data-primary-panel="station"][data-mobile-sheet="half"] .station-card.mobile-sheet-panel {
+    box-sizing:border-box;
+    height:var(--mobile-sheet-height,clamp(300px,38dvh,340px))!important;
+    min-height:0!important;
+    max-height:var(--mobile-sheet-height,clamp(300px,38dvh,340px))!important;
+  }
+}
+
+/* V60 compact journey cards: map stays useful on narrow phones. */
+@media (max-width:767px) {
+  .app-shell[data-primary-panel="journey"][data-mobile-sheet="half"] .journey-card.mobile-sheet-panel {
+    /* A user drag sets --mobile-sheet-height; never clamp that to the compact preset. */
+    height:var(--mobile-sheet-height,min(43dvh,340px))!important;
+    max-height:var(--mobile-sheet-height,min(43dvh,340px))!important;
+  }
+  .app-shell .journey-card .panel-body { padding:8px 14px 16px!important; }
+  .app-shell .journey-card .journey-mobile-overview { gap:8px; }
+  .app-shell .journey-card .journey-mobile-route { min-width:0; }
+  .app-shell .journey-card .journey-alternatives { margin-block:6px!important; }
+  .app-shell .journey-card .journey-secondary-info { margin-top:8px; }
+  .app-shell .journey-card .journey-alternatives>summary,
+  .app-shell .journey-card .journey-secondary-info>summary { min-height:44px; }
+  .app-shell .leaflet-tooltip.station-route-label.live {
+    max-width:min(200px,48vw)!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    padding:5px 8px!important;
+    border-radius:9px!important;
+    box-shadow:0 2px 7px rgba(15,35,45,.12)!important;
+    font-size:12px!important;
+  }
+}

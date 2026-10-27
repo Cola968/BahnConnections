@@ -1,0 +1,62 @@
+/* V57.2 — station disruption controls, readable from 320px to desktop. */
+.app-shell .incidents-tools {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 12px;min-width:0}
+.app-shell .incidents-tools label {display:grid;gap:5px;min-width:0;font-size:.8rem;font-weight:650;color:var(--muted)}
+.app-shell .incidents-tools select {appearance:auto;width:100%;min-width:0;min-height:48px;border:1px solid var(--line-subtle);border-radius:11px;padding:8px 10px;color:var(--ink);background:var(--paper);font:inherit;font-size:.875rem;line-height:1.3;white-space:normal}
+.app-shell .incidents-tools select:focus-visible,.app-shell .incident-copy:focus-visible {outline:2px solid var(--action);outline-offset:3px}
+.app-shell .incident-copy {display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;margin-top:12px;padding:9px 13px;border:1px solid var(--line-subtle);border-radius:11px;background:var(--soft);color:var(--ink);font-size:.875rem;font-weight:650;cursor:pointer}
+.app-shell .incident-copy svg {width:17px;height:17px;flex:none}
+.app-shell .incidents-copy-feedback {margin:9px 0;padding:8px 10px;border-radius:9px;background:var(--soft);color:var(--ink);font-size:.78rem;line-height:1.5}
+@media(max-width:360px) {.app-shell .incidents-tools {grid-template-columns:minmax(0,1fr)} }
+@media(prefers-reduced-motion:reduce) {.app-shell .incidents-tools *,.app-shell .incident-copy {transition:none!important;animation:none!important}}
+@media(forced-colors:active) {.app-shell .incidents-tools select,.app-shell .incident-copy {border:1px solid CanvasText} }
+
+/* V57 line watchlist: subdued editorial chips, never a second floating sheet. */
+.app-shell .incidents-watch {display:grid;gap:9px;padding:13px 0 14px;border-bottom:1px solid var(--line-subtle);min-width:0}
+.app-shell .incidents-watch-head {display:grid;gap:3px}
+.app-shell .incidents-watch-head h3 {margin:0;color:var(--ink);font-size:.9rem;font-weight:730}
+.app-shell .incidents-watch-head p {margin:0;color:var(--muted);font-size:.77rem;line-height:1.5}
+.app-shell .incidents-watch-lines {display:flex;flex-wrap:wrap;gap:7px;max-height:150px;overflow:auto;overscroll-behavior:contain}
+.app-shell .incidents-watch-lines button {display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:100%;padding:7px 10px;border-radius:11px;border:1px solid var(--line-subtle);background:var(--paper);color:var(--ink);font:inherit;font-size:.85rem;cursor:pointer}
+.app-shell .incidents-watch-lines button .incident-line-badge {pointer-events:none}
+.app-shell .incidents-watch-lines button svg {width:16px;height:16px;flex:none;fill:none;color:var(--muted)}
+.app-shell .incidents-watch-lines button[aria-pressed=true] {border-color:var(--action);background:color-mix(in srgb,var(--action) 8%,var(--paper))}
+.app-shell .incidents-watch-lines button[aria-pressed=true] svg {color:var(--action);fill:currentColor}
+.app-shell .incidents-watch-selected {display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between}
+.app-shell .incidents-watch-selected>span {min-width:0;flex:1;overflow-wrap:anywhere;color:var(--muted);font-size:.77rem;line-height:1.4}
+.app-shell .incidents-watch-selected button {min-height:44px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-subtle);color:var(--ink);background:var(--soft);font-size:.8rem;font-weight:650;cursor:pointer}
+.app-shell .incidents-watch-selected button[aria-pressed=true] {border-color:var(--action);color:var(--ink);background:color-mix(in srgb,var(--action) 10%,var(--paper))}
+.app-shell .incidents-watch-feedback {margin:0;color:var(--muted);font-size:.78rem;line-height:1.45}
+.app-shell .incidents-watch button:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+@media(max-width:360px) {.app-shell .incidents-watch-selected {align-items:stretch;flex-direction:column}.app-shell .incidents-watch-selected button {width:100%}}
+@media(forced-colors:active) {.app-shell .incidents-watch-lines button[aria-pressed=true] {outline:2px solid Highlight;outline-offset:-3px}.app-shell .incidents-watch-selected button[aria-pressed=true] {outline:2px solid Highlight}}
+
+/* Data quality is a plain, factual station information section. */
+.app-shell .station-health-card {display:grid;gap:9px;margin:12px 0 18px;padding:15px 0;border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle);background:transparent;color:var(--ink)}
+.app-shell .station-health-heading {display:flex;gap:9px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.app-shell .station-health-heading strong {font-size:.91rem;letter-spacing:-.015em}
+.app-shell .station-health-heading [data-state] {font-size:.75rem;font-weight:700;line-height:1.45}
+.app-shell .station-health-heading [data-state=live] {color:var(--status-ontime,var(--action))}
+.app-shell .station-health-heading [data-state=stale] {color:var(--status-disruption,var(--ink))}
+.app-shell .station-health-card p {margin:0;color:var(--muted);font-size:.8rem;line-height:1.5}
+.app-shell .station-health-coverage {display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;justify-content:space-between;font-size:.79rem}
+.app-shell .station-health-coverage b {font-variant-numeric:tabular-nums;white-space:nowrap}
+.app-shell .station-health-card progress {appearance:auto;display:block;width:100%;height:9px;accent-color:var(--action);border:0}
+.app-shell .station-health-card .station-health-warning {color:var(--ink)}
+@media(max-width:360px) {.app-shell .station-health-heading,.app-shell .station-health-coverage {display:grid;gap:4px}}
+@media(forced-colors:active) {.app-shell .station-health-card progress {border:1px solid CanvasText}}
+
+/* Station permalink belongs alongside existing favorite action. */
+.app-shell .station-share {display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;max-width:100%;padding:8px 10px;border:1px solid var(--line-subtle);border-radius:10px;background:var(--paper);color:var(--ink);font-size:.77rem;font-weight:650;white-space:nowrap}
+.app-shell .station-share {width:auto;min-width:44px;flex-shrink:0}
+.app-shell .station-share svg {width:16px;height:16px;flex:none}
+.app-shell .station-share:disabled {opacity:.5;cursor:not-allowed}
+.app-shell .station-share:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+.app-shell .station-share-message {padding:6px 8px;margin:4px 0 8px;color:var(--muted);font-size:.8rem;line-height:1.5}
+@media(max-width:360px) {.app-shell .station-share {font-size:.72rem;padding:7px}}
+
+.app-shell .incidents-share-action {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:3px 0 13px;min-width:0}
+.app-shell .incidents-share-action button {display:inline-flex;align-items:center;gap:7px;min-height:48px;padding:10px 12px;border-radius:11px;border:1px solid var(--line-subtle);background:var(--paper);color:var(--ink);font-size:.86rem;font-weight:650}
+.app-shell .incidents-share-action button svg {width:17px;height:17px}
+.app-shell .incidents-share-action button:focus-visible {outline:2px solid var(--action);outline-offset:2px}
+.app-shell .incidents-share-action span {font-size:.74rem;line-height:1.45;color:var(--muted);flex:1;min-width:110px}
+@media(max-width:360px) {.app-shell .incidents-share-action {align-items:stretch;flex-direction:column}.app-shell .incidents-share-action button {justify-content:center}}

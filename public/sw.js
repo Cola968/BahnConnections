@@ -1,4 +1,5 @@
-const CACHE_NAME = "bahnconnections-static-v57-0";
+const CACHE_NAME = "bahnconnections-static-v62-0-3";
+// V62.0.3: independent PWA cache for operational station calls and one-tap commute planner.
 const STATIC_ASSETS = ["/", "/install", "/manifest.webmanifest", "/app-icon.svg", "/app-icon-maskable.svg", "/app-icon-192.png", "/app-icon-512.png", "/app-icon-maskable-512.png"];
 const AUTH_PATHS = ["/signin-with-chatgpt", "/auth", "/api/auth", "/oauth", "/cdn-cgi/"];
 
@@ -24,6 +25,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
+  if(url.pathname.startsWith("/api/")){event.respondWith(fetch(event.request,{cache:"no-store"}));return;}
   // Authentication redirects must be handled by the browser itself. Following
   // them inside a service worker can fail CORS and incorrectly show "offline".
   if (event.request.mode === "navigate" && isAuthenticationRequest(url)) return;

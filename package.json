@@ -1,13 +1,13 @@
 {
   "name": "sites-project",
-  "version": "57.0.0",
+  "version": "62.0.3",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vinext dev",
-    "build": "vinext build",
+    "dev": "node node_modules/vinext/dist/cli.js dev",
+    "build": "node node_modules/vinext/dist/cli.js build",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "audit:network": "node scripts/network-audit.mjs",
@@ -23,14 +23,24 @@
     "audit:billing": "node scripts/billing-audit.mjs",
     "audit:planner": "node scripts/planner-logic-audit.mjs",
     "audit:release": "node scripts/release-readiness-audit.mjs",
+    "audit:play-hosting": "node scripts/play-hosting-audit.mjs",
+    "smoke:play-start": "node scripts/play-hosting-smoke.mjs",
     "audit:v56": "node scripts/v56-regression-audit.mjs",
     "audit:arrival": "node scripts/arrival-countdown-audit.mjs",
     "audit:links": "node scripts/planner-link-audit.mjs",
     "audit:input": "node scripts/api-input-audit.mjs",
     "audit:surfaces": "node scripts/v56-product-surface-audit.mjs",
+    "audit:railglass": "node scripts/v58-railglass-audit.mjs",
     "build:cloudflare": "vite build --config vite.cloudflare.config.ts",
     "audit:cloudflare": "node scripts/cloudflare-preflight.mjs",
-    "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)"
+    "deploy:cloudflare": "wrangler deploy --config $(node scripts/cloudflare-output-config.mjs)",
+    "audit:v60": "node scripts/v60-audit.mjs",
+    "audit:v60-passenger": "node scripts/v60-passenger-audit.mjs",
+    "audit:v60-transfer": "node scripts/v60-transfer-audit.mjs",
+    "audit:v60-share": "node scripts/v60-share-audit.mjs",
+    "audit:v60-stations": "node scripts/v60-station-wide-audit.mjs",
+    "audit:v61": "node scripts/v61-audit.mjs",
+    "audit:request-budget": "node scripts/board-request-budget-audit.mjs"
   },
   "dependencies": {
     "@glass-sdk/liquid-glass": "~0.0.1",
@@ -61,5 +71,6 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "packageManager": "pnpm@10.34.7"
+  "packageManager": "pnpm@10.34.7",
+  "license": "MIT"
 }
